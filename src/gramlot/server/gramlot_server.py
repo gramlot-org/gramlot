@@ -20,7 +20,7 @@ from ..page.builder import GramlotBuilder
 from ..page.page_store import PageStore
 from ..page.name_syntax import NAME_SYNTAX
 from .assets import gramlot_dev
-from .files import THEMES, file_below
+from .files import LIBRARIES, THEMES, file_below
 from .resources import SEGMENT, InvalidResourceName, load_order
 from .upload import _UploadRegistry, _invoke
 
@@ -122,6 +122,11 @@ class GramlotServer:
 
     A page expires ``page_ttl`` seconds after its last use: opening it and every call that names
     it for its owner move the expiry to now plus ``page_ttl`` (GC-230 §010).
+
+    ``library_source`` says where the pages take the third-party libraries of the components:
+    ``"cdn"`` (jsDelivr, at the exact version of the manifest) or ``"local"`` (the copies served with the
+    collections). With ``"cdn"`` the import map of the bootstrap carries the integrity of each CDN module and
+    ``content_security_policy`` adds the CDN origin to the policy (GC-325 §160).
     """
 
     @property
@@ -132,7 +137,9 @@ class GramlotServer:
                  rpc_url="/gramlot/rpc", close_url="/gramlot/close",
                  root_id="gramlot-root",
                  page_ttl=1800, max_pages=1000, collections=(), css_theme="gramlot-base",
-                 websocket_url=None):
+                 websocket_url=None, library_source="cdn"):
+        if library_source not in ("cdn", "local"):
+            raise ValueError(f"The library source must be 'cdn' or 'local', not {library_source!r}")
         if css_theme is not False and not _theme_name(css_theme):
             raise ValueError(f"The base theme must be a theme name or False, not {css_theme!r}")
         try:
@@ -156,6 +163,31 @@ class GramlotServer:
         self._collection_documents = {}
         self._prepared_grammars = {}
         self.css_theme = css_theme
+        self.library_source = library_source
+        self.libraries = json.loads(LIBRARIES.read_text(encoding="utf-8"))
+
+    @property
+    def library_origins(self):
+        """The origins the pages load third-party libraries from: the CDN origin with ``"cdn"``, else none."""
+        if self.library_source == "local":
+            return ()
+        return tuple(dict.fromkeys("/".join(entry["url"].split("/")[:3])
+                                   for entry in self.libraries.values() if entry["url"] is not None))
+
+    def content_security_policy(self, policy, nonce):
+        """The ``Content-Security-Policy`` header of one page: ``policy`` with ``{nonce}`` replaced by the nonce
+        of its bootstrap and the library origins added to the directive that governs scripts (``script-src``,
+        else ``default-src``) and to the one that governs connections (``connect-src``, else ``default-src``);
+        a policy without such a directive leaves that kind unrestricted (GC-101 §140)."""
+        directives = [part.split() for part in policy.replace("{nonce}", nonce).split(";") if part.strip()]
+        names = [directive[0] for directive in directives]
+        for kind in ("script-src", "connect-src"):
+            name = kind if kind in names else "default-src" if "default-src" in names else None
+            if name is None:
+                continue
+            directive = directives[names.index(name)]
+            directive.extend(origin for origin in self.library_origins if origin not in directive)
+        return "; ".join(" ".join(directive) for directive in directives)
 
     def resolve_page(self, path):
         """Return the ``Page`` class of ``path``, or raise ``PageNotFound``."""
@@ -444,7 +476,7 @@ class GramlotServer:
                                  if self.server_adapter is not None else {})}})
             runtime = _script_json(_prefixed(prefix, self.runtime_url))
             document = GramlotBuilder()
-            root = document.source.html()
+            root = document.source.html(**{"data-gramlot-library-source": self.library_source})
             head = root.head()
             head.meta(charset="utf-8")
             head.meta(name="viewport", content="width=device-width,initial-scale=1")
@@ -457,7 +489,10 @@ class GramlotServer:
                                                 "@gramlot/gramlot/components": _prefixed(prefix, self.runtime_url),
                                                 "@gramlot/gramlot/markdown": _prefixed(prefix, self.markdown_url),
                                                 **{"@gramlot/collections/" + quote(item["name"], safe="-_.!~*'()"):
-                                                   item["url"] for item in collection_records}}}),
+                                                   item["url"] for item in collection_records}},
+                                    **({"integrity": {entry["url"]: entry["integrity"] for entry in self.libraries.values()
+                                                      if entry["url"] is not None and entry["format"] != "style"}}
+                                       if self.library_source == "cdn" else {})}),
                         type="importmap", nonce=nonce)
             body = root.body()
             body.div(id=self.root_id)

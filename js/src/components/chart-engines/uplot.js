@@ -1,11 +1,13 @@
 import {chartData} from '../chart-data.js';
+import {loadLibrary} from '../../libraries.js';
 
 let loading,UPlot,styleText;
 export class UPlotAdapter {
     static label='uPlot';
-    static async load() {
-        await (loading ??= Promise.all([import('uplot'),import('uplot/dist/uPlot.min.css')])
-            .then(([engine,style])=>{UPlot=engine.default;styleText=style.default;}));
+    static async load(type,document) {
+        await (loading ??= Promise.all([loadLibrary('uplot',document,()=>import('uplot/dist/uPlot.esm.js')),
+            loadLibrary('uplotStyle',document,()=>import('uplot/dist/uPlot.min.css'))])
+            .then(([engine,style])=>{UPlot=engine.default;styleText=style;}));
     }
     #element; #plot; #style; #signature; #disposed=false;
     constructor(element) { this.#element=element; }

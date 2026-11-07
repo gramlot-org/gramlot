@@ -7,6 +7,8 @@ from pathlib import Path
 
 # The themes folder of the installed core (``gramlot/resources/themes``).
 THEMES = Path(str(files("gramlot").joinpath("resources", "themes")))
+# The manifest of the third-party libraries of the components, written by the JS build from js/src/libraries.js.
+LIBRARIES = Path(str(files("gramlot").joinpath("resources", "libraries.json")))
 
 
 def file_below(folder, path):

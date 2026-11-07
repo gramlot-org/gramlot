@@ -1,4 +1,5 @@
 import {controlElement} from './bases.js';
+import {loadLibrary} from '../libraries.js';
 import {defineComponent} from './registry.js';
 import {Labelbox} from './labelbox.js';
 import {FieldState} from './field-state.js';
@@ -32,7 +33,7 @@ function EditorControl(HTMLElement) {
         connectedCallback() {
             const generation = ++this.#generation;
             this.control.textContent = 'Loading editor…';
-            this.ready = (engineModule ??= import('./code-mirror-engine.js')).then(module => {
+            this.ready = (engineModule ??= loadLibrary('codemirror',this.ownerDocument,()=>import('./code-mirror-engine.js'))).then(module => {
                 if (generation !== this.#generation || !this.isConnected) return;
                 this.control.textContent = '';
                 this.editor = module.createEditor(this);

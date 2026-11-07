@@ -5,6 +5,11 @@ import {BagCollectionStore} from '../src/stores/bag-collection-store.js';
 import {BagCollectionView} from '../src/stores/bag-collection-view.js';
 import {chartMapOptions} from '../src/components/chart-map-options.js';
 import {ChartRenderer} from '../src/components/chart-renderer.js';
+import {JSDOM} from 'jsdom';
+import {EChartsAdapter} from '../src/components/chart-engines/echarts.js';
+
+// ECharts loads on first use (GC-325 §160): these tests draw without ChartRenderer.prepare.
+await EChartsAdapter.load('bar', new JSDOM('').window.document);
 const geo={type:'FeatureCollection',features:['Alpha','Beta','Missing'].map((name,i)=>({type:'Feature',properties:{name},geometry:{type:'Polygon',coordinates:[[[i,0],[i+.8,0],[i+.8,1],[i,0]]]}}))};
 for(const mode of ['attributes','values'])test(`2D choropleth scale, labels, unique territories and SVG rendering: ${mode}`,()=>{
  const rows=new Bag(),data=new Bag();data.setItem('rows',rows);data.setBackref();

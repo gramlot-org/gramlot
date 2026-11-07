@@ -398,6 +398,17 @@ value the prefix is `<tag> '<label>' node value`; browser error kept as `cause`;
 nothing is written. One bootstrap module script carries the nonce and imports the runtime; a script without the nonce is blocked. The standalone export has its
 own hash profile (025).
 
+Third-party libraries of components load on first use. Server option `library_source`
+(JS `librarySource`): `cdn` (default: ECharts and uPlot from jsDelivr at the exact
+tested version) or `local` (copies served with the collections); the other libraries
+are always local. The bootstrap writes `<html data-gramlot-library-source>`; with `cdn`
+the import map carries the integrity of each CDN file. With `cdn` the policy must allow
+`https://cdn.jsdelivr.net` for scripts and connections:
+`GramlotServer.content_security_policy(policy, nonce)` (JS `contentSecurityPolicy`)
+replaces `{nonce}` and adds the CDN origin to `script-src` and `connect-src` (or
+`default-src`). `local` suits offline sites and policies without the CDN; the
+standalone export is always local.
+
 Inline code runs only as received with the Source. `gramlot.src.prepareSource` activates
 the inline code of the received Source (`main` from the server, a remote Source, a
 `GramlotBuilderBag` given to `startSource`): each `GramlotBuilderBagNode` keeps the text

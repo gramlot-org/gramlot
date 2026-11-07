@@ -1526,6 +1526,7 @@ Use esbuild for browser ESM generation with target es2022, consistent with the
 existing core build. A Gramlot linking pass maps collection dependencies to the
 approved @gramlot/collections/<name> specifiers and preserves shared Gramlot entry
 imports; it must not bundle another private copy of core into each collection.
+Shared libraries and runtime modules come from the core: see [§155](#gc-325-155).
 
 Use esbuild for declared CSS entry points in their agreed order, processing local
 @import and url() references. Configure file loaders/copying for images, fonts
@@ -1733,3 +1734,167 @@ URLs require no new bootstrap field. Activating a collection does not fetch the
 engine. The existing file-origin derived bundle is still eager; deferred loading
 for that profile remains unresolved. See GC-070 environment checkpoint for sizes
 and verification, and GC-340 for application authoring.
+
+
+<a id="gc-325-155"></a>
+## 155 · Shared libraries and runtime modules (2026-11-07)
+
+Block ID: **GC-325-155**. Phase 1 of gramlot-org/gramlot#82.
+
+A prepared collection contains only its own code. The libraries and runtime modules
+that the core already ships stay in the core, and every collection reads them from
+there. A page therefore holds one copy of each, and a class keeps its identity across
+the core and the collections: a `Bag` created by a collection is `instanceof Bag` of
+the runtime.
+
+The core exports the table `sharedModules` from `@gramlot/gramlot`
+(`js/src/shared-modules.js`). A key is the import specifier of a module; the value is
+its module namespace.
+
+- Libraries, keyed by package name: `@genrojs/bag`, `@genrojs/builders`,
+  `@genrojs/toolbox`, `@genrojs/tytx`, `@xmldom/xmldom`, `decimal.js`, `big.js`,
+  `@msgpack/msgpack`, `dompurify`.
+- Runtime modules that standard components import by relative path, keyed by their
+  path relative to `js/src` (`./random-id.js`, `./components/bases.js`,
+  `./stores/bag-collection-view.js`, ...).
+
+The generator links collection imports to this table:
+
+- An import of a shared library, or of a runtime module listed in the table, becomes
+  a small module that reads `sharedModules[key]` from `@gramlot/gramlot`. Each export
+  is a pure read, so esbuild drops the exports a collection does not use.
+- An import of a subpath of a shared package that the table does not list
+  (`@genrojs/tytx/other`) is a build error.
+- After bundling, the generator compares the collection inputs with the module graph
+  of the runtime entry. A runtime module bundled into a collection is a build error
+  that names the module; the fix is an entry in `sharedModules`, never a second copy.
+
+The browser needs no new import map entry: `@gramlot/gramlot` already maps to the
+runtime in the Python and JS servers. The file-origin serverless bundle replaces
+`@gramlot/gramlot` with the names of the window runtime (`GramlotStandalone`), which
+re-exports every name of the core, so `sharedModules` reaches it unchanged.
+
+Collections by external authors get the same linking: they import the libraries by
+package name as before, and the generator takes them from the core. The author still
+installs the libraries in the project, because the generator imports the collection
+definition in Node to read its grammar.
+
+Measured on the standard collections (bytes, minified, before compression; static
+chunks included; `gramlot.min.js` is the runtime served in deploy):
+
+| | before | after |
+|---|---:|---:|
+| collection modules, all standard collections | 4,447,079 | 1,702,402 |
+| `gramlot.min.js` | 884,104 | 905,805 |
+| a page with all standard collections | 5,331,183 | 2,608,207 |
+
+The runtime grows by 21.7 KB because a namespace in the table keeps its whole module.
+1.16 MB of the remaining collection bytes are the ECharts chunk of `charts`, a static
+import moved to first use by phase 2 ([§160](#gc-325-160)). Phase 3 of #82 (collections
+loaded per page) is not part of this section.
+
+Verification: `js/tests/collection-shared-modules.test.js`.
+
+<a id="gc-325-160"></a>
+## 160 · Third-party libraries on first use (2026-11-07)
+
+Block ID: **GC-325-160**. Phase 2 of gramlot-org/gramlot#82.
+
+Owner directive, 2026-11-07: every third-party library a component uses loads on
+first use, from a CDN (jsDelivr, exact version) or, when a CDN is not possible, from a
+vendored copy shipped with Gramlot; one manifest describes them. This supersedes the
+sentence "No additional engine metadata schema or parallel loader is introduced" of
+the constitution record "Environment collections and deferred engines" (2026-10-30).
+
+### The manifest
+
+`libraries` (`js/src/libraries.js`, exported by `@gramlot/gramlot`) has one entry per
+library, keyed by its name (`echarts`, `echartsGl`, `uplot`, `uplotStyle`, `plotly`,
+`vega`, `writeExcelFile`, `jodit`, `codemirror`, `prosemirror`, `typst`):
+
+- `packages`: the npm packages of the library with their exact installed versions;
+- `local`: the import specifier of the local copy: a file of the package
+  (`echarts/dist/echarts.esm.min.mjs`) or a Gramlot engine module that bundles the
+  packages (`./components/code-mirror-engine.js`, relative to `js/src`);
+- `url`: the same file on jsDelivr at the exact version, or `null`;
+- `integrity`: the SRI hash (sha384) of that file, or `null`;
+- `format`: `module` (the import gives the library), `style` (CSS text) or `script` (a
+  UMD build evaluated as a browser script, which writes the library to the window
+  property `global`).
+
+A library has a `url` only when its package ships a single ESM file that a browser can
+import alone: ECharts (`dist/echarts.esm.min.mjs`) and uPlot (`dist/uPlot.esm.js` and
+its CSS). The others have no such build and use the local copy in every page: ECharts
+GL, Plotly and `write-excel-file` ship UMD builds only; the ESM build of Vega imports
+other packages; Jodit, CodeMirror and ProseMirror are split across packages; Typst
+carries WebAssembly. The build writes the same data to `libraries.json` beside the
+runtime (`src/gramlot/resources/libraries.json`) for the Python server.
+
+### The loader
+
+A component loads its library with `loadLibrary(name, document, localImport)`, where
+`localImport` is the dynamic import of the local copy written in the component:
+
+```js
+const echarts = await loadLibrary('echarts', this.ownerDocument,
+    () => import('echarts/dist/echarts.esm.min.mjs'));
+```
+
+The literal import makes the collection generator emit the local copy as a deferred
+module of the collection. `loadLibrary` imports the `url` when the document carries
+`data-gramlot-library-source="cdn"` on its root element and the entry has a `url`;
+otherwise it calls `localImport`. A `style` entry from the CDN is fetched with its
+integrity. A `script` entry resolves with the window property `global`. ECharts GL
+reads the ECharts of the page from the window property `echarts`; the ECharts adapter
+sets it before loading ECharts GL.
+
+### The source of a page
+
+- `GramlotServer(library_source="cdn")` in Python and
+  `new GramlotServer({librarySource: 'cdn'})` in JavaScript; the values are `cdn`
+  (default) and `local`.
+- The bootstrap HTML carries `data-gramlot-library-source` on `<html>`. With `cdn` the
+  import map carries an `integrity` entry for each CDN module, so the browser refuses
+  a CDN file whose bytes differ from the manifest.
+- A document without the marker uses the local copies. The serverless and file
+  exports write no marker: they need no network, and their collection bundles embed
+  the local copies.
+- `content_security_policy(policy, nonce)` (JavaScript `contentSecurityPolicy`) of the
+  server returns the header of one page: `{nonce}` replaced and the CDN origin
+  (`https://cdn.jsdelivr.net`) added to `script-src` and `connect-src`, or to
+  `default-src` when one of them is missing. With `local` it only replaces the nonce.
+
+### The generator
+
+- A collection whose start-up graph (its entry module and the modules it imports
+  statically) contains a file of a third-party package is a build error that names
+  the packages.
+- The local copy of a `script` entry is wrapped so that CommonJS and AMD are not in
+  scope (`(function (exports, module, define, require) {…}).call(globalThis)`): the UMD
+  build takes its window-global branch, as the same file imported from the CDN does.
+
+### A collection by another author
+
+The collection imports `loadLibrary` from `@gramlot/gramlot` and calls it with the
+name of an entry of the core manifest. The manifest has no entries of other
+collections yet: a library outside it is loaded with a plain dynamic import, which the
+generator emits as a deferred module. Adding entries for other collections needs a
+`libraries` field in the collection descriptor, so that the server writes their
+integrity in the import map; it is not part of this section.
+
+### Measures
+
+A page with every standard collection, bytes before compression and gzip level 6
+(runtime `gramlot.min.js` plus every collection module loaded at start):
+
+| | before | after |
+|---|---:|---:|
+| start, minified | 2,608,207 | 1,450,826 |
+| start, gzip | 796,531 | 406,137 |
+
+Verification: `js/tests/third-party-libraries.test.js`, `tests/test_third_party_libraries.py`,
+the chart tests that load ECharts before drawing, and a headless Chromium check on
+Uvicorn (gramlot-py-server) with `cdn` and `local`: inputs, frameGrid with Excel export,
+CodeMirror, ECharts chart and gauge, ECharts GL bar3D, uPlot; ECharts and uPlot come from
+jsDelivr only with `cdn` and only on first use; a changed CDN file is blocked by its
+integrity.

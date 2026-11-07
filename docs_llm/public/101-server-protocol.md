@@ -260,6 +260,10 @@ The policy belongs to the application; a configured adapter sends it as the `Con
 each page response with `{nonce}` replaced by the bootstrap nonce. Profiles:
 [GC-090 035](090-classes-and-hosts.md#gc-090-035).
 
+Compose it with `GramlotServer.content_security_policy(policy, nonce)` (JS
+`contentSecurityPolicy`): `{nonce}` replaced, and with `library_source="cdn"` the CDN
+origin added to `script-src` and `connect-src` (else `default-src`).
+
 <a id="gc-101-145"></a>
 
 ### 145 · Themes and companion files

@@ -3099,3 +3099,34 @@ convention. `EXPORT_FORMATS` follows the existing upper-case constant
 convention. The XML root `GenRoBag` is the legacy GenroPy root element. The
 license assets `writeExcelFileLicense` and `fflateLicense` follow the charts
 collection `<engine>License` asset names.
+
+<a id="gc-225-shared-modules-20261107"></a>
+### Shared modules of prepared collections — 2026-11-07
+
+Issue gramlot-org/gramlot#82, phase 1 (GC-325 §155). The core export
+`sharedModules` and its module `js/src/shared-modules.js` follow the "Helper
+modules" row of §010: the module is named after what it holds. Keys are import
+specifiers: the package name for a library, the `./` path relative to `js/src`
+for a runtime module. The generator's internal esbuild namespace
+`shared-module` follows the existing `collection-authoring` and
+`collection-resources` namespaces. Chosen in implementation; the export is
+public API and waits for owner confirmation.
+
+<a id="gc-225-third-party-libraries-20261107"></a>
+### Third-party libraries on first use — 2026-11-07
+
+Issue gramlot-org/gramlot#82, phase 2 (GC-325 §160). The module
+`js/src/libraries.js` and its export `libraries` follow the "Helper modules" row of
+§010: the module is named after what it holds, as `shared-modules.js`. `loadLibrary`
+follows the `load<Thing>` functions of the code (`loadServerAdapter`, `loadMarkdown`).
+Entry names follow the charts collection `<engine>License` asset names without the
+suffix: `echarts`, `echartsGl`, `uplot`, `plotly`, `vega`, `writeExcelFile`; `uplotStyle`
+names the CSS of uPlot; `jodit`, `codemirror`, `prosemirror`, `typst` name the engine
+libraries. The server option `library_source`/`librarySource` and its values `cdn` and
+`local` follow the snake/camel option convention of `css_theme`/`cssTheme`. The DOM
+marker `data-gramlot-library-source` follows the `data-gramlot-<name>` markers
+(`data-gramlot-touch`). `content_security_policy`/`contentSecurityPolicy` takes the name
+of the adapter option it serves; `library_origins`/`libraryOrigins` is a read-only
+property. No proxy is added: components read the source from their document. Chosen
+in implementation; the exports and the server option are public API and wait for
+owner confirmation.

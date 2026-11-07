@@ -495,6 +495,10 @@ Block ID: **GC-230-140**.
   replaced by the bootstrap nonce of that response (`tests/http_server.py:90-91`,
   `scripts/fixture_servers.mjs:101`), so the header allows the two bootstrap scripts
   (§115).
+- `GramlotServer.content_security_policy(policy, nonce)` (JavaScript
+  `contentSecurityPolicy`) composes that header: `{nonce}` replaced and, with
+  `library_source="cdn"`, the CDN origin of the third-party libraries added to
+  `script-src` and `connect-src` (else `default-src`) (GC-325 §160).
 
 <a id="gc-230-145"></a>
 

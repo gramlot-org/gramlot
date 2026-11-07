@@ -30,6 +30,7 @@ js/LICENSE
 js/NOTICE
 src/gramlot/resources/*.js
 src/gramlot/resources/runtime-notices.json
+src/gramlot/resources/libraries.json
 js/themes/
 js/assets/
 src/gramlot/resources/themes/

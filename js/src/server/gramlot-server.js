@@ -14,6 +14,7 @@ import {gramlotDev} from './assets.js';
 import {ENDPOINT_METHOD, Page, SOURCE_METHOD, UPLOAD_METHOD, resolveDeclared} from './page.js';
 import {UploadRegistry, UploadTarget} from './upload.js';
 import {InvalidResourceName, SEGMENT, loadOrder} from './resources.js';
+import {libraries} from '../libraries.js';
 
 export class PageExpired extends Error { name = 'PageExpired'; }
 export class PageNotFound extends Error { name = 'PageNotFound'; }
@@ -105,13 +106,21 @@ const prefixed = (prefix, url) => url.startsWith('/') && !url.startsWith('//') ?
  *
  * A page expires `pageTtl` seconds after its last use: opening it and every call that names it for its
  * owner move the expiry to now plus `pageTtl` (GC-230 §010).
+ *
+ * `librarySource` says where the pages take the third-party libraries of the components: `'cdn'` (jsDelivr,
+ * at the exact version of the manifest) or `'local'` (the copies served with the collections). With `'cdn'`
+ * the import map of the bootstrap carries the integrity of each CDN module and contentSecurityPolicy adds the
+ * CDN origin to the policy (GC-325 §160).
  */
 export class GramlotServer {
     get markdownUrl() { return this.runtimeUrl.replace(/[^/]+$/, 'gramlot-markdown.js'); }
 
     constructor({runtimeUrl = '/assets/gramlot.js', rpcUrl = '/gramlot/rpc', closeUrl = '/gramlot/close',
                  rootId = 'gramlot-root', pageTtl = 1800, maxPages = 1000, collections = [], uploadsEnabled = false,
-                 cssTheme = 'gramlot-base'} = {}) {
+                 cssTheme = 'gramlot-base', librarySource = 'cdn'} = {}) {
+        if (!['cdn', 'local'].includes(librarySource)) {
+            throw new TypeError(`The library source must be 'cdn' or 'local', not ${JSON.stringify(librarySource)}`);
+        }
         if (cssTheme !== false && !isThemeName(cssTheme)) {
             throw new TypeError(`The base theme must be a theme name or false, not ${JSON.stringify(cssTheme)}`);
         }
@@ -120,12 +129,37 @@ export class GramlotServer {
             !Number.isSafeInteger(maxPages) || maxPages < 1) {
             throw new TypeError('Page TTL must be finite and positive; capacity must be a positive safe integer');
         }
-        Object.assign(this, {runtimeUrl, rpcUrl, closeUrl, rootId, pageTtl, maxPages, cssTheme});
+        Object.assign(this, {runtimeUrl, rpcUrl, closeUrl, rootId, pageTtl, maxPages, cssTheme, librarySource});
+        this.libraries = libraries;
         this.pages = new Map();
         this.uploads = uploadsEnabled ? new UploadRegistry() : null;
         this.collections = this.collectionGraph([...standardCollections, ...collections]);
         this.preparedGrammars = new WeakMap();
         this.environmentPages = new WeakMap();
+    }
+
+    /** The origins the pages load third-party libraries from: the CDN origin with `'cdn'`, else none. */
+    get libraryOrigins() {
+        if (this.librarySource === 'local') return [];
+        return [...new Set(Object.values(this.libraries).filter(entry => entry.url !== null)
+            .map(entry => entry.url.split('/').slice(0, 3).join('/')))];
+    }
+
+    /** The `Content-Security-Policy` header of one page: `policy` with `{nonce}` replaced by the nonce of its
+     * bootstrap and the library origins added to the directive that governs scripts (`script-src`, else
+     * `default-src`) and to the one that governs connections (`connect-src`, else `default-src`); a policy
+     * without such a directive leaves that kind unrestricted (GC-101 §140). */
+    contentSecurityPolicy(policy, nonce) {
+        const directives = policy.replaceAll('{nonce}', nonce).split(';').filter(part => part.trim())
+            .map(part => part.trim().split(/\s+/));
+        const names = directives.map(directive => directive[0]);
+        for (const kind of ['script-src', 'connect-src']) {
+            const name = names.includes(kind) ? kind : names.includes('default-src') ? 'default-src' : null;
+            if (name === null) continue;
+            const directive = directives[names.indexOf(name)];
+            directive.push(...this.libraryOrigins.filter(origin => !directive.includes(origin)));
+        }
+        return directives.map(directive => directive.join(' ')).join('; ');
     }
 
     /** The Page class of path, or PageNotFound. */
@@ -325,7 +359,7 @@ export class GramlotServer {
                     ...(resources.serverAdapter ? {serverAdapter: prefixed(prefix, resources.serverAdapter)} : {})},
             });
             const document = new GramlotBuilder();
-            const root = document.root.html();
+            const root = document.root.html({'data-gramlot-library-source': this.librarySource});
             const head = root.head();
             head.meta({charset: 'utf-8'});
             head.meta({name: 'viewport', content: 'width=device-width,initial-scale=1'});
@@ -338,7 +372,9 @@ export class GramlotServer {
                 '@gramlot/gramlot': prefixed(prefix, this.runtimeUrl),
                 '@gramlot/gramlot/components':prefixed(prefix,this.runtimeUrl),
                 '@gramlot/gramlot/markdown':prefixed(prefix,this.markdownUrl),
-                ...Object.fromEntries((resources.collections ?? []).map(({name,url})=>[`@gramlot/collections/${encodeURIComponent(name)}`,prefixed(prefix,url)]))}}),
+                ...Object.fromEntries((resources.collections ?? []).map(({name,url})=>[`@gramlot/collections/${encodeURIComponent(name)}`,prefixed(prefix,url)]))},
+                ...(this.librarySource === 'cdn' ? {integrity: Object.fromEntries(Object.values(this.libraries)
+                    .filter(entry => entry.url !== null && entry.format !== 'style').map(entry => [entry.url, entry.integrity]))} : {})}),
                 {type: 'importmap', nonce});
             const body = root.body();
             body.div({id: this.rootId});

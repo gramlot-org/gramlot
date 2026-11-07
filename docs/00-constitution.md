@@ -5621,3 +5621,16 @@ experimental selection_trial are not activated. Adapters serve verified packaged
 assets; they do not maintain a second standard inventory. Hosted external engines
 remain lazy; file exports embed resources for offline use. No Invoice integration
 or publication is authorized by this change.
+
+
+### Third-party libraries on first use — owner, 2026-11-07
+
+Owner directive for gramlot-org/gramlot#82: "Every third-party library a component
+uses loads on first use, from a CDN (jsDelivr, exact version) or, when a CDN is not
+possible, from a vendored copy we ship. One manifest describes them." This supersedes
+"No additional engine metadata schema or parallel loader is introduced" in
+"Environment collections and deferred engines" (2026-10-30): the manifest
+`libraries` and the loader `loadLibrary` of the core describe and load every
+third-party library of the standard components (GC-325 §160). Servers choose `cdn`
+(default) or `local`; serverless and file exports use the local copies. The names and
+the public API wait for owner confirmation (GC-225, 2026-11-07).

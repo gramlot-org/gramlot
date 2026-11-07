@@ -1,10 +1,11 @@
 import {chartPalette} from '../chart-domains.js';
 import {chartData} from '../chart-data.js';
+import {loadLibrary} from '../../libraries.js';
 
 let loading,Vega;
 export class VegaAdapter {
     static label='Vega';
-    static async load() { Vega=await (loading ??= import('vega')); }
+    static async load(type,document) { Vega=await (loading ??= loadLibrary('vega',document,()=>import('vega'))); }
     #element; #view; #signature; #disposed=false; #pending=Promise.resolve(); #width; #height;
     constructor(element) { this.#element=element; }
     validate(context) { return this[`render_${context.type.id}`](context); }

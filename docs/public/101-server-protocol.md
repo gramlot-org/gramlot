@@ -457,6 +457,12 @@ sends it as the `Content-Security-Policy` header of each page response, with
 bootstrap scripts (§115). The profiles are described in
 [Classes and server adapters](090-classes-and-hosts.md#gc-090-035).
 
+The adapter composes the header with `GramlotServer.content_security_policy(policy,
+nonce)` (JavaScript `contentSecurityPolicy`): it replaces `{nonce}` and, when the server
+takes the third-party libraries from the CDN (`library_source="cdn"`), adds the CDN
+origin to `script-src` and `connect-src`, or to `default-src` when one of them is
+missing.
+
 <a id="gc-101-145"></a>
 
 ### 145 · Themes and companion files
