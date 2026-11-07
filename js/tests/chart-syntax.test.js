@@ -53,7 +53,7 @@ test('checkChartSyntax: missing, excess and equal dimensions carry a diagnosis',
     const check = (id, values) => () => checkChartSyntax(type(id), new Bag(values));
     assert.throws(check('bar', {captionField:null, valueFields:'a'}), error =>
         error instanceof ChartSyntaxError && error instanceof TypeError && error.diagnosis.role === 'captionField');
-    assert.deepEqual(checkChartSyntax(type('bar'), new Bag({captionField:'name', valueFields:null})), []);
+    assert.throws(check('bar', {captionField:'name', valueFields:null}), error => error.diagnosis.role === 'measures' && error.diagnosis.received === 'none');
     assert.throws(check('sankey', {captionField:'a', secondCaptionField:'a', valueFields:'v'}), error =>
         error.diagnosis.role === 'secondCaptionField' && error.diagnosis.fix === 'Choose another column for Target.');
     assert.throws(check('candlestick', {captionField:'day', valueFields:'o,h,l,c,v'}), error =>

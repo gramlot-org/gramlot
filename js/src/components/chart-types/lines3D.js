@@ -4,5 +4,5 @@ export default {id:'lines3D',label:'3D paths',controls:["category", "geoJSON", "
     syntax:[
         {name:'captionField',parameter:'captionField',count:1,required:true,dtype:null,caption:'Path',doc:'The name of each path.'},
         {name:'geometryField',parameter:'geometryField',count:1,required:true,dtype:null,caption:'Coordinates',doc:'A list of at least two longitude/latitude/altitude coordinates per row.'},
-        {name:'measures',parameter:'valueFields',count:'many',required:false,dtype:'numeric',caption:'Measures',doc:'Each measure is one set of paths; values must not be negative.'}
+        {name:'measures',parameter:'valueFields',count:'many',required:true,dtype:'numeric',caption:'Measures',doc:'Each measure is one set of paths; values must not be negative.'}
     ]};
