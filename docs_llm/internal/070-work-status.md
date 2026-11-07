@@ -1,5 +1,7 @@
 # 070 · Release and current development status
 
+**Release 0.3.33 preparation (2026-11-07):** owner: "Sì, approva tutto". Chart types and chart syntax (merged from feat/chart-types), PageStore in an iframe without a parent PageStore opens its own socket (needed by the gallery tab page), collection generator accepts Node 22 or later. Version 0.3.33 in pyproject.toml, js/package.json and README; release notes `.github/release-notes/v0.3.33.md`.
+
 **Release 0.3.32 preparation (2026-11-07):** owner: "Sì, procedi". Fixes from the gallery review: a grid without a datapath context no longer writes `.selectionLength` (legacy `genro_grid.js:1634`); the base theme hides an empty frameGrid toolbar (`.gramlot-grid-toolbar:not(:has(> *))`). Version 0.3.32 in pyproject.toml, js/package.json and README; release notes `.github/release-notes/v0.3.32.md`.
 
 **Release 0.3.31 preparation (2026-11-06):** owner chose to publish the core now and the examples later ("2"), without the chat Enter-to-send work ("Esce senza"). The RTC and Telegram PoC sessions confirmed no conflict with the version bump. Version 0.3.31 in pyproject.toml, js/package.json and README; release notes `.github/release-notes/v0.3.31.md`.
