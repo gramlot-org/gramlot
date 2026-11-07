@@ -25,7 +25,7 @@ for (const mode of ['values','attributes']) test(`chart experiment observes real
     app.src.startSource(builder.toTytx()); t.mock.timers.tick(0);
     const source = app.src.source.getNode('main.pane.grid');
     const view = source.gridCollectionView;
-    const chartView = new ChartDataView(app.src.binding.collectionStore(rows,mode),view);
+    const chartView = new ChartDataView(app.src.binding.collectionStore('model.rows',mode),view);
     const chart = new ChartRenderer(null,chartView.view,{renderer:'svg',ssr:true,width:640,height:320});
     const config = new Bag({chartType:'bar',captionField:'name',valueFields:'amount'});
     const release = chartView.view.subscribe(() => chart.update(config,seriesOptions)); chart.update(config,seriesOptions);

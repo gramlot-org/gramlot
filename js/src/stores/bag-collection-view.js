@@ -4,7 +4,11 @@ import {compileFilter} from './collection-filter.js';
 import {containsId, requireId, requireIdSet} from './id-set.js';
 import {publishCollection} from './bag-collection-store.js';
 
-/** Source-owned view: original BagNodes, independent indices and criteria. */
+/**
+ * Source-owned view over one collection store: independent indices and criteria. A row is
+ * identified by its key (node label), as the legacy Bag store identifier: the manual order,
+ * sort and filters survive a replacement of the Bag at the store path.
+ */
 export class BagCollectionView {
     #store;
     #release = null;
@@ -13,8 +17,12 @@ export class BagCollectionView {
     #sortedBy = '';
     #filters = new Map();
     #filtered = null;
-    constructor(store) { this.bindStore(store); }
-    get bag() { return this.#store.bag; }
+    constructor(store) {
+        this.#store = store;
+        this.synchronize();
+    }
+    /** The absolute Data path of the store: two views over the same path and rowMode share the collection. */
+    get path() { return this.#store.path; }
     get rowMode() { return this.#store.rowMode; }
     get sortedBy() { return this.#sortedBy; }
     get criteria() { return parseSort(this.#sortedBy); }
@@ -43,22 +51,12 @@ export class BagCollectionView {
         this.#release = this.#store.subscribe(change => this.synchronize(change));
     }
     disconnect() { this.#release?.(); this.#release = null; }
-    bindStore(store) {
-        if (this.#store === store) return;
-        const connected = this.#release !== null;
-        this.disconnect();
-        this.#store = store;
-        // Only node identities are retained, never cell values. A replacement Bag
-        // keeps this widget's criteria but starts a fresh manual index.
-        this.#indices.clear();
-        if (connected) this.connect(); else this.synchronize();
-    }
     getRows(filtered = true) {
         const nodes = this.#orderedNodes();
         return filtered && this.#filtered !== null ? this.#filtered.map(index => nodes[index]) : nodes;
     }
     #orderedNodes() {
-        return this.#store.getRows().toSorted((a,b) => (this.#indices.get(a) ?? Infinity) - (this.#indices.get(b) ?? Infinity));
+        return this.#store.getRows().toSorted((a,b) => (this.#indices.get(a.label) ?? Infinity) - (this.#indices.get(b.label) ?? Infinity));
     }
     synchronize(change = {full:true, rows:[]}) {
         if (!change.full && !this.#sortedBy && !this.#filters.size) {
@@ -71,11 +69,12 @@ export class BagCollectionView {
         const nodes = this.#sorted(this.#orderedNodes(),parseSort(sortedBy));
         this.#commit(nodes,sortedBy,this.#filters);
     }
+    /** Move the row of `node` before or after the row of `target`; rows are matched by key. */
     moveRow(node, target, after = false) {
-        if (node === target || node.parentBag !== this.bag || target.parentBag !== this.bag) return;
-        const nodes = this.getRows(false);
-        nodes.splice(nodes.indexOf(node),1);
-        nodes.splice(nodes.indexOf(target)+Number(after),0,node);
+        const nodes = this.getRows(false), from = nodes.findIndex(row => row.label === node.label);
+        if (node.label === target.label || from < 0 || !nodes.some(row => row.label === target.label)) return;
+        const [moved] = nodes.splice(from,1);
+        nodes.splice(nodes.findIndex(row => row.label === target.label)+Number(after),0,moved);
         this.#commit(nodes,'',this.#filters);
     }
     applyFilter(filter, contribution = 'search') {
@@ -138,12 +137,12 @@ export class BagCollectionView {
         const filtered = predicates.length ? nodes.flatMap((node,index) =>
             predicates.every(predicate => predicate(field => this.value(node,field))) ? [index] : []) : null;
         const full = change.full || sortedBy !== this.#sortedBy || filters !== this.#filters ||
-            nodes.length !== this.#indices.size || nodes.some((node,index) => this.#indices.get(node) !== index) ||
+            nodes.length !== this.#indices.size || nodes.some((node,index) => this.#indices.get(node.label) !== index) ||
             JSON.stringify(filtered) !== JSON.stringify(this.#filtered);
-        this.#indices = new Map(nodes.map((node,index) => [node,index]));
+        this.#indices = new Map(nodes.map((node,index) => [node.label,index]));
         this.#sortedBy = sortedBy; this.#filters = filters; this.#filtered = filtered;
         const visible = filtered === null ? null : new Set(filtered);
-        const rows = full ? [] : change.rows.filter(node => this.#indices.has(node) && (visible === null || visible.has(this.#indices.get(node))));
+        const rows = full ? [] : change.rows.filter(node => this.#indices.has(node.label) && (visible === null || visible.has(this.#indices.get(node.label))));
         if (full || rows.length || change.rows.length) publishCollection(this.#listeners,{full,rows});
     }
     #sorted(nodes, criteria) {

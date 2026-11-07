@@ -420,7 +420,7 @@ export const Grid = defineComponent({
                 (node,field) => this.#collectionView.value(node,field),
                 () => this.parameters.setFilter, () => this.#collectionView);
             if (this.isConnected) this.#checkSets.connect();
-            this.#cellEditor = new GridCellEditor(this, context, (row, field) => this.#rows.get(row)?.querySelector(`td[data-field="${field}"]`), () => ({bag:this.#store, mode:this.parameters.rowMode, window:this.parameters.windowInfo}), () => this.#rows, (row,field,step) => this.#nextEditor(row,field,step), path => this.#focusField(path));
+            this.#cellEditor = new GridCellEditor(this, context, (row, field) => this.#rows.get(row)?.querySelector(`td[data-field="${field}"]`), () => ({rows:() => this.#collectionStore().getRows(), mode:this.parameters.rowMode, window:this.parameters.windowInfo}), () => this.#rows, (row,field,step) => this.#nextEditor(row,field,step), path => this.#focusField(path));
             const node = context.sourceNode;
             if (!Object.hasOwn(node, 'gridRowLayout')) {
                 Object.defineProperty(node, 'gridRowLayout', {value:new GridRowLayout(), configurable:true});
@@ -429,16 +429,14 @@ export const Grid = defineComponent({
         }
         setStoreBag(bag) {
             if (!(bag instanceof Bag)) throw new TypeError('grid storepath must resolve to a Bag');
-            if (bag !== this.#store) this.#cellEditor?.replaceData();
             this.#store = bag;
-            this.#rowLayout.bindStore(bag);
         }
         setStructBag(bag) { this.#structBag = bag; this.#structureDirty = true; }
         projectAttributes(attrs, adapt) {
             const rest = super.projectAttributes(attrs, adapt);
             if (this.#windowInfo() && (this.parameters.columnFilters || this.#collectionView?.filterContributions.some(([name]) => name.startsWith('column:')))) throw new TypeError('grid columnFilters requires a complete resident store');
             if (this.#windowInfo() && this.parameters.setFilter !== '') throw new TypeError('grid setFilter requires a complete resident store');
-            const store = this.#context.collectionView(this.#store, this.parameters.rowMode);
+            const store = this.#context.collectionView(this.#context.attrDatapath('storepath'), this.parameters.rowMode);
             if (this.#collectionView !== store) {
                 this.#cancelRefresh();
                 this.#unsubscribeStore?.(); this.#unsubscribeStore = null;
@@ -513,7 +511,7 @@ export const Grid = defineComponent({
             this.#checkSets.configure();
             const nodes = this.#collectionView.getRows();
             this.#rowInteraction.cancel(); this.#rowInteraction.cancelDrag();
-            this.#rowLayout.retain(this.#store.getNodes());
+            this.#rowLayout.retain(store.getRows());
             if (this.#structureDirty) this.#rowLayout.resetMeasurements();
             const info = this.#windowInfo();
             this.#rowLayout.setWindow(info);
@@ -606,7 +604,7 @@ export const Grid = defineComponent({
         }
         /** The shared resident store under this grid's view. */
         #collectionStore() {
-            return this.#context.sourceNode.rootBuilder.binding.collectionStore(this.#store, this.parameters.rowMode);
+            return this.#context.sourceNode.rootBuilder.binding.collectionStore(this.#context.attrDatapath('storepath'), this.parameters.rowMode);
         }
         /** Sort, column filter and search criteria apply to stored fields: a view value derives from the order. */
         #requireStoredCriteria() {

@@ -5,7 +5,7 @@ import {BagCollectionStore} from '../src/stores/bag-collection-store.js';
 import {chartFields} from '../src/components/chart-fields.js';
 for(const mode of ['attributes','values'])test(`live field discovery: ${mode}`,()=>{
     const data=new Bag(),rows=new Bag();data.setItem('rows',rows);data.setBackref();
-    const store=new BagCollectionStore(rows,mode);
+    const store=new BagCollectionStore(data,'rows',mode);
     assert.deepEqual(chartFields(store),{fields:[],measures:[],dates:[]});
     const put=(label,record)=>rows.setItem(label,mode==='values'?new Bag(record):null,mode==='attributes'?record:{});
     put('a',{name:'A',total:3,active:true});

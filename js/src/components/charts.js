@@ -90,21 +90,27 @@ const ChartView = defineComponent({
             if (this.#sampleView) {
                 this.#renderer.dispose(); this.#renderer = null; this.#sampleView = null;
             }
-            const store = this.#context.sourceNode.rootBuilder.binding.collectionStore(this.#store,this.parameters.rowMode);
+            const store = this.#context.sourceNode.rootBuilder.binding.collectionStore(this.#context.attrDatapath('storepath'),this.parameters.rowMode);
+            // The view follows the store address: a replacement at the address keeps it, a new address replaces it.
+            if (this.#view && (this.#view.view.path !== store.path || this.#view.view.rowMode !== store.rowMode)) {
+                this.#releaseView?.(); this.#releaseView = null;
+                this.#view.dispose(); this.#view = null;
+                this.#renderer?.dispose(); this.#renderer = null;
+            }
             if (!this.#view) {
                 this.#view = new ChartDataView(store);
                 this.#timeView = new ChartTimeView(this.#view.view);
                 this.#renderer = new ChartRenderer(this.control,this.#timeView,{renderer:'svg',domains:context=>this.#timeView.domains(context),onTerritorySelect:name=>this.#context.writeParameter('selectedTerritory',name)});
                 this.#releaseView = this.#view.view.subscribe(() => {this.#timeView.invalidateDomains();this.#render();});
-            } else if (this.#view.view.bag !== this.#store) this.#view.bindStore(store);
+            }
             if (this.#grid) this.#syncGrid();
         }
         #syncGrid() {
             const gridView = this.#grid.view;
             if (!gridView) { this.#view?.detach(); return; }
-            // Grid and chart receive the same Data replacement independently.
-            // Follow only once both consumers refer to that replacement Bag.
-            if (!this.#view || gridView.bag !== this.#store) return;
+            // Grid and chart reach the same store by path; after a change of storepath,
+            // follow only once both consumers read the same address.
+            if (!this.#view || gridView.path !== this.#view.view.path) return;
             this.#view.follow(gridView);
             this.#render();
         }

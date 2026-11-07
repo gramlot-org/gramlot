@@ -6,7 +6,7 @@ import {GridRowLayout} from '../src/components/grid-row-layout.js';
 function model() {
     const bag=new Bag();
     for(let i=0;i<1000;i++) bag.setItem(`r${i}`,null,{code:i});
-    const layout=new GridRowLayout();layout.bindStore(bag);layout.setRows(bag.getNodes());
+    const layout=new GridRowLayout();layout.retain(bag.getNodes());layout.setRows(bag.getNodes());
     return {bag,layout,nodes:bag.getNodes()};
 }
 test('pixel lookup covers boundaries, bottom and empty views',()=>{
@@ -18,7 +18,7 @@ test('pixel lookup covers boundaries, bottom and empty views',()=>{
     assert.ok(range.start<=500 && range.end>509 && range.end-range.start<40);
     layout.setRows([]);assert.equal(layout.totalHeight,0);assert.deepEqual(layout.window(0,320),{start:0,end:0});
 });
-test('measured and manual heights follow identity through sort, filter and layout changes',()=>{
+test('measured and manual heights follow the row key through sort, filter, layout changes and replacement',()=>{
     const {layout,nodes}=model();
     layout.measure(nodes[0],40);layout.measure(nodes[1],100);
     layout.setHeight(nodes[2],150);
@@ -28,7 +28,12 @@ test('measured and manual heights follow identity through sort, filter and layou
     layout.measure(nodes[0],30);assert.equal(layout.totalHeight,180);
     layout.setHeight(nodes[2],null);assert.equal(layout.totalHeight,60);
     layout.setHeight(nodes[0],70);layout.retain([nodes[2]]);assert.equal(layout.height(nodes[0]),null);
-    layout.bindStore(new Bag());assert.equal(layout.height(nodes[2]),null);
+    layout.setHeight(nodes[2],90);
+    const replacement=new Bag();replacement.setItem('r2',null,{code:2});replacement.setItem('r9',null,{code:9});
+    layout.retain(replacement.getNodes());
+    assert.equal(layout.height(replacement.getNode('r2')),90,'a key still present keeps its height');
+    layout.setHeight(nodes[5],50);assert.equal(layout.height(nodes[5]),null,'a key absent from the resident rows is ignored');
+    layout.retain([]);assert.equal(layout.height(replacement.getNode('r2')),null);
 });
 
 

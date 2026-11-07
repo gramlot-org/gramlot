@@ -1707,3 +1707,22 @@ test('searchAttributes includes configured text and tag arrays without changing 
     f.app.data.setItem('model.search','later');await searchWait();assert.ok(!shownPaths(f).includes('lesson'));
     f.store.getNode('lesson').setAttr({tags:['later']});await tick();await tick();assert.ok(shownPaths(f).includes('lesson'));
 });
+
+test('expansion follows the tree path when a branch value is replaced', async t => {
+    const f = fixture(t);
+    f.store.setItem('folder', new Bag({sub: new Bag({x: 'X'})}));
+    await settle();
+    f.row('folder').querySelector('.expander').click(); await settle();
+    f.row('folder.sub').querySelector('.expander').click(); await settle();
+    assert.equal(f.row('folder.sub').getAttribute('aria-expanded'), 'true');
+    f.store.setItem('folder', new Bag({sub: new Bag({y: 'Y'}), more: new Bag({z: 'Z'})}));
+    await settle();
+    assert.equal(f.row('folder').getAttribute('aria-expanded'), 'true');
+    assert.equal(f.row('folder.sub').getAttribute('aria-expanded'), 'true', 'a new node at an expanded path stays expanded');
+    assert.equal(f.row('folder.more').getAttribute('aria-expanded'), 'false');
+    f.store.popNode('folder');
+    await settle();
+    f.store.setItem('folder', new Bag({sub: new Bag({y: 'Y'})}));
+    await settle();
+    assert.equal(f.row('folder').getAttribute('aria-expanded'), 'false', 'a removed path forgets its expansion');
+});

@@ -1,15 +1,26 @@
 import {Bag} from '@genrojs/bag';
 
-/** Shared resident data. Ordering and filtering belong to each consuming view. */
+/**
+ * Shared resident data at one Data address. The store keeps the page's Data root and the
+ * absolute `path`, never the collection Bag: rows are read from the root at each access,
+ * without running resolvers. Ordering and filtering belong to each consuming view.
+ */
 export class BagCollectionStore {
     #listeners = new Set();
-    constructor(bag, rowMode) {
-        if (!(bag instanceof Bag)) throw new TypeError('collection store requires a Bag');
+    #data;
+    #path;
+    #rowMode;
+    constructor(data, path, rowMode) {
+        if (!(data instanceof Bag)) throw new TypeError('collection store requires the Data root Bag');
+        if (typeof path !== 'string' || !path) throw new TypeError(`collection store requires a Data path: ${path}`);
         if (!['values','attributes'].includes(rowMode)) throw new TypeError('collection store rowMode must explicitly be values or attributes');
-        if (!bag.parentNode) throw new TypeError('collection store requires a Bag attached to Data');
-        this.bag = bag;
-        this.rowMode = rowMode;
+        this.#data = data;
+        this.#path = path;
+        this.#rowMode = rowMode;
     }
+    /** The absolute Data path of the collection. */
+    get path() { return this.#path; }
+    get rowMode() { return this.#rowMode; }
     subscribe(listener) {
         this.#listeners.add(listener);
         return () => this.#listeners.delete(listener);
@@ -24,7 +35,9 @@ export class BagCollectionStore {
         publishCollection(this.#listeners, {full:row === null, rows:row ? [row] : [], event, field});
     }
     getRows() {
-        const nodes = this.bag.getNodes();
+        const bag = this.#data.getItem(this.path, null, true);
+        if (!(bag instanceof Bag)) throw new TypeError(`collection store requires a Bag at ${this.path}`);
+        const nodes = bag.getNodes();
         for (const node of nodes) {
             if (node.resolver) throw new TypeError('collection store requires loaded rows');
             if (this.rowMode === 'values' && !(node.staticValue instanceof Bag)) {

@@ -61,7 +61,7 @@ for (const mode of ['values','attributes']) test(`${mode}: row invalidations coa
     f.rows.setItem('r2', mode === 'values' ? new Bag({code:'B',amount:8}) : null,
         mode === 'attributes' ? {code:'B',amount:8} : {});
     f.flush();
-    const store = f.app.src.binding.collectionStore(f.rows,mode);
+    const store = f.app.src.binding.collectionStore('model.rows',mode);
     const value = store.value.bind(store), reads = [];
     t.mock.method(store,'value',(node,field) => { reads.push(node); return value(node,field); });
     const timer = t.mock.method(f.window,'setTimeout');
@@ -86,7 +86,7 @@ for (const mode of ['values','attributes']) test(`${mode}: row invalidations coa
 test('full invalidation absorbs pending row changes and pulls the final order once', t => {
     const f = fixture(t);
     f.rows.setItem('r2',null,{code:'B',amount:8}); f.flush();
-    const store=f.app.src.binding.collectionStore(f.rows,'attributes');
+    const store=f.app.src.binding.collectionStore('model.rows','attributes');
     const value=store.value.bind(store), reads=[];
     t.mock.method(store,'value',(node,field)=>{ reads.push(node); return value(node,field); });
     const timer=t.mock.method(f.window,'setTimeout');
@@ -126,7 +126,7 @@ test('render errors are isolated per grid and a later valid change recovers', t 
 
 test('removal cancels the pending pull and releases the store subscription', t => {
     const f=fixture(t);
-    const store=f.app.src.binding.collectionStore(f.rows,'attributes');
+    const store=f.app.src.binding.collectionStore('model.rows','attributes');
     const value=t.mock.method(store,'value');
     const timer=t.mock.method(f.window,'setTimeout');
     const cancel=t.mock.method(f.window,'clearTimeout');
@@ -150,7 +150,7 @@ test('business rowidx attributes cannot reorder a grid view', t => {
 
 test('retargeting discards queued identities and detaches the old store listener', t => {
     const f=fixture(t);
-    const old=f.app.src.binding.collectionStore(f.rows,'attributes');
+    const old=f.app.src.binding.collectionStore('model.rows','attributes');
     f.rows.getNode('r1').setAttr({amount:23});
     const replacement=new Bag(); replacement.setItem('new',null,{code:'New',amount:9});
     f.app.data.setItem('replacement',replacement);
@@ -205,7 +205,7 @@ test('ancestor replacement, emptying and disposal preserve binding ownership', t
     rows.clear();
     f.flush();
     assert.deepEqual(f.cells(), ['No rows']);
-    const store = f.app.src.binding.collectionStore(rows,'attributes');
+    const store = f.app.src.binding.collectionStore('model.rows','attributes');
     f.source.parentBag.popNode(f.source.label);
     rows.setItem('later',null,{code:'Later',amount:8});
     f.app.src.source.getNode('main.pane.second').gridCollectionView.sort('amount:d');
@@ -218,8 +218,8 @@ test('views are Source-owned and share only the parent collection resource',t=>{
     const f=fixture(t,{two:true});
     const second=f.app.src.source.getNode('main.pane.second');
     assert.notEqual(f.source.gridCollectionView,second.gridCollectionView);
-    assert.equal(f.source.gridCollectionView.bag,second.gridCollectionView.bag);
-    assert.equal(f.app.src.binding.collectionView(f.source,f.rows,'attributes'),f.source.gridCollectionView);
+    assert.equal(f.source.gridCollectionView.path,second.gridCollectionView.path);
+    assert.equal(f.app.src.binding.collectionView(f.source,'model.rows','attributes'),f.source.gridCollectionView);
     assert.equal(f.rows.getNode('r1').getAttr('rowidx'),null);
 });
 
@@ -386,15 +386,16 @@ test('wrong representations and resolvers fail without reads or writes', () => {
     let loads = 0;
     class Lazy extends BagResolver { load() { loads++; return 'loaded'; } }
     const rows = new Bag(); const data = new Bag(); data.setItem('rows', rows); data.setBackref(); rows.setItem('r1', new Lazy());
-    assert.throws(() => new GridRows(new BagCollectionStore(rows, 'attributes')).read([{field: 'code'}]), /loaded rows/);
+    assert.throws(() => new GridRows(new BagCollectionStore(data,'rows','attributes')).read([{field: 'code'}]), /loaded rows/);
     rows.popNode('r1');
     rows.setItem('r1', new Bag()); rows.getItem('r1').setItem('code', new Lazy());
-    assert.throws(() => new GridRows(new BagCollectionStore(rows, 'values')).read([{field: 'code'}]), /loaded cells/);
+    assert.throws(() => new GridRows(new BagCollectionStore(data,'rows','values')).read([{field: 'code'}]), /loaded cells/);
     assert.equal(loads, 0);
-    assert.throws(() => new BagCollectionStore({}, 'values'), /Bag/);
-    assert.throws(() => new BagCollectionStore(rows, undefined), /rowMode/);
+    assert.throws(() => new BagCollectionStore({}, 'rows', 'values'), /Bag/);
+    assert.throws(() => new BagCollectionStore(data, '', 'values'), /Data path/);
+    assert.throws(() => new BagCollectionStore(data,'rows',undefined), /rowMode/);
     rows.setItem('r1', 'bad');
-    assert.throws(() => new GridRows(new BagCollectionStore(rows, 'values')).read([]), /contain a Bag/);
+    assert.throws(() => new GridRows(new BagCollectionStore(data,'rows','values')).read([]), /contain a Bag/);
 });
 
 test('struct rejects unknown attributes, duplicate fields and nested groups', () => {
@@ -598,7 +599,7 @@ for (const mode of ['values','attributes']) test(`${mode}: row heights belong to
     assert.equal(f.source.gridRowLayout.height(node), null);
 });
 
-test('row heights survive updates and DOM moves; removal/replacement clears their state', t => {
+test('row heights survive updates, DOM moves and a replacement keeping the key; removal clears their state', t => {
     const f = fixture(t, {rowResize:true});
     const g = rowGesture(f), node = f.rows.getNode('r1'), layout = f.source.gridRowLayout;
     g.pointer('pointerdown', 32, g.handle); g.pointer('pointerup', 80);
@@ -628,6 +629,10 @@ test('row heights survive updates and DOM moves; removal/replacement clears thei
     const newNode = f.rows.getNode('r1'); layout.setHeight(newNode, 90);
     const replacement = new Bag(); replacement.setItem('r1', null, {code:'Replacement',amount:2});
     f.app.data.setItem('model.rows', replacement);
+    f.flush();
+    assert.equal(layout.height(replacement.getNode('r1')), 90, 'the row key keeps its height across a replacement');
+    const other = new Bag(); other.setItem('r2', null, {code:'Other',amount:3});
+    f.app.data.setItem('model.rows', other);
     f.flush();
     assert.equal(layout.height(newNode), null);
     assert.equal(f.host.shadowRoot.querySelector('tbody tr').style.height, '');

@@ -13,15 +13,10 @@ export class ChartDataView {
         this.#view.connect();
     }
 
-    bindStore(store) {
-        this.detach();
-        this.#view.bindStore(store);
-    }
-
     get view() { return this.#view; }
 
     follow(gridView) {
-        if (gridView.bag !== this.#view.bag || gridView.rowMode !== this.#view.rowMode) {
+        if (gridView.path !== this.#view.path || gridView.rowMode !== this.#view.rowMode) {
             throw new TypeError('Chart and grid must use the same collection');
         }
         this.#releaseGrid?.();

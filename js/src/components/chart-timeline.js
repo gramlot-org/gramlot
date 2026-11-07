@@ -31,7 +31,7 @@ export const ChartTimeline=defineComponent({
         projectAttributes(attrs,adapt){const result=super.projectAttributes(attrs,adapt);if(this.#active)this.#connect();return result;}
         connectedCallback(){this.#active=true;this.#connect();}
         #connect(){
-            const store=this.#context.sourceNode.rootBuilder.binding.collectionStore(this.#bag,this.parameters.rowMode);
+            const store=this.#context.sourceNode.rootBuilder.binding.collectionStore(this.#context.attrDatapath('storepath'),this.parameters.rowMode);
             if(store!==this.#store){this.#release?.();this.#store=store;this.#profile=null;this.#release=store.subscribe(()=>{this.#profile=null;this.#sync();});}
             this.#sync();
         }

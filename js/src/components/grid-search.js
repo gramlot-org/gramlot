@@ -2,17 +2,15 @@
 export class GridSearch {
     #listeners = new Set();
     view = null;
-    #bag;
     columns = [];
     update(view, columns) {
-        if (this.view === view && this.#bag === view.bag && this.columns === columns) return;
-        this.view = view; this.#bag = view.bag; this.columns = columns;
+        if (this.view === view && this.columns === columns) return;
+        this.view = view; this.columns = columns;
         for (const listener of this.#listeners) listener();
     }
     detach(view) {
         if (this.view !== view) return;
         this.view = null;
-        this.#bag = null;
         this.columns = [];
         for (const listener of this.#listeners) listener();
     }

@@ -13,7 +13,7 @@ for (const mode of ['values','attributes']) test(`ECharts uses filtered collecti
     for (const [i,r] of [{name:'Alpha',amount:15},{name:'Beta',amount:24}].entries()) {
         rows.setItem(`r${i}`, mode === 'values' ? new Bag(r) : null, mode === 'attributes' ? r : {});
     }
-    const store = new BagCollectionStore(rows,mode), grid = new BagCollectionView(store); grid.connect();
+    const store = new BagCollectionStore(data,'rows',mode), grid = new BagCollectionView(store); grid.connect();
     const chartView = new ChartDataView(store,grid);
     const chart = new ChartRenderer(null,chartView.view,{renderer:'svg',ssr:true,width:640,height:320});
     const structure = new Bag({chartType:'bar',captionField:'name',valueFields:'amount'});
@@ -33,7 +33,7 @@ for (const mode of ['values','attributes']) test(`date axis and white background
     for(const [i,r] of [{date:new Date('2026-01-15T00:00:00Z'),amount:15},{date:new Date('2026-12-15T00:00:00Z'),amount:24}].entries()) {
         rows.setItem(`r${i}`,mode==='values'?new Bag(r):null,mode==='attributes'?r:{});
     }
-    const store=new BagCollectionStore(rows,mode), view=new BagCollectionView(store);view.connect();
+    const store=new BagCollectionStore(data,'rows',mode), view=new BagCollectionView(store);view.connect();
     const chart=new ChartRenderer(null,view,{renderer:'svg',ssr:true,width:640,height:320});
     const config=new Bag({chartType:'line',captionField:'date',valueFields:'amount'});
     try {
@@ -46,7 +46,7 @@ for (const mode of ['values','attributes']) test(`date axis and white background
 
 for (const type of ['bar','line']) test(`multiple ${type} series, removal and empty selection is an error`, () => {
     const data=new Bag(), rows=new Bag(); data.setItem('rows',rows); data.setBackref(); rows.setItem('r0',null,{name:'January',revenue:120,margin:30});
-    const store=new BagCollectionStore(rows,'attributes'), view=new BagCollectionView(store); view.connect();
+    const store=new BagCollectionStore(data,'rows','attributes'), view=new BagCollectionView(store); view.connect();
     const renderer=new ChartRenderer(null,view,{renderer:'svg',ssr:true,width:640,height:320});
     const config=new Bag({chartType:type,captionField:'name',valueFields:'revenue,margin'});
     try {
@@ -67,7 +67,7 @@ for (const type of ['bar','line']) test(`multiple ${type} series, removal and em
 test('per-measure colors and axes update without changing the data', () => {
     const data=new Bag(),rows=new Bag(); data.setItem('rows',rows);data.setBackref();
     rows.setItem('r0',null,{name:'January',revenue:3000,units:20});
-    const view=new BagCollectionView(new BagCollectionStore(rows,'attributes'));view.connect();
+    const view=new BagCollectionView(new BagCollectionStore(data,'rows','attributes'));view.connect();
     const renderer=new ChartRenderer(null,view,{renderer:'svg',ssr:true,width:640,height:320});
     const config=new Bag({chartType:'bar',captionField:'name',valueFields:'revenue,units'});
     const options=new Bag({revenue:new Bag({axis:'left',color:'#5470c6'}),units:new Bag({axis:'right',color:'#ee6666'})});
@@ -88,7 +88,7 @@ test('per-measure colors and axes update without changing the data', () => {
 
 for (const type of ['area','stackedArea','stackedBar','horizontalBar','pie','donut','scatter']) test(`additional chart type ${type}`, () => {
     const data=new Bag(),rows=new Bag(); data.setItem("rows",rows);data.setBackref(); rows.setItem('a',null,{x:1,amount:12});rows.setItem('b',null,{x:2,amount:20});
-    const view=new BagCollectionView(new BagCollectionStore(rows,'attributes'));view.connect();
+    const view=new BagCollectionView(new BagCollectionStore(data,'rows','attributes'));view.connect();
     const renderer=new ChartRenderer(null,view,{renderer:'svg',ssr:true,width:640,height:320});
     try {
         renderer.update(new Bag({chartType:type,captionField:'x',valueFields:'amount'}),seriesOptions);
@@ -99,7 +99,7 @@ for (const type of ['area','stackedArea','stackedBar','horizontalBar','pie','don
 for(const type of ['pie','donut']) test(`${type} rejects a second measure without changing selection`,()=>{
     const data=new Bag(),rows=new Bag();data.setItem('rows',rows);data.setBackref();
     rows.setItem('a',null,{name:'A',revenue:100,margin:5});rows.setItem('b',null,{name:'B',revenue:20,margin:80});
-    const view=new BagCollectionView(new BagCollectionStore(rows,'attributes'));view.connect();
+    const view=new BagCollectionView(new BagCollectionStore(data,'rows','attributes'));view.connect();
     const chart=new ChartRenderer(null,view,{renderer:'svg',ssr:true,width:640,height:320});
     const config=new Bag({chartType:type,captionField:'name',valueFields:'revenue,margin'});
     try {

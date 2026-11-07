@@ -45,7 +45,7 @@ export const ChartFields = defineComponent({
         connectedCallback() { this.#active=true;this.#connectStore(); }
         #connectStore() {
             const binding=this.#context.sourceNode.rootBuilder.binding;
-            const store=binding.collectionStore(this.#bag,this.parameters.rowMode);
+            const store=binding.collectionStore(this.#context.attrDatapath('storepath'),this.parameters.rowMode);
             if(store===this.#store)return;
             this.#release?.();this.#store=store;this.#signature=undefined;
             this.#release=store.subscribe(()=>this.#sync(store));

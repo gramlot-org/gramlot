@@ -7,9 +7,10 @@ const PUBLISHED = ['selectedId', 'selectedIndex', 'selectedLabel', 'selectedPkey
 
 /**
  * Row selection of one grid (legacy genro_grid.js selection publication). The identity of a row is
- * its node label in both row modes, as the legacy Bag store identifier `nodelabel`. Selected rows are
- * the visible rows of the view: a row leaving the view (filter, deletion) leaves the selection;
- * sorting keeps it.
+ * its key (node label) in both row modes, as the legacy Bag store identifier `nodelabel`: the
+ * selection keeps only keys, never row nodes. Selected rows are the visible rows of the view: a row
+ * leaving the view (filter, deletion) leaves the selection; sorting and a replacement of the Bag at
+ * the store path keep the keys still visible.
  */
 export class GridSelection {
     #context;
@@ -26,23 +27,24 @@ export class GridSelection {
 
     get source() { return this.#context.sourceNode; }
     get mode() { return this.#host.mode(); }
+    /** The key of the current row, or null. */
     get current() { return this.#current; }
-    isSelected(node) { return this.#selected.has(node); }
+    isSelected(node) { return this.#selected.has(node.label); }
     /** Selected rows in view order. */
-    get nodes() { return this.#host.view().getRows().filter(node => this.#selected.has(node)); }
+    get nodes() { return this.#host.view().getRows().filter(node => this.#selected.has(node.label)); }
 
     /** Click or keyboard selection of `node`: `toggle` (Ctrl/Cmd) and `range` (Shift) apply in multi mode. */
     select(node, {toggle = false, range = false} = {}) {
         if (this.mode === 'none') return;
-        const rows = this.#host.view().getRows();
-        if (this.mode === 'multi' && range && this.#anchor !== null && rows.includes(this.#anchor)) {
-            const [from, to] = [rows.indexOf(this.#anchor), rows.indexOf(node)].sort((a, b) => a - b);
-            this.#apply(new Set(rows.slice(from, to + 1)), node, this.#anchor);
+        const rows = this.#host.view().getRows(), labels = rows.map(row => row.label), label = node.label;
+        if (this.mode === 'multi' && range && this.#anchor !== null && labels.includes(this.#anchor)) {
+            const [from, to] = [labels.indexOf(this.#anchor), labels.indexOf(label)].sort((a, b) => a - b);
+            this.#apply(new Set(labels.slice(from, to + 1)), label, this.#anchor);
         } else if (this.mode === 'multi' && toggle) {
             const selected = new Set(this.#selected);
-            if (selected.has(node)) selected.delete(node); else selected.add(node);
-            this.#apply(selected, selected.has(node) ? node : this.nodes.find(row => selected.has(row)) ?? null, node);
-        } else this.#apply(new Set([node]), node, node);
+            if (selected.has(label)) selected.delete(label); else selected.add(label);
+            this.#apply(selected, selected.has(label) ? label : labels.find(key => selected.has(key)) ?? null, label);
+        } else this.#apply(new Set([label]), label, label);
     }
 
     /** Up/Down: move the current row by `step`; `extend` (Shift, multi mode) extends from the anchor. */
@@ -50,7 +52,7 @@ export class GridSelection {
         if (this.mode === 'none') return null;
         const rows = this.#host.view().getRows();
         if (!rows.length) return null;
-        const index = this.#current === null ? (step > 0 ? -1 : rows.length) : rows.indexOf(this.#current);
+        const index = this.#current === null ? (step > 0 ? -1 : rows.length) : rows.findIndex(row => row.label === this.#current);
         const next = rows[Math.max(0, Math.min(rows.length - 1, index + step))];
         this.select(next, {range:extend});
         return next;
@@ -59,16 +61,16 @@ export class GridSelection {
     /** Ctrl/Cmd+A in multi mode: every visible row. */
     selectAll() {
         if (this.mode !== 'multi') return;
-        const rows = this.#host.view().getRows();
-        this.#apply(new Set(rows), this.#current ?? rows[0] ?? null, this.#anchor ?? rows[0] ?? null);
+        const labels = this.#host.view().getRows().map(row => row.label);
+        this.#apply(new Set(labels), this.#current ?? labels[0] ?? null, this.#anchor ?? labels[0] ?? null);
     }
 
     /** Keep only visible rows (after a filter, deletion or store replacement); publishes when it changes. */
     prune() {
         // selectionMode 'none' keeps no selection.
-        const visible = new Set(this.mode === 'none' ? [] : this.#host.view().getRows());
-        if ([...this.#selected].every(node => visible.has(node)) && (this.#current === null || visible.has(this.#current))) return;
-        const selected = new Set([...this.#selected].filter(node => visible.has(node)));
+        const visible = new Set(this.mode === 'none' ? [] : this.#host.view().getRows().map(row => row.label));
+        if ([...this.#selected].every(label => visible.has(label)) && (this.#current === null || visible.has(this.#current))) return;
+        const selected = new Set([...this.#selected].filter(label => visible.has(label)));
         this.#apply(selected, visible.has(this.#current) ? this.#current : null, visible.has(this.#anchor) ? this.#anchor : null);
     }
 
@@ -92,14 +94,16 @@ export class GridSelection {
 
     /** Publish the selection to the declared Data paths, `.selectionLength` (with a datapath context) and `onSelectedRow`. */
     publish() {
-        const store = this.#host.store(), view = this.#host.view(), nodes = this.nodes, current = this.#current;
-        const idx = current === null ? -1 : view.getRows().indexOf(current);
-        const selectedId = current === null ? null : current.label;
+        const store = this.#host.store(), rows = this.#host.view().getRows();
+        const nodes = rows.filter(node => this.#selected.has(node.label));
+        const idx = this.#current === null ? -1 : rows.findIndex(node => node.label === this.#current);
+        const current = idx < 0 ? null : rows[idx];
+        const selectedId = this.#current;
         const selectedPkeys = nodes.map(node => node.label);
-        const resident = store.getRows();
+        const resident = store.getRows().map(node => node.label);
         const values = {
             selectedId, selectedIndex:idx < 0 ? null : idx, selectedLabel:selectedId, selectedPkeys,
-            selectedRowidx:nodes.map(node => resident.indexOf(node)).join(','),
+            selectedRowidx:nodes.map(node => resident.indexOf(node.label)).join(','),
             selectedNodes:() => {
                 const bag = new Bag();
                 for (const node of nodes) bag.setItem(node.label, null, this.#host.rowData(node));

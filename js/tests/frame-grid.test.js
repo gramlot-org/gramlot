@@ -186,13 +186,15 @@ test('explicit legacy menu captions select only the declared fields',t=>{
     f.type('^Al');f.flush();assert.deepEqual(f.labels(),['r0','r2']);
 });
 
-test('store replacement retargets search and pending work cannot filter the old Bag',t=>{
+test('a store replacement keeps the search; pending work filters the Bag now at the store path',t=>{
     const f=searchFixture(t);f.type('Alpha');
-    const next=new Bag();next.setItem('new',null,{name:'New',qty:7});
+    const next=new Bag();next.setItem('new',null,{name:'New',qty:7});next.setItem('alpha',null,{name:'Alpha two',qty:2});
     f.app.data.setItem('demo.rows',next);t.mock.timers.tick(0);f.flush();
-    assert.deepEqual(f.labels(),['new']);assert.equal(f.input.value,'');
+    assert.deepEqual(f.labels(),['alpha']);assert.equal(f.input.value,'Alpha');
+    assert.equal(f.app.src.binding.renderer.getBaseSourceNode(f.gridElement).gridCollectionView,f.view,'the view follows the address');
     f.type('New');f.flush();assert.deepEqual(f.view.filter.columns,['name','qty']);
-    assert.equal(f.rows.getNodes().length,3);
+    assert.deepEqual(f.labels(),['new']);
+    assert.equal(f.rows.getNodes().length,3,'the previous Bag is not changed');
 });
 
 test('active filters recompute membership and omit hidden rows from partial refreshes',t=>{

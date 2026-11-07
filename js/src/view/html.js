@@ -130,7 +130,7 @@ export class HtmlElement {
                 frameRecipient: () => frameRecipient(commandFrame(node)),
                 locale: node.rootBuilder.binding.gramlot.locale,
                 timeZone: node.rootBuilder.binding.gramlot.timeZone,
-                collectionView: (bag, rowMode) => node.rootBuilder.binding.collectionView(node, bag, rowMode),
+                collectionView: (path, rowMode) => node.rootBuilder.binding.collectionView(node, path, rowMode),
                 format: this.format,
                 upload: () => this.uploadContext(),
                 reportError: (error, title) => this.reportError(node, error, title),

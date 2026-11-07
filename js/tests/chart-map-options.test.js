@@ -11,7 +11,7 @@ for(const mode of ['attributes','values'])test(`2D choropleth scale, labels, uni
  const put=(id,r)=>rows.setItem(id,mode==='values'?new Bag(r):null,mode==='attributes'?r:{});
  put('a',{territory:'Alpha',label:'A',amount:0,change:-10});
  put('b',{territory:'Beta',label:'B',amount:20,change:5});
- const view=new BagCollectionView(new BagCollectionStore(rows,mode));view.connect();
+ const view=new BagCollectionView(new BagCollectionStore(data,'rows',mode));view.connect();
  const make=field=>chartMapOptions(view,'territory',field,'label','test-map',geo,'Selected measure');
  try{
   const options=make('amount');assert.equal(options.series[0].type,'map');assert.equal(options.visualMap.min,0);assert.equal(options.visualMap.max,20);

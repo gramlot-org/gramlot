@@ -1,4 +1,4 @@
-import {sourceTarget, toTytx} from '@gramlot/gramlot';
+import {Bag, sourceTarget, toTytx} from '@gramlot/gramlot';
 
 /** Grid navigation and temporary Source controls; all editing registers belong to the shared session. */
 export class GridCellEditor {
@@ -124,9 +124,9 @@ export class GridCellEditor {
     *validationFields() {
         const owner = this.context.sourceNode;
         this.session.trackValidationDependency(owner.absDatapath(owner.getAttr('structpath')));
-        const bag = this.store().bag;
-        for (const row of bag.getNodes()) for (const column of this.columns) {
-            if (row.parentBag !== bag) continue;
+        for (const row of this.store().rows()) for (const column of this.columns) {
+            // A row deleted or replaced while the validation pass runs has no field to declare.
+            if (row.parentBag !== this.collection()) continue;
             const path = this.path(row,column.field);
             this.checking.add(path);
             try {
@@ -140,7 +140,7 @@ export class GridCellEditor {
     }
     open(row, column, cell) {
         if (this.store().window !== null) throw new Error('Editing requires a fully resident Bag; remote windows are read-only.');
-        if (this.active?.row === row && this.active.column.field === column.field) { this.active.element.control.focus(); return; }
+        if (this.active?.row.label === row.label && this.active.column.field === column.field) { this.active.element.control.focus(); return; }
         this.close();
         const path = this.path(row,column.field), declaration = this.declare(row,column,true);
         const element = this.grid.ownerDocument.getElementById(declaration.id);
@@ -151,7 +151,7 @@ export class GridCellEditor {
     }
     declare(row,column,mount) {
         const owner = this.context.sourceNode, path = this.path(row,column.field);
-        if (!this.retained.has(path)) { this.session.retainField(path); this.retained.set(path,row); }
+        if (!this.retained.has(path)) { this.session.retainField(path); this.retained.set(path,row.label); }
         let declaration = this.declarations.get(path);
         if (!declaration) {
             const {tag,options} = this.definition(column);
@@ -222,24 +222,30 @@ export class GridCellEditor {
             else { cell.removeAttribute('aria-invalid'); cell.removeAttribute('title'); }
         }
     }
+    /** The value at the store path, read by address at each call and never kept. */
+    collection() {
+        const owner = this.context.sourceNode;
+        return this.context.getStaticData(owner.absDatapath(owner.getAttr('storepath')));
+    }
+    /**
+     * Retained fields follow the row key: a field whose row key left the store is released, and the
+     * fields of the keys still present survive a replacement of the Bag at the store path.
+     */
     refresh() {
-        const bag = this.store().bag;
-        for (const [path,row] of this.retained) if (row.parentBag !== bag) {
+        const bag = this.collection();
+        const rows = new Map(bag instanceof Bag ? bag.getNodes().map(row => [row.label,row]) : []);
+        for (const [path,label] of this.retained) if (!rows.has(label)) {
             this.releaseField(path);
-            if (this.active?.row === row) this.close();
+            if (this.active?.row.label === label) this.close();
         }
+        if (this.active) this.active.row = rows.get(this.active.row.label);
         for (const path of this.retained.keys()) if (path !== this.active?.path) this.releaseCleanField(path);
         for (const [row,tr] of this.renderedRows()) this.decorate(tr,row);
     }
-    replaceData() {
-        this.close();
-        if (this.session) {
-            for (const path of this.retained.keys()) this.releaseField(path);
-            this.retained.clear();
-        }
-    }
     dispose() {
         this.releaseValidation?.(); this.releaseValidation = null;
-        this.disconnect(); this.replaceData(); this.releaseStatus?.(); this.layer.remove();
+        this.disconnect();
+        if (this.session) for (const path of [...this.retained.keys()]) this.releaseField(path);
+        this.releaseStatus?.(); this.layer.remove();
     }
 }

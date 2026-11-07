@@ -55,16 +55,16 @@ export class GridRowInteraction {
         if (!this.#dragEnabled() || !node || this.#gesture || event.target.closest('.row-height-handle')) {
             event.preventDefault(); return;
         }
-        this.#drag = {node, bag:this.#store().bag};
+        this.#drag = {label:node.label};
         event.dataTransfer.effectAllowed = 'move';
         event.dataTransfer.setData('text/plain', node.label);
         row.classList.add('row-dragging');
     };
     #dropTarget(event) {
         if (!this.#drag || !this.#dragEnabled()) return null;
-        const {node, bag} = this.#drag;
+        // Rows are matched by key: the view ignores a move whose keys left the collection.
         const row = event.target.closest('tr'), target = this.#nodeForRow(row);
-        if (!target || target === node || this.#store().bag !== bag || node.parentBag !== bag || target.parentBag !== bag) return null;
+        if (!target || target.label === this.#drag.label) return null;
         const box = row.getBoundingClientRect();
         return {row, target, after:event.clientY > box.top + box.height/2};
     }
@@ -85,9 +85,10 @@ export class GridRowInteraction {
         const target = this.#dropTarget(event);
         if (!target) return;
         event.preventDefault(); event.stopPropagation();
-        const {node} = this.#drag;
+        const {label} = this.#drag, view = this.#store();
         this.cancelDrag();
-        this.#store().moveRow(node, target.target, target.after);
+        const node = view.getRows(false).find(row => row.label === label);
+        if (node) view.moveRow(node, target.target, target.after);
     };
     #dragEnd = () => { this.cancelDrag(); };
     cancelDrag() {

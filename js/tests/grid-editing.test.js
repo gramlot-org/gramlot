@@ -482,9 +482,12 @@ for(const action of ['restore','dispose']) {
         const f=await fixture(t,{count:20});const calls=await remoteField(f);
         const session=f.source.formState,pending=session.validate();await tick();
         assert.ok(calls.length>0);
+        const started=[...calls];
         if(action==='restore')session.restore();else f.app.dispose();
         assert.equal(await pending,false);
-        for(const call of calls){assert.equal(call.signal.aborted,true);call.resolve({value:999});}
+        // Retained cell fields follow the row key: restore validates them again on the restored values.
+        for(const call of started){assert.equal(call.signal.aborted,true);call.resolve({value:999});}
+        for(const call of calls.slice(started.length))call.resolve(true);
         await tick();
         if(action==='restore')assert.equal(f.app.data.getItem('record.rows.r0.amount'),1);
     });

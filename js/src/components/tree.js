@@ -88,7 +88,8 @@ export const Tree = defineComponent({
         #checksEnabled = false;
         #pathsEnabled = false;
         #checkedBags = new WeakMap();
-        #checkedNodes = new WeakSet();
+        // Expansion and checks are kept by tree path (row keys from the store root), never by BagNode.
+        #checkedNodes = new Set();
         #loading = new Set();
         #errors = new Map();
         #searchInput = '';
@@ -97,7 +98,7 @@ export const Tree = defineComponent({
         #searchTimer = null;
         #searchVersion = 0;
         #searchOpen = new Set();
-        #searchClosed = new WeakSet();
+        #searchClosed = new Set();
         #searchAttempted = new WeakSet();
         #searching = false;
         #resolutions = new Map();
@@ -180,7 +181,7 @@ export const Tree = defineComponent({
                 this.#selectionVersion++;
                 this.#checkedPaths = undefined;
                 this.#checkedBags = new WeakMap();
-                this.#checkedNodes = new WeakSet();
+                this.#checkedNodes = new Set();
             }
             this.#schedule();
         }
@@ -219,15 +220,15 @@ export const Tree = defineComponent({
         #resetSearch() {
             clearTimeout(this.#searchTimer); this.#searchTimer = null;
             this.#searchVersion++; this.#searching = false;
-            this.#searchAttempted = new WeakSet(); this.#searchOpen.clear(); this.#searchClosed = new WeakSet();
+            this.#searchAttempted = new WeakSet(); this.#searchOpen.clear(); this.#searchClosed.clear();
         }
-        #opened(node) { return this.#searchText ? this.#searchOpen.has(node) : this.#expanded.has(node); }
+        #opened(path) { return this.#searchText ? this.#searchOpen.has(path) : this.#expanded.has(path); }
         async #searchBranches() {
             const version = this.#searchVersion, store = this.#store;
             const current = () => this.isConnected && version === this.#searchVersion && store === this.#store
                 && this.parameters.searchEager && this.parameters.resolveLazy;
             this.#searching = true;
-            const visit = async (bag, ancestors = new Set()) => {
+            const visit = async (bag, prefix, ancestors = new Set()) => {
                 if (!current()) return;
                 if (ancestors.has(bag)) throw new TypeError('tree requires an acyclic Bag store');
                 const next = new Set(ancestors).add(bag);
@@ -236,15 +237,16 @@ export const Tree = defineComponent({
                     if (!current()) return;
                     if (node.attr.loop === true) continue;
                     if (node.resolver !== null && !this.parameters.resolveLazy) continue;
+                    const path = prefix ? `${prefix}.${node.label}` : node.label;
                     if (node.resolver !== null && node.resolver.expired && !this.#searchAttempted.has(node)) {
                         this.#searchAttempted.add(node);
-                        await this.#resolve(node, true);
+                        await this.#resolve(node, path, true);
                     }
                     if (!current()) return;
-                    if (node.staticValue instanceof Bag) await visit(node.staticValue, next);
+                    if (node.staticValue instanceof Bag) await visit(node.staticValue, path, next);
                 }
             };
-            try { await visit(store); }
+            try { await visit(store, ''); }
             finally { if (current()) { this.#searching = false; this.#schedule(); } }
         }
         #highlight(caption) {
@@ -279,7 +281,9 @@ export const Tree = defineComponent({
             let checksChanged = false;
             if (this.#checksEnabled && this.parameters.checkChildren &&
                 !(this.#pathsEnabled && this.parameters.checkedPaths !== this.#checkedPaths)) {
-                checksChanged = this.#syncChecked(this.#store, new Set(), loaded);
+                const visited = new Set();
+                checksChanged = this.#syncChecked(this.#store, '', new Set(), loaded, visited);
+                for (const path of this.#checkedNodes) if (!visited.has(path)) this.#checkedNodes.delete(path);
             }
             const items = new Map(), seen = new Set();
             const visit = (bag, prefix, ancestors) => {
@@ -316,7 +320,7 @@ export const Tree = defineComponent({
                 }
                 for (const path of (this.#checkedPaths || '').split(this.parameters.checkedPaths_joiner).filter(Boolean)) {
                     const item = items.get(path);
-                    if (item) this.#check(item.node, true, false);
+                    if (item) this.#check(item.node, path, true, false);
                 }
             } else if (this.#pathsEnabled && loaded.length) {
                 const paths = (this.parameters.checkedPaths || '').split(this.parameters.checkedPaths_joiner).filter(Boolean);
@@ -326,14 +330,14 @@ export const Tree = defineComponent({
                         item.node.attr.checked === 'disabled:off') continue;
                     let bag = item.node.parentBag;
                     while (bag && !loaded.includes(bag)) bag = bag.parentNode?.parentBag;
-                    if (bag) this.#check(item.node, true, false);
+                    if (bag) this.#check(item.node, path, true, false);
                 }
                 if (checksChanged || paths.length) this.#publishChecked(true);
             } else if (checksChanged) {
                 this.#publishChecked(true);
             }
             const identities = new Set([...items.values()].map(item => item.node));
-            for (const node of this.#expanded) if (!identities.has(node)) this.#expanded.delete(node);
+            for (const path of this.#expanded) if (!items.has(path)) this.#expanded.delete(path);
             for (const node of this.#errors.keys()) if (!identities.has(node)) this.#errors.delete(node);
             const requested = this.parameters.selectedPath;
             let reveal = null;
@@ -346,9 +350,9 @@ export const Tree = defineComponent({
                     reveal = {requested, version, store: this.#store};
                 }
                 for (let index = 0; index < ancestors.length; index++) {
-                    const node = ancestors[index];
-                    if (this.#expanded.has(node)) continue;
-                    this.#expand(node);
+                    const path = requested.split('.').slice(0, index + 1).join('.');
+                    if (this.#expanded.has(path)) continue;
+                    this.#expand(path);
                 }
             }
             const selected = this.#selectedPath;
@@ -424,7 +428,7 @@ export const Tree = defineComponent({
                                 if (result instanceof Promise) throw new TypeError('tree onChecked must be synchronous');
                                 if (result === false) { this.#schedule(); return; }
                             }
-                            this.#check(node, check.checked, true);
+                            this.#check(node, path, check.checked, true);
                         });
                     }
                     row.append(expander, check || icon, badge, caption); entry.append(row);
@@ -458,7 +462,7 @@ export const Tree = defineComponent({
                         });
                     }
                     const present = () => {
-                        const opened = this.#opened(node), selected = this.#selectedPath === path;
+                        const opened = this.#opened(path), selected = this.#selectedPath === path;
                         const value = node.attr.badge;
                         if (value != null && typeof value !== 'string' && typeof value !== 'number') {
                             throw new TypeError('tree badge must be text or a number');
@@ -506,7 +510,7 @@ export const Tree = defineComponent({
                     };
                     this.#presentations.set(path, present);
                     const sync = () => {
-                        const opened = this.#opened(node);
+                        const opened = this.#opened(path);
                         entry.setAttribute('aria-expanded', String(opened));
                         entry.classList.toggle('opened', opened);
                         entry.classList.toggle('closed', !opened);
@@ -517,12 +521,12 @@ export const Tree = defineComponent({
                     };
                     const toggle = () => {
                         const expanded = this.#searchText ? this.#searchOpen : this.#expanded;
-                        if (expanded.has(node)) {
-                            expanded.delete(node);
-                            if (this.#searchText) this.#searchClosed.add(node);
+                        if (expanded.has(path)) {
+                            expanded.delete(path);
+                            if (this.#searchText) this.#searchClosed.add(path);
                         } else {
-                            if (this.#searchText) { this.#searchClosed.delete(node); this.#searchOpen.add(node); } else this.#expand(node);
-                            if (node.resolver !== null) this.#resolve(node);
+                            if (this.#searchText) { this.#searchClosed.delete(path); this.#searchOpen.add(path); } else this.#expand(path);
+                            if (node.resolver !== null) this.#resolve(node, path);
                         }
                         for (const update of branchSync.values()) update();
                         this.#tabStop(path);
@@ -538,9 +542,9 @@ export const Tree = defineComponent({
                         else if (event.key === 'Home') target = visible[0];
                         else if (event.key === 'End') target = visible.at(-1);
                         else if (event.key === 'ArrowRight' && branch) {
-                            if (!this.#opened(node)) toggle(); else target = group.firstElementChild;
+                            if (!this.#opened(path)) toggle(); else target = group.firstElementChild;
                         } else if (event.key === 'ArrowLeft') {
-                            if (branch && this.#opened(node)) toggle(); else target = parent;
+                            if (branch && this.#opened(path)) toggle(); else target = parent;
                         } else if (event.key === ' ' && check) check.click();
                         else if (event.key === 'Enter' || event.key === ' ') this.#select(path);
                         else return;
@@ -574,7 +578,12 @@ export const Tree = defineComponent({
                     if (match) matches.push(caption);
                     if (match || this.#errors.has(item.node) || this.#loading.has(item.node)) {
                         visible.add(item.node);
-                        for (const ancestor of item.ancestors) { visible.add(ancestor); if (!this.#searchClosed.has(ancestor)) this.#searchOpen.add(ancestor); }
+                        const parts = path.split('.');
+                        for (const [index, ancestor] of item.ancestors.entries()) {
+                            const ancestorPath = parts.slice(0, index + 1).join('.');
+                            visible.add(ancestor);
+                            if (!this.#searchClosed.has(ancestorPath)) this.#searchOpen.add(ancestorPath);
+                        }
                     }
                 }
                 for (const [path, row] of this.#rows) row.hidden = !visible.has(items.get(path).node);
@@ -665,29 +674,30 @@ export const Tree = defineComponent({
                 this.#store === store && this.parameters.selectedPath === requested && this.#selectedPath === requested;
             const parts = requested.split('.');
             let bag = store;
-            for (const part of parts.slice(0, -1)) {
+            for (const [index, part] of parts.slice(0, -1).entries()) {
+                const path = parts.slice(0, index + 1).join('.');
                 if (!current()) return;
                 const node = bag.getNode(part);
                 if (!node) return;
                 if (node.resolver !== null && !this.parameters.resolveLazy) return;
                 if (node.resolver === null && !(node.staticValue instanceof Bag)) return;
                 if (!current() || bag.getNode(part) !== node) return;
-                this.#expand(node);
+                this.#expand(path);
                 this.#schedule();
-                if (node.resolver !== null && !(node.staticValue instanceof Bag)) await this.#resolve(node);
+                if (node.resolver !== null && !(node.staticValue instanceof Bag)) await this.#resolve(node, path);
                 if (!current() || bag.getNode(part) !== node || !(node.staticValue instanceof Bag)) return;
                 bag = node.staticValue;
             }
             if (current() && bag.getNode(parts.at(-1))) this.#schedule();
         }
-        #check(node, value, publish) {
+        #check(node, path, value, publish) {
             if (node.attr.checked === 'disabled:on' || node.attr.checked === 'disabled:off') return;
             const children = this.#resolutions.get(node) ?? node.getValue();
             if (children instanceof Promise && !this.#resolutions.has(node)) {
                 this.#errors.delete(node);
                 const pending = children.catch(error => {
                     this.#errors.set(node, error);
-                    this.#expanded.delete(node);
+                    this.#expanded.delete(path);
                 }).finally(() => {
                     if (this.#resolutions.get(node) === pending) this.#resolutions.delete(node);
                     this.#schedule();
@@ -696,7 +706,7 @@ export const Tree = defineComponent({
             }
             if (this.parameters.checkChildren && children instanceof Bag) {
                 if (node.resolver !== null) this.#checkedBags.set(node, children);
-                this.#applyChecked(children, value);
+                this.#applyChecked(children, path, value);
             }
             node.setAttr({checked: this.parameters.checkChildren && children instanceof Bag && children.length
                 ? this.#checkStatus(children) : value});
@@ -707,25 +717,28 @@ export const Tree = defineComponent({
             }
             if (publish) this.#publishChecked();
         }
-        #applyChecked(bag, value, onlyNew = false) {
+        #applyChecked(bag, prefix, value, onlyNew = false) {
             for (const child of bag.getNodes()) {
-                if (onlyNew && this.#checkedNodes.has(child)) continue;
-                this.#checkedNodes.add(child);
+                const path = prefix ? `${prefix}.${child.label}` : child.label;
+                if (onlyNew && this.#checkedNodes.has(path)) continue;
+                this.#checkedNodes.add(path);
                 if (child.attr.checked === 'disabled:on' || child.attr.checked === 'disabled:off') continue;
                 const children = child.staticValue;
                 if (children instanceof Bag && children.length) {
                     if (child.resolver !== null) this.#checkedBags.set(child, children);
-                    this.#applyChecked(children, value);
+                    this.#applyChecked(children, path, value);
                     child.setAttr({checked: this.#checkStatus(children)});
                 } else child.setAttr({checked: value});
             }
         }
-        #syncChecked(bag, ancestors = new Set(), loaded = []) {
+        #syncChecked(bag, prefix, ancestors, loaded, visited) {
             if (ancestors.has(bag)) throw new TypeError('tree requires an acyclic Bag store');
             ancestors.add(bag);
             let changed = false;
             for (const node of bag.getNodes()) {
-                this.#checkedNodes.add(node);
+                const path = prefix ? `${prefix}.${node.label}` : node.label;
+                this.#checkedNodes.add(path);
+                visited.add(path);
                 const children = node.staticValue;
                 if (!(children instanceof Bag)) continue;
                 let childChanged = false;
@@ -733,15 +746,15 @@ export const Tree = defineComponent({
                     this.#checkedBags.set(node, children);
                     loaded.push(children);
                     if (typeof node.attr.checked === 'boolean') {
-                        this.#applyChecked(children, node.attr.checked);
+                        this.#applyChecked(children, path, node.attr.checked);
                         childChanged = true;
                     }
-                } else if (typeof node.attr.checked === 'boolean' && children.getNodes().some(child => !this.#checkedNodes.has(child))) {
-                    this.#applyChecked(children, node.attr.checked, true);
+                } else if (typeof node.attr.checked === 'boolean' && children.getNodes().some(child => !this.#checkedNodes.has(`${path}.${child.label}`))) {
+                    this.#applyChecked(children, path, node.attr.checked, true);
                     loaded.push(children);
                     childChanged = true;
                 }
-                childChanged = this.#syncChecked(children, ancestors, loaded) || childChanged;
+                childChanged = this.#syncChecked(children, path, ancestors, loaded, visited) || childChanged;
                 if (childChanged && children.length && node.attr.checked !== 'disabled:on' && node.attr.checked !== 'disabled:off') {
                     node.setAttr({checked: this.#checkStatus(children)});
                 }
@@ -834,21 +847,24 @@ export const Tree = defineComponent({
         #visible() {
             return [...this.control.querySelectorAll('[role=treeitem]')].filter(row => !row.closest('[hidden]'));
         }
-        #expand(node) {
-            if (this.#searchText) { this.#searchOpen.add(node); return; }
+        /** Expand the row at tree `path`; autoCollapse closes the expanded siblings, matched by key. */
+        #expand(path) {
+            if (this.#searchText) { this.#searchOpen.add(path); return; }
             if (this.parameters.autoCollapse) {
-                for (const sibling of node.parentBag.getNodes()) {
-                    if (sibling !== node) this.#expanded.delete(sibling);
+                const parent = path.includes('.') ? path.slice(0, path.lastIndexOf('.')) : '';
+                for (const other of [...this.#expanded]) {
+                    const otherParent = other.includes('.') ? other.slice(0, other.lastIndexOf('.')) : '';
+                    if (other !== path && otherParent === parent) this.#expanded.delete(other);
                 }
             }
-            this.#expanded.add(node);
+            this.#expanded.add(path);
         }
-        #resolve(node, searching = false) {
+        #resolve(node, path, searching = false) {
             if (this.#resolutions.has(node)) return this.#resolutions.get(node);
             this.#loading.add(node); this.#errors.delete(node); this.#schedule();
             const pending = (async () => {
                 try { await Promise.resolve().then(() => node.getValue()); }
-                catch (error) { this.#errors.set(node, error); if (!searching) this.#expanded.delete(node); }
+                catch (error) { this.#errors.set(node, error); if (!searching) this.#expanded.delete(path); }
                 finally { this.#loading.delete(node); this.#resolutions.delete(node); this.#schedule(); }
             })();
             this.#resolutions.set(node, pending);

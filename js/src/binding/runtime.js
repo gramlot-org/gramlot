@@ -12,7 +12,7 @@ import {DataBinder} from './data-binder.js';
 import {AskDialog} from './ask-dialog.js';
 import {ErrorNotifications} from './error-notifications.js';
 import {randomId} from '../random-id.js';
-import {pointerDependencies} from '@genrojs/builders';
+import {DATA_ROOT, pointerDependencies} from '@genrojs/builders';
 
 
 // The Provider class of each provider data-element (§4.8).
@@ -47,7 +47,8 @@ export class BindingRuntime {
     #disposed = false;
     #sourceTrees = new Set();
     #dataRootTrees = new Set();
-    #collectionStores = new WeakMap();
+    // One collection store per absolute Data path and rowMode, never per Bag identity.
+    #collectionStores = new Map();
 
     constructor(gramlot, {subscriptions}) {
         this.#gramlot = gramlot;
@@ -105,24 +106,37 @@ export class BindingRuntime {
     /** `nodeId → node` of the Source nodes with an open NodeBinding (R06). */
     get nodeIds() { return this.#nodeIds; }
 
-    /** One shared resident data resource per Bag; presentation state belongs to views. */
-    collectionStore(bag, rowMode) {
+    /**
+     * One shared resident data resource per absolute Data `path` and `rowMode`; presentation state
+     * belongs to views. The store keeps the address: a replacement of the Bag at `path` keeps it.
+     */
+    collectionStore(path, rowMode) {
         if (this.disposed) throw new Error('BindingRuntime is disposed');
-        let store = this.#collectionStores.get(bag);
+        const key = `${rowMode}:${path}`;
+        let store = this.#collectionStores.get(key);
         if (!store) {
-            store = new BagCollectionStore(bag, rowMode);
-            this.#collectionStores.set(bag, store);
-        } else if (store.rowMode !== rowMode) throw new TypeError('A shared collection store requires one rowMode');
+            store = new BagCollectionStore(this.data, path, rowMode);
+            this.#collectionStores.set(key, store);
+        }
         return store;
     }
 
-    /** Each grid Source owns one view; only the underlying Bag access is shared. */
-    collectionView(node, bag, rowMode) {
-        const store = this.collectionStore(bag,rowMode);
-        if (!Object.hasOwn(node,'gridCollectionView')) {
-            Object.defineProperty(node,'gridCollectionView',{value:new BagCollectionView(store),configurable:true});
-        } else node.gridCollectionView.bindStore(store);
-        return node.gridCollectionView;
+    /**
+     * Each grid Source owns one view over the store at `path`. A new address gives a new view that
+     * starts from the criteria of the previous one; the previous view is disconnected.
+     */
+    collectionView(node, path, rowMode) {
+        const store = this.collectionStore(path,rowMode);
+        const previous = Object.hasOwn(node,'gridCollectionView') ? node.gridCollectionView : null;
+        if (previous?.path === path && previous.rowMode === rowMode) return previous;
+        const view = new BagCollectionView(store);
+        if (previous) {
+            previous.disconnect();
+            view.sort(previous.sortedBy);
+            view.copyFiltersFrom(previous);
+        }
+        Object.defineProperty(node,'gridCollectionView',{value:view,configurable:true});
+        return view;
     }
 
     /** Subscribe once on Builder's Data wrapper; nothing is created. */
@@ -132,20 +146,42 @@ export class BindingRuntime {
 
     /** Callback of the one Data subscription. */
     receiveData(event) {
-        // Visit resident stores along the affected Data path before their consumers.
-        // Static values avoid invoking resolvers; deletion paths still reach the containing Bag.
-        let bag = this.root;
-        for (const [index, segment] of (event.pathlist ?? []).entries()) {
-            const value = bag.node(segment)?.staticValue;
-            if (!(value instanceof Bag)) break;
-            const store = this.#collectionStores.get(value);
-            store?.receiveData(event, index + 1 < event.pathlist.length ? value.node(event.pathlist[index + 1]) : null,
-                event.pathlist[index + 2] ?? null);
-            bag = value;
-        }
+        // Resident stores reconcile before the consumers that the router reaches.
+        this.#notifyCollectionStores(event);
         this.router.deliver(event);
         for (const binding of [...this.#dataRootTrees]) {
             if (!binding.closed && this.renderer.attached(binding.node)) this.renderer.project(binding.node);
+        }
+    }
+
+    /**
+     * Notify the collection stores an event reaches, by path. An event inside the collection
+     * carries its row (the node under the store path, read without resolvers) and field; an event
+     * on the store path, on a row list, or replacing an ancestor is a full change. A path that
+     * does not hold a Bag notifies nothing: its consumers read the address and report the error.
+     */
+    #notifyCollectionStores(event) {
+        const {pathlist} = event;
+        if (!this.#collectionStores.size || !pathlist?.length || pathlist[0] !== DATA_ROOT) return;
+        const base = pathlist.slice(1), container = event.evt === 'ins' || event.evt === 'del';
+        const labels = container ? (Array.isArray(event.node) ? event.node : [event.node]).map(node => node.label) : [];
+        for (const store of this.#collectionStores.values()) {
+            const target = store.path.split('.');
+            const shared = Math.min(base.length, target.length);
+            let index = 0;
+            while (index < shared && base[index] === target[index]) index++;
+            if (index < shared) continue;
+            let row = null, field = null;
+            if (base.length > target.length) {
+                row = base[target.length];
+                field = base[target.length + 1] ?? null;
+            } else if (base.length < target.length) {
+                const reached = container ? labels.includes(target[base.length]) : event.evt === 'upd_value';
+                if (!reached) continue;
+            }
+            const bag = this.data.getItem(store.path, null, true);
+            if (!(bag instanceof Bag)) continue;
+            store.receiveData(event, row === null ? null : bag.node(row) ?? null, field);
         }
     }
 
@@ -275,7 +311,7 @@ export class BindingRuntime {
         this.#disposed = true;
         this.root.unsubscribe(this.#subscription, {any: true});
         this.nodeIds.clear();
-        this.#collectionStores = new WeakMap();
+        this.#collectionStores.clear();
         const errors = [];
         for (const [node, binding] of [...this.#bindings.entries()].reverse()) {
             this.#bindings.delete(node);

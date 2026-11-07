@@ -8,7 +8,7 @@ import {BagCollectionView} from '../src/stores/bag-collection-view.js';
 function fixture(mode,records) {
     const data=new Bag(), bag=new Bag();data.setItem('rows',bag);data.setBackref();
     records.forEach((record,index)=>bag.setItem(`r${index}`,mode==='values'?new Bag(record):null,mode==='attributes'?record:{}));
-    const parent=new BagCollectionStore(bag,mode), first=new BagCollectionView(parent), second=new BagCollectionView(parent);
+    const parent=new BagCollectionStore(data,'rows',mode), first=new BagCollectionView(parent), second=new BagCollectionView(parent);
     first.connect();second.connect();
     return {data,bag,parent,first,second,labels:(view=first)=>view.getRows().map(node=>node.label)};
 }
@@ -102,16 +102,38 @@ test('one failing view does not prevent sibling reconciliation; notifications ex
     row.setAttr({v:3});f.parent.receiveData({},row);assert.deepEqual(f.labels(),['r1','r0']);
 });
 
-test('disconnect releases parent subscription; reconnect and retarget retain view criteria',()=>{
+test('disconnect releases parent subscription; reconnect and a replacement at the store path retain view criteria',()=>{
     const f=fixture('attributes',[{v:1},{v:2}]);f.first.sort('v:d');
     let notices=0;f.first.subscribe(()=>notices++);f.first.disconnect();
     f.bag.getNode('r0').setAttr({v:3});f.parent.receiveData({},f.bag.getNode('r0'));assert.equal(notices,0);
     f.first.connect();assert.deepEqual(f.labels(),['r0','r1']);assert.equal(notices,1);
-    const replacement=fixture('attributes',[{v:4},{v:5}]);f.first.bindStore(replacement.parent);
+    const replacement=new Bag();replacement.setItem('r0',null,{v:4});replacement.setItem('r1',null,{v:5});
+    f.data.setItem('rows',replacement);f.parent.receiveData({});
     assert.equal(f.first.sortedBy,'v:d');assert.deepEqual(f.labels(),['r1','r0']);
-    const count=notices;f.parent.receiveData({});assert.equal(notices,count);
+    assert.equal(f.first.getRows()[0],replacement.getNode('r1'),'rows are read from the Bag now at the path');
+    assert.equal(f.first.path,'rows');assert.equal(f.parent.path,'rows');
 });
 
+test('a replacement at the store path keeps the manual order of the keys still present',()=>{
+    const f=fixture('attributes',[{v:1},{v:2},{v:3}]);
+    const nodes=f.bag.getNodes();f.first.moveRow(nodes[2],nodes[0]);
+    assert.deepEqual(f.labels(),['r2','r0','r1']);
+    const replacement=new Bag();for(const [key,v] of [['r1',1],['new',9],['r2',3]])replacement.setItem(key,null,{v});
+    f.data.setItem('rows',replacement);f.parent.receiveData({});
+    assert.deepEqual(f.labels(),['r2','r1','new'],'present keys keep their order; new keys follow in Bag order');
+    f.first.moveRow(nodes[0],replacement.getNode('r2'));
+    assert.deepEqual(f.labels(),['r2','r1','new'],'a key absent from the collection does not move');
+    f.first.moveRow(replacement.getNode('new'),nodes[2]);
+    assert.deepEqual(f.labels(),['new','r2','r1'],'rows of another Bag identify the same keys');
+});
+
+test('a store reads its rows from the Data root at each access and rejects a path without a Bag',()=>{
+    const f=fixture('attributes',[{v:1}]);
+    f.data.setItem('rows','scalar');
+    assert.throws(()=>f.parent.getRows(),/requires a Bag at rows/);
+    f.data.setItem('rows',new Bag({a:1}));
+    assert.deepEqual(f.parent.getRows().map(node=>node.label),['a']);
+});
 
 for (const mode of ['values','attributes']) test(`${mode}: all-column search retains formatted regex semantics and reads changed values`, () => {
     const f=fixture(mode, [

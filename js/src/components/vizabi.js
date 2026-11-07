@@ -33,9 +33,9 @@ const VizabiBubble=defineComponent({
                     this.#refreshConfiguration();
                 }});
             }
-            const store=this.#context.sourceNode.rootBuilder.binding.collectionStore(this.#bag,this.parameters.rowMode);
+            const store=this.#context.sourceNode.rootBuilder.binding.collectionStore(this.#context.attrDatapath('storepath'),this.parameters.rowMode);
             if(!this.#view){changed=true;this.#view=new BagCollectionView(store);this.#view.connect();this.#release=this.#view.subscribe(()=>this.#render());}
-            else if(this.#view.bag!==this.#bag){this.#view.bindStore(store);return;}
+            else if(this.#view.path!==store.path||this.#view.rowMode!==store.rowMode){this.#release?.();this.#view.disconnect();this.#view=new BagCollectionView(store);this.#view.connect();this.#release=this.#view.subscribe(()=>this.#render());changed=true;}
             if(changed)this.#signature=null;
             this.#refreshConfiguration();
         }
