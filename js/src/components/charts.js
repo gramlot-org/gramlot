@@ -11,26 +11,26 @@ import {ChartGeoJSON} from './chart-geojson.js';
 import {ChartFields} from './chart-fields.js';
 import {ChartRenderer} from './chart-renderer.js';
 import {Gauge} from './chart-gauge.js';
+import {ChartNotice,CHART_NOTICE_STYLE,chartErrorSections,chartTypeSections} from './chart-notice.js';
+import {ChartSyntaxError} from './chart-syntax.js';
+import {chartTypes} from './chart-types/index.js';
 
 const ChartView = defineComponent({
     name:'chartView', tag:'gramlot-chart-view', base:Container, sourceContext:true, bagStore:true,
     parameters:{sampleMin:{dtype:'R',nullable:true,binding:'read'},sampleMax:{dtype:'R',nullable:true,binding:'read'},sampleStep:{dtype:'R',default:1,binding:'read'},sampleStart:{dtype:'R',default:0,binding:'read'},mapLabelMode:{dtype:'T',default:'value',binding:'read'},mapBarScale:{dtype:'T',default:'zero',binding:'read'},selectedTerritory:{dtype:'T',default:'',binding:'twoWay'},configpath:{dtype:'T'},timeEmpty:{dtype:'T',default:'previous',binding:'read'},timeField:{dtype:'T',default:'',binding:'read'},timeValue:{dtype:'X',nullable:true,binding:'read'},timeStep:{dtype:'T',default:'month',binding:'read'},engine:{dtype:'T',default:'echarts',binding:'read'},mapValueField:{dtype:'T',binding:'read'},mapLabelField:{dtype:'T',binding:'read'},geoJSON:{dtype:'X',nullable:true,binding:'read'},geometryField:{dtype:'T',binding:'read'},secondCaptionField:{dtype:'T',binding:'read'},seriesOptions:{dtype:'X',binding:'read'},storepath:{dtype:'T'}, rowMode:{dtype:'T'}, gridId:{dtype:'T'},
         chartType:{dtype:'T',binding:'read'}, captionField:{dtype:'T',binding:'read'}, valueFields:{dtype:'T',nullable:true,binding:'read'}},
     implementation:Base => class extends Base {
-        #sampleView; #timeView; #revision=0; #active=false; #message; #context; #store; #grid; #releaseGrid; #view; #releaseView; #renderer; #resize; #options; #optionsSubscription = Symbol('chart-options');
+        #sampleView; #timeView; #revision=0; #active=false; #notice; #context; #store; #grid; #releaseGrid; #view; #releaseView; #renderer; #resize; #options; #optionsSubscription = Symbol('chart-options');
         constructor() {
             super();
             this.control.replaceChildren();
             const style = this.ownerDocument.createElement('style');
-            style.textContent = ':host{height:100%;min-height:0}.control-box{height:100%;min-height:0;overflow:hidden}';
+            style.textContent = ':host{height:100%;min-height:0}.control-box{height:100%;min-height:0;overflow:hidden}' + CHART_NOTICE_STYLE;
             this.shadowRoot.append(style);
-            this.#message = this.ownerDocument.createElement('div');
-            this.#message.setAttribute('role','alert'); this.#message.hidden = true;
-            this.#message.style.cssText = 'padding:20px;white-space:normal';
+            this.#notice = new ChartNotice(this.ownerDocument);
             this.control = this.ownerDocument.createElement('div');
-            this.controlBox.append(this.#message, this.control);
-            this.controlBox.style.backgroundColor = '#fff';
-            this.#message.style.color = '#333';
+            this.controlBox.append(this.#notice.element, this.control);
+            this.controlBox.style.backgroundColor = 'var(--gramlot-surface,#fff)';
             this.control.style.cssText = 'width:100%;height:100%;min-width:0;background:#fff';
             this.#resize = new this.ownerDocument.defaultView.ResizeObserver(() => this.#renderer?.resize());
         }
@@ -123,8 +123,7 @@ const ChartView = defineComponent({
                 }
                 if (!rows.length && !(this.parameters.timeField && this.#view.view.getRows().some(row=>this.#view.view.value(row,this.parameters.timeField)!=null))) {
                     this.control.hidden = true;
-                    this.#message.setAttribute('role','status');
-                    this.#message.textContent = 'No data to display'; this.#message.hidden = false;
+                    this.#notice.info('No data to display','No data to display',this.#emptySections(typeId));
                     return;
                 }
                 await this.#renderer.prepare(engine,typeId);
@@ -134,10 +133,27 @@ const ChartView = defineComponent({
                 structure.setItem('geoJSON',geoJSON);
                 await this.#renderer.update(structure, this.#options);
                 if(revision!==this.#revision || !this.#renderer)return;
-                this.#message.setAttribute('role','alert'); this.#message.hidden = true; this.#message.textContent = '';
+                this.#notice.hide();
                 this.#renderer.resize();
             }
-            catch (error) { if(revision!==this.#revision || !this.#renderer)return; this.control.hidden = true; this.#message.setAttribute('role','alert'); this.#message.textContent = error.message; this.#message.hidden = false; }
+            catch (error) {
+                if(revision!==this.#revision || !this.#renderer)return;
+                this.control.hidden = true;
+                const type=chartTypes.find(item=>item.id===typeId) ?? null;
+                const title=error instanceof ChartSyntaxError ? `${type.label}: the configuration does not match the chart type` : `${type?.label ?? 'Chart'}: the chart cannot be drawn`;
+                this.#notice.error(error.message,title,chartErrorSections(error,type));
+            }
+        }
+        /** Why a chart has no rows to draw, from its own parameters. */
+        #emptySections(typeId) {
+            const {storepath,rowMode,gridId,timeField}=this.parameters;
+            const reasons=[rowMode==='samples' ? 'The chart reads its samples from the bound array, which is empty.'
+                : `The chart reads its rows from storepath ${storepath} (rowMode ${rowMode}), which has no rows.`];
+            if(gridId)reasons.push(`It shows only the rows that pass the filter of grid ${gridId}: the filter may hide every row.`);
+            if(timeField)reasons.push(`Temporal animation is on: no row has a value in ${timeField}, its date field.`);
+            reasons.push('Add rows to the store, or clear the filter, to draw the chart.');
+            const type=chartTypes.find(item=>item.id===typeId);
+            return [{title:'Why the chart is empty',paragraphs:reasons},...(type?chartTypeSections(type):[])];
         }
         disconnectedCallback() {
             this.#active = false;

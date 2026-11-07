@@ -53,6 +53,9 @@ test('chartView observes a single array Data node and retains its renderer acros
         const host=window.document.getElementById('wave'), node=app.data.getNode('samples');
         assert.equal(updates.length,0);
         assert.equal(host.shadowRoot.querySelector('[role=status]').textContent, 'No data to display');
+        assert.equal(host.shadowRoot.querySelector('.chart-notice').dataset.kind, 'info');
+        assert.ok(host.shadowRoot.querySelector('.chart-notice svg path').getAttribute('d'));
+        assert.equal(host.shadowRoot.querySelector('.chart-notice button').textContent, 'More info');
         assert.equal(node, null);
         for(let n=0;n<3;n++) {
             app.data.setItem('samples',Array.from({length:1024},(_,i)=>Math.sin(i+n)));
@@ -68,7 +71,7 @@ test('chartView observes a single array Data node and retains its renderer acros
         app.data.setItem('samples', [1, 2]);
         await new Promise(resolve=>setTimeout(resolve,0));
         assert.equal(updates.at(-1).renderer,updates[0].renderer);
-        assert.equal(host.shadowRoot.querySelector('[role=alert]').hidden, true);
+        assert.equal(host.shadowRoot.querySelector('.chart-notice').hidden, true);
     } finally {app.dispose();window.close();}
 });
 
