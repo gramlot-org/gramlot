@@ -23,8 +23,10 @@ import heatmap from './heatmap.js';
 import sankey from './sankey.js';
 import candlestick from './candlestick.js';
 import boxplot from './boxplot.js';
+import treemap from './treemap.js';
+import sunburst from './sunburst.js';
 
-export const chartTypes = [bar,line,area,stackedBar,stackedArea,horizontalBar,pie,donut,scatter,bar3D,line3D,scatter3D,surface,map,mapBar3D,map3D,lines3D,polygons3D,funnel,radar,parallel,heatmap,sankey,candlestick,boxplot];
+export const chartTypes = [bar,line,area,stackedBar,stackedArea,horizontalBar,pie,donut,scatter,bar3D,line3D,scatter3D,surface,map,mapBar3D,map3D,lines3D,polygons3D,funnel,radar,parallel,heatmap,sankey,candlestick,boxplot,treemap,sunburst];
 const types=new Map(chartTypes.map(type=>[type.id,type]));
 export function chartType(id) {
     const type=types.get(id);

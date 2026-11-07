@@ -12,7 +12,7 @@ import grid from '../src/components/grid.js';
 import * as echarts from 'echarts/dist/echarts.js';
 
 test('catalogue retains every supported type and rejects unknown types',()=>{
-    const expected=['bar','line','area','stackedBar','stackedArea','horizontalBar','pie','donut','scatter','bar3D','line3D','scatter3D','surface','map','mapBar3D','map3D','lines3D','polygons3D','funnel','radar','parallel','heatmap','sankey','candlestick','boxplot'];
+    const expected=['bar','line','area','stackedBar','stackedArea','horizontalBar','pie','donut','scatter','bar3D','line3D','scatter3D','surface','map','mapBar3D','map3D','lines3D','polygons3D','funnel','radar','parallel','heatmap','sankey','candlestick','boxplot','treemap','sunburst'];
     assert.deepEqual(chartTypes.map(type=>type.id),expected);
     for(const id of expected)assert.equal(typeof EChartsAdapter.prototype[`render_${id}`],'function');
     assert.throws(()=>chartType('unknown'),/supported/);

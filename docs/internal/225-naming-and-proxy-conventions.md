@@ -24,6 +24,22 @@ statistics. Any other measure count is an error naming the order. A row with an 
 measures is skipped, never drawn as zero. A boxplot row whose values decrease is an error naming its caption.
 `measureLimit` truncates a longer selection, so the count error shows only for fewer measures.
 
+Chart types treemap and sunburst — 2026-11-07: two further `chartType` values of `chartView`, ECharts engine
+only. Descriptors in `chart-types/`, pure option builders in `chart-treemap-options.js` and
+`chart-sunburst-options.js`, the shared nested read in `chartHierarchy` (`chart-type-data.js`). The data is a
+nested Bag read with `rowMode='attributes'`: each node carries `captionField` and the single measure
+(`measureLimit` 1) as attributes. A node whose value is a Bag is a parent and its nested nodes are its
+children at any depth; any other node is a leaf. The value of a parent is the sum of its children, so a parent
+that carries the measure is an error naming that node. A null leaf is skipped, a negative leaf is an error,
+a parent whose leaves are all skipped is skipped. `rowMode='values'` is an error naming `rowMode='attributes'`
+(`ChartTimeView` exposes the `rowMode` of its collection view for this check). The top level is read through the
+view, so grid filters and sorting apply to it only. Each top-level node takes one palette color and its
+descendants inherit it. Change reaching: the store notice of the page's Data subscription names the top-level
+row for an event at any depth and the chart re-renders on every notice, so no change to the `chartView`
+subscription was needed. Treemap: breadcrumb on, drill-down on click (`nodeClick:'zoomToNode'`).
+Sunburst: root at the center, store order kept (`sort:null`), click zooms to the node. Descriptors carry
+`domains:false`.
+
 Gauge element — 2026-11-06: owner approved the element `gauge` in the `charts`
 collection (class `Gauge`, tag `gramlot-gauge`, descriptor file `chart-gauge.js`).
 The node value is the single value. Parameters: `min`, `max`, `mask`, `thresholds`

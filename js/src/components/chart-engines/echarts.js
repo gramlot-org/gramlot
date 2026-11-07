@@ -14,6 +14,8 @@ import {chartHeatmapOptions} from '../chart-heatmap-options.js';
 import {chartSankeyOptions} from '../chart-sankey-options.js';
 import {chartCandlestickOptions} from '../chart-candlestick-options.js';
 import {chartBoxplotOptions} from '../chart-boxplot-options.js';
+import {chartTreemapOptions} from '../chart-treemap-options.js';
+import {chartSunburstOptions} from '../chart-sunburst-options.js';
 
 let glLoading;
 export class EChartsAdapter {
@@ -90,6 +92,8 @@ export class EChartsAdapter {
     render_sankey(context) { return chartSankeyOptions(context); }
     render_candlestick(context) { return chartCandlestickOptions(context); }
     render_boxplot(context) { return chartBoxplotOptions(context); }
+    render_treemap(context) { return chartTreemapOptions(context); }
+    render_sunburst(context) { return chartSunburstOptions(context); }
     svg() { return this.#chart.renderToSVGString(); }
     resize() { this.#chart.resize(); }
     dispose() { this.#chart.dispose();if(this.#mapData)echarts.registerMap(this.#mapName,{type:'FeatureCollection',features:[]}); }

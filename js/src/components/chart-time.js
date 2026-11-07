@@ -67,6 +67,7 @@ export class ChartTimeView {
         if(!['previous','empty'].includes(empty))throw new TypeError('Empty periods require previous or empty');
         this.field=field;this.date=value;this.step=step;this.empty=empty;
     }
+    get rowMode(){return this.view.rowMode;}
     value(row,field){return this.view.value(row,field);}
     getRows(){
         const rows=this.view.getRows();
