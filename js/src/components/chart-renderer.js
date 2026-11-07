@@ -14,7 +14,8 @@ export function chartContext(view,structure,seriesOptions) {
         if (typeof category !== 'string' || !category) {
             throw new TypeError('Chart requires captionField');
         }
-        if (type.measureLimit !== null) fields = fields.slice(0,type.measureLimit);
+        const measures = type.syntax.filter(role => role.parameter === 'valueFields');
+        if (measures.length && measures.every(role => role.count === 1)) fields = fields.slice(0,measures.length);
         const settings = fields.map(field => {
             const options = seriesOptions.getItem(field);
             if (!(options instanceof Bag)) throw new TypeError(`Missing seriesOptions for ${field}`);
