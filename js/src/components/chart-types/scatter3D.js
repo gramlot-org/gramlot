@@ -1,5 +1,5 @@
 /** Engine-independent 3d scatter configuration. */
-export default {id:'scatter3D',label:'3D scatter',controls:['category','secondDimension','measures'],threeD:true,
+export default {id:'scatter3D',label:'3D scatter',controls:[],threeD:true,
     doc:'Shows each row as a point in 3D space.',
     syntax:[
         {name:'captionField',parameter:'captionField',count:1,required:true,dtype:null,caption:'First dimension',doc:'The first axis; numeric or date values.'},

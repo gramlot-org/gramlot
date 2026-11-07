@@ -1,5 +1,5 @@
 /** Engine-independent surface configuration. */
-export default {id:'surface',label:'Surface',controls:['category','secondDimension','measures'],threeD:true,
+export default {id:'surface',label:'Surface',controls:[],threeD:true,
     doc:'Shows a measured surface over a grid of two numeric dimensions.',
     syntax:[
         {name:'captionField',parameter:'captionField',count:1,required:true,dtype:null,caption:'First dimension',doc:'The first axis; numeric or date values, at least two distinct.'},

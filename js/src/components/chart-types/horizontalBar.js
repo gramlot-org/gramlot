@@ -1,5 +1,5 @@
 /** Engine-independent horizontal bars configuration. */
-export default {id:'horizontalBar',label:'Horizontal bars',controls:['category','measures'],threeD:false,
+export default {id:'horizontalBar',label:'Horizontal bars',controls:[],threeD:false,
     doc:'Compares values across categories with horizontal bars; suited to long category names.',
     syntax:[
         {name:'captionField',parameter:'captionField',count:1,required:true,dtype:null,caption:'Category',doc:'One bar group per value of this column, on the vertical axis.'},

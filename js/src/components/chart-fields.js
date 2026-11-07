@@ -2,6 +2,7 @@ import {Bag} from '@gramlot/gramlot';
 import {defineComponent} from '@gramlot/gramlot/components';
 import {randomId} from '../random-id.js';
 import {Container} from './container.js';
+import {chartTypes,chartFixedMeasures} from './chart-types/index.js';
 
 const chartLogic = new WeakMap();
 function measureAction(binding) {
@@ -34,7 +35,7 @@ export function chartFields(store) {
 
 export const ChartFields = defineComponent({
     name:'chartFields',tag:'gramlot-chart-fields',base:Container,sourceContext:true,bagStore:true,
-    parameters:{timeFieldId:{dtype:'T'},storepath:{dtype:'T'},rowMode:{dtype:'T'},configpath:{dtype:'T'},categoryId:{dtype:'T'},mapMeasureId:{dtype:'T'},mapLabelId:{dtype:'T'},secondCategoryId:{dtype:'T'},geometryId:{dtype:'T'},measureMenuId:{dtype:'T'}},
+    parameters:{timeFieldId:{dtype:'T'},storepath:{dtype:'T'},rowMode:{dtype:'T'},configpath:{dtype:'T'},categoryId:{dtype:'T'},mapMeasureId:{dtype:'T'},mapLabelId:{dtype:'T'},secondCategoryId:{dtype:'T'},geometryId:{dtype:'T'},measureMenuId:{dtype:'T'},measureRoleIds:{dtype:'T'}},
     implementation:Base => class extends Base {
         #context; #bag; #store; #release; #signature; #active=false;
         constructor() { super(); const style=this.ownerDocument.createElement('style');style.textContent=':host{display:none}';this.shadowRoot.append(style); }
@@ -92,6 +93,15 @@ export const ChartFields = defineComponent({
             if(!measures.includes(config.getItem('mapValueField')))config.setItem('mapValueField',measures.find(field=>options.getItem(field).getItem('selected')) ?? measures[0] ?? '');
             if(!fields.includes(config.getItem('mapLabelField')))config.setItem('mapLabelField',fields.includes(config.getItem('captionField'))?config.getItem('captionField'):fields[0] ?? '');
             reconcile(binding.nodeIds.get(this.parameters.geometryId),fields);
+            // Fixed measure roles: each select offers the numeric columns; an empty or vanished role takes the
+            // measure at its position in the column order, so a type change shows a complete assignment.
+            for(const id of this.parameters.measureRoleIds.split(','))
+                reconcile(binding.nodeIds.get(id),['',...measures],field=>field?options.getItem(field).getItem('caption'):'Choose a column');
+            if(!(config.getItem('measureRoles') instanceof Bag))config.setItem('measureRoles',new Bag());
+            const roles=config.getItem('measureRoles');
+            for(const type of chartTypes)chartFixedMeasures(type).forEach((name,index)=>{
+                if(!measures.includes(roles.getItem(name)))roles.setItem(name,measures[index] ?? '');
+            });
             reconcile(binding.nodeIds.get(this.parameters.secondCategoryId),fields);
             for(const child of [...menu.value.getNodes()])menu.value.popNode(child.label);
             measures.forEach((field,index)=>{

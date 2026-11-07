@@ -30,6 +30,9 @@
             "measureMenuId": {
               "dtype": "T"
             },
+            "measureRoleIds": {
+              "dtype": "T"
+            },
             "rowMode": {
               "dtype": "T"
             },
@@ -160,6 +163,17 @@
             "has_default": true,
             "kind": "keyword_only",
             "name": "measureMenuId",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "measureRoleIds",
             "role": "attribute"
           },
           {

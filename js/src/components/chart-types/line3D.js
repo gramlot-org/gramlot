@@ -1,5 +1,5 @@
 /** Engine-independent 3d lines configuration. */
-export default {id:'line3D',label:'3D lines',controls:['category','secondDimension','measures'],threeD:true,
+export default {id:'line3D',label:'3D lines',controls:[],threeD:true,
     doc:'Shows values along two dimensions as lines in 3D space.',
     syntax:[
         {name:'captionField',parameter:'captionField',count:1,required:true,dtype:null,caption:'First dimension',doc:'The first axis.'},

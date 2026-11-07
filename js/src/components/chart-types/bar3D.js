@@ -1,5 +1,5 @@
 /** Engine-independent 3d bars configuration. */
-export default {id:'bar3D',label:'3D bars',controls:['category','secondDimension','measures'],threeD:true,
+export default {id:'bar3D',label:'3D bars',controls:[],threeD:true,
     doc:'Shows a value for each pair of two dimensions as 3D columns.',
     syntax:[
         {name:'captionField',parameter:'captionField',count:1,required:true,dtype:null,caption:'First dimension',doc:'The first axis of the grid.'},

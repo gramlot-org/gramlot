@@ -1,5 +1,5 @@
 /** Engine-independent 3d paths configuration. */
-export default {id:'lines3D',label:'3D paths',controls:["category", "geoJSON", "geometry", "measures"],threeD:true,
+export default {id:'lines3D',label:'3D paths',controls:['geoJSON'],threeD:true,
     doc:'Draws paths of coordinates on a 3D map.',
     syntax:[
         {name:'captionField',parameter:'captionField',count:1,required:true,dtype:null,caption:'Path',doc:'The name of each path.'},

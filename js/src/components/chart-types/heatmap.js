@@ -1,5 +1,5 @@
 /** Engine-independent heatmap configuration: two categories and one measure as cell color. */
-export default {id:'heatmap',label:'Heatmap',controls:['category','secondDimension','measures'],threeD:false,domains:false,
+export default {id:'heatmap',label:'Heatmap',controls:[],threeD:false,domains:false,
     doc:'Colours each cell of a grid of two categories by one measure.',
     syntax:[
         {name:'captionField',parameter:'captionField',count:1,required:true,dtype:null,caption:'X category',doc:'The columns of the grid.'},

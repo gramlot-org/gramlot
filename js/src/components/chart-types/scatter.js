@@ -1,5 +1,5 @@
 /** Engine-independent scatter configuration. */
-export default {id:'scatter',label:'Scatter',controls:['category','measures'],threeD:false,
+export default {id:'scatter',label:'Scatter',controls:[],threeD:false,
     doc:'Shows each row as a point, to reveal relations and clusters.',
     syntax:[
         {name:'captionField',parameter:'captionField',count:1,required:true,dtype:null,caption:'Category',doc:'The horizontal position of each point.'},

@@ -1,5 +1,5 @@
 /** Engine-independent bars configuration. */
-export default {id:'bar',label:'Bars',controls:['category','measures'],threeD:false,
+export default {id:'bar',label:'Bars',controls:[],threeD:false,
     doc:'Compares values across categories with vertical bars.',
     syntax:[
         {name:'captionField',parameter:'captionField',count:1,required:true,dtype:null,caption:'Category',doc:'One bar group per value of this column.'},

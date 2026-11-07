@@ -1,11 +1,10 @@
 import {chartEngines,chartCapabilities} from './chart-engines/index.js';
-import {chartTypes} from './chart-types/index.js';
+import {chartTypes,chartRoles,chartFixedMeasures} from './chart-types/index.js';
 
 /** Standard Source sections, reused by the type descriptors. No chart state lives here. */
 export function chartControls(config, {configpath,storepath,rowMode,prefix}) {
     const refs={};
-    function select(parent,label,key,choices,reference) {
-        const id=`${prefix}-${key}`;
+    function select(parent,label,key,choices,reference,id=`${prefix}-${key}`) {
         parent.html_label(label,{for:id});
         const attrs={id,value:`^${configpath}.${key}`};
         if(reference) { attrs.nodeId=`${prefix}_${reference}`;refs[reference]=attrs.nodeId; }
@@ -74,10 +73,33 @@ export function chartControls(config, {configpath,storepath,rowMode,prefix}) {
             columns.column({field:'axis',name:'Axis',width:'30%',edit:{tag:'filteringSelect',values:'left:Left,right:Right',validate_select:true}});
         }
     };
+    // Column sections follow the syntax of the types; geoJSON and mapBarScale are the non-column sections they declare.
+    const declares={
+        category:type=>chartRoles(type,'captionField').length>0,
+        secondDimension:type=>chartRoles(type,'secondCaptionField').length>0,
+        geometry:type=>chartRoles(type,'geometryField').length>0,
+        mapMeasure:type=>chartRoles(type,'mapValueField').length>0,
+        measures:type=>chartRoles(type,'valueFields').some(role=>role.count==='many'),
+        geoJSON:type=>type.controls.includes('geoJSON'),
+        mapBarScale:type=>type.controls.includes('mapBarScale')
+    };
+    const shown=types=>`^${configpath}.chartType:=${JSON.stringify(types)}.includes({}) ? "grid" : "none"`;
     for(const [name,compose] of Object.entries(sections)) {
-        const types=chartTypes.filter(type=>type.controls.includes(name)).map(type=>type.id);
-        const section=config.div({display:`^${configpath}.chartType:=${JSON.stringify(types)}.includes({}) ? "grid" : "none"`,gap:'4px'});
+        const section=config.div({display:shown(chartTypes.filter(declares[name]).map(type=>type.id)),gap:'4px'});
         compose(section);
     }
-    config.chartFields({storepath,rowMode,configpath,...refs});
+    // One select per fixed measure role (value, open … close, min … max), shared by the types that declare it.
+    const fixed=new Map();
+    for(const type of chartTypes)for(const name of chartFixedMeasures(type)) {
+        if(!fixed.has(name))fixed.set(name,{role:chartRoles(type,'valueFields').find(role=>role.name===name),types:[]});
+        fixed.get(name).types.push(type.id);
+    }
+    const measureRoleIds=[];
+    for(const [name,{role,types}] of fixed) {
+        const section=config.div({display:shown(types),gap:'4px'});
+        select(section,role.caption,`measureRoles.${name}`,[['','Choose a column']],`measureRole_${name}`,`${prefix}-role-${name}`);
+        measureRoleIds.push(refs[`measureRole_${name}`]);
+        delete refs[`measureRole_${name}`];
+    }
+    config.chartFields({storepath,rowMode,configpath,measureRoleIds:measureRoleIds.join(','),...refs});
 }

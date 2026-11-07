@@ -1,5 +1,5 @@
 /** Engine-independent stacked area configuration. */
-export default {id:'stackedArea',label:'Stacked area',controls:['category','measures'],threeD:false,
+export default {id:'stackedArea',label:'Stacked area',controls:[],threeD:false,
     doc:'Shows the parts of a total along an ordered category, with the areas stacked.',
     syntax:[
         {name:'captionField',parameter:'captionField',count:1,required:true,dtype:null,caption:'Category',doc:'The horizontal axis, in row order or time order.'},

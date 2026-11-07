@@ -62,3 +62,22 @@ test('checkChartSyntax: missing, excess and equal dimensions carry a diagnosis',
     assert.deepEqual(checkChartSyntax(type('map'), new Bag({captionField:'name', mapValueField:'v', valueFields:'a,b'})), []);
     assert.throws(check('map', {captionField:'name', mapValueField:null}), error => error.diagnosis.role === 'mapValueField');
 });
+
+test('the configurator builds its column sections and one select per fixed measure role from the syntax', async () => {
+    const {GramlotBuilder} = await import('../src/builder/gramlot-builder.js');
+    const {chartControls} = await import('../src/components/chart-controls.js');
+    const {chartFixedMeasures} = await import('../src/components/chart-types/index.js');
+    const layout = (await import('../src/components/layout.js')).default;
+    const inputs = (await import('../src/components/inputs.js')).default;
+    const grid = (await import('../src/components/grid.js')).default;
+    const builder = new GramlotBuilder(null, {collections:[charts, layout, inputs, grid]});
+    chartControls(builder.root, {configpath:'config', storepath:'rows', rowMode:'attributes', prefix:'test'});
+    const text = builder.toTytx();
+    for (const name of ['value','open','high','low','close','min','q1','median','q3','max']) {
+        assert.match(text, new RegExp(`test-role-${name}`), name);
+        assert.match(text, new RegExp(`config\\.measureRoles\\.${name}`), name);
+    }
+    assert.match(text, /test_measureRole_open,test_measureRole_high/);
+    assert.deepEqual(chartFixedMeasures(chartTypes.find(type => type.id === 'bar')), []);
+    assert.deepEqual(chartFixedMeasures(chartTypes.find(type => type.id === 'boxplot')), ['min','q1','median','q3','max']);
+});

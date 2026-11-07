@@ -1,5 +1,5 @@
 /** Engine-independent candlestick configuration: four measures read in the order open, high, low, close. */
-export default {id:'candlestick',label:'Candlestick',controls:['category','measures'],threeD:false,domains:false,
+export default {id:'candlestick',label:'Candlestick',controls:[],threeD:false,domains:false,
     doc:'Shows the open, high, low and close of each period, as used for prices.',
     syntax:[
         {name:'captionField',parameter:'captionField',count:1,required:true,dtype:null,caption:'Period',doc:'One candle per row, in row order.'},

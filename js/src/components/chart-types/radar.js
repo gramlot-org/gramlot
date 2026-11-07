@@ -1,5 +1,5 @@
 /** Engine-independent radar configuration: each measure is an axis, each row a polygon. */
-export default {id:'radar',label:'Radar',controls:['category','measures'],threeD:false,domains:false,
+export default {id:'radar',label:'Radar',controls:[],threeD:false,domains:false,
     doc:'Compares items on several measures; each measure is an axis, each row a polygon.',
     syntax:[
         {name:'captionField',parameter:'captionField',count:1,required:true,dtype:null,caption:'Item',doc:'One polygon per row; a row with any empty measure is left out.'},

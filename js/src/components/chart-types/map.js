@@ -1,5 +1,5 @@
 /** Engine-independent 2d map configuration. */
-export default {id:'map',label:'2D map',controls:['category','geoJSON','mapMeasure'],threeD:false,
+export default {id:'map',label:'2D map',controls:['geoJSON'],threeD:false,
     doc:'Colours each territory of a GeoJSON map by one measure.',
     syntax:[
         {name:'captionField',parameter:'captionField',count:1,required:true,dtype:null,caption:'Territory',doc:'Matched to GeoJSON properties.name; one row per territory.'},

@@ -194,6 +194,7 @@ Collection: **charts**. Browser element: `gramlot-chart-fields`.
 | `secondCategoryId` | T | — | — | — |
 | `geometryId` | T | — | — | — |
 | `measureMenuId` | T | — | — | — |
+| `measureRoleIds` | T | — | — | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 

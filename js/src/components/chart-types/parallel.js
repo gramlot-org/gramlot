@@ -1,5 +1,5 @@
 /** Engine-independent parallel coordinates configuration: each measure is an axis, each row a polyline. */
-export default {id:'parallel',label:'Parallel coordinates',controls:['category','measures'],threeD:false,domains:false,
+export default {id:'parallel',label:'Parallel coordinates',controls:[],threeD:false,domains:false,
     doc:'Compares rows on several measures; each measure is a vertical axis, each row a line across them.',
     syntax:[
         {name:'captionField',parameter:'captionField',count:1,required:true,dtype:null,caption:'Item',doc:'One line per row.'},

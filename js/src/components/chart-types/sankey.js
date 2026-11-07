@@ -1,5 +1,5 @@
 /** Engine-independent sankey configuration: source, target and one measure as link value. */
-export default {id:'sankey',label:'Sankey',controls:['category','secondDimension','measures'],threeD:false,domains:false,
+export default {id:'sankey',label:'Sankey',controls:[],threeD:false,domains:false,
     doc:'Shows flows between nodes; the width of each link is its value.',
     syntax:[
         {name:'captionField',parameter:'captionField',count:1,required:true,dtype:null,caption:'Source',doc:'The node a link starts from.'},

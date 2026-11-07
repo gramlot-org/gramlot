@@ -837,6 +837,17 @@
             "default": null
           },
           {
+            "name": "measureRoleIds",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
             "name": "attr",
             "kind": "var_keyword",
             "role": "attribute",
@@ -881,6 +892,9 @@
               "dtype": "T"
             },
             "measureMenuId": {
+              "dtype": "T"
+            },
+            "measureRoleIds": {
               "dtype": "T"
             }
           },

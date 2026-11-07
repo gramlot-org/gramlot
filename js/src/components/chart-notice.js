@@ -1,19 +1,16 @@
 import {ChartSyntaxError} from './chart-syntax.js';
 import {chartTypes} from './chart-types/index.js';
 
-const SVG_NS = 'http://www.w3.org/2000/svg';
-const ICONS = {
-    error: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1 5h2v7h-2zm0 9h2v2h-2z',
-    info: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1 8h2v8h-2zm0-4h2v2h-2z'
-};
+// The icon is a styled glyph, not an svg: the svg inside a chart view is always the chart.
+const ICONS = {error:'!', info:'i'};
 
 /** Shadow-root styles of the notice; colours follow the `--gramlot-*` theme variables. */
 export const CHART_NOTICE_STYLE = `
 .chart-notice{display:flex;align-items:flex-start;gap:10px;padding:16px 20px;font:13px/1.45 var(--gramlot-font-ui,system-ui,sans-serif);color:var(--gramlot-ink,#243449)}
 .chart-notice[hidden]{display:none}
-.chart-notice svg{flex:none;inline-size:22px;block-size:22px;fill:currentColor}
-.chart-notice[data-kind=error] svg{color:var(--gramlot-error,#b13d48)}
-.chart-notice[data-kind=info] svg{color:var(--gramlot-text-secondary,#566579)}
+.chart-notice-icon{flex:none;display:grid;place-items:center;inline-size:20px;block-size:20px;border-radius:50%;font:700 13px/1 var(--gramlot-font-ui,system-ui,sans-serif);color:var(--gramlot-surface,#fff)}
+.chart-notice[data-kind=error] .chart-notice-icon{background:var(--gramlot-error,#b13d48)}
+.chart-notice[data-kind=info] .chart-notice-icon{background:var(--gramlot-text-secondary,#566579)}
 .chart-notice-text{flex:1;min-inline-size:0;white-space:normal;overflow-wrap:anywhere}
 .chart-notice button{flex:none;font:inherit;padding:2px 10px;border:1px solid var(--gramlot-border-control,#a9b4c2);border-radius:var(--gramlot-radius-sm,4px);background:var(--gramlot-surface,#fff);color:inherit;cursor:pointer}
 .chart-notice-dialog{max-inline-size:min(640px,calc(100vw - 32px));border:1px solid var(--gramlot-border,#d5dce5);border-radius:var(--gramlot-radius,6px);padding:20px 24px;background:var(--gramlot-surface,#fff);color:var(--gramlot-ink,#243449);font:13px/1.5 var(--gramlot-font-ui,system-ui,sans-serif)}
@@ -69,9 +66,8 @@ export class ChartNotice {
     constructor(doc) {
         this.#box = doc.createElement('div');
         this.#box.className = 'chart-notice'; this.#box.hidden = true;
-        this.#icon = doc.createElementNS(SVG_NS, 'svg');
-        this.#icon.setAttribute('viewBox', '0 0 24 24'); this.#icon.setAttribute('aria-hidden', 'true');
-        this.#icon.append(doc.createElementNS(SVG_NS, 'path'));
+        this.#icon = doc.createElement('span');
+        this.#icon.className = 'chart-notice-icon'; this.#icon.setAttribute('aria-hidden', 'true');
         this.#text = doc.createElement('div'); this.#text.className = 'chart-notice-text'; this.#text.hidden = true;
         this.#text.setAttribute('role', 'alert');
         const more = doc.createElement('button');
@@ -122,7 +118,7 @@ export class ChartNotice {
     #show(kind, role, message, title, sections) {
         this.#box.dataset.kind = kind;
         this.#text.setAttribute('role', role);
-        this.#icon.firstChild.setAttribute('d', ICONS[kind]);
+        this.#icon.textContent = ICONS[kind];
         this.#text.textContent = message;
         this.#sections = {title, items:sections};
         this.#box.hidden = this.#text.hidden = false;

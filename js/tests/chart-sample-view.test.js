@@ -54,7 +54,8 @@ test('chartView observes a single array Data node and retains its renderer acros
         assert.equal(updates.length,0);
         assert.equal(host.shadowRoot.querySelector('[role=status]').textContent, 'No data to display');
         assert.equal(host.shadowRoot.querySelector('.chart-notice').dataset.kind, 'info');
-        assert.ok(host.shadowRoot.querySelector('.chart-notice svg path').getAttribute('d'));
+        assert.equal(host.shadowRoot.querySelector('.chart-notice-icon').textContent, 'i');
+        assert.equal(host.shadowRoot.querySelector('svg'), null);
         assert.equal(host.shadowRoot.querySelector('.chart-notice button').textContent, 'More info');
         assert.equal(node, null);
         for(let n=0;n<3;n++) {

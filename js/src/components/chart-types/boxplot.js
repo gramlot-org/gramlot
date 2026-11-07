@@ -1,5 +1,5 @@
 /** Engine-independent boxplot configuration: five measures read in the order min, q1, median, q3, max. */
-export default {id:'boxplot',label:'Boxplot',controls:['category','measures'],threeD:false,domains:false,
+export default {id:'boxplot',label:'Boxplot',controls:[],threeD:false,domains:false,
     doc:'Shows the spread of each group with five statistics: minimum, quartiles, median and maximum.',
     syntax:[
         {name:'captionField',parameter:'captionField',count:1,required:true,dtype:null,caption:'Group',doc:'One box per row.'},

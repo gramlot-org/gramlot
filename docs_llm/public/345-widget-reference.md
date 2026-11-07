@@ -325,7 +325,7 @@ Collection: charts. Store field discovery for the shared chart configuration con
 
 | Parameters | Contract |
 | --- | --- |
-| `timeFieldId, storepath, rowMode, configpath, categoryId, mapMeasureId, mapLabelId, secondCategoryId, geometryId, measureMenuId` | `{"dtype":"T"}` |
+| `timeFieldId, storepath, rowMode, configpath, categoryId, mapMeasureId, mapLabelId, secondCategoryId, geometryId, measureMenuId, measureRoleIds` | `{"dtype":"T"}` |
 
 Child grammar: `''`; parent grammar: `None`.
 
