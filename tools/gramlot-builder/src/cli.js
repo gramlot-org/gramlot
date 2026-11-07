@@ -5,7 +5,7 @@ const emit = process.stdout.write.bind(process.stdout);
 process.stdout.write = process.stderr.write.bind(process.stderr);
 let result;
 try {
-    if (![22,24,26].includes(Number(process.versions.node.split('.')[0]))) throw new Error('Supported Node lines: 22, 24, 26');
+    if (Number(process.versions.node.split('.')[0]) < 22) throw new Error('Node 22 or later is required');
     let input='';
     for await (const chunk of process.stdin) input+=chunk;
     result=await generate(JSON.parse(input));

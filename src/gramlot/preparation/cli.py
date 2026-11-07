@@ -114,7 +114,7 @@ def _generate(operation, config_path, config, staging, externals):
     node = shutil.which("node")
     if node is None:
         raise ValueError(
-            "Install supported Node 22, 24 or 26 and project-local @gramlot/builder"
+            "Install Node 22 or later and project-local @gramlot/builder"
         )
     bootstrap = """import {createRequire} from 'node:module';
 import {pathToFileURL} from 'node:url';

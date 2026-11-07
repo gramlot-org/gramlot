@@ -6,7 +6,7 @@
     "./cli": "./src/cli.js"
   },
   "engines": {
-    "node": "^22.0.0 || ^24.0.0 || ^26.0.0"
+    "node": ">=22"
   },
   "dependencies": {
     "esbuild": "0.28.2",

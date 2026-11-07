@@ -1510,11 +1510,10 @@ Python alone validates, checks freshness and commits or recovers output under §
 
 ### Supported Node lines
 
-Support Node 22.x, 24.x and 26.x; Node 24 is the recommended collection-development
-line in this decision. Verify all three on their latest available patches. New
-major lines require qualification before joining the supported set; unsupported
-lines produce an actionable launcher error (exit 2). This is the generator's
-support policy, not a new restriction on already released runtime packages.
+Support Node 22 and later (owner, 2026-11-07: "si" to `>=22`, replacing the
+earlier 22/24/26 list, which rejected odd and future lines). Node 24 is the
+recommended collection-development line; tests run on the LTS lines. Older
+lines produce an actionable launcher error (exit 2).
 Prepared Python collection consumers do not need Node or the generator.
 
 Do not pin/cap first-party Genro/Gramlot dependencies. Selection of third-party
@@ -1658,7 +1657,7 @@ Earlier design discussion remains a historical record of the decisions.
 A collection developer installs the core and the separate project-local
 `@gramlot/builder` package. The Python environment installs `gramlot`; consumers of
 already prepared Python packages do not require Node or the generator. Supported
-generator majors are Node 22, 24 and 26. The generator uses esbuild and its exported
+generator versions are Node 22 and later. The generator uses esbuild and its exported
 `@gramlot/builder/cli` entry, invoked once per Python command using protocol 1.
 In this unreleased source tree the npm generator lives in tools/gramlot-builder;
 no public package availability is implied.

@@ -1,7 +1,7 @@
 # Gramlot collection generator
 
 Project-local build dependency for collection authors, invoked by Python's
-`gramlot-builder build|check` through `@gramlot/builder/cli`. Node 22, 24 or 26 is
+`gramlot-builder build|check` through `@gramlot/builder/cli`. Node 22 or later is
 required. Consumers of prepared Python packages do not install this tool.
 
 The generator reads one protocol-1 JSON request from stdin, writes one result to
