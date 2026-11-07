@@ -9,7 +9,7 @@ Configure a chart over an existing Data Bag; engines load on demand.
 
 The environment Page base supplies the collections used below. [Configure them once](340-components-and-collections-guide.md#gc-340-050). [Setup examples are in the appendix](465-widget-examples.md#gc-465-setup-charts).
 
-Supply rows and a configuration Bag in Data. chartPane composes the shared controls; chartView renders supported types using ECharts, Plotly, Vega or uPlot. Temporal playback selects prepared rows; it does not calculate business aggregates. Map territories must match GeoJSON names. Geographic 3D bars are ECharts-only.
+Supply rows and a configuration Bag in Data. chartPane composes the shared controls; chartView renders supported types using ECharts, Plotly, Vega or uPlot; one element per chart type, such as chartCandlestick, declares its columns as attributes. Temporal playback selects prepared rows; it does not calculate business aggregates. Map territories must match GeoJSON names. Geographic 3D bars are ECharts-only.
 
 [All collections](345-widget-reference.md) · [Shared labels and validation](105-components.md#gc-105-020) · [Bindings](097-data-binding.md)
 
@@ -30,6 +30,79 @@ previous and empty policies distinguish missing periods. Disposal stops playback
 GeoJSON requires named Polygon/MultiPolygon features. The host performs matching and aggregation.
 Missing territories are not zero values. ECharts geographic bars offer zero or explicitly truncated
 extent baselines; their invisible range reference is a documented renderer-only exception.
+
+### One element per chart type
+
+Each chart type has its own element: chartBar, chartLine, chartPie, chartFunnel, chartCandlestick
+and the others listed below. The element is chartView with a fixed chartType. Its attributes are the
+columns the type reads. A fixed measure is its own attribute: chartCandlestick takes open, high, low
+and close; chartBoxplot takes min, q1, median, q3 and max; the types with one measure, such as
+chartPie, chartFunnel or chartTreemap, take measure. A type that reads a list of measures takes
+measures, comma separated. The Python and JavaScript Builders reject the element without a required
+attribute. A misspelt attribute is accepted by the Builders, because every element also accepts
+presentation attributes: the missing column then shows the diagnosis described below. chartView with
+chartType and valueFields remains for a type chosen at run time, as chartPane does.
+
+[Code for this composition is in the appendix](465-widget-examples.md#gc-465-setup-charts).
+
+### The syntax of a chart type
+
+Each chart type declares its syntax: the columns it reads, the chartView parameter of each column,
+how many it takes, whether it is required and whether it must be numeric. One check compares the
+parameters with this syntax before any engine reads the data. Measures in excess are an error, never
+dropped. A missing required column, a repeated code and a second dimension equal to the first are
+errors. A chart that takes a list of measures needs at least one. A parameter the type does not
+declare is not read: a configuration shared by several types keeps the values of the others.
+
+### When a chart is not drawn
+
+A chart that is not drawn always says why. In its place it shows an icon, one line and More info.
+The red icon marks an error: the configuration does not match the syntax, the data break a rule of
+the type, or the chart type is unknown. The grey icon informs: there are no rows to draw. More info
+opens a dialog. For a syntax error it lists what is wrong, what was expected, what was received and
+how to fix it, then what the type shows and the columns it reads. For no data it says where the rows
+come from: storepath, the filter of the grid in gridId, the date field of the animation. The notice
+follows the --gramlot-* theme colours; the drawn chart area stays white.
+
+### Fixed measures in chartPane
+
+The configurator shows the sections a type declares. A type with fixed measures shows one select per
+measure (Open, High, Low, Close; the five boxplot statistics; Measure for the one-measure types). The
+choice is stored in configpath.measureRoles and shared by the types that declare the same measure. An
+empty measure takes the numeric column at its position. valueFields is read from these selects for
+the types with fixed measures and from the measure toggles for the others, so changing type never
+sends measures in excess.
+
+### Rules of the data for each type
+
+- Funnel: one measure, drawn in row order; a negative value is an error, an empty one is skipped.
+- Radar: one axis per measure, one polygon per row. A row with an empty measure is left out, because
+  an empty vertex would read as zero. The axis runs from 0, or the lowest value, to the highest value;
+  min and max in the seriesOptions of a measure fix them.
+- Parallel coordinates: one vertical axis per measure, one line per row; min and max in seriesOptions
+  fix an axis.
+- Heatmap: captionField and secondCaptionField index the cells. Two rows for the same cell are an
+  error: prepare one row per pair upstream.
+- Sankey: links go from captionField to secondCaptionField. A negative value is an error; a cycle is
+  an error that names its nodes.
+- Candlestick: one candle per row; a row with an empty price is skipped. upColor and downColor in the
+  seriesOptions of the open measure set the colours.
+- Boxplot: the host supplies the five statistics; raw data is not accepted. Equal values are valid; a
+  row whose values decrease is an error naming the row.
+- Treemap and sunburst: a nested Bag with rowMode attributes. A node with children is a parent, its
+  value is the sum of its children, so a parent carrying the measure is an error. A negative leaf is
+  an error, an empty leaf is skipped. Each top-level node takes one palette colour.
+
+Only the ECharts engine draws these nine types.
+
+### Gauge
+
+gauge shows one number: the value of its node, a Data pointer such as ^.cpu.load. min and max set the
+range. mask sets the text, with {} for the number rounded to two decimals. thresholds lists ascending
+bands as value:colour pairs, for example 65:#e6a23c,85:#c23531; the band colours the needle dial, the
+ring or the arc. presentation is needle, ring or arc; caption is a label under the value. An empty
+value shows the information notice No value, never zero. The gauge follows the --gramlot-* theme
+colours and writes nothing back.
 
 ## Choose a component
 

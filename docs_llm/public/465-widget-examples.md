@@ -699,7 +699,22 @@ Independent state, header actions, Clear and inline guides.
 root.chartPane(storepath="sales.rows", configpath="sales.chart", height="500px")
 ```
 
-Supply rows and a configuration Bag in Data. chartPane composes the shared controls; chartView renders supported types using ECharts, Plotly, Vega or uPlot. Temporal playback selects prepared rows; it does not calculate business aggregates. Map territories must match GeoJSON names. Geographic 3D bars are ECharts-only.
+Supply rows and a configuration Bag in Data. chartPane composes the shared controls; chartView renders supported types using ECharts, Plotly, Vega or uPlot; one element per chart type, such as chartCandlestick, declares its columns as attributes. Temporal playback selects prepared rows; it does not calculate business aggregates. Map territories must match GeoJSON names. Geographic 3D bars are ECharts-only.
+
+Each chart type has its own element: chartBar, chartLine, chartPie, chartFunnel, chartCandlestick
+and the others listed below. The element is chartView with a fixed chartType. Its attributes are the
+columns the type reads. A fixed measure is its own attribute: chartCandlestick takes open, high, low
+and close; chartBoxplot takes min, q1, median, q3 and max; the types with one measure, such as
+chartPie, chartFunnel or chartTreemap, take measure. A type that reads a list of measures takes
+measures, comma separated. The Python and JavaScript Builders reject the element without a required
+attribute. A misspelt attribute is accepted by the Builders, because every element also accepts
+presentation attributes: the missing column then shows the diagnosis described below. chartView with
+chartType and valueFields remains for a type chosen at run time, as chartPane does.
+```python
+pane.chartCandlestick(captionField="day", open="open", high="high", low="low", close="close",
+                      storepath=".rows", rowMode="values", seriesOptions="^.options")
+```
+
 
 
 <a id="gc-465-chartpane"></a>

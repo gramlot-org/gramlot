@@ -196,7 +196,8 @@ COLLECTION_GUIDES.update({
     'charts': ('Charts', 'Configure a chart over an existing Data Bag; engines load on demand.',
         'root.chartPane(storepath="sales.rows", configpath="sales.chart", height="500px")',
         'Supply rows and a configuration Bag in Data. chartPane composes the shared controls; '
-        'chartView renders supported types using ECharts, Plotly, Vega or uPlot. '
+        'chartView renders supported types using ECharts, Plotly, Vega or uPlot; one element per '
+        'chart type, such as chartCandlestick, declares its columns as attributes. '
         'Temporal playback selects prepared rows; it does not calculate business aggregates. '
         'Map territories must match GeoJSON names. Geographic 3D bars are ECharts-only.'),
     'vizabi': ('Vizabi', 'Host-provided Vizabi bubble integration; separate from chartPane engines.',

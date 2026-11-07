@@ -3,6 +3,23 @@
 Document ID: **GC-225**. Started: **2026-10-06**. Each rule names the owner
 decision it comes from. Sections marked **Open** record a question, not a rule.
 
+Chart type syntax — 2026-11-07, owner decisions of 2026-11-07: each chart type declares its `syntax` (the
+word of the owner: "ogni chart type dovrebbe dichiarare la propria sintassi") and its `doc` in its descriptor in
+`chart-types/`. A role of the syntax has `name`, `parameter` (the chartView parameter it fills), `count` (1 or
+`'many'`), `required`, `dtype`, `caption` and `doc`. `measureLimit` is removed: measures in excess are an error,
+never truncated. The error carrying the structured diagnosis is `ChartSyntaxError` (owner choice); its
+`diagnosis` has `type`, `role`, `message`, `expected`, `received`, `fix`. A chart that is not drawn shows a notice
+(the owner's "avviso"): an icon, one line and More info, which opens an HTML `dialog`; `ChartNotice` builds it for
+chartView and gauge. One element per chart type is `chart` followed by the type id with its first letter in
+capitals (`chartCandlestick`, `chartBar3D`, `chartMapBar3D`); the prefix avoids `area`, `map` (HTML) and `line`
+(SVG). The element name comes from the grammar, so it is the same in Python and JavaScript; the snake/camel
+translation applies to API methods, not to element names. A fixed measure role is its own attribute (`open`,
+`high`, `low`, `close`; `min`, `q1`, `median`, `q3`, `max`); the role of the one-measure types is `measure`,
+because `value` is the node value of Gramlot components (owner, 2026-11-07); a list of measures is `measures`.
+chartPane stores the fixed measures in `configpath.measureRoles.<role>`. A component parameter spec may carry
+`required: true`: the grammar writes it with `has_default: false`, so the Builders reject the element without it.
+`gauge` stays a widget, not a chart type (owner, 2026-11-07).
+
 Chart types funnel, radar, parallel, heatmap and sankey — 2026-11-06: owner approved five new
 `chartType` values of `chartView`, ECharts engine only (other engines keep the unsupported-type
 message). Descriptors in `chart-types/`, pure option builders in `chart-funnel-options.js`,
@@ -16,19 +33,18 @@ computes no fixed domains for these types.
 
 Chart types candlestick and boxplot — 2026-11-07: two further `chartType` values of `chartView`, ECharts
 engine only. Descriptors in `chart-types/`, pure option builders in `chart-candlestick-options.js` and
-`chart-boxplot-options.js`. Candlestick reads exactly four measures as open, high, low, close
-(`measureLimit` 4); the builder reorders them for ECharts. Colors come from `upColor` and `downColor` in the
+`chart-boxplot-options.js`. Candlestick reads exactly four measures as open, high, low, close;
+the builder reorders them for ECharts. Colors come from `upColor` and `downColor` in the
 series options of the first measure (open); ECharts defaults apply when absent. Boxplot reads exactly five
-measures as min, q1, median, q3, max (`measureLimit` 5); raw data is not accepted, the host supplies the
+measures as min, q1, median, q3, max; raw data is not accepted, the host supplies the
 statistics. Any other measure count is an error naming the order. A row with an empty value among its
 measures is skipped, never drawn as zero. A boxplot row whose values decrease is an error naming its caption.
-`measureLimit` truncates a longer selection, so the count error shows only for fewer measures.
 
 Chart types treemap and sunburst — 2026-11-07: two further `chartType` values of `chartView`, ECharts engine
 only. Descriptors in `chart-types/`, pure option builders in `chart-treemap-options.js` and
 `chart-sunburst-options.js`, the shared nested read in `chartHierarchy` (`chart-type-data.js`). The data is a
 nested Bag read with `rowMode='attributes'`: each node carries `captionField` and the single measure
-(`measureLimit` 1) as attributes. A node whose value is a Bag is a parent and its nested nodes are its
+as attributes. A node whose value is a Bag is a parent and its nested nodes are its
 children at any depth; any other node is a leaf. The value of a parent is the sum of its children, so a parent
 that carries the measure is an error naming that node. A null leaf is skipped, a negative leaf is an error,
 a parent whose leaves are all skipped is skipped. `rowMode='values'` is an error naming `rowMode='attributes'`
@@ -2819,8 +2835,8 @@ Python ChartPane seeds the two Data Bags and authors chartPane; the charts
 collection composes standard Source toolbar, drawer and configuration controls.
 chartPane follows framePane naming; configpath follows chartFields and avoids
 using the component's inherited datapath as a second configuration authority.
-Internal chart-types modules declare id, label, controls, threeD, measureLimit,
-buildOptions and optional mapData. chartTypes/chartType follow chartType vocabulary.
+Internal chart-types modules declare id, label, controls, threeD, measureLimit
+(replaced by syntax on 2026-11-07, see Chart type syntax above), buildOptions and optional mapData. chartTypes/chartType follow chartType vocabulary.
 Common controls own Source composition; each chart type selects applicable groups.
 The same descriptor dispatches rendering, without another central type switch.
 Generated child IDs derive from the chartPane ID (view/layout/measures suffixes).
