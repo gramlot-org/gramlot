@@ -148,6 +148,23 @@ test('a logical child opens no socket, attaches before subscriptions and ignores
     assert.equal(f.windows.length, 0);
 });
 
+test('a child of a parent without a PageStore opens its own socket; a different endpoint still fails', t => {
+    const plain = {messages: [], postMessage(message) { this.messages.push(message); }};
+    const f = fixture(t, plain);
+    assert.equal(f.windows.length, 0);
+    f.receive(plain, {kind: 'ready', channels: {}});
+    assert.equal(f.windows.length, 1);
+    assert.equal(f.connection.parent, null);
+    f.windows[0].dispatchEvent(new Event('open'));
+    assert.equal(f.connection.ready, true);
+
+    const other = {messages: [], postMessage(message) { this.messages.push(message); }};
+    const g = fixture(t, other);
+    g.receive(other, {kind: 'ready', channels: {server: {endpoint: 'ws://test/another/store', ready: true}}});
+    assert.equal(g.connection.closed, true);
+    assert.equal(g.windows.length, 0);
+});
+
 test('a directly opened window is accepted and a different endpoint is rejected', t => {
     const f = fixture(t);
     f.windows[0].dispatchEvent(new Event('open'));

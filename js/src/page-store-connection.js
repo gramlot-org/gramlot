@@ -25,7 +25,7 @@ export class PageStoreConnection {
         this.frames.registerChannel('server', {
             changed: peer => this.peerChanged(peer),
             disconnected: peer => {
-                if (peer.parent) this.fail(new Error('PageStore parent disconnected'));
+                if (peer.parent && this.parent) this.fail(new Error('PageStore parent disconnected'));
                 else this.forget(peer.window);
             },
             receive: (peer, message) => {
@@ -33,8 +33,14 @@ export class PageStoreConnection {
                 catch (error) { this.fail(error); }
             },
         }, {endpoint: this.endpoint, ready: false});
-        if (this.parent) return;
-        address.searchParams.set('pageId', gramlot.pageId);
+        this.address = address;
+        if (!this.parent) this.open();
+    }
+
+    /** Opens this page's own WebSocket: the page is the root of its family channel. */
+    open() {
+        const address = this.address;
+        address.searchParams.set('pageId', this.gramlot.pageId);
         this.socket = new this.window.WebSocket(address.href);
         this.socket.addEventListener('open', () => this.connected());
         this.socket.addEventListener('message', event => {
@@ -48,9 +54,13 @@ export class PageStoreConnection {
     }
 
     peerChanged(peer) {
-        if (this.closed || !peer.parent) return;
+        if (this.closed || !peer.parent || !this.parent) return;
         const state = peer.channels.server;
-        if (peer.origin !== this.origin || state?.endpoint !== this.endpoint) {
+        if (!state) {
+            // A parent without a PageStore (a plain container page) leaves this page its own socket.
+            this.parent = null;
+            this.open();
+        } else if (peer.origin !== this.origin || state?.endpoint !== this.endpoint) {
             this.fail(new Error('Parent does not provide the same PageStore endpoint'));
         } else if (state.ready) this.connected();
         else if (this.ready) this.fail(new Error('PageStore parent channel closed'));
