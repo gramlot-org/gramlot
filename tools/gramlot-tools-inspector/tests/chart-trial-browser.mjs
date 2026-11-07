@@ -188,9 +188,9 @@ try {
    for(const type of ['area','horizontalBar']) await page.locator('#sales-pane-chartType').selectOption(type);
    await page.locator('#sales-pane-chartType').selectOption('pie');
    await page.waitForFunction(()=>document.querySelector('#sales-pane-view').shadowRoot.querySelector('[role="alert"]').hidden);
-   // Pie reads its one measure from the value role, the first numeric column; the bar selection stays in seriesOptions.
+   // Pie reads its one measure from the measure role, the first numeric column; the bar selection stays in seriesOptions.
    assert.equal(await page.evaluate(()=>window.qualification.data.getItem('demo.config.valueFields')),'units');
-   assert.equal(await page.locator('#sales-pane-role-value').inputValue(),'units');
+   assert.equal(await page.locator('#sales-pane-role-measure').inputValue(),'units');
    await page.locator('#sales-pane-captionField').selectOption('date');
    await page.waitForTimeout(1100);
    const checkLegendSpace=async()=>{
@@ -209,7 +209,7 @@ try {
    await page.screenshot({path:`${base}/${name}-pie-legend.png`});
    for(let i=0;i<8;i++) await resizeHandle.press('ArrowUp');
    await page.locator('#sales-pane-captionField').selectOption('product');
-   // The measures menu belongs to the types with a list of measures; pie reads its value role.
+   // The measures menu belongs to the types with a list of measures; pie reads its measure role.
    await page.locator('#sales-pane-chartType').selectOption('bar');
    await toggleMeasure('Units'); await toggleMeasure('Margin');
    for(const type of ['pie','donut','stackedBar','stackedArea']) {

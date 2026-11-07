@@ -5,7 +5,7 @@ Document ID: **GC-460**.
 <a id="gc-460-005"></a>
 ## Scope and evidence
 
-This audit covers all **62 component declarations in 14 packaged collections**. The reviewed core baseline is `2b1f2d80`; lesson references use examples `c59a19c`. Local uncommitted work is excluded. The inventory comes from packaged grammars; the behavior paragraphs were reviewed against implementation and test assertions on 2026-11-04. The reference documents purpose, parameters/defaults, Data, interaction/events, composition and limits for each declaration. An explicitly absent callback or unsupported behavior is part of the contract, not a missing implementation to invent.
+This audit covers all **89 component declarations in 14 packaged collections**. The reviewed core baseline is `2b1f2d80`; lesson references use examples `c59a19c`. Local uncommitted work is excluded. The inventory comes from packaged grammars; the behavior paragraphs were reviewed against implementation and test assertions on 2026-11-04. The reference documents purpose, parameters/defaults, Data, interaction/events, composition and limits for each declaration. An explicitly absent callback or unsupported behavior is part of the contract, not a missing implementation to invent.
 
 Parameter coverage is checked mechanically against metadata. Behavioral coverage is a source review, not proof that every possible interaction, failure, accessibility requirement or host/browser combination has been tested. Test files below are inspected evidence: their presence is not a new test-run result or a maturity rating. A statement that no callback is declared concerns component-specific callback parameters; ordinary Source event handling remains available. Example links are confined to the appendix and are teaching evidence, not a substitute for behavioral qualification.
 
@@ -79,6 +79,33 @@ Dedicated catalogue lessons now cover `transformPane` and `rowActions`; their ex
 | `chartGeoJSON` | [Reference](480-charts.md#gc-480-chartgeojson) | [Reviewed](480-charts.md#gc-480-chartgeojson) | [Reviewed](480-charts.md#gc-480-chartgeojson) |
 | `chartTimeline` | [Reference](480-charts.md#gc-480-charttimeline) | [Reviewed](480-charts.md#gc-480-charttimeline) | [Reviewed](480-charts.md#gc-480-charttimeline) |
 | `gauge` | [Reference](480-charts.md#gc-480-gauge) | [Reviewed](480-charts.md#gc-480-gauge) | [Reviewed](480-charts.md#gc-480-gauge) |
+| `chartBar` | [Reference](480-charts.md#gc-480-chartbar) | [Reviewed](480-charts.md#gc-480-chartbar) | [Reviewed](480-charts.md#gc-480-chartbar) |
+| `chartLine` | [Reference](480-charts.md#gc-480-chartline) | [Reviewed](480-charts.md#gc-480-chartline) | [Reviewed](480-charts.md#gc-480-chartline) |
+| `chartArea` | [Reference](480-charts.md#gc-480-chartarea) | [Reviewed](480-charts.md#gc-480-chartarea) | [Reviewed](480-charts.md#gc-480-chartarea) |
+| `chartStackedBar` | [Reference](480-charts.md#gc-480-chartstackedbar) | [Reviewed](480-charts.md#gc-480-chartstackedbar) | [Reviewed](480-charts.md#gc-480-chartstackedbar) |
+| `chartStackedArea` | [Reference](480-charts.md#gc-480-chartstackedarea) | [Reviewed](480-charts.md#gc-480-chartstackedarea) | [Reviewed](480-charts.md#gc-480-chartstackedarea) |
+| `chartHorizontalBar` | [Reference](480-charts.md#gc-480-charthorizontalbar) | [Reviewed](480-charts.md#gc-480-charthorizontalbar) | [Reviewed](480-charts.md#gc-480-charthorizontalbar) |
+| `chartPie` | [Reference](480-charts.md#gc-480-chartpie) | [Reviewed](480-charts.md#gc-480-chartpie) | [Reviewed](480-charts.md#gc-480-chartpie) |
+| `chartDonut` | [Reference](480-charts.md#gc-480-chartdonut) | [Reviewed](480-charts.md#gc-480-chartdonut) | [Reviewed](480-charts.md#gc-480-chartdonut) |
+| `chartScatter` | [Reference](480-charts.md#gc-480-chartscatter) | [Reviewed](480-charts.md#gc-480-chartscatter) | [Reviewed](480-charts.md#gc-480-chartscatter) |
+| `chartBar3D` | [Reference](480-charts.md#gc-480-chartbar3d) | [Reviewed](480-charts.md#gc-480-chartbar3d) | [Reviewed](480-charts.md#gc-480-chartbar3d) |
+| `chartLine3D` | [Reference](480-charts.md#gc-480-chartline3d) | [Reviewed](480-charts.md#gc-480-chartline3d) | [Reviewed](480-charts.md#gc-480-chartline3d) |
+| `chartScatter3D` | [Reference](480-charts.md#gc-480-chartscatter3d) | [Reviewed](480-charts.md#gc-480-chartscatter3d) | [Reviewed](480-charts.md#gc-480-chartscatter3d) |
+| `chartSurface` | [Reference](480-charts.md#gc-480-chartsurface) | [Reviewed](480-charts.md#gc-480-chartsurface) | [Reviewed](480-charts.md#gc-480-chartsurface) |
+| `chartMap` | [Reference](480-charts.md#gc-480-chartmap) | [Reviewed](480-charts.md#gc-480-chartmap) | [Reviewed](480-charts.md#gc-480-chartmap) |
+| `chartMapBar3D` | [Reference](480-charts.md#gc-480-chartmapbar3d) | [Reviewed](480-charts.md#gc-480-chartmapbar3d) | [Reviewed](480-charts.md#gc-480-chartmapbar3d) |
+| `chartMap3D` | [Reference](480-charts.md#gc-480-chartmap3d) | [Reviewed](480-charts.md#gc-480-chartmap3d) | [Reviewed](480-charts.md#gc-480-chartmap3d) |
+| `chartLines3D` | [Reference](480-charts.md#gc-480-chartlines3d) | [Reviewed](480-charts.md#gc-480-chartlines3d) | [Reviewed](480-charts.md#gc-480-chartlines3d) |
+| `chartPolygons3D` | [Reference](480-charts.md#gc-480-chartpolygons3d) | [Reviewed](480-charts.md#gc-480-chartpolygons3d) | [Reviewed](480-charts.md#gc-480-chartpolygons3d) |
+| `chartFunnel` | [Reference](480-charts.md#gc-480-chartfunnel) | [Reviewed](480-charts.md#gc-480-chartfunnel) | [Reviewed](480-charts.md#gc-480-chartfunnel) |
+| `chartRadar` | [Reference](480-charts.md#gc-480-chartradar) | [Reviewed](480-charts.md#gc-480-chartradar) | [Reviewed](480-charts.md#gc-480-chartradar) |
+| `chartParallel` | [Reference](480-charts.md#gc-480-chartparallel) | [Reviewed](480-charts.md#gc-480-chartparallel) | [Reviewed](480-charts.md#gc-480-chartparallel) |
+| `chartHeatmap` | [Reference](480-charts.md#gc-480-chartheatmap) | [Reviewed](480-charts.md#gc-480-chartheatmap) | [Reviewed](480-charts.md#gc-480-chartheatmap) |
+| `chartSankey` | [Reference](480-charts.md#gc-480-chartsankey) | [Reviewed](480-charts.md#gc-480-chartsankey) | [Reviewed](480-charts.md#gc-480-chartsankey) |
+| `chartCandlestick` | [Reference](480-charts.md#gc-480-chartcandlestick) | [Reviewed](480-charts.md#gc-480-chartcandlestick) | [Reviewed](480-charts.md#gc-480-chartcandlestick) |
+| `chartBoxplot` | [Reference](480-charts.md#gc-480-chartboxplot) | [Reviewed](480-charts.md#gc-480-chartboxplot) | [Reviewed](480-charts.md#gc-480-chartboxplot) |
+| `chartTreemap` | [Reference](480-charts.md#gc-480-charttreemap) | [Reviewed](480-charts.md#gc-480-charttreemap) | [Reviewed](480-charts.md#gc-480-charttreemap) |
+| `chartSunburst` | [Reference](480-charts.md#gc-480-chartsunburst) | [Reviewed](480-charts.md#gc-480-chartsunburst) | [Reviewed](480-charts.md#gc-480-chartsunburst) |
 | `vizabiBubble` | [Reference](485-vizabi.md#gc-485-vizabibubble) | [Reviewed](485-vizabi.md#gc-485-vizabibubble) | [Reviewed](485-vizabi.md#gc-485-vizabibubble) |
 | `audioAnalyser` | [Reference](490-audio.md#gc-490-audioanalyser) | [Reviewed](490-audio.md#gc-490-audioanalyser) | [Reviewed](490-audio.md#gc-490-audioanalyser) |
 | `drawingPane` | [Reference](495-drawing.md#gc-495-drawingpane) | [Reviewed](495-drawing.md#gc-495-drawingpane) | [Reviewed](495-drawing.md#gc-495-drawingpane) |
@@ -677,6 +704,276 @@ These links identify the owning code and test suites examined. Shared suites can
 **Tests inspected:** [chart-gauge.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-gauge.test.js).
 
 [Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-gauge).
+
+
+<a id="gc-460-chartbar"></a>
+### `chartBar`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartbar).
+
+
+<a id="gc-460-chartline"></a>
+### `chartLine`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartline).
+
+
+<a id="gc-460-chartarea"></a>
+### `chartArea`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartarea).
+
+
+<a id="gc-460-chartstackedbar"></a>
+### `chartStackedBar`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartstackedbar).
+
+
+<a id="gc-460-chartstackedarea"></a>
+### `chartStackedArea`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartstackedarea).
+
+
+<a id="gc-460-charthorizontalbar"></a>
+### `chartHorizontalBar`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-charthorizontalbar).
+
+
+<a id="gc-460-chartpie"></a>
+### `chartPie`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartpie).
+
+
+<a id="gc-460-chartdonut"></a>
+### `chartDonut`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartdonut).
+
+
+<a id="gc-460-chartscatter"></a>
+### `chartScatter`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartscatter).
+
+
+<a id="gc-460-chartbar3d"></a>
+### `chartBar3D`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartbar3d).
+
+
+<a id="gc-460-chartline3d"></a>
+### `chartLine3D`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartline3d).
+
+
+<a id="gc-460-chartscatter3d"></a>
+### `chartScatter3D`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartscatter3d).
+
+
+<a id="gc-460-chartsurface"></a>
+### `chartSurface`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartsurface).
+
+
+<a id="gc-460-chartmap"></a>
+### `chartMap`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartmap).
+
+
+<a id="gc-460-chartmapbar3d"></a>
+### `chartMapBar3D`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartmapbar3d).
+
+
+<a id="gc-460-chartmap3d"></a>
+### `chartMap3D`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartmap3d).
+
+
+<a id="gc-460-chartlines3d"></a>
+### `chartLines3D`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartlines3d).
+
+
+<a id="gc-460-chartpolygons3d"></a>
+### `chartPolygons3D`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartpolygons3d).
+
+
+<a id="gc-460-chartfunnel"></a>
+### `chartFunnel`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartfunnel).
+
+
+<a id="gc-460-chartradar"></a>
+### `chartRadar`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartradar).
+
+
+<a id="gc-460-chartparallel"></a>
+### `chartParallel`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartparallel).
+
+
+<a id="gc-460-chartheatmap"></a>
+### `chartHeatmap`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartheatmap).
+
+
+<a id="gc-460-chartsankey"></a>
+### `chartSankey`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartsankey).
+
+
+<a id="gc-460-chartcandlestick"></a>
+### `chartCandlestick`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartcandlestick).
+
+
+<a id="gc-460-chartboxplot"></a>
+### `chartBoxplot`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartboxplot).
+
+
+<a id="gc-460-charttreemap"></a>
+### `chartTreemap`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-charttreemap).
+
+
+<a id="gc-460-chartsunburst"></a>
+### `chartSunburst`
+
+**Implementation:** [charts.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/charts.js), [index.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-types/index.js).
+
+**Tests inspected:** [chart-type-elements.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-type-elements.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-chartsunburst).
 
 
 <a id="gc-460-vizabibubble"></a>

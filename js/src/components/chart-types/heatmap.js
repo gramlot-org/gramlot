@@ -4,5 +4,5 @@ export default {id:'heatmap',label:'Heatmap',controls:[],threeD:false,domains:fa
     syntax:[
         {name:'captionField',parameter:'captionField',count:1,required:true,dtype:null,caption:'X category',doc:'The columns of the grid.'},
         {name:'secondCaptionField',parameter:'secondCaptionField',count:1,required:true,dtype:null,caption:'Y category',doc:'The rows of the grid; it must differ from the X category.'},
-        {name:'value',parameter:'valueFields',count:1,required:true,dtype:'numeric',caption:'Value',doc:'The colour of each cell; one row per pair of categories.'}
+        {name:'measure',parameter:'valueFields',count:1,required:true,dtype:'numeric',caption:'Measure',doc:'The colour of each cell; one row per pair of categories.'}
     ]};

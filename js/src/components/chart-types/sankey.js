@@ -4,5 +4,5 @@ export default {id:'sankey',label:'Sankey',controls:[],threeD:false,domains:fals
     syntax:[
         {name:'captionField',parameter:'captionField',count:1,required:true,dtype:null,caption:'Source',doc:'The node a link starts from.'},
         {name:'secondCaptionField',parameter:'secondCaptionField',count:1,required:true,dtype:null,caption:'Target',doc:'The node a link ends at; it must differ from the source column, and links must not form a cycle.'},
-        {name:'value',parameter:'valueFields',count:1,required:true,dtype:'numeric',caption:'Value',doc:'The width of each link; values must not be negative.'}
+        {name:'measure',parameter:'valueFields',count:1,required:true,dtype:'numeric',caption:'Measure',doc:'The width of each link; values must not be negative.'}
     ]};

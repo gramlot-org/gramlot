@@ -43,7 +43,7 @@ test('fixed measure roles keep the reading order of candlestick and boxplot', ()
     const names = id => chartTypes.find(type => type.id === id).syntax.filter(role => role.parameter === 'valueFields').map(role => role.name);
     assert.deepEqual(names('candlestick'), ['open','high','low','close']);
     assert.deepEqual(names('boxplot'), ['min','q1','median','q3','max']);
-    for (const id of ['pie','donut','funnel','heatmap','sankey','treemap','sunburst']) assert.deepEqual(names(id), ['value'], id);
+    for (const id of ['pie','donut','funnel','heatmap','sankey','treemap','sunburst']) assert.deepEqual(names(id), ['measure'], id);
 });
 
 test('checkChartSyntax: missing, excess and equal dimensions carry a diagnosis', async () => {
@@ -73,11 +73,11 @@ test('the configurator builds its column sections and one select per fixed measu
     const builder = new GramlotBuilder(null, {collections:[charts, layout, inputs, grid]});
     chartControls(builder.root, {configpath:'config', storepath:'rows', rowMode:'attributes', prefix:'test'});
     const text = builder.toTytx();
-    for (const name of ['value','open','high','low','close','min','q1','median','q3','max']) {
+    for (const name of ['measure','open','high','low','close','min','q1','median','q3','max']) {
         assert.match(text, new RegExp(`test-role-${name}`), name);
         assert.match(text, new RegExp(`config\\.measureRoles\\.${name}`), name);
     }
-    assert.match(text, /test_measureRole_open,test_measureRole_high/);
+    assert.match(text, /test_measureRole_measure,test_measureRole_open,test_measureRole_high/);
     assert.deepEqual(chartFixedMeasures(chartTypes.find(type => type.id === 'bar')), []);
     assert.deepEqual(chartFixedMeasures(chartTypes.find(type => type.id === 'boxplot')), ['min','q1','median','q3','max']);
 });

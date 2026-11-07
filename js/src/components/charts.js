@@ -166,4 +166,34 @@ const ChartView = defineComponent({
         }
     }
 });
-export default defineCollection({name:'charts',assets:{echartsGlLicense:new URL('./licenses/echarts-gl.txt',import.meta.url),clayglLicense:new URL('./licenses/claygl.txt',import.meta.url),plotlyLicense:new URL('./licenses/plotly.txt',import.meta.url),vegaLicense:new URL('./licenses/vega.txt',import.meta.url),uplotLicense:new URL('./licenses/uplot.txt',import.meta.url)},components:[ChartPane,ChartView,ChartFields,ChartGeoJSON,ChartTimeline,Gauge]});
+/**
+ * One element per chart type, generated from its syntax: `chartCandlestick(captionField, open, high, low, close)`.
+ * It is chartView with a fixed chartType; a fixed measure role is its own attribute, a list of measures is `measures`.
+ * The roles the syntax requires are required attributes, so the Builders reject the element without them.
+ */
+function chartTypeElement(type) {
+    const name=`chart${type.id[0].toUpperCase()}${type.id.slice(1)}`;
+    const tag=`gramlot-chart-${type.id.replace(/([a-z])([A-Z])/g,'$1-$2').toLowerCase()}`;
+    const parameters=structuredClone(ChartView.parameters);
+    delete parameters.chartType; delete parameters.valueFields;
+    const measures=type.syntax.filter(role=>role.parameter==='valueFields');
+    for(const role of type.syntax) {
+        const spec=role.parameter==='valueFields' ? {dtype:'T',binding:'read'} : parameters[role.parameter];
+        delete spec.default; delete spec.nullable;
+        if(role.required)spec.required=true;
+        parameters[role.parameter==='valueFields'?role.name:role.parameter]=spec;
+    }
+    return defineComponent({name,tag,base:ChartView.base,sourceContext:true,bagStore:true,parameters,
+        doc:`${type.doc} chartView with chartType '${type.id}'.`,
+        implementation:Base=>ChartView.implementation(class extends Base {
+            projectAttributes(attrs,adapt) {
+                const rest=super.projectAttributes(attrs,adapt);
+                const values=measures.map(role=>this.parameters[role.name]).filter(Boolean);
+                this.parameters={...this.parameters,chartType:type.id,valueFields:values.length?values.join(','):null};
+                return rest;
+            }
+        })});
+}
+const chartTypeElements=chartTypes.map(chartTypeElement);
+
+export default defineCollection({name:'charts',assets:{echartsGlLicense:new URL('./licenses/echarts-gl.txt',import.meta.url),clayglLicense:new URL('./licenses/claygl.txt',import.meta.url),plotlyLicense:new URL('./licenses/plotly.txt',import.meta.url),vegaLicense:new URL('./licenses/vega.txt',import.meta.url),uplotLicense:new URL('./licenses/uplot.txt',import.meta.url)},components:[ChartPane,ChartView,ChartFields,ChartGeoJSON,ChartTimeline,Gauge,...chartTypeElements]});
