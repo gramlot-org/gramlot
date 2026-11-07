@@ -14,6 +14,16 @@ row with an empty measure is left out, because ECharts plots an empty vertex at 
 cycle is an error message in the chart. Descriptors carry `domains:false`: temporal playback
 computes no fixed domains for these types.
 
+Chart types candlestick and boxplot — 2026-11-07: two further `chartType` values of `chartView`, ECharts
+engine only. Descriptors in `chart-types/`, pure option builders in `chart-candlestick-options.js` and
+`chart-boxplot-options.js`. Candlestick reads exactly four measures as open, high, low, close
+(`measureLimit` 4); the builder reorders them for ECharts. Colors come from `upColor` and `downColor` in the
+series options of the first measure (open); ECharts defaults apply when absent. Boxplot reads exactly five
+measures as min, q1, median, q3, max (`measureLimit` 5); raw data is not accepted, the host supplies the
+statistics. Any other measure count is an error naming the order. A row with an empty value among its
+measures is skipped, never drawn as zero. A boxplot row whose values decrease is an error naming its caption.
+`measureLimit` truncates a longer selection, so the count error shows only for fewer measures.
+
 Gauge element — 2026-11-06: owner approved the element `gauge` in the `charts`
 collection (class `Gauge`, tag `gramlot-gauge`, descriptor file `chart-gauge.js`).
 The node value is the single value. Parameters: `min`, `max`, `mask`, `thresholds`

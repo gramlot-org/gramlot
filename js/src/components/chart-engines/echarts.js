@@ -12,6 +12,8 @@ import {chartRadarOptions} from '../chart-radar-options.js';
 import {chartParallelOptions} from '../chart-parallel-options.js';
 import {chartHeatmapOptions} from '../chart-heatmap-options.js';
 import {chartSankeyOptions} from '../chart-sankey-options.js';
+import {chartCandlestickOptions} from '../chart-candlestick-options.js';
+import {chartBoxplotOptions} from '../chart-boxplot-options.js';
 
 let glLoading;
 export class EChartsAdapter {
@@ -86,6 +88,8 @@ export class EChartsAdapter {
     render_parallel(context) { return chartParallelOptions(context); }
     render_heatmap(context) { return chartHeatmapOptions(context); }
     render_sankey(context) { return chartSankeyOptions(context); }
+    render_candlestick(context) { return chartCandlestickOptions(context); }
+    render_boxplot(context) { return chartBoxplotOptions(context); }
     svg() { return this.#chart.renderToSVGString(); }
     resize() { this.#chart.resize(); }
     dispose() { this.#chart.dispose();if(this.#mapData)echarts.registerMap(this.#mapName,{type:'FeatureCollection',features:[]}); }

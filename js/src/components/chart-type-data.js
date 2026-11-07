@@ -1,4 +1,4 @@
-/** Cell and caption reading shared by the funnel, radar, parallel, heatmap and sankey builders. */
+/** Cell and caption reading shared by the funnel, radar, parallel, heatmap, sankey, candlestick and boxplot builders. */
 
 /** A missing measure is no value; any other non-number is an error. Zero stays zero. */
 export function chartCell(view,row,field) {
@@ -22,4 +22,9 @@ export function chartCaption(seriesOptions,field) {
 export function chartSeriesNumber(seriesOptions,field,key) {
     const value=seriesOptions?.getItem(field)?.getItem(key);
     return typeof value==='number'&&Number.isFinite(value)?value:null;
+}
+/** Text from the series options of a measure (for example a color), or null. */
+export function chartSeriesText(seriesOptions,field,key) {
+    const value=seriesOptions?.getItem(field)?.getItem(key);
+    return typeof value==='string'&&value?value:null;
 }
