@@ -7,6 +7,11 @@ import {chartSpatialOptions} from '../chart-spatial-options.js';
 import {chartGeographicOptions,chartPolygonGeoJSON} from '../chart-geographic-options.js';
 import {chartMapBar3DOptions} from '../chart-map-bar3d-options.js';
 import {chartMapOptions} from '../chart-map-options.js';
+import {chartFunnelOptions} from '../chart-funnel-options.js';
+import {chartRadarOptions} from '../chart-radar-options.js';
+import {chartParallelOptions} from '../chart-parallel-options.js';
+import {chartHeatmapOptions} from '../chart-heatmap-options.js';
+import {chartSankeyOptions} from '../chart-sankey-options.js';
 
 let glLoading;
 export class EChartsAdapter {
@@ -76,6 +81,11 @@ export class EChartsAdapter {
         const option=chartGeographicOptions(view,type,category,structure.getItem('geometryField'),fields,settings,this.#mapName,geoJSON);
         this.#map(geoJSON);return option;
     }
+    render_funnel(context) { return chartFunnelOptions(context); }
+    render_radar(context) { return chartRadarOptions(context); }
+    render_parallel(context) { return chartParallelOptions(context); }
+    render_heatmap(context) { return chartHeatmapOptions(context); }
+    render_sankey(context) { return chartSankeyOptions(context); }
     svg() { return this.#chart.renderToSVGString(); }
     resize() { this.#chart.resize(); }
     dispose() { this.#chart.dispose();if(this.#mapData)echarts.registerMap(this.#mapName,{type:'FeatureCollection',features:[]}); }

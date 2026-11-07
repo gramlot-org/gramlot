@@ -3,6 +3,17 @@
 Document ID: **GC-225**. Started: **2026-10-06**. Each rule names the owner
 decision it comes from. Sections marked **Open** record a question, not a rule.
 
+Chart types funnel, radar, parallel, heatmap and sankey — 2026-11-06: owner approved five new
+`chartType` values of `chartView`, ECharts engine only (other engines keep the unsupported-type
+message). Descriptors in `chart-types/`, pure option builders in `chart-funnel-options.js`,
+`chart-radar-options.js`, `chart-parallel-options.js`, `chart-heatmap-options.js` and
+`chart-sankey-options.js`, shared cell reading in `chart-type-data.js`. Funnel, heatmap and sankey
+take one measure; radar and parallel take N. Heatmap and sankey use `secondCaptionField`
+(heatmap: Y category; sankey: target). Empty measure cells are skipped, never drawn as zero; a radar
+row with an empty measure is left out, because ECharts plots an empty vertex at the center. A sankey
+cycle is an error message in the chart. Descriptors carry `domains:false`: temporal playback
+computes no fixed domains for these types.
+
 Gauge element — 2026-11-06: owner approved the element `gauge` in the `charts`
 collection (class `Gauge`, tag `gramlot-gauge`, descriptor file `chart-gauge.js`).
 The node value is the single value. Parameters: `min`, `max`, `mask`, `thresholds`

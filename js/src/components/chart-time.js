@@ -53,7 +53,7 @@ export class ChartTimeView {
     constructor(view){this.view=view;this.field='';}
     invalidateDomains(){this.domainKey=null;}
     domains(context){
-        if(!this.field)return null;
+        if(!this.field||context.type.domains===false)return null;
         const key=JSON.stringify([this.field,this.step,context.category,context.fields,context.settings,context.type.id,context.structure.getItem('secondCaptionField'),context.structure.getItem('mapValueField'),context.structure.getItem('mapBarScale')]);
         const geoJSON=context.structure.getItem('geoJSON');
         if(key!==this.domainKey || geoJSON!==this.domainGeoJSON){
