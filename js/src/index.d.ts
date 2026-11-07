@@ -68,3 +68,6 @@ export {VisualEditorLogic, visualEditorScope} from './visual-editor.js';
 export {VisualEditor} from './server/visual-editor.js';
 export {SourceImport} from './server/source-import.js';
 export {SourcePicker} from './source-picker.js';
+
+/** The libraries and runtime modules shared with prepared collections, keyed by import specifier. */
+export declare const sharedModules: Readonly<Record<string, Readonly<Record<string, unknown>>>>;

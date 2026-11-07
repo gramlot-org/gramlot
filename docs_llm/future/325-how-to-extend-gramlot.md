@@ -1526,6 +1526,7 @@ Use esbuild for browser ESM generation with target es2022, consistent with the
 existing core build. A Gramlot linking pass maps collection dependencies to the
 approved @gramlot/collections/<name> specifiers and preserves shared Gramlot entry
 imports; it must not bundle another private copy of core into each collection.
+Shared libraries and runtime modules come from the core: see [§155](#gc-325-155).
 
 Use esbuild for declared CSS entry points in their agreed order, processing local
 @import and url() references. Configure file loaders/copying for images, fonts
@@ -1733,3 +1734,63 @@ URLs require no new bootstrap field. Activating a collection does not fetch the
 engine. The existing file-origin derived bundle is still eager; deferred loading
 for that profile remains unresolved. See GC-070 environment checkpoint for sizes
 and verification, and GC-340 for application authoring.
+
+
+<a id="gc-325-155"></a>
+## 155 · Shared libraries and runtime modules (2026-11-07)
+
+Block ID: **GC-325-155**. Phase 1 of gramlot-org/gramlot#82.
+
+A prepared collection contains only its own code. The libraries and runtime modules
+that the core already ships stay in the core, and every collection reads them from
+there. A page therefore holds one copy of each, and a class keeps its identity across
+the core and the collections: a `Bag` created by a collection is `instanceof Bag` of
+the runtime.
+
+The core exports the table `sharedModules` from `@gramlot/gramlot`
+(`js/src/shared-modules.js`). A key is the import specifier of a module; the value is
+its module namespace.
+
+- Libraries, keyed by package name: `@genrojs/bag`, `@genrojs/builders`,
+  `@genrojs/toolbox`, `@genrojs/tytx`, `@xmldom/xmldom`, `decimal.js`, `big.js`,
+  `@msgpack/msgpack`, `dompurify`.
+- Runtime modules that standard components import by relative path, keyed by their
+  path relative to `js/src` (`./random-id.js`, `./components/bases.js`,
+  `./stores/bag-collection-view.js`, ...).
+
+The generator links collection imports to this table:
+
+- An import of a shared library, or of a runtime module listed in the table, becomes
+  a small module that reads `sharedModules[key]` from `@gramlot/gramlot`. Each export
+  is a pure read, so esbuild drops the exports a collection does not use.
+- An import of a subpath of a shared package that the table does not list
+  (`@genrojs/tytx/other`) is a build error.
+- After bundling, the generator compares the collection inputs with the module graph
+  of the runtime entry. A runtime module bundled into a collection is a build error
+  that names the module; the fix is an entry in `sharedModules`, never a second copy.
+
+The browser needs no new import map entry: `@gramlot/gramlot` already maps to the
+runtime in the Python and JS servers. The file-origin serverless bundle replaces
+`@gramlot/gramlot` with the names of the window runtime (`GramlotStandalone`), which
+re-exports every name of the core, so `sharedModules` reaches it unchanged.
+
+Collections by external authors get the same linking: they import the libraries by
+package name as before, and the generator takes them from the core. The author still
+installs the libraries in the project, because the generator imports the collection
+definition in Node to read its grammar.
+
+Measured on the standard collections (bytes, minified, before compression; static
+chunks included; `gramlot.min.js` is the runtime served in deploy):
+
+| | before | after |
+|---|---:|---:|
+| collection modules, all standard collections | 4,447,079 | 1,702,402 |
+| `gramlot.min.js` | 884,104 | 905,805 |
+| a page with all standard collections | 5,331,183 | 2,608,207 |
+
+The runtime grows by 21.7 KB because a namespace in the table keeps its whole module.
+1.16 MB of the remaining collection bytes are the ECharts chunk of `charts`, a static
+import handled separately. Phases 2 and 3 of #82 (third-party libraries on first use,
+collections loaded per page) are not part of this section.
+
+Verification: `js/tests/collection-shared-modules.test.js`.

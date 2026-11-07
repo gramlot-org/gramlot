@@ -1,3 +1,3 @@
 export {default} from "./collection.js";
 export * from "./collection.js";
-export const buildId = "sha256:1fd322e086a667642e1e417fc980105a4c7a5e9eb6d37ef04e29ffa2195a6457";
+export const buildId = "sha256:0cec926fc95ed6c725e0a7e567f58862c08ad8b65a56db947c1c26f769a08a57";

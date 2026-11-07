@@ -61,3 +61,6 @@ export {VisualEditorLogic, visualEditorScope} from './visual-editor.js';
 export {VisualEditor} from './server/visual-editor.js';
 export {SourceImport} from './server/source-import.js';
 export {SourcePicker} from './source-picker.js';
+
+// Prepared collections read the shared libraries and runtime modules from this table (GC-325 §155).
+export {sharedModules} from './shared-modules.js';
