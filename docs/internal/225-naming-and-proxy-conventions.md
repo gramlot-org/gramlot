@@ -3,6 +3,50 @@
 Document ID: **GC-225**. Started: **2026-10-06**. Each rule names the owner
 decision it comes from. Sections marked **Open** record a question, not a rule.
 
+Chart types funnel, radar, parallel, heatmap and sankey — 2026-11-06: owner approved five new
+`chartType` values of `chartView`, ECharts engine only (other engines keep the unsupported-type
+message). Descriptors in `chart-types/`, pure option builders in `chart-funnel-options.js`,
+`chart-radar-options.js`, `chart-parallel-options.js`, `chart-heatmap-options.js` and
+`chart-sankey-options.js`, shared cell reading in `chart-type-data.js`. Funnel, heatmap and sankey
+take one measure; radar and parallel take N. Heatmap and sankey use `secondCaptionField`
+(heatmap: Y category; sankey: target). Empty measure cells are skipped, never drawn as zero; a radar
+row with an empty measure is left out, because ECharts plots an empty vertex at the center. A sankey
+cycle is an error message in the chart. Descriptors carry `domains:false`: temporal playback
+computes no fixed domains for these types.
+
+Chart types candlestick and boxplot — 2026-11-07: two further `chartType` values of `chartView`, ECharts
+engine only. Descriptors in `chart-types/`, pure option builders in `chart-candlestick-options.js` and
+`chart-boxplot-options.js`. Candlestick reads exactly four measures as open, high, low, close
+(`measureLimit` 4); the builder reorders them for ECharts. Colors come from `upColor` and `downColor` in the
+series options of the first measure (open); ECharts defaults apply when absent. Boxplot reads exactly five
+measures as min, q1, median, q3, max (`measureLimit` 5); raw data is not accepted, the host supplies the
+statistics. Any other measure count is an error naming the order. A row with an empty value among its
+measures is skipped, never drawn as zero. A boxplot row whose values decrease is an error naming its caption.
+`measureLimit` truncates a longer selection, so the count error shows only for fewer measures.
+
+Chart types treemap and sunburst — 2026-11-07: two further `chartType` values of `chartView`, ECharts engine
+only. Descriptors in `chart-types/`, pure option builders in `chart-treemap-options.js` and
+`chart-sunburst-options.js`, the shared nested read in `chartHierarchy` (`chart-type-data.js`). The data is a
+nested Bag read with `rowMode='attributes'`: each node carries `captionField` and the single measure
+(`measureLimit` 1) as attributes. A node whose value is a Bag is a parent and its nested nodes are its
+children at any depth; any other node is a leaf. The value of a parent is the sum of its children, so a parent
+that carries the measure is an error naming that node. A null leaf is skipped, a negative leaf is an error,
+a parent whose leaves are all skipped is skipped. `rowMode='values'` is an error naming `rowMode='attributes'`
+(`ChartTimeView` exposes the `rowMode` of its collection view for this check). The top level is read through the
+view, so grid filters and sorting apply to it only. Each top-level node takes one palette color and its
+descendants inherit it. Change reaching: the store notice of the page's Data subscription names the top-level
+row for an event at any depth and the chart re-renders on every notice, so no change to the `chartView`
+subscription was needed. Treemap: breadcrumb on, drill-down on click (`nodeClick:'zoomToNode'`).
+Sunburst: root at the center, store order kept (`sort:null`), click zooms to the node. Descriptors carry
+`domains:false`.
+
+Gauge element — 2026-11-06: owner approved the element `gauge` in the `charts`
+collection (class `Gauge`, tag `gramlot-gauge`, descriptor file `chart-gauge.js`).
+The node value is the single value. Parameters: `min`, `max`, `mask`, `thresholds`
+(`value:color` pairs separated by commas), `presentation` (`needle`, `ring`, `arc`)
+and `caption`. Pure option builders live in `chart-gauge-options.js`. This records
+the owner's API; the public guide in GC-480 follows the owner's review of the example.
+
 Drawing pane — 2026-11-05: owner chose `drawingPane` and confirmed parameters
 `image` and `annotations`, an image toolbar, and one Data Bag node per annotation
 with type, coordinates and style. Text additionally carries its text; freehand

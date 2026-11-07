@@ -53,7 +53,7 @@ export class ChartTimeView {
     constructor(view){this.view=view;this.field='';}
     invalidateDomains(){this.domainKey=null;}
     domains(context){
-        if(!this.field)return null;
+        if(!this.field||context.type.domains===false)return null;
         const key=JSON.stringify([this.field,this.step,context.category,context.fields,context.settings,context.type.id,context.structure.getItem('secondCaptionField'),context.structure.getItem('mapValueField'),context.structure.getItem('mapBarScale')]);
         const geoJSON=context.structure.getItem('geoJSON');
         if(key!==this.domainKey || geoJSON!==this.domainGeoJSON){
@@ -67,6 +67,7 @@ export class ChartTimeView {
         if(!['previous','empty'].includes(empty))throw new TypeError('Empty periods require previous or empty');
         this.field=field;this.date=value;this.step=step;this.empty=empty;
     }
+    get rowMode(){return this.view.rowMode;}
     value(row,field){return this.view.value(row,field);}
     getRows(){
         const rows=this.view.getRows();

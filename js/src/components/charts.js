@@ -10,6 +10,7 @@ import {ChartDataView} from './chart-data-view.js';
 import {ChartGeoJSON} from './chart-geojson.js';
 import {ChartFields} from './chart-fields.js';
 import {ChartRenderer} from './chart-renderer.js';
+import {Gauge} from './chart-gauge.js';
 
 const ChartView = defineComponent({
     name:'chartView', tag:'gramlot-chart-view', base:Container, sourceContext:true, bagStore:true,
@@ -149,4 +150,4 @@ const ChartView = defineComponent({
         }
     }
 });
-export default defineCollection({name:'charts',assets:{echartsGlLicense:new URL('./licenses/echarts-gl.txt',import.meta.url),clayglLicense:new URL('./licenses/claygl.txt',import.meta.url),plotlyLicense:new URL('./licenses/plotly.txt',import.meta.url),vegaLicense:new URL('./licenses/vega.txt',import.meta.url),uplotLicense:new URL('./licenses/uplot.txt',import.meta.url)},components:[ChartPane,ChartView,ChartFields,ChartGeoJSON,ChartTimeline]});
+export default defineCollection({name:'charts',assets:{echartsGlLicense:new URL('./licenses/echarts-gl.txt',import.meta.url),clayglLicense:new URL('./licenses/claygl.txt',import.meta.url),plotlyLicense:new URL('./licenses/plotly.txt',import.meta.url),vegaLicense:new URL('./licenses/vega.txt',import.meta.url),uplotLicense:new URL('./licenses/uplot.txt',import.meta.url)},components:[ChartPane,ChartView,ChartFields,ChartGeoJSON,ChartTimeline,Gauge]});

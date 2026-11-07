@@ -22,6 +22,7 @@ DESCRIPTIONS = {
  'chartFields': 'Store field discovery for the shared chart configuration controls.',
  'chartGeoJSON': 'Validated GeoJSON input and geographic data summary.',
  'chartTimeline': 'Prepared calendar snapshots and playback bounds from the original store.',
+ 'gauge': 'One value of the node on a needle dial, a progress ring or a half-circle arc.',
  'audioAnalyser': 'Live microphone waveform and spectrum arrays written into Data.',
  'drawingPane': 'SVG annotation editing over an original Data Bag.',
  'vizabiBubble': 'Specialized host-provided Vizabi bubble session observing Data Bags.',
@@ -119,7 +120,7 @@ def type_name(spec):
 
 FAMILIES = {
     'Audio and drawing': ('audioAnalyser', 'drawingPane'),
-    'Charts': ('chartPane', 'chartView', 'chartFields', 'chartGeoJSON', 'chartTimeline', 'vizabiBubble'),
+    'Charts': ('chartPane', 'chartView', 'chartFields', 'chartGeoJSON', 'chartTimeline', 'gauge', 'vizabiBubble'),
     'Grids and search': ('grid', 'searchBox'),
     'Conversations': ('chatMessages',),
     'Reusable fragments': ('grouplet', 'groupletCard'),
@@ -268,6 +269,7 @@ connects these controls to runnable lessons and screenshots.
     stable = {'textbox': 'gc-345-015', 'passwordbox': 'gc-345-035', 'textBoxArea': 'gc-345-030', 'checkbox': 'gc-345-020', 'radioButton': 'gc-345-040', 'radioButtonText': 'gc-345-025', 'checkBoxText': 'gc-345-100', 'colorpicker': 'gc-345-045', 'filteringSelect': 'gc-345-075', 'callbackSelect': 'gc-345-080', 'comboBox': 'gc-345-085', 'dbSelect': 'gc-345-090', 'dbComboBox': 'gc-345-095', 'numberTextBox': 'gc-345-060', 'horizontalSlider': 'gc-345-050', 'verticalSlider': 'gc-345-055', 'dateTextBox': 'gc-345-065', 'dateCalendar': 'gc-345-105', 'timeTextBox': 'gc-345-070', 'button': 'gc-345-110', 'toggleButton': 'gc-345-115', 'dropDownButton': 'gc-345-120', 'menu': 'gc-345-125', 'menuline': 'gc-345-130', 'spacer': 'gc-345-135', 'formlet': 'gc-345-155', 'groupBox': 'gc-345-160', 'contentPane': 'gc-345-165', 'borderContainer': 'gc-345-170', 'framePane': 'gc-345-150', 'stackContainer': 'gc-345-175', 'tabContainer': 'gc-345-180', 'dialog': 'gc-345-140', 'floatingPane': 'gc-345-145', 'tree': 'gc-345-185', 'codeMirror': 'gc-345-190', 'htmlEditor': 'gc-345-195', 'htmlPreview': 'gc-345-200', 'markdownEditor': 'gc-345-205', 'markdownPreview': 'gc-345-210', 'typstPreview': 'gc-345-215', 'trayPane': 'gc-345-405', 'transformPane': 'gc-345-410', 'uploader': 'gc-345-340', 'imageUploader': 'gc-345-345', 'attachmentManager': 'gc-345-350', 'editingStatus': 'gc-345-355', 'rowActions': 'gc-345-360'}
     stable.update(grid='gc-345-365', searchBox='gc-345-370', chatMessages='gc-345-375',
                   grouplet='gc-345-380', groupletCard='gc-345-385')
+    stable['gauge'] = 'gc-345-500'
     stable.update({name: f'gc-345-{450 + index * 5}' for index, name in enumerate(('chartPane', 'chartView', 'chartFields', 'chartGeoJSON', 'chartTimeline', 'vizabiBubble', 'audioAnalyser', 'drawingPane'))})
     if not set(entries) <= set(stable):
         raise ValueError('Allocate a stable documentation ID for every new component')
