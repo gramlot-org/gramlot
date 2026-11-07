@@ -45,3 +45,20 @@ test('fixed measure roles keep the reading order of candlestick and boxplot', ()
     assert.deepEqual(names('boxplot'), ['min','q1','median','q3','max']);
     for (const id of ['pie','donut','funnel','heatmap','sankey','treemap','sunburst']) assert.deepEqual(names(id), ['value'], id);
 });
+
+test('checkChartSyntax: missing, excess and equal dimensions carry a diagnosis', async () => {
+    const {Bag} = await import('@gramlot/gramlot');
+    const {checkChartSyntax, ChartSyntaxError} = await import('../src/components/chart-syntax.js');
+    const type = id => chartTypes.find(item => item.id === id);
+    const check = (id, values) => () => checkChartSyntax(type(id), new Bag(values));
+    assert.throws(check('bar', {captionField:null, valueFields:'a'}), error =>
+        error instanceof ChartSyntaxError && error instanceof TypeError && error.diagnosis.role === 'captionField');
+    assert.deepEqual(checkChartSyntax(type('bar'), new Bag({captionField:'name', valueFields:null})), []);
+    assert.throws(check('sankey', {captionField:'a', secondCaptionField:'a', valueFields:'v'}), error =>
+        error.diagnosis.role === 'secondCaptionField' && error.diagnosis.fix === 'Choose another column for Target.');
+    assert.throws(check('candlestick', {captionField:'day', valueFields:'o,h,l,c,v'}), error =>
+        error.diagnosis.role === null && error.diagnosis.received === 'o, h, l, c, v' && error.diagnosis.fix === 'Remove v from the measures.');
+    assert.throws(check('bar', {captionField:'name', valueFields:'a,,b'}), /distinct nonempty/);
+    assert.deepEqual(checkChartSyntax(type('map'), new Bag({captionField:'name', mapValueField:'v', valueFields:'a,b'})), []);
+    assert.throws(check('map', {captionField:'name', mapValueField:null}), error => error.diagnosis.role === 'mapValueField');
+});

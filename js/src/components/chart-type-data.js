@@ -41,7 +41,6 @@ export function chartSeriesText(seriesOptions,field,key) {
  */
 export function chartHierarchy({view,category,fields},typeLabel,palette) {
     if(view.rowMode!=='attributes')throw new TypeError(`${typeLabel} needs rowMode='attributes': each node carries the caption and the measure as attributes.`);
-    if(fields.length!==1)throw new TypeError(`${typeLabel} needs exactly one measure. Select one measure.`);
     const [field]=fields;
     const attributes={value:(node,key)=>node.getAttr(key)};
     const read=(nodes,reader,color)=>nodes.flatMap(node=>{

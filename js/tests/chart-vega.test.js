@@ -24,7 +24,9 @@ for(const mode of ['attributes','values'])test(`Vega preserves measures and supp
  const make=()=>adapter.validate(chartContext(dataView,config,settings));
  try {
   for(const type of ['bar','line','pie']) {
-   config.setItem('chartType',type);const spec=make();
+   config.setItem('chartType',type);
+   if(type==='pie') {assert.throws(make,/Pie takes one measure/);config.setItem('valueFields','revenue');}
+   const spec=make();
    const view=new View(parse(spec),{renderer:'none'}).width(640).height(400);
    try {
     await view.runAsync();const svg=await view.toSVG();
@@ -43,13 +45,14 @@ for(const mode of ['attributes','values'])test(`Vega preserves measures and supp
     } else assert.deepEqual(view.data('slices').map(row=>row.value),[120,180]);
    } finally {view.finalize();}
   }
-  assert.equal(rows.toTytx(),snapshot);assert.equal(config.getItem('valueFields'),'revenue,units');
+  assert.equal(rows.toTytx(),snapshot);assert.equal(config.getItem('valueFields'),'revenue');
+  config.setItem('valueFields','revenue,units');
   config.setItem('chartType','line');config.setItem('captionField','date');
   assert.equal(make().scales[0].type,'utc');
   dataView.applyFilter({value:'^Beta',columns:['name'],dtype:'T',locale:'en-GB'});
   assert.deepEqual(make().data[1].values.map(row=>row.y),[180]);
   assert.equal(make().marks.filter(mark=>mark.type==='symbol').length,2);
-  config.setItem('chartType','pie');put('b',{name:'Beta',date:new Date(),revenue:-1,units:7});
+  config.setItem('chartType','pie');config.setItem('valueFields','revenue');put('b',{name:'Beta',date:new Date(),revenue:-1,units:7});
   assert.throws(make,/nonnegative/);assert.equal(config.getItem('chartType'),'pie');
   config.setItem('chartType','bar');assert.deepEqual(make().data[1].values.map(row=>row.y),[-1]);
  }finally {dataView.disconnect();}

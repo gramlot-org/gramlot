@@ -24,8 +24,6 @@ export function sankeyCycle(links) {
 /** Links from `captionField` to `secondCaptionField`; nodes are the distinct names found there. */
 export function chartSankeyOptions({view,category,structure,fields,seriesOptions}) {
     const target=structure.getItem('secondCaptionField');
-    if(typeof target!=='string'||!target||target===category)throw new TypeError('Sankey needs a target column different from the source column. Choose another column.');
-    if(fields.length!==1)throw new TypeError('Sankey needs exactly one measure. Select one measure.');
     const [field]=fields;
     const nodes=new Set(),links=[];
     for(const row of view.getRows()) {

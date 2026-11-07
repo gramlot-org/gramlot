@@ -3,8 +3,6 @@ import {chartCell,chartName,chartCaption} from './chart-type-data.js';
 /** X categories from `captionField`, Y categories from `secondCaptionField`, one measure as cell color. */
 export function chartHeatmapOptions({view,category,structure,fields,settings,seriesOptions}) {
     const second=structure.getItem('secondCaptionField');
-    if(typeof second!=='string'||!second||second===category)throw new TypeError('Heatmap needs a second dimension different from the category. Choose another column.');
-    if(fields.length!==1)throw new TypeError('Heatmap needs exactly one measure. Select one measure.');
     const [field]=fields;
     const xs=[],ys=[],xIndex=new Map(),yIndex=new Map(),seen=new Set(),data=[];
     const index=(list,map,name)=>{if(!map.has(name)){map.set(name,list.length);list.push(name);}return map.get(name);};
