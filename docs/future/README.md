@@ -134,3 +134,7 @@ are explicitly proposed. No new runtime implementation or release is claimed.
 [GC-315 · Database selectors](315-database-selectors.md) records the bounded
 PORT-0016 contract. The previously implemented selectors are consolidated with
 prepared collections and verified through Uvicorn; see GC-070 §1655.
+
+## Shared pages and observers — 2026-11-07
+
+[GC-480](480-shared-pages-and-observers.md) collects legacy shared-object facts (join snapshot, no event log, focus lock and its defects), the existing PageStore fan-out, the caller-dependent RPC problem, the owner's observer-first proposal and the collaboration invitation. Discussion only; nothing decided or implemented.
