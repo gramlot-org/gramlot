@@ -3,7 +3,6 @@ import {chartCell,chartName,chartCaption,chartSeriesNumber} from './chart-type-d
 
 /** One vertical axis per measure and one polyline per row; `captionField` names the row. */
 export function chartParallelOptions({view,category,fields,seriesOptions}) {
-    if(!fields.length)throw new TypeError('Parallel coordinates need at least one measure.');
     const rows=[];
     for(const row of view.getRows()) {
         const values=fields.map(field=>chartCell(view,row,field));

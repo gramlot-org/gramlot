@@ -211,6 +211,11 @@ def render(collections=COLLECTIONS, document_id=345):
     docs = [(name, json.loads((ROOT / f'src/gramlot/collections/{name}.json').read_text())) for name in collections]
     entries = {key: (name, element) for name, doc in docs for key, element in doc['elements'].items()
                if element.get('_meta', {}).get('gramlot_component') is not None}
+    # One element per chart type (chartCandlestick, …): its description is the doc of its grammar element.
+    chart_types = tuple(key for key, (_, element) in entries.items()
+                        if element.get('_meta', {}).get('render_tag', '').startswith('gramlot-chart-')
+                        and key not in FAMILIES['Charts'])
+    descriptions = {**DESCRIPTIONS, **{key: entries[key][1]['doc'] for key in chart_types}}
     count = len(entries)
     out = [f"""# Widget and parameter reference
 
@@ -270,11 +275,12 @@ connects these controls to runnable lessons and screenshots.
     stable.update(grid='gc-345-365', searchBox='gc-345-370', chatMessages='gc-345-375',
                   grouplet='gc-345-380', groupletCard='gc-345-385')
     stable['gauge'] = 'gc-345-500'
+    stable.update({name: f'gc-345-{505 + index * 5}' for index, name in enumerate(chart_types)})
     stable.update({name: f'gc-345-{450 + index * 5}' for index, name in enumerate(('chartPane', 'chartView', 'chartFields', 'chartGeoJSON', 'chartTimeline', 'vizabiBubble', 'audioAnalyser', 'drawingPane'))})
     if not set(entries) <= set(stable):
         raise ValueError('Allocate a stable documentation ID for every new component')
     families = {family: tuple(key for key in widgets if key in entries)
-                for family, widgets in FAMILIES.items()}
+                for family, widgets in {**FAMILIES, 'Chart types': chart_types}.items()}
     families = {family: widgets for family, widgets in families.items() if widgets}
     grouped = [key for widgets in families.values() for key in widgets]
     if len(grouped) != len(entries) or set(grouped) != set(entries):
@@ -320,7 +326,7 @@ connects these controls to runnable lessons and screenshots.
         brief += [heading, explanation]
         brief += compact_table(((parameter, spec, widgets) for (parameter, _), (spec, widgets) in rows.items()), scoped=True)
     family_ids = {
-        'Charts': 445, 'Audio and drawing': 490,
+        'Charts': 445, 'Chart types': 640, 'Audio and drawing': 490,
         'Grids and search': 430, 'Conversations': 435, 'Reusable fragments': 440,
         'Text fields': 300, 'Choices and selectors': 305, 'Numbers, dates and time': 310,
         'Buttons, menus and toolbars': 315, 'Forms and containers': 320,
@@ -340,10 +346,10 @@ connects these controls to runnable lessons and screenshots.
             if key in ('dialog', 'floatingPane', 'framePane'):
                 guide, caption = '350-menus-toolbars-and-windows.md', 'Window and frame composition'
             heading = f'\n<a id="{stable[key]}"></a>\n<a id="gc-345-{key.lower()}"></a>\n### `{key}`\n'
-            out += [heading, DESCRIPTIONS[key],
+            out += [heading, descriptions[key],
                     f'\nCollection: **{name}**. Browser element: `{element["_meta"]["render_tag"]}`.\n',
                     f'[{caption}]({guide}).\n']
-            brief += [heading, f'Collection: {name}. {DESCRIPTIONS[key]}\n']
+            brief += [heading, f'Collection: {name}. {descriptions[key]}\n']
             evidence = f"\n[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-{key.lower()}).\n"
             out.append(evidence)
             brief.append(evidence)
@@ -386,7 +392,7 @@ connects these controls to runnable lessons and screenshots.
         name = collections[0]
         title, introduction, example, notes = COLLECTION_GUIDES[name]
         selection = '\n'.join(
-            f'- [`{key}`](#gc-{document_id}-{key.lower()}): {DESCRIPTIONS[key]}'
+            f'- [`{key}`](#gc-{document_id}-{key.lower()}): {descriptions[key]}'
             for key, (owner, _) in entries.items() if owner == name
         )
         manual_notes = re.sub(r'```[^\n]*\n.*?```',

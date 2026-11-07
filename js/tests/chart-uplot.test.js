@@ -34,6 +34,6 @@ for(const mode of ['attributes','values'])test(`uPlot preserves data and rejects
         put('c',{x:2,signal:7,units:30});assert.throws(make,/distinct/);rows.popNode('c');
         view.applyFilter({value:'^Beta',columns:['label'],dtype:'T',locale:'en-GB'});
         assert.deepEqual(make().data,[[2],[6],[20]]);
-        config.setItem('valueFields','');assert.deepEqual(make().data,[[2]]);
+        config.setItem('valueFields','');assert.throws(make,/needs at least one measure/);
     } finally {view.disconnect();}
 });

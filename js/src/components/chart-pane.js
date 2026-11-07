@@ -4,6 +4,7 @@ import {Container} from './container.js';
 import {randomId} from '../random-id.js';
 import {chartTimeLogic} from './chart-timeline.js';
 import {chartControls} from './chart-controls.js';
+import {chartTypes,chartFixedMeasures} from './chart-types/index.js';
 
 /** One shared Source composition for Python and JavaScript callers. */
 export const ChartPane = defineComponent({
@@ -39,10 +40,15 @@ export const ChartPane = defineComponent({
             const defaults={mapLabelMode:'value',mapBarScale:'zero',selectedTerritory:'',timeField:'',timeEmpty:'previous',timeSnapshotLabel:'',timeStep:'auto',timeUnit:'month',timeHasClock:false,timeIndex:0,timeMax:0,timeAtEnd:true,timeValue:null,timeLabel:'',timePlaying:false,timeSpeed:0.8,engine:'echarts',chartType:'bar',captionField:'',secondCaptionField:'',geometryField:'',mapValueField:'',mapLabelField:'',geoJSON:null,drawer:'close'};
             for(const [key,value] of Object.entries(defaults))if(!configuration.getNode(key))configuration.setItem(key,value);
             if(!configuration.getNode('seriesOptions'))configuration.setItem('seriesOptions',new Bag());
+            if(!configuration.getNode('measureRoles'))configuration.setItem('measureRoles',new Bag());
             if(!(configuration.getItem('seriesOptions') instanceof Bag))throw new TypeError('seriesOptions must be a Bag');
             const fragment=new node.builder.source.constructor(null,node.builder);
             const frame=node.builder.wrapSource(fragment).framePane({node_label:'frame',height:'100%'});
-            frame.dataFormula({result_path:`${configpath}.valueFields`,formula:"options.getNodes().filter(n => n.getValue().getItem('selected')).map(n => n.label).join(',')",options:`^${configpath}.seriesOptions`,_onBuilt:true});
+            // A type with fixed measures reads them from its roles, in reading order; the others from the selected measures.
+            const fixed=JSON.stringify(Object.fromEntries(chartTypes.map(type=>[type.id,chartFixedMeasures(type)]).filter(([,names])=>names.length)));
+            frame.dataFormula({result_path:`${configpath}.valueFields`,
+                formula:`(${fixed}[type] ?? null) ? ${fixed}[type].map(name => roles.getItem(name) || '').filter(Boolean).join(',') : options.getNodes().filter(n => n.getValue().getItem('selected')).map(n => n.label).join(',')`,
+                options:`^${configpath}.seriesOptions`,roles:`^${configpath}.measureRoles`,type:`^${configpath}.chartType`,_onBuilt:true});
             const toolbar=frame.top.contentPane({display:'flex',justify_content:'flex-end',align_items:'center',padding:'2px 6px'});
             const path=JSON.stringify(`${configpath}.drawer`);
             toolbar.button({icon:'⚙',aria_label:'Chart settings',title:'Chart settings',action:`this.SET(${path},this.GET(${path}) === 'close' ? true : 'close');`});

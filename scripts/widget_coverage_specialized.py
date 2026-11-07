@@ -1,4 +1,6 @@
 """Source and test evidence for specialized widgets."""
+import json
+from pathlib import Path
 
 def _record(data, events, children, limits, sources, tests, examples, example_note):
     return dict(data=data, events=events, children=children, limits=limits,
@@ -178,7 +180,7 @@ COVERAGE['chartGeoJSON'] = _record('value binds a plain GeoJSON feature collecti
 
 COVERAGE['chartTimeline'] = _record('Reads store/time parameters and writes timeline state under configpath.', 'Tracks bounds and prepared snapshots; removal releases observation.', 'Used by chartPane with its playback controls.', 'No business aggregation; calendar periods and empty policy are explicit.', 'js/src/components/chart-timeline.js', 'js/tests/chart-time.test.js', 'pages/05-grid/13_charts.md', 'Shared chart configuration and time.')
 
-COVERAGE['gauge'] = _record('The node value is the single value, a Data pointer with optional ?attr. min, max, mask, thresholds, presentation and caption read Data. Nothing is written.', 'Redraws when the value or a parameter changes and follows the light or dark theme; removal releases the engine.', 'Leaf rendering surface; no children.', 'One numeric value; an empty value shows an empty dial, never zero. Values outside min and max are clamped on the dial, the text shows the real value. Threshold colors are names or hex codes.', 'js/src/components/chart-gauge.js js/src/components/chart-gauge-options.js', 'js/tests/chart-gauge.test.js', 'pages/86-chart-types/gauges.md', 'Live gauge settings: value, presentation, range, thresholds and mask.')
+COVERAGE['gauge'] = _record('The node value is the single value, a Data pointer with optional ?attr. min, max, mask, thresholds, presentation and caption read Data. Nothing is written.', 'Redraws when the value or a parameter changes and follows the light or dark theme; removal releases the engine.', 'Leaf rendering surface; no children.', 'One numeric value; an empty value shows the information notice No value, never zero. Errors show an error notice with More info. Values outside min and max are clamped on the dial, the text shows the real value. Threshold colors are names or hex codes.', 'js/src/components/chart-gauge.js js/src/components/chart-gauge-options.js', 'js/tests/chart-gauge.test.js', 'pages/86-chart-types/gauges.md', 'Live gauge settings: value, presentation, range, thresholds and mask.')
 
 COVERAGE['vizabiBubble'] = _record('Reads the original rows and configuration Bag.', 'Retains supported session configuration and releases engine resources on removal.', 'Specialized external bubble view.', 'Requires host-supplied libraryUrl; not a chartPane engine.', 'js/src/components/vizabi.js', 'tools/gramlot-tools-inspector/tests/vizabi-trial-browser.mjs', '', 'Host-only integration; no common gallery lesson.')
 
@@ -197,3 +199,16 @@ COVERAGE['drawingPane'] = _record(
     'Requires an initialized annotation Bag. Coordinates follow image dimensions or a 1000 by 1000 empty surface. Disposal releases subscriptions; persistence belongs to the application.',
     'js/src/components/drawing.js', 'js/tests/drawing.test.js tests/test_drawing_pane.py',
     'pages/06-editors/06-drawing.md', 'Drawing annotations retained in Data.')
+
+
+# One element per chart type (chartBar, chartCandlestick, ...), generated from the chart type syntax.
+_CHART_ELEMENTS = json.loads((Path(__file__).resolve().parents[1] / 'src/gramlot/collections/charts.json').read_text())['elements']
+for _name, _element in _CHART_ELEMENTS.items():
+    if _element['_meta']['render_tag'].startswith('gramlot-chart-') and _name not in COVERAGE \
+            and _name not in ('chartPane', 'chartFields', 'chartGeoJSON', 'chartTimeline'):
+        COVERAGE[_name] = _record(
+            'Reads the rows of storepath and the columns named by its attributes, which are the roles of the chart type syntax. A fixed measure is its own attribute; a list of measures is measures. Nothing is written except selectedTerritory on maps.',
+            'Same as chartView: observes rows, grid filtering and series options; removal releases the engine.',
+            'Leaf rendering surface: chartView with a fixed chartType.',
+            'The Builders reject the element without a required role. A misspelt attribute is accepted by the Builders: the missing role then shows the syntax diagnosis in place of the chart.',
+            'js/src/components/charts.js js/src/components/chart-types/index.js', 'js/tests/chart-type-elements.test.js', '', '')

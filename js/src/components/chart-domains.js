@@ -26,7 +26,7 @@ export function chartDomains(view,{category,fields,settings,structure,type}) {
         }
         axes[side]=chartRange(values,true);
     }
-    const secondField=type.controls.includes('secondDimension')?structure.getItem('secondCaptionField'):null;
+    const secondField=type.syntax.some(role=>role.parameter==='secondCaptionField')?structure.getItem('secondCaptionField'):null;
     const second=secondField?chartData(view,secondField,[]):null;
     const dimensions=[dimension,...(second?[{kind:second.kind,values:[...new Set(second.source.map(row=>row[0]))],range:chartRange(second.source.map(row=>row[0]))}]:[])];
     const mapField=type.id==='map'?structure.getItem('mapValueField'):null;

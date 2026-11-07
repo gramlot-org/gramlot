@@ -32,3 +32,13 @@ def test_two_instances_use_independent_configuration_paths():
     second = ChartPane(b.root, store=rows, configuration=Bag(), storepath='rows', datapath='second.config')
     assert first.pane.attr['configpath'] == 'first.config'
     assert second.pane.attr['configpath'] == 'second.config'
+
+
+def test_python_builder_rejects_a_chart_type_element_without_a_required_role():
+    root = builder().root
+    with pytest.raises(Exception, match='close'):
+        root.chartCandlestick(captionField='day', open='o', high='h', low='l', storepath='rows')
+    node = root.chartCandlestick(captionField='day', open='o', high='h', low='l', close='c', storepath='rows')
+    assert node.attr['close'] == 'c'
+    pie = root.chartPie(captionField='name', measure='amount', storepath='rows', height='300px')
+    assert pie.attr['measure'] == 'amount'

@@ -78,9 +78,10 @@ test('a negative leaf and a parent carrying the measure are errors naming the no
 test("rowMode='values' and a wrong measure count are errors",()=>{
     for(const id of IDS) {
         assert.throws(()=>build(id,context(sample(),'values')),/needs rowMode='attributes'/);
-        const ctx=context(sample());
-        assert.throws(()=>build(id,{...ctx,fields:['amount','other']}),/exactly one measure/);
-        assert.throws(()=>build(id,{...ctx,fields:[]}),/exactly one measure/);
+        const config=new Bag({chartType:id,captionField:'name',valueFields:'amount,other'});
+        assert.throws(()=>chartContext(view(sample()),config,seriesOptions),/takes one measure; received 2/);
+        config.setItem('valueFields',null);
+        assert.throws(()=>chartContext(view(sample()),config,seriesOptions),/needs one measure; received 0/);
     }
 });
 
@@ -96,11 +97,13 @@ test('the builder reads the nested Bag again at every call, so a change at any d
     assert.equal(build('treemap',context(bag)).series[0].data[0].value,before+90);
 });
 
-test('chartContext limits both types to one measure',()=>{
+test('chartContext rejects a second measure for both types',()=>{
     const fields=['amount','b'];
     const options=new Bag(Object.fromEntries(fields.map(field=>[field,new Bag({axis:'left',color:'#336699'})])));
     for(const id of IDS) {
         const config=new Bag({chartType:id,captionField:'name',valueFields:fields.join(',')});
+        assert.throws(()=>chartContext(view(new Bag()),config,options),{name:'ChartSyntaxError',message:/takes one measure; received 2/});
+        config.setItem('valueFields','amount');
         assert.deepEqual(chartContext(view(new Bag()),config,options).fields,['amount']);
     }
 });

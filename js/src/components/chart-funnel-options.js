@@ -3,7 +3,6 @@ import {chartCell,chartName,chartCaption} from './chart-type-data.js';
 
 /** Funnel stages in store order. Empty measures are skipped, never drawn as zero. */
 export function chartFunnelOptions({view,category,fields,seriesOptions}) {
-    if(fields.length!==1)throw new TypeError('Funnel needs exactly one measure. Select one measure.');
     const [field]=fields;
     const data=[];
     for(const row of view.getRows()) {

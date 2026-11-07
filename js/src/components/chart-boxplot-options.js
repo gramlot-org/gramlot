@@ -5,7 +5,6 @@ import {chartCell,chartName,chartCaption} from './chart-type-data.js';
  * A row with an empty value is skipped; a row whose five values decrease is an error naming its caption.
  */
 export function chartBoxplotOptions({view,category,fields,seriesOptions}) {
-    if(fields.length!==5)throw new TypeError('Boxplot needs exactly five measures, selected in the order min, q1, median, q3, max.');
     const names=[],data=[];
     for(const row of view.getRows()) {
         const values=fields.map(field=>chartCell(view,row,field));

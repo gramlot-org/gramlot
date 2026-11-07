@@ -7,7 +7,6 @@ import {chartCell,chartName,chartCaption,chartSeriesNumber} from './chart-type-d
  * so a row with an empty measure is left out.
  */
 export function chartRadarOptions({view,category,fields,seriesOptions}) {
-    if(!fields.length)throw new TypeError('Radar needs at least one measure.');
     const rows=[];
     for(const row of view.getRows()) {
         const values=fields.map(field=>chartCell(view,row,field));

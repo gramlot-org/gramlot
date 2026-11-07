@@ -1,20 +1,14 @@
 import {Bag} from '@gramlot/gramlot';
 import {chartType} from './chart-types/index.js';
 import {requireChartCapability} from './chart-engines/index.js';
+import {checkChartSyntax} from './chart-syntax.js';
 
 /** Engine-independent context. Reading it never rewrites either Data Bag. */
 export function chartContext(view,structure,seriesOptions) {
         if (!(seriesOptions instanceof Bag)) throw new TypeError('seriesOptions requires a Bag');
         const type = chartType(structure.getItem('chartType'));
         const category = structure.getItem('captionField');
-        const selection = structure.getItem('valueFields');
-        if (selection !== null && typeof selection !== 'string') throw new TypeError('valueFields requires comma-separated codes or null');
-        let fields = selection ? selection.split(',') : [];
-        if (fields.some(field => !field) || new Set(fields).size !== fields.length) throw new TypeError('valueFields requires distinct nonempty fields');
-        if (typeof category !== 'string' || !category) {
-            throw new TypeError('Chart requires captionField');
-        }
-        if (type.measureLimit !== null) fields = fields.slice(0,type.measureLimit);
+        const fields = checkChartSyntax(type, structure);
         const settings = fields.map(field => {
             const options = seriesOptions.getItem(field);
             if (!(options instanceof Bag)) throw new TypeError(`Missing seriesOptions for ${field}`);

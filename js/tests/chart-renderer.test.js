@@ -44,7 +44,7 @@ for (const mode of ['values','attributes']) test(`date axis and white background
     } finally {chart.dispose();view.disconnect();}
 });
 
-for (const type of ['bar','line']) test(`multiple ${type} series, removal and empty selection`, () => {
+for (const type of ['bar','line']) test(`multiple ${type} series, removal and empty selection is an error`, () => {
     const data=new Bag(), rows=new Bag(); data.setItem('rows',rows); data.setBackref(); rows.setItem('r0',null,{name:'January',revenue:120,margin:30});
     const store=new BagCollectionStore(rows,'attributes'), view=new BagCollectionView(store); view.connect();
     const renderer=new ChartRenderer(null,view,{renderer:'svg',ssr:true,width:640,height:320});
@@ -55,8 +55,8 @@ for (const type of ['bar','line']) test(`multiple ${type} series, removal and em
         assert.match(both,/revenue/); assert.match(both,/margin/);
         config.setItem('valueFields','margin'); renderer.update(config,seriesOptions);
         assert.doesNotMatch(renderer.svg(),/revenue/); assert.match(renderer.svg(),/margin/);
-        config.setItem('valueFields',null); renderer.update(config,seriesOptions);
-        assert.doesNotMatch(renderer.svg(),/revenue|margin/);
+        config.setItem('valueFields',null);
+        assert.throws(()=>renderer.update(config,seriesOptions),{name:'ChartSyntaxError',message:/needs at least one measure/});
         config.setItem('valueFields','revenue,missing');
         assert.throws(()=>renderer.update(config,seriesOptions),/Missing seriesOptions/);
         config.setItem('valueFields','revenue,revenue');
@@ -96,20 +96,19 @@ for (const type of ['area','stackedArea','stackedBar','horizontalBar','pie','don
     } finally {renderer.dispose();view.disconnect();}
 });
 
-for(const type of ['pie','donut']) test(`${type} uses the first measure without changing selection`,()=>{
+for(const type of ['pie','donut']) test(`${type} rejects a second measure without changing selection`,()=>{
     const data=new Bag(),rows=new Bag();data.setItem('rows',rows);data.setBackref();
     rows.setItem('a',null,{name:'A',revenue:100,margin:5});rows.setItem('b',null,{name:'B',revenue:20,margin:80});
     const view=new BagCollectionView(new BagCollectionStore(rows,'attributes'));view.connect();
     const chart=new ChartRenderer(null,view,{renderer:'svg',ssr:true,width:640,height:320});
     const config=new Bag({chartType:type,captionField:'name',valueFields:'revenue,margin'});
     try {
-        chart.update(config,seriesOptions);
-        const paths=svg=>[...svg.matchAll(/ d="([^"]+)"/g)].map(match=>match[1]).filter(path=>/A\d{2}/.test(path));
-        const multiple=paths(chart.svg());
+        assert.throws(()=>chart.update(config,seriesOptions),{name:'ChartSyntaxError',message:/takes one measure; received 2: revenue, margin/});
         assert.equal(config.getItem('valueFields'),'revenue,margin');
+        const paths=svg=>[...svg.matchAll(/ d="([^"]+)"/g)].map(match=>match[1]).filter(path=>/A\d{2}/.test(path));
         config.setItem('valueFields','revenue');chart.update(config,seriesOptions);
-        assert.deepEqual(paths(chart.svg()),multiple);
-        config.setItem('valueFields','margin,revenue');chart.update(config,seriesOptions);
-        assert.notDeepEqual(paths(chart.svg()),multiple);
+        const revenue=paths(chart.svg());
+        config.setItem('valueFields','margin');chart.update(config,seriesOptions);
+        assert.notDeepEqual(paths(chart.svg()),revenue);
     } finally {chart.dispose();view.disconnect();}
 });

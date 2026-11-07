@@ -42,7 +42,7 @@ test('candlestick: upColor and downColor of the first measure set the candle col
 });
 
 test('candlestick: a wrong measure count is an error naming the order',()=>{
-    for(const fields of [['o','h','l'],[...OHLC,'x'],[]])assert.throws(()=>build('candlestick',context([],fields)),/exactly four measures.*open, high, low, close/);
+    for(const fields of [['o','h','l'],[...OHLC,'x'],[]])assert.throws(()=>chartContext(view([]),new Bag({chartType:'candlestick',captionField:'name',valueFields:fields.join(',')||null}),options([...OHLC,'x'])),/Candlestick (needs|takes) 4 measures in the order open, high, low, close/);
 });
 
 test('boxplot: five statistics per row in order, null rows skipped',()=>{
@@ -54,15 +54,24 @@ test('boxplot: five statistics per row in order, null rows skipped',()=>{
 });
 
 test('boxplot: a wrong count and a decreasing row are errors',()=>{
-    assert.throws(()=>build('boxplot',context([],BOX.slice(0,4))),/exactly five measures.*min, q1, median, q3, max/);
+    assert.throws(()=>chartContext(view([]),new Bag({chartType:'boxplot',captionField:'name',valueFields:BOX.slice(0,4).join(',')}),options(BOX)),/Boxplot needs 5 measures in the order min, q1, median, q3, max/);
     assert.throws(()=>build('boxplot',context([{name:'Bad row',mn:1,q1:5,md:3,q3:4,mx:6}],BOX)),/row Bad row/);
 });
 
-test('chartContext limits candlestick to four measures and boxplot to five',()=>{
+test('chartContext wants exactly four candlestick measures and five boxplot measures',()=>{
     const fields=['a','b','c','d','e','f'];
     const config=new Bag({chartType:'candlestick',captionField:'name',valueFields:fields.join(',')});
     const seriesOptions=options(fields);
-    assert.deepEqual(chartContext(view([]),config,seriesOptions).fields,fields.slice(0,4));
+    const context=()=>chartContext(view([]),config,seriesOptions);
+    assert.throws(context,{name:'ChartSyntaxError',message:/Candlestick takes 4 measures in the order open, high, low, close; received 6/});
+    config.setItem('valueFields','a,b,c');
+    assert.throws(context,error=>error.diagnosis.role==='close'&&/received 3/.test(error.message));
+    config.setItem('valueFields','a,b,c,d');
+    assert.deepEqual(context().fields,fields.slice(0,4));
     config.setItem('chartType','boxplot');
-    assert.deepEqual(chartContext(view([]),config,seriesOptions).fields,fields.slice(0,5));
+    assert.throws(context,error=>error.diagnosis.role==='max');
+    config.setItem('valueFields',fields.join(','));
+    assert.throws(context,/Boxplot takes 5 measures in the order min, q1, median, q3, max; received 6/);
+    config.setItem('valueFields','a,b,c,d,e');
+    assert.deepEqual(context().fields,fields.slice(0,5));
 });

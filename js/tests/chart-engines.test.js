@@ -38,9 +38,11 @@ for(const mode of ['attributes','values'])test(`Plotly translates the same filte
         view.applyFilter({value:'^B',columns:['name'],dtype:'T',locale:'en-GB'});
         assert.deepEqual(adapter.validate(context()).data[0].y,[25]);
         config.setItem('chartType','pie');
-        assert.deepEqual(adapter.validate(context()).data[0].values,[25]);
+        assert.throws(context,/Pie takes one measure; received 2/);
         assert.equal(config.getItem('valueFields'),'amount,units');
         assert.equal(options.toTytx(),before);
+        config.setItem('valueFields','amount');
+        assert.deepEqual(adapter.validate(context()).data[0].values,[25]);
         view.applyFilter({value:'',columns:['name'],dtype:'T',locale:'en-GB'});
         put('c',{name:'A',amount:8,units:4});
         assert.throws(()=>adapter.validate(context()),/distinct category labels/);

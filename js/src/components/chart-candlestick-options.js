@@ -6,7 +6,6 @@ import {chartCell,chartName,chartCaption,chartSeriesText} from './chart-type-dat
  * Colors: `upColor` and `downColor` in the series options of the first measure (open); ECharts defaults otherwise.
  */
 export function chartCandlestickOptions({view,category,fields,seriesOptions}) {
-    if(fields.length!==4)throw new TypeError('Candlestick needs exactly four measures, selected in the order open, high, low, close.');
     const [open,high,low,close]=fields;
     const names=[],data=[];
     for(const row of view.getRows()) {

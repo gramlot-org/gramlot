@@ -17,7 +17,7 @@ function annotation(parameter) {
 }
 
 /** Compose effective metadata without invoking a DOM class factory. */
-export function defineComponent({name, tag, base, mixins = [], parameters = {}, subTags = '', presentationDefaults = [], dataScope = false, command = false, childParameters = {}, sourceContext = false, bagStore = false, bagStruct = false, dragSource = false, implementation}) {
+export function defineComponent({name, tag, base, doc = null, mixins = [], parameters = {}, subTags = '', presentationDefaults = [], dataScope = false, command = false, childParameters = {}, sourceContext = false, bagStore = false, bagStruct = false, dragSource = false, implementation}) {
     webcomponentCode({code: tag});
     if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(name)) throw new TypeError('Invalid component authoring name');
     const effective = {...base.parameters};
@@ -28,8 +28,11 @@ export function defineComponent({name, tag, base, mixins = [], parameters = {}, 
         }
     }
     Object.assign(effective, parameters);
-    for (const spec of Object.values(effective)) annotation(spec);
-    return Object.freeze({name, tag, base, subTags, presentationDefaults: Object.freeze([...presentationDefaults]), dataScope, command, bagStore, bagStruct, mixins: Object.freeze([...mixins]),
+    for (const spec of Object.values(effective)) {
+        annotation(spec);
+        if (spec.required !== undefined && (spec.required !== true || Object.hasOwn(spec, 'default'))) throw new TypeError('A required component parameter is true and has no default');
+    }
+    return Object.freeze({name, tag, base, doc, subTags, presentationDefaults: Object.freeze([...presentationDefaults]), dataScope, command, bagStore, bagStruct, mixins: Object.freeze([...mixins]),
         labelbox: mixins.some(mixin => mixin.labelbox === true),
         parameters: freeze(structuredClone(effective)), childParameters: freeze(structuredClone(childParameters)), sourceContext, dragSource, implementation});
 }
@@ -66,12 +69,13 @@ export class ComponentCollection {
         return {document_format: {name: 'builder_grammar', version: '1.1'},
             grammar: {name: this.name, version: null, title: this.name, description: null},
             abstracts: {}, elements: Object.fromEntries(this.components.map(component => [component.name, {
-                doc: null, sub_tags: component.subTags, parent_tags: null, inherits_from: null, ns: null,
+                doc: component.doc, sub_tags: component.subTags, parent_tags: null, inherits_from: null, ns: null,
                 node_label: null, collection_key: null,
                 attributes: {parameters: [
+                    // A parameter with `required: true` has no default: the Builders reject the element without it.
                     ...Object.entries(component.parameters).map(([name, spec]) => ({name,
                         kind: 'keyword_only', role: 'attribute', annotation: annotation(spec),
-                        has_default: true, default: spec.default ?? null})),
+                        ...(spec.required ? {has_default: false} : {has_default: true, default: spec.default ?? null})})),
                     {name: 'attr', kind: 'var_keyword', role: 'attribute',
                         annotation: {kind: 'any'}, has_default: false}],
                     accepts_var_keyword: true, accepts_var_positional: false},

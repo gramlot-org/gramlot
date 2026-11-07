@@ -93,7 +93,8 @@ try {
    await page.waitForFunction(()=>window.qualification.data.getItem('demo.config.valueFields')==='units,margin');
    await toggle3d('Units');await toggle3d('Margin');
    await page.waitForFunction(()=>!window.qualification.data.getItem('demo.config.valueFields'));
-   assert.equal(await chart3d.getByRole('alert').isVisible(),false);
+   // A chart with no measures draws nothing, so it says why.
+   await chart3d.getByRole('alert').waitFor();assert.match(await chart3d.getByRole('alert').textContent(),/3D bars needs at least one measure/);
    await toggle3d('Revenue');await toggle3d('Units');await toggle3d('Margin');
    await page.locator('#sales-pane-measures').locator('tr[data-row="margin"] td[data-field="color"]').dblclick();
    const color3d=page.locator('#sales-pane-measures').locator('gramlot-colorpicker input');
@@ -122,7 +123,8 @@ try {
    await page.waitForFunction(()=>document.querySelector('#sales-pane-view')?.shadowRoot?.querySelector('svg')?.querySelector('path'),null,{timeout:7000}).catch(async error=>{console.error({errors,body:await page.locator('body').innerText()});throw error;});
    assert.equal(await page.evaluate(()=>window.qualification.data.getItem('demo.rows').getNode('r0').getAttr('date') instanceof Date),true);
    await page.evaluate(()=>document.documentElement.dataset.theme='dark');
-   assert.equal(await chart.evaluate(host=>getComputedStyle(host.shadowRoot.querySelector('#control')).backgroundColor),'rgb(255, 255, 255)');
+   // The drawing area stays white in the dark theme; the box around it follows --gramlot-surface for the notices.
+   assert.equal(await chart.evaluate(host=>getComputedStyle(host.shadowRoot.querySelector('#control').lastElementChild).backgroundColor),'rgb(255, 255, 255)');
    const beforeResize=await chart.locator('svg').boundingBox();
    const resizeHandle=page.locator('#chart-window').getByRole('button',{name:'Resize window'});
    await resizeHandle.focus();
@@ -186,7 +188,9 @@ try {
    for(const type of ['area','horizontalBar']) await page.locator('#sales-pane-chartType').selectOption(type);
    await page.locator('#sales-pane-chartType').selectOption('pie');
    await page.waitForFunction(()=>document.querySelector('#sales-pane-view').shadowRoot.querySelector('[role="alert"]').hidden);
-   assert.equal(await page.evaluate(()=>window.qualification.data.getItem('demo.config.valueFields')),'units,revenue,margin');
+   // Pie reads its one measure from the measure role, the first numeric column; the bar selection stays in seriesOptions.
+   assert.equal(await page.evaluate(()=>window.qualification.data.getItem('demo.config.valueFields')),'units');
+   assert.equal(await page.locator('#sales-pane-role-measure').inputValue(),'units');
    await page.locator('#sales-pane-captionField').selectOption('date');
    await page.waitForTimeout(1100);
    const checkLegendSpace=async()=>{
@@ -205,6 +209,8 @@ try {
    await page.screenshot({path:`${base}/${name}-pie-legend.png`});
    for(let i=0;i<8;i++) await resizeHandle.press('ArrowUp');
    await page.locator('#sales-pane-captionField').selectOption('product');
+   // The measures menu belongs to the types with a list of measures; pie reads its measure role.
+   await page.locator('#sales-pane-chartType').selectOption('bar');
    await toggleMeasure('Units'); await toggleMeasure('Margin');
    for(const type of ['pie','donut','stackedBar','stackedArea']) {
     await page.locator('#sales-pane-chartType').selectOption(type);

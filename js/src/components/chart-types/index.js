@@ -33,3 +33,14 @@ export function chartType(id) {
     if(!type)throw new TypeError('Choose a supported chart type');
     return type;
 }
+
+/** The roles of `type` that fill `parameter` of chartView. */
+export function chartRoles(type,parameter) {
+    return type.syntax.filter(role=>role.parameter===parameter);
+}
+
+/** Names of the fixed measures of `type`, in reading order; empty when the type takes a list of measures. */
+export function chartFixedMeasures(type) {
+    const roles=chartRoles(type,'valueFields');
+    return roles.every(role=>role.count===1)?roles.map(role=>role.name):[];
+}

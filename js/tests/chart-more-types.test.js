@@ -38,7 +38,7 @@ test('funnel: stages in store order, null stage skipped, series caption honoured
     assert.equal(option.series[0].sort,'none');
     assert.match(draw(option),/<svg/);
     assert.throws(()=>build('funnel',context([{name:'a',n:-1}],['n'])),/nonnegative/);
-    assert.throws(()=>build('funnel',context(rows,[])),/exactly one measure/);
+    assert.throws(()=>chartContext(view(rows),new Bag({chartType:'funnel',captionField:'name',valueFields:null}),options()),/Funnel needs one measure; received 0/);
     assert.throws(()=>build('funnel',context([{name:'a',n:'x'}],['n'])),/finite numeric/);
 });
 
@@ -50,7 +50,7 @@ test('radar: measures are axes with data maximum, rows are polygons, rows with a
     const fixed=options(['p','Price'],['q','Quality']);fixed.getItem('p').setItem('max',10);
     assert.equal(build('radar',context(rows,['p','q'],{options:fixed})).radar.indicator[0].max,10);
     assert.match(draw(option),/<svg/);
-    assert.throws(()=>build('radar',context(rows,[])),/at least one measure/);
+    assert.throws(()=>chartContext(view(rows),new Bag({chartType:'radar',captionField:'name',valueFields:null}),options()),/Radar needs at least one measure/);
 });
 
 test('parallel: one axis per measure, one named polyline per row, nulls kept as gaps',()=>{
@@ -70,7 +70,8 @@ test('heatmap: category and second dimension index the cells, color range from t
     assert.deepEqual([option.visualMap.min,option.visualMap.max],[0,8]);
     assert.equal(option.visualMap.inRange.color[1],'#336699');
     assert.match(draw(option),/<svg/);
-    assert.throws(()=>build('heatmap',context(rows,['n'],{second:null})),/second dimension/);
+    assert.throws(()=>chartContext(view(rows),new Bag({chartType:'heatmap',captionField:'name',secondCaptionField:null,valueFields:'n'}),options(['n','N'])),/Heatmap needs Y category/);
+    assert.throws(()=>chartContext(view(rows),new Bag({chartType:'heatmap',captionField:'name',secondCaptionField:'name',valueFields:'n'}),options(['n','N'])),/Y category different from X category/);
     assert.throws(()=>build('heatmap',context([...rows,{name:'Mon',day:'9h',n:1}],['n'],{second:'day'})),/two cells for Mon \/ 9h/);
 });
 
@@ -87,11 +88,16 @@ test('sankey: nodes from distinct names, null links skipped, a cycle is a clear 
     assert.deepEqual(sankeyCycle([{source:'a',target:'b'},{source:'b',target:'c'},{source:'c',target:'b'}]),['b','c','b']);
 });
 
-test('chartContext limits heatmap, sankey and funnel to one measure',()=>{
-    const config=new Bag({chartType:'heatmap',captionField:'name',valueFields:'a,b'});
+test('chartContext wants one measure for heatmap, sankey and funnel',()=>{
+    const config=new Bag({chartType:'funnel',captionField:'name',secondCaptionField:'day',valueFields:'a,b'});
     const seriesOptions=options(['a','A'],['b','B']);
-    assert.deepEqual(chartContext(view([]),config,seriesOptions).fields,['a']);
-    config.setItem('chartType','radar');
+    for(const id of ['heatmap','sankey','funnel']) {
+        config.setItem('chartType',id);config.setItem('valueFields','a,b');
+        assert.throws(()=>chartContext(view([]),config,seriesOptions),{name:'ChartSyntaxError',message:/takes one measure; received 2/});
+        config.setItem('valueFields','a');
+        assert.deepEqual(chartContext(view([]),config,seriesOptions).fields,['a']);
+    }
+    config.setItem('chartType','radar');config.setItem('valueFields','a,b');
     assert.deepEqual(chartContext(view([]),config,seriesOptions).fields,['a','b']);
 });
 

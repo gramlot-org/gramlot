@@ -699,7 +699,22 @@ Independent state, header actions, Clear and inline guides.
 root.chartPane(storepath="sales.rows", configpath="sales.chart", height="500px")
 ```
 
-Supply rows and a configuration Bag in Data. chartPane composes the shared controls; chartView renders supported types using ECharts, Plotly, Vega or uPlot. Temporal playback selects prepared rows; it does not calculate business aggregates. Map territories must match GeoJSON names. Geographic 3D bars are ECharts-only.
+Supply rows and a configuration Bag in Data. chartPane composes the shared controls; chartView renders supported types using ECharts, Plotly, Vega or uPlot; one element per chart type, such as chartCandlestick, declares its columns as attributes. Temporal playback selects prepared rows; it does not calculate business aggregates. Map territories must match GeoJSON names. Geographic 3D bars are ECharts-only.
+
+Each chart type has its own element: chartBar, chartLine, chartPie, chartFunnel, chartCandlestick
+and the others listed below. The element is chartView with a fixed chartType. Its attributes are the
+columns the type reads. A fixed measure is its own attribute: chartCandlestick takes open, high, low
+and close; chartBoxplot takes min, q1, median, q3 and max; the types with one measure, such as
+chartPie, chartFunnel or chartTreemap, take measure. A type that reads a list of measures takes
+measures, comma separated. The Python and JavaScript Builders reject the element without a required
+attribute. A misspelt attribute is accepted by the Builders, because every element also accepts
+presentation attributes: the missing column then shows the diagnosis described below. chartView with
+chartType and valueFields remains for a type chosen at run time, as chartPane does.
+```python
+pane.chartCandlestick(captionField="day", open="open", high="high", low="low", close="close",
+                      storepath=".rows", rowMode="values", seriesOptions="^.options")
+```
+
 
 
 <a id="gc-465-chartpane"></a>
@@ -743,6 +758,222 @@ Shared chart configuration and time.
 Live gauge settings: value, presentation, range, thresholds and mask.
 
 - [gauges](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/86-chart-types/gauges.md)
+
+<a id="gc-465-chartbar"></a>
+### `chartBar`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartline"></a>
+### `chartLine`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartarea"></a>
+### `chartArea`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartstackedbar"></a>
+### `chartStackedBar`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartstackedarea"></a>
+### `chartStackedArea`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-charthorizontalbar"></a>
+### `chartHorizontalBar`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartpie"></a>
+### `chartPie`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartdonut"></a>
+### `chartDonut`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartscatter"></a>
+### `chartScatter`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartbar3d"></a>
+### `chartBar3D`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartline3d"></a>
+### `chartLine3D`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartscatter3d"></a>
+### `chartScatter3D`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartsurface"></a>
+### `chartSurface`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartmap"></a>
+### `chartMap`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartmapbar3d"></a>
+### `chartMapBar3D`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartmap3d"></a>
+### `chartMap3D`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartlines3d"></a>
+### `chartLines3D`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartpolygons3d"></a>
+### `chartPolygons3D`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartfunnel"></a>
+### `chartFunnel`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartradar"></a>
+### `chartRadar`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartparallel"></a>
+### `chartParallel`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartheatmap"></a>
+### `chartHeatmap`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartsankey"></a>
+### `chartSankey`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartcandlestick"></a>
+### `chartCandlestick`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartboxplot"></a>
+### `chartBoxplot`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-charttreemap"></a>
+### `chartTreemap`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-chartsunburst"></a>
+### `chartSunburst`
+
+
+
+No dedicated lesson identified in the reviewed catalogue.
+
 
 <a id="gc-465-setup-vizabi"></a>
 ## Vizabi: setup
