@@ -72,10 +72,17 @@ export class GridSelection {
         this.#apply(selected, visible.has(this.#current) ? this.#current : null, visible.has(this.#anchor) ? this.#anchor : null);
     }
 
+    /**
+     * `.selectionLength` is relative to the datapath context of the grid (legacy genro_grid.js). A grid
+     * with no `datapath` on itself or on an ancestor has no relative Data place, so it does not write it.
+     */
+    get #writesLength() { return this.source.attributeOwnerNode('datapath') !== null; }
+
     /** The absolute Data paths this grid publishes the selection to. */
     paths() {
         const names = Object.keys(this.source.getAttr()).filter(name => PUBLISHED.includes(name) || name.startsWith('selected_'));
-        return [this.source.absDatapath('.selectionLength'), ...names.map(name => this.source.absDatapath(this.source.getAttr(name)))];
+        const paths = names.map(name => this.source.absDatapath(this.source.getAttr(name)));
+        return this.#writesLength ? [this.source.absDatapath('.selectionLength'), ...paths] : paths;
     }
 
     #apply(selected, current, anchor) {
@@ -83,7 +90,7 @@ export class GridSelection {
         this.publish();
     }
 
-    /** Publish the selection to the declared Data paths, `.selectionLength` and `onSelectedRow`. */
+    /** Publish the selection to the declared Data paths, `.selectionLength` (with a datapath context) and `onSelectedRow`. */
     publish() {
         const store = this.#host.store(), view = this.#host.view(), nodes = this.nodes, current = this.#current;
         const idx = current === null ? -1 : view.getRows().indexOf(current);
@@ -112,7 +119,7 @@ export class GridSelection {
             const field = name.slice('selected_'.length);
             this.#context.writeParameter(name, [...new Set(nodes.map(node => store.value(node, field)))].join(','));
         }
-        if (this.source.getRelativeData('.selectionLength') !== nodes.length) this.source.setRelativeData('.selectionLength', nodes.length);
+        if (this.#writesLength && this.source.getRelativeData('.selectionLength') !== nodes.length) this.source.setRelativeData('.selectionLength', nodes.length);
         this.#context.publish('onSelectedRow', {idx, selectedId, selectedPkeys});
     }
 }

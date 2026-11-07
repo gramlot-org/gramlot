@@ -12,7 +12,7 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 0));
 const PUBLISHED = {selectedId:'^.sel.id', selectedIndex:'^.sel.index', selectedLabel:'^.sel.label', selectedPkeys:'^.sel.pkeys',
     selectedRowidx:'^.sel.rowidx', selectedNodes:'^.sel.nodes', selectedRowData:'^.sel.row', selected_kind:'^.sel.kinds'};
 
-async function mount(t, {mode = 'values', grid: gridAttrs = {}, frame = null, editable = false}) {
+async function mount(t, {mode = 'values', grid: gridAttrs = {}, frame = null, editable = false, datapath = 'model'}) {
     const {window} = new JSDOM('<main id="gramlot-root"></main>');
     const layoutFrames = layoutWindow(window);
     for (const name of ['showPopover', 'hidePopover', 'scrollIntoView']) window.HTMLElement.prototype[name] = function() {};
@@ -28,13 +28,13 @@ async function mount(t, {mode = 'values', grid: gridAttrs = {}, frame = null, ed
     const builder = new GramlotBuilder(null, {collections});
     let gridNode;
     if (frame) {
-        const composed = builder.root.frameGrid({node_label:'orders', datapath:'model', storepath:'.rows', rowMode:mode, ...frame, ...gridAttrs});
+        const composed = builder.root.frameGrid({node_label:'orders', ...(datapath ? {datapath} : {}), storepath:datapath ? '.rows' : 'model.rows', rowMode:mode, ...frame, ...gridAttrs});
         gridNode = composed.grid;
-    } else gridNode = builder.root.div({node_label:'pane', datapath:'model'}).grid({node_label:'grid', storepath:'.rows', rowMode:mode, ...gridAttrs});
+    } else gridNode = builder.root.div({node_label:'pane', ...(datapath ? {datapath} : {})}).grid({node_label:'grid', storepath:datapath ? '.rows' : 'model.rows', rowMode:mode, ...gridAttrs});
     const struct = gridNode.struct();
     struct.column({field:'name', ...(editable ? {edit:true} : {})});
     struct.column({field:'kind'});
-    struct.column({field:'amount', dtype:'L', totalize:true});
+    struct.column({field:'amount', dtype:'L', totalize:datapath ? true : 'model.total'});
     app.src.startSource(builder.toTytx());
     await tick(); layoutFrames.flush(); await tick();
     const source = frame ? app.src.source.getNode('main.orders').value.getNode('center').value.getNode('grid')
@@ -182,4 +182,17 @@ test('duprow or delrow with selectionMode none is an explicit error', async t =>
 test('an unknown selectionMode is an error', async t => {
     const f = await mount(t, {grid:{selectionMode:'many'}});
     assert.ok(f.errors.some(message => /selectionMode requires none, single or multi/.test(message)), f.errors.join('; '));
+});
+
+for (const frame of [null, {}]) test(`a ${frame ? 'frameGrid' : 'grid'} without a datapath context selects rows and writes no .selectionLength`, async t => {
+    const f = await mount(t, {frame, datapath:null, grid:{selectedPkeys:'^model.sel.pkeys'}});
+    await f.click('r2'); await f.click('r3', {ctrlKey:true});
+    assert.deepEqual(f.selected(), ['r2', 'r3']);
+    assert.deepEqual(f.data('sel.pkeys'), ['r2', 'r3']);
+    assert.deepEqual(f.published.at(-1), {idx:2, selectedId:'r3', selectedPkeys:['r2', 'r3']});
+    f.source.gridCollectionView.applyColumnFilter('kind', ['a']);
+    await f.settle();
+    assert.deepEqual(f.data('sel.pkeys'), ['r3']);
+    assert.equal(f.app.data.getItem('selectionLength'), null);
+    assert.deepEqual(f.errors, []);
 });

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
+import {readFileSync} from 'node:fs';
 import {JSDOM} from 'jsdom';
 import {fromTytx} from '@genrojs/tytx';
 import {Bag, Gramlot, GramlotBuilder} from '../src/index.js';
@@ -264,6 +265,28 @@ test('shared toolbar is singular with and without search and keeps ordinary comm
     }
     const b = new GramlotBuilder(null,{collections});
     assert.throws(()=>b.root.framePane().toolbar,/no toolbar/);
+});
+
+test('the base theme collapses a frameGrid toolbar with no tools and keeps it with tools or authored items', async t => {
+    const {window} = new JSDOM('<main id="gramlot-root"></main>'); layoutWindow(window);
+    const style = window.document.createElement('style');
+    style.textContent = readFileSync(new URL('../../themes/gramlot-base/theme.css', import.meta.url), 'utf8');
+    window.document.head.append(style);
+    const app = new Gramlot({document:window.document, transport:false, collections});
+    t.after(() => {app.dispose(); window.close();});
+    app.data.setItem('rows', new Bag());
+    const b = new GramlotBuilder(null, {collections});
+    const frames = {empty:{}, search:{searchOn:true}, tools:{printRows:true}, authored:{}};
+    for (const [name, attrs] of Object.entries(frames)) {
+        const frame = b.root.frameGrid({node_label:name, storepath:'rows', rowMode:'values', ...attrs});
+        frame.grid.struct().column({field:'name'});
+        if (name === 'authored') frame.toolbar.menuline({caption:'Refresh', node_label:'refresh'});
+    }
+    app.src.startSource(b.toTytx());
+    await new Promise(resolve => window.setTimeout(resolve, 0));
+    const display = name => window.getComputedStyle(app.dom.getDomNode(app.src.source.getNode(`main.${name}`).value.getNode('top.bar'))).display;
+    assert.equal(display('empty'), 'none');
+    for (const name of ['search', 'tools', 'authored']) assert.notEqual(display(name), 'none', name);
 });
 
 test('chart options use the frame Data scope and shared chartPane', async () => {

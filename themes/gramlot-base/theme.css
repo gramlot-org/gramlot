@@ -477,4 +477,6 @@
 
 /* FrameGrid owns its single command/search toolbar. */
 .gramlot-grid-toolbar { padding:2px 6px; min-height:40px; background:var(--gramlot-surface-subtle); }
+/* A toolbar with no tools and no authored items takes no space (it may hold an empty text node). */
+.gramlot-grid-toolbar:not(:has(> *)) { display:none; }
 .gramlot-grid-toolbar > .gramlot-grid-search { margin-inline-start:auto; }

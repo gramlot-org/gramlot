@@ -3009,8 +3009,8 @@ multipla che è abilitata da una modalità di selezione no select single e multi
 then "Sì, conferma" to the specification. Authoring names keep the legacy
 spelling: `selectionMode` (`none`/`single`/`multi`), `selectedId`,
 `selectedIndex`, `selectedLabel`, `selectedPkeys`, `selectedRowidx`,
-`selectedNodes`, `selectedRowData`, `selected_<field>`, the always-written
-`.selectionLength` and the topic `onSelectedRow`. Commands `grid:duprow` and
+`selectedNodes`, `selectedRowData`, `selected_<field>`,
+`.selectionLength` (written when the grid has a datapath context) and the topic `onSelectedRow`. Commands `grid:duprow` and
 `grid:delrow` follow the legacy slot names. `GridSelection` /
 `grid-selection.js` follows the collaborator class/file convention; the row part
 `selected-row` follows the `<role>` part convention.
