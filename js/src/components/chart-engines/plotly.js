@@ -2,12 +2,13 @@ import {chartPalette} from '../chart-domains.js';
 import {chartData} from '../chart-data.js';
 import {plotlySpatial} from './plotly-spatial.js';
 import {plotlyMap} from './plotly-map.js';
+import {loadLibrary} from '../../libraries.js';
 
 let loading,Plotly;
 export class PlotlyAdapter {
     static label='Plotly';
-    static async load() {
-        Plotly=await (loading ??= import('plotly.js-dist-min').then(module=>module.default));
+    static async load(type,document) {
+        Plotly=await (loading ??= loadLibrary('plotly',document,()=>import('plotly.js-dist-min')).then(module=>module.default));
     }
     #element; #options; #type; #listening=false; #style; #disposed=false; #pending=Promise.resolve(); #drawn=false;
     constructor(element,options={}) { this.#element=element;this.#options=options; }

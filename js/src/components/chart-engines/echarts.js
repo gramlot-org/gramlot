@@ -1,5 +1,5 @@
-import * as echarts from 'echarts/dist/echarts.js';
 import {randomId} from '../../random-id.js';
+import {loadLibrary} from '../../libraries.js';
 import {chartType} from '../chart-types/index.js';
 import {cartesianOptions} from './echarts-options.js';
 import {chartBar3DOptions} from '../chart-bar3d-options.js';
@@ -17,11 +17,17 @@ import {chartBoxplotOptions} from '../chart-boxplot-options.js';
 import {chartTreemapOptions} from '../chart-treemap-options.js';
 import {chartSunburstOptions} from '../chart-sunburst-options.js';
 
-let glLoading;
+let echarts;
 export class EChartsAdapter {
     static label='ECharts';
-    static async load(type) {
-        if(chartType(type).threeD)await (glLoading ??= import('echarts-gl/dist/echarts-gl.js'));
+    /** ECharts, and ECharts GL for a 3D type, on first use. The UMD build of ECharts GL registers itself
+     * into the ECharts it reads from the window property `echarts`. */
+    static async load(type,document) {
+        echarts=await loadLibrary('echarts',document,()=>import('echarts/dist/echarts.esm.min.mjs'));
+        if(chartType(type).threeD) {
+            document.defaultView.echarts=echarts;
+            await loadLibrary('echartsGl',document,()=>import('echarts-gl/dist/echarts-gl.min.js'));
+        }
     }
     #chart; #type; #element; #options; #renderer;
     #mapName=`chart_${randomId()}`; #mapData;

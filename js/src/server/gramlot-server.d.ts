@@ -78,6 +78,8 @@ export interface GramlotServerOptions {
     uploadsEnabled?: boolean;
     /** The base theme of every page, a folder of the core themes, or false for none; default `gramlot-base`. */
     cssTheme?: string | false;
+    /** Where the pages take the third-party libraries of the components: jsDelivr or the local copies; default `cdn`. */
+    librarySource?: 'cdn' | 'local';
 }
 
 /** The result of `registerPage`. */
@@ -153,6 +155,12 @@ export class GramlotServer {
     evaluateAuth(rule: string | null, options?: {owner?: unknown; identity?: unknown}): AuthOutcome;
     /** Drop the expired pages. */
     prune(): void;
+    /** Where the pages take the third-party libraries of the components. */
+    librarySource: 'cdn' | 'local';
+    /** The origins the pages load third-party libraries from: the CDN origin with `cdn`, else none. */
+    get libraryOrigins(): string[];
+    /** The page policy: `{nonce}` replaced and the library origins added to the directives of scripts and connections. */
+    contentSecurityPolicy(policy: string, nonce: string): string;
     /** The CSS URL of the theme of a page class, in an array, or an empty array. */
     themeCss(PageClass: typeof Page): string[];
     /** The file of a `/themes/<path>` URL path whose real path is a file of the core themes, or null. Node.js and Bun only. */

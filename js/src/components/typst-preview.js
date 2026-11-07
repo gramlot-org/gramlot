@@ -1,4 +1,5 @@
 import {defineComponent} from './registry.js';
+import {loadLibrary} from '../libraries.js';
 import {projectParameters} from './parameters.js';
 
 function PreviewElement(HTMLElement){
@@ -61,7 +62,7 @@ function PreviewElement(HTMLElement){
             const revision=this.#revision;
             this.#busy=true;
             try{
-                this.#loading??=import('./typst-client.js');
+                this.#loading??=loadLibrary('typst',this.ownerDocument,()=>import('./typst-client.js'));
                 const module=await this.#loading;
                 if(!this.isConnected || revision!==this.#revision)return;
                 this.#compiler??=module.acquireCompiler();

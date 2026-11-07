@@ -71,3 +71,16 @@ export {SourcePicker} from './source-picker.js';
 
 /** The libraries and runtime modules shared with prepared collections, keyed by import specifier. */
 export declare const sharedModules: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
+/** One third-party library of the manifest (GC-325 §160). */
+export interface LibraryEntry {
+    readonly packages: Readonly<Record<string, string>>;
+    readonly local: string;
+    readonly url: string | null;
+    readonly integrity: string | null;
+    readonly format: 'module' | 'style' | 'script';
+    readonly global?: string;
+}
+/** The third-party libraries of the standard components, keyed by name. */
+export declare const libraries: Readonly<Record<string, LibraryEntry>>;
+/** The library `name` for a component of `document`: from jsDelivr when the document says `cdn`, else the local copy. */
+export declare function loadLibrary(name: string, document: Document, localImport: () => Promise<unknown>): Promise<unknown>;

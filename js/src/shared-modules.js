@@ -23,6 +23,7 @@ import * as msgpack from '@msgpack/msgpack';
 import * as dompurify from 'dompurify';
 import * as randomId from './random-id.js';
 import * as format from './format.js';
+import * as librariesModule from './libraries.js';
 import * as mediaFrame from './media-frame.js';
 import * as validationRun from './validation-run.js';
 import * as rendererAttributes from './renderer/attributes.js';
@@ -55,6 +56,7 @@ export const sharedModules = Object.freeze({
     'dompurify': dompurify,
     './random-id.js': randomId,
     './format.js': format,
+    './libraries.js': librariesModule,
     './media-frame.js': mediaFrame,
     './validation-run.js': validationRun,
     './renderer/attributes.js': rendererAttributes,

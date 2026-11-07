@@ -70,6 +70,29 @@ async function sharedModuleLinks(coreEntry, sharedModules) {
     };
 }
 
+/**
+ * Refuses a collection whose start-up graph (its entry module and the modules it imports statically) contains
+ * a third-party package. A third-party library loads on first use through `loadLibrary` of the core (GC-325
+ * §160), so it can only sit in a deferred module.
+ */
+function verifyStartup(name, metafile) {
+    const outputs = metafile.outputs;
+    const entry = Object.keys(outputs).find(file => outputs[file].entryPoint);
+    const seen = new Set(), pending = [entry];
+    while (pending.length) {
+        const file = pending.pop();
+        if (seen.has(file) || !outputs[file]) continue;
+        seen.add(file);
+        for (const item of outputs[file].imports) if (item.kind === 'import-statement' && !item.external) pending.push(item.path);
+    }
+    const packages = new Set();
+    for (const file of seen) for (const [input, {bytesInOutput}] of Object.entries(outputs[file].inputs)) {
+        const match = bytesInOutput > 0 && /(?:^|\/)node_modules\/((?:@[^/]+\/)?[^/]+)/.exec(input);
+        if (match) packages.add(match[1]);
+    }
+    if (packages.size) throw new Error(`Collection ${name} loads third-party packages at start: ${[...packages].sort().join(', ')}; load them on first use with loadLibrary`);
+}
+
 export async function generate(request) {
     keys(request,['protocolVersion','operation','configPath','projectRoot','stagingDirectory','config','externals']);
     if (request.protocolVersion !== 1 || !['build','check'].includes(request.operation)) throw new Error('Unsupported generator protocol/operation');
@@ -79,8 +102,13 @@ export async function generate(request) {
     const resolver = createRequire(path.join(request.projectRoot,'package.json'));
     const coreEntry = resolver.resolve('@gramlot/gramlot');
     const coreRegistry = path.join(path.dirname(coreEntry),'components/registry.js');
-    const {CommandRegistry, collectionBuildId, sharedModules} = await import(pathToFileURL(coreEntry));
+    const {CommandRegistry, collectionBuildId, sharedModules, libraries} = await import(pathToFileURL(coreEntry));
     const shared = await sharedModuleLinks(coreEntry, sharedModules);
+    // The local copy of a UMD build is evaluated as a browser script, as the same file imported from the CDN:
+    // without CommonJS and AMD in scope it takes its window-global branch (GC-325 §160).
+    const coreResolver = createRequire(coreEntry);
+    const scriptFiles = new Set(Object.values(libraries).filter(library => library.format === 'script')
+        .map(library => coreResolver.resolve(library.local)));
     const base = path.dirname(request.configPath);
     const resolveEntry = entry => {
         if (typeof entry !== 'string' || !entry) throw new Error('Invalid collection entry');
@@ -179,6 +207,8 @@ export async function generate(request) {
             plugins:[{name:'collection-linking',setup(b){
                 b.onResolve({filter:/^gramlot-collection-resources$/}, () => ({path:'resources',namespace:'collection-resources'}));
                 b.onLoad({filter:/.*/,namespace:'collection-resources'}, () => ({contents:resourceModule,loader:'js'}));
+                b.onLoad({filter:/\.[cm]?js$/,namespace:'file'}, async args => scriptFiles.has(args.path) ? {loader:'js',
+                    contents:`(function (exports, module, define, require) {\n${await readFile(args.path, 'utf8')}\n}).call(globalThis);\n`} : undefined);
                 b.onLoad({filter:/\.[cm]?js$/,namespace:'file'}, async args => {
                     const source = await readFile(args.path, 'utf8');
                     const contents = lowerResourceReferences(source, pathToFileURL(args.path), resources);
@@ -210,6 +240,7 @@ export async function generate(request) {
                 b.onLoad({filter:/.*/,namespace:'collection-authoring'},()=>({contents:lowered,loader:'js'}));
             }}]});
         shared.verify(c.name,built.metafile,request.projectRoot);
+        verifyStartup(c.name,built.metafile);
         await writeFile(path.join(directory,'grammar.json'),json(c.toDocument()));
         await writeFile(path.join(directory,'commands.json'),json(row.catalogue));
         await writeFile(path.join(assets,'index.js'),wrapper('__GRAMLOT_BUILD_ID__'));

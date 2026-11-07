@@ -678,6 +678,21 @@ companion _aux.js) or serve the page with the permissive CSP profile, which allo
 stays as `cause`. Nothing is written to the Data.
 The page that hits it reports the violation as any `script-src eval` violation.
 
+**Third-party libraries of the components.** A component that uses a third-party
+library (ECharts, uPlot, Plotly, Vega, CodeMirror, Jodit, ProseMirror, the Excel export,
+Typst) loads it the first time it needs it. The server option `library_source`
+(JavaScript `librarySource`) says where from: `cdn` (default) takes ECharts and uPlot
+from jsDelivr at the exact version Gramlot was tested with; `local` takes the copies
+served with the collections. The other libraries always come from the local copies.
+The bootstrap writes the choice on `<html data-gramlot-library-source>`; with `cdn` the
+import map carries the integrity of each CDN file, so the browser refuses a changed
+file. With `cdn` the policy must allow `https://cdn.jsdelivr.net` for scripts and
+connections. `GramlotServer.content_security_policy(policy, nonce)` (JavaScript
+`contentSecurityPolicy`) returns the header of one page: `{nonce}` replaced and the
+CDN origin added to `script-src` and `connect-src` (or `default-src`). Choose `local`
+for a site without internet access or with a policy that names no CDN. The
+standalone export always uses the local copies.
+
 **Inline code runs only as received with the Source.** `gramlot.src.prepareSource`
 activates the inline code of the Source the page receives: `main` from the server,
 a remote Source, or a `GramlotBuilderBag` given to `startSource`. Each

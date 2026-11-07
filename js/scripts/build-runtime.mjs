@@ -11,6 +11,7 @@ import {dirname, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {moduleDoc} from './bundle-banner.mjs';
 import {runtimeOptions} from './runtime-options.mjs';
+import {libraries} from '../src/libraries.js';
 const root = new URL('../', import.meta.url);
 const path = value => fileURLToPath(new URL(value, root));
 const compactStyle = await readFile(path('../themes/gramlot-compact/theme.css'), 'utf8');
@@ -125,6 +126,8 @@ await writeFile(path('dist/runtime-notices.json'), JSON.stringify(notices, null,
 await mkdir(path('../build/assets/'), {recursive: true});
 await copyFile(path('dist/gramlot.js'), path('../build/assets/gramlot.js'));
 await mkdir(path('../src/gramlot/resources/'), {recursive: true});
-for (const name of ['gramlot.js', 'gramlot.min.js', 'gramlot-markdown.js', 'runtime-notices.json']) {
+// The Python server reads the manifest of third-party libraries from the same data (GC-325 §160).
+await writeFile(path('dist/libraries.json'), JSON.stringify(libraries, null, 2) + '\n');
+for (const name of ['gramlot.js', 'gramlot.min.js', 'gramlot-markdown.js', 'runtime-notices.json', 'libraries.json']) {
     await copyFile(path(`dist/${name}`), path(`../src/gramlot/resources/${name}`));
 }
