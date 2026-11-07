@@ -5,14 +5,14 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-COLLECTIONS = ('inputs', 'buttons', 'layout', 'tree', 'editors', 'typst', 'uploads', 'grid', 'chat', 'grouplets', 'charts', 'vizabi', 'audio', 'drawing')
+COLLECTIONS = ('inputs', 'buttons', 'layout', 'tree', 'editors', 'typst', 'uploads', 'grid', 'chat', 'grouplets', 'charts', 'audio', 'drawing')
 from widget_reference_content import COLLECTION_GUIDES
 from widget_manual_content import COLLECTION_EXPLANATIONS
 from widget_coverage import COVERAGE, behavior_sections, coverage_documents
 
 COLLECTION_IDS = {
     'inputs': 410, 'buttons': 415, 'layout': 420, 'tree': 425, 'editors': 430,
-    'typst': 435, 'uploads': 440, 'grid': 445, 'chat': 450, 'grouplets': 455, 'charts': 480, 'vizabi': 485, 'audio': 490, 'drawing': 495,
+    'typst': 435, 'uploads': 440, 'grid': 445, 'chat': 450, 'grouplets': 455, 'charts': 480, 'audio': 490, 'drawing': 495,
 }
 
 # Human explanations complement the executable parameter contract.
@@ -25,7 +25,6 @@ DESCRIPTIONS = {
  'gauge': 'One value of the node on a needle dial, a progress ring or a half-circle arc.',
  'audioAnalyser': 'Live microphone waveform and spectrum arrays written into Data.',
  'drawingPane': 'SVG annotation editing over an original Data Bag.',
- 'vizabiBubble': 'Specialized host-provided Vizabi bubble session observing Data Bags.',
 
  'grid': 'Virtualized Bag rows with a declarative column structure; database access belongs to the store/provider.',
  'searchBox': 'Search control connected to the enclosing grid Source context.',
@@ -85,7 +84,6 @@ DETAILS = {
  'audio': ('490-audio.md#gc-490-start', 'Microphone samples and lifecycle'),
  'drawing': ('495-drawing.md#gc-495-start', 'Annotation Bags and drawing tools'),
  'charts': ('480-charts.md#gc-480-start', 'Shared charts, engines and temporal snapshots'),
- 'vizabi': ('485-vizabi.md#gc-485-start', 'Host-provided bubble charts'),
  'grid': ('445-grid.md#gc-445-start', 'Bag rows, column structure and selection stores'),
  'chat': ('450-chat.md#gc-450-start', 'ChatPane composition and server responsibilities'),
  'grouplets': ('455-grouplets.md#gc-455-start', 'Reusable remote fragments and cards'),
@@ -120,7 +118,7 @@ def type_name(spec):
 
 FAMILIES = {
     'Audio and drawing': ('audioAnalyser', 'drawingPane'),
-    'Charts': ('chartPane', 'chartView', 'chartFields', 'chartGeoJSON', 'chartTimeline', 'gauge', 'vizabiBubble'),
+    'Charts': ('chartPane', 'chartView', 'chartFields', 'chartGeoJSON', 'chartTimeline', 'gauge'),
     'Grids and search': ('grid', 'searchBox'),
     'Conversations': ('chatMessages',),
     'Reusable fragments': ('grouplet', 'groupletCard'),
@@ -276,7 +274,7 @@ connects these controls to runnable lessons and screenshots.
                   grouplet='gc-345-380', groupletCard='gc-345-385')
     stable['gauge'] = 'gc-345-500'
     stable.update({name: f'gc-345-{505 + index * 5}' for index, name in enumerate(chart_types)})
-    stable.update({name: f'gc-345-{450 + index * 5}' for index, name in enumerate(('chartPane', 'chartView', 'chartFields', 'chartGeoJSON', 'chartTimeline', 'vizabiBubble', 'audioAnalyser', 'drawingPane'))})
+    stable.update({name: f'gc-345-{450 + index * 5}' for index, name in enumerate(('chartPane', 'chartView', 'chartFields', 'chartGeoJSON', 'chartTimeline', 'audioAnalyser', 'drawingPane'))})
     if not set(entries) <= set(stable):
         raise ValueError('Allocate a stable documentation ID for every new component')
     families = {family: tuple(key for key in widgets if key in entries)

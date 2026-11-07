@@ -41,7 +41,7 @@ Each widget below links only the shared contracts it supports. A shared name can
 ## Audio and drawing
 
 
-<a id="gc-495-485"></a>
+<a id="gc-495-480"></a>
 <a id="gc-495-drawingpane"></a>
 ### `drawingPane`
 

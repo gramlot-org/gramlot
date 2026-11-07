@@ -26,7 +26,7 @@ Contract JSON omits only undeclared keys: no default is not the same as null. dt
 ## Audio and drawing
 
 
-<a id="gc-495-485"></a>
+<a id="gc-495-480"></a>
 <a id="gc-495-drawingpane"></a>
 ### `drawingPane`
 

@@ -160,7 +160,7 @@ StackContainer and tabContainer select one child panel; selectedPage uses its pa
 ## Audio and drawing
 
 
-<a id="gc-345-480"></a>
+<a id="gc-345-475"></a>
 <a id="gc-345-audioanalyser"></a>
 ### `audioAnalyser`
 
@@ -195,7 +195,7 @@ Collection: audio. Live microphone waveform and spectrum arrays written into Dat
 
 Child grammar: `''`; parent grammar: `None`.
 
-<a id="gc-345-485"></a>
+<a id="gc-345-480"></a>
 <a id="gc-345-drawingpane"></a>
 ### `drawingPane`
 
@@ -416,36 +416,6 @@ Collection: charts. One value of the node on a needle dial, a progress ring or a
 | `mask` | `{"binding":"read","default":"{}","dtype":"T"}` |
 | `thresholds, caption` | `{"binding":"read","default":"","dtype":"T","nullable":true}` |
 | `presentation` | `{"binding":"read","default":"needle","dtype":"T"}` |
-
-Child grammar: `''`; parent grammar: `None`.
-
-<a id="gc-345-475"></a>
-<a id="gc-345-vizabibubble"></a>
-### `vizabiBubble`
-
-Collection: vizabi. Specialized host-provided Vizabi bubble session observing Data Bags.
-
-
-[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-vizabibubble).
-
-
-**Data contract.** Reads the original rows and configuration Bag.
-
-
-**Interaction and events.** Retains supported session configuration and releases engine resources on removal.
-
-
-**Composition.** Specialized external bubble view.
-
-
-**Limits and lifecycle.** Requires host-supplied libraryUrl; not a chartPane engine.
-
-
-| Parameters | Contract |
-| --- | --- |
-| `storepath, libraryUrl` | `{"dtype":"T"}` |
-| `rowMode` | `{"default":"attributes","dtype":"T"}` |
-| `configuration` | `{"binding":"read","dtype":"X"}` |
 
 Child grammar: `''`; parent grammar: `None`.
 

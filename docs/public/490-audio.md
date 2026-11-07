@@ -42,7 +42,7 @@ Each widget below links only the shared contracts it supports. A shared name can
 ## Audio and drawing
 
 
-<a id="gc-490-480"></a>
+<a id="gc-490-475"></a>
 <a id="gc-490-audioanalyser"></a>
 ### `audioAnalyser`
 

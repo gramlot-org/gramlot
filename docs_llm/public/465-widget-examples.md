@@ -975,26 +975,6 @@ No dedicated lesson identified in the reviewed catalogue.
 No dedicated lesson identified in the reviewed catalogue.
 
 
-<a id="gc-465-setup-vizabi"></a>
-## Vizabi: setup
-
-[Collection manual](485-vizabi.md). The environment must supply the collection and the services described in that manual. The following body belongs in `main(self, root)`; it is not a standalone application.
-
-```python
-root.vizabiBubble(storepath="rows", configuration="^vizabi", libraryUrl="/assets/vizabi.js", height="500px")
-```
-
-Supply a configuration Bag and the compatible external library URL. The host owns library delivery. This specialized integration is not a chartPane engine and is not enabled by the common gallery environment.
-
-
-<a id="gc-465-vizabibubble"></a>
-### `vizabiBubble`
-
-Host-only integration; no common gallery lesson.
-
-No dedicated lesson identified in the reviewed catalogue.
-
-
 <a id="gc-465-setup-audio"></a>
 ## Audio analysis: setup
 
