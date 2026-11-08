@@ -89,13 +89,16 @@ export const Tree = defineComponent({
         #selectionVersion = 0;
         #selectedPath = null;
         #scheduled = false;
-        #checkedPaths;
         #checksEnabled = false;
         #pathsEnabled = false;
-        #checkedBags = new WeakMap();
-        // Expansion, checks, loading, errors and resolutions are kept by tree path (row keys from
+        // `checked_<attribute>` addresses, legacy syntax `path[:joiner]`, by attribute name.
+        #checkedAttributes = new Map();
+        // The check lists as last read or written by the tree, by list name; null before the first draw.
+        #seenLists = null;
+        // The path list of a tree without checkedPaths, kept like the expansion.
+        #ownCheckedPaths = null;
+        // Expansion, loading, errors and resolutions are kept by tree path (row keys from
         // the store root), never by BagNode.
-        #checkedNodes = new Set();
         #loading = new Set();
         #errors = new Map();
         #searchInput = '';
@@ -179,11 +182,24 @@ export const Tree = defineComponent({
             return null;
         }
         projectAttributes(attrs, adapt) {
+            const own = {};
+            this.#checkedAttributes = new Map();
+            for (const [name, raw] of Object.entries(attrs)) {
+                if (!name.startsWith('checked_')) { own[name] = raw; continue; }
+                // Legacy genro_tree.js updateCheckedAttr: a Data path, the joiner after ':'.
+                const attribute = name.slice('checked_'.length);
+                if (!attribute || typeof raw !== 'string' || !raw || /^[\^=]/.test(raw)) {
+                    throw new TypeError(`tree ${name} requires a Data path, optionally followed by :joiner`);
+                }
+                const index = raw.indexOf(':');
+                this.#checkedAttributes.set(name, {attribute, path: index < 0 ? raw : raw.slice(0, index),
+                    joiner: (index < 0 ? '' : raw.slice(index + 1)) || ','});
+            }
             this.#pathsEnabled = Object.hasOwn(attrs, 'checkedPaths');
-            this.#checksEnabled = this.#pathsEnabled || Boolean(attrs.onChecked);
+            this.#checksEnabled = this.#pathsEnabled || Boolean(attrs.onChecked) || this.#checkedAttributes.size > 0;
             const previousEager = this.parameters?.searchEager;
             const previousResolve = this.parameters?.resolveLazy;
-            const rest = super.projectAttributes(attrs, adapt);
+            const rest = super.projectAttributes(own, adapt);
             if (previousEager !== this.parameters.searchEager || previousResolve !== this.parameters.resolveLazy) {
                 this.#resetSearch();
                 this.#searchText = this.#searchInput.toLowerCase();
@@ -282,14 +298,6 @@ export const Tree = defineComponent({
             const focused = this.shadowRoot.activeElement?.closest('[role=treeitem]')?.dataset.path;
             const focusedFavorite = this.shadowRoot.activeElement?.dataset.favoritePath;
             const focusedFavoritesGroup = this.shadowRoot.activeElement?.dataset.favoritesGroup === 'true';
-            const loaded = [];
-            let checksChanged = false;
-            if (this.#checksEnabled && this.parameters.checkChildren &&
-                !(this.#pathsEnabled && this.parameters.checkedPaths !== this.#checkedPaths)) {
-                const visited = new Set();
-                checksChanged = this.#syncChecked(store, '', new Set(), loaded, visited);
-                for (const path of this.#checkedNodes) if (!visited.has(path)) this.#checkedNodes.delete(path);
-            }
             const items = new Map(), seen = new Set();
             const visit = (bag, prefix, ancestors) => {
                 if (seen.has(bag)) throw new TypeError('tree requires an acyclic Bag store');
@@ -310,32 +318,7 @@ export const Tree = defineComponent({
             }
             const actionBar = this.#rowActions();
             if (actionBar && actionBar.getRowContext() === null) actionBar.clearRowContext();
-            if (this.#pathsEnabled && this.parameters.checkedPaths !== this.#checkedPaths) {
-                const initial = this.#checkedPaths === undefined;
-                this.#checkedPaths = this.parameters.checkedPaths;
-                for (const {node} of items.values()) {
-                    if (node.attr.checked === 'disabled:on' || node.attr.checked === 'disabled:off') continue;
-                    if (!initial || this.#checkedPaths !== null) node.setAttr({checked: false});
-                }
-                for (const path of (this.#checkedPaths || '').split(this.parameters.checkedPaths_joiner).filter(Boolean)) {
-                    const item = items.get(path);
-                    if (item) this.#check(item.node, path, true, false);
-                }
-            } else if (this.#pathsEnabled && loaded.length) {
-                const paths = (this.parameters.checkedPaths || '').split(this.parameters.checkedPaths_joiner).filter(Boolean);
-                for (const path of paths) {
-                    const item = items.get(path);
-                    if (!item || item.node.attr.checked === true || item.node.attr.checked === 'disabled:on' ||
-                        item.node.attr.checked === 'disabled:off') continue;
-                    const parts = path.split('.');
-                    if (parts.slice(1).some((_, index) => loaded.includes(parts.slice(0, index + 1).join('.')))) {
-                        this.#check(item.node, path, true, false);
-                    }
-                }
-                if (checksChanged || paths.length) this.#publishChecked(true);
-            } else if (checksChanged) {
-                this.#publishChecked(true);
-            }
+            const checks = this.#checksEnabled ? this.#drawnChecks(store) : null;
             for (const path of this.#expanded) if (!items.has(path)) this.#expanded.delete(path);
             for (const path of this.#errors.keys()) if (!items.has(path)) this.#errors.delete(path);
             const requested = this.parameters.selectedPath;
@@ -427,7 +410,7 @@ export const Tree = defineComponent({
                                 if (result instanceof Promise) throw new TypeError('tree onChecked must be synchronous');
                                 if (result === false) { this.#schedule(); return; }
                             }
-                            this.#check(node, path, check.checked, true);
+                            this.#toggleCheck(path);
                         });
                     }
                     row.append(expander, check || icon, badge, caption); entry.append(row);
@@ -498,7 +481,7 @@ export const Tree = defineComponent({
                         icon.setAttribute('part', ['icon', ...iconClasses].join(' '));
                         icon.hidden = customIcon && iconClasses.length === 0;
                         if (check) {
-                            const value = node.attr.checked;
+                            const value = checks.get(path);
                             check.checked = value === true || value === 'disabled:on';
                             check.indeterminate = value === -1;
                             entry.setAttribute('aria-checked', value === -1 ? 'mixed' : String(check.checked));
@@ -685,102 +668,156 @@ export const Tree = defineComponent({
             }
             if (current() && this.#rowNode(requested)) this.#schedule();
         }
-        #check(node, path, value, publish) {
-            if (node.attr.checked === 'disabled:on' || node.attr.checked === 'disabled:off') return;
-            const children = this.#resolutions.get(path) ?? node.getValue();
-            if (children instanceof Promise && !this.#resolutions.has(path)) {
-                this.#errors.delete(path);
-                const pending = children.catch(error => {
-                    this.#errors.set(path, error);
-                    this.#expanded.delete(path);
-                }).finally(() => {
-                    if (this.#resolutions.get(path) === pending) this.#resolutions.delete(path);
-                    this.#schedule();
-                });
-                this.#resolutions.set(path, pending);
+        /**
+         * The check lists: `checkedPaths` (or the tree's own path list without it) and each
+         * `checked_<attribute>`. Each carries its text, read at its address now, and its writer.
+         */
+        #checkLists() {
+            const lists = [{name: 'checkedPaths', attribute: null, joiner: this.parameters.checkedPaths_joiner,
+                value: this.#pathsEnabled ? this.parameters.checkedPaths : this.#ownCheckedPaths,
+                write: text => {
+                    if (this.#pathsEnabled) this.#context.writeParameter('checkedPaths', text);
+                    else this.#ownCheckedPaths = text;
+                }}];
+            for (const [name, {attribute, path, joiner}] of this.#checkedAttributes) {
+                const value = this.#context.readRelativeData(path);
+                if (value != null && typeof value !== 'string') throw new TypeError(`tree ${name} must address text`);
+                lists.push({name, attribute, joiner, value, write: text => this.#context.setRelativeData(path, text)});
             }
-            if (this.parameters.checkChildren && children instanceof Bag) {
-                if (node.resolver !== null) this.#checkedBags.set(node, children);
-                this.#applyChecked(children, path, value);
-            }
-            node.setAttr({checked: this.parameters.checkChildren && children instanceof Bag && children.length
-                ? this.#checkStatus(children) : value});
-            if (this.parameters.checkChildren) {
-                // The ancestors are the prefixes of the tree path, from the nearest one up.
-                const parts = path.split('.');
-                for (let index = parts.length - 1; index > 0; index--) {
-                    const parent = this.#rowNode(parts.slice(0, index).join('.'));
-                    parent.setAttr({checked: this.#checkStatus(parent.staticValue)});
-                }
-            }
-            if (publish) this.#publishChecked();
+            return lists;
         }
-        #applyChecked(bag, prefix, value, onlyNew = false) {
-            for (const child of bag.getNodes()) {
-                const path = prefix ? `${prefix}.${child.label}` : child.label;
-                if (onlyNew && this.#checkedNodes.has(path)) continue;
-                this.#checkedNodes.add(path);
-                if (child.attr.checked === 'disabled:on' || child.attr.checked === 'disabled:off') continue;
-                const children = child.staticValue;
-                if (children instanceof Bag && children.length) {
-                    if (child.resolver !== null) this.#checkedBags.set(child, children);
-                    this.#applyChecked(children, path, value);
-                    child.setAttr({checked: this.#checkStatus(children)});
-                } else child.setAttr({checked: value});
+        #entries(list) { return (list.value ?? '').split(list.joiner).filter(Boolean); }
+        /** The entries of `lists` as one source: tree paths and, by attribute, the listed values. */
+        #checkSources(lists) {
+            const sources = {paths: new Set(), attributes: new Map()};
+            for (const attribute of this.#checkedAttributes.values()) sources.attributes.set(attribute.attribute, new Set());
+            for (const list of lists) {
+                const target = list.attribute === null ? sources.paths : sources.attributes.get(list.attribute);
+                for (const entry of this.#entries(list)) target.add(entry);
             }
+            return sources;
         }
-        #syncChecked(bag, prefix, ancestors, loaded, visited) {
-            if (ancestors.has(bag)) throw new TypeError('tree requires an acyclic Bag store');
-            ancestors.add(bag);
-            let changed = false;
-            for (const node of bag.getNodes()) {
-                const path = prefix ? `${prefix}.${node.label}` : node.label;
-                this.#checkedNodes.add(path);
-                visited.add(path);
-                const children = node.staticValue;
-                if (!(children instanceof Bag)) continue;
-                let childChanged = false;
-                if (node.resolver !== null && this.#checkedBags.get(node) !== children) {
-                    this.#checkedBags.set(node, children);
-                    loaded.push(path);
-                    if (typeof node.attr.checked === 'boolean') {
-                        this.#applyChecked(children, path, node.attr.checked);
-                        childChanged = true;
+        /** The children Bag the tree draws under `node`, read without running its resolver; null for none. */
+        #childBag(node) {
+            const value = node.resolver !== null && !this.parameters.resolveLazy ? null : node.staticValue;
+            return value instanceof Bag ? value : null;
+        }
+        /**
+         * The check state by tree path, computed from `sources` (legacy states): true, false, -1 for a
+         * branch with mixed loaded children (with checkChildren), or the node's own `disabled:on` /
+         * `disabled:off`, which nothing changes. A node is checked when the lists name its path or its
+         * value of a `checked_<attribute>`, or, with checkChildren, an ancestor's; a disabled node stops
+         * this propagation, as in the legacy click. `forced` sets the clicked `path` and, with
+         * checkChildren, its descendants to `value`, as the legacy clickOnCheckbox.
+         */
+        #checkStates(store, sources, forced = null) {
+            const states = new Map(), propagate = this.parameters.checkChildren, ancestors = new Set();
+            const listed = (node, path) => sources.paths.has(path) || [...sources.attributes].some(([attribute, values]) =>
+                node.attr[attribute] != null && values.has(String(node.attr[attribute])));
+            const visit = (bag, prefix, inherited, force) => {
+                if (ancestors.has(bag)) throw new TypeError('tree requires an acyclic Bag store');
+                ancestors.add(bag);
+                const values = [];
+                for (const node of bag.getNodes()) {
+                    if (!prefix && node.label === this.parameters.excludeRoot) continue;
+                    const path = prefix ? `${prefix}.${node.label}` : node.label;
+                    const children = this.#childBag(node);
+                    const nodeForce = forced !== null && path === forced.path ? forced.value : force;
+                    let state;
+                    if (node.attr.checked === 'disabled:on' || node.attr.checked === 'disabled:off') {
+                        state = node.attr.checked;
+                        if (children) visit(children, path, false, undefined);
+                    } else {
+                        const own = nodeForce !== undefined ? nodeForce : inherited || listed(node, path);
+                        const below = children ? visit(children, path, propagate && own, propagate ? nodeForce : undefined) : [];
+                        state = propagate && below.length ? this.#aggregate(below) : own;
                     }
-                } else if (typeof node.attr.checked === 'boolean' && children.getNodes().some(child => !this.#checkedNodes.has(`${path}.${child.label}`))) {
-                    this.#applyChecked(children, path, node.attr.checked, true);
-                    loaded.push(path);
-                    childChanged = true;
+                    states.set(path, state);
+                    values.push(state);
                 }
-                childChanged = this.#syncChecked(children, path, ancestors, loaded, visited) || childChanged;
-                if (childChanged && children.length && node.attr.checked !== 'disabled:on' && node.attr.checked !== 'disabled:off') {
-                    node.setAttr({checked: this.#checkStatus(children)});
-                }
-                changed ||= childChanged;
-            }
-            ancestors.delete(bag);
-            return changed;
+                ancestors.delete(bag);
+                return values;
+            };
+            visit(store, '', false, undefined);
+            return states;
         }
-        #publishChecked(preservePending = false) {
-            const paths = [];
+        #aggregate(values) {
+            const plain = values.map(value => value === 'disabled:on' ? true : value === 'disabled:off' ? false : value);
+            return plain.every(value => value === true) ? true : plain.every(value => value === false) ? false : -1;
+        }
+        /**
+         * The text of `list` for `states`, as the legacy updateCheckedAttr walk: with checkChildren only
+         * the nodes without loaded children (an unloaded branch included), otherwise every checked node;
+         * attribute values once each. `previous` keeps the entries the walk cannot reach: paths below an
+         * unloaded branch (except, with checkChildren, below `clicked`) and values no reachable node carries.
+         */
+        #listText(store, states, list, previous = null, clicked = null) {
+            const entries = [], known = new Set(), propagate = this.parameters.checkChildren;
             const visit = (bag, prefix) => {
-                for (const child of bag.getNodes()) {
-                    const path = prefix ? `${prefix}.${child.label}` : child.label;
-                    const children = child.staticValue;
-                    if (children instanceof Bag && children.length) {
-                        if (!this.parameters.checkChildren && child.attr.checked === true) paths.push(path);
-                        visit(children, path);
-                    } else if (child.attr.checked === true) paths.push(path);
+                for (const node of bag.getNodes()) {
+                    if (!prefix && node.label === this.parameters.excludeRoot) continue;
+                    const path = prefix ? `${prefix}.${node.label}` : node.label;
+                    const children = this.#childBag(node);
+                    const entry = list.attribute === null ? path
+                        : node.attr[list.attribute] == null ? null : String(node.attr[list.attribute]);
+                    if (entry !== null) known.add(entry);
+                    if (entry !== null && !(propagate && children?.length) && states.get(path) === true
+                        && !entries.includes(entry)) entries.push(entry);
+                    if (children) visit(children, path);
                 }
             };
-            visit(this.storeBag, '');
-            if (preservePending && this.#pathsEnabled) {
-                for (const path of (this.parameters.checkedPaths || '').split(this.parameters.checkedPaths_joiner).filter(Boolean)) {
-                    if (!paths.includes(path) && this.#pendingCheckedPath(path)) paths.push(path);
-                }
+            visit(store, '');
+            if (previous !== null) for (const entry of this.#entries(previous)) {
+                if (entries.includes(entry)) continue;
+                if (list.attribute !== null ? !known.has(entry) : this.#pendingCheckedPath(entry) &&
+                    !(propagate && clicked !== null && (entry === clicked || entry.startsWith(`${clicked}.`)))) entries.push(entry);
             }
-            this.#checkedPaths = paths.join(this.parameters.checkedPaths_joiner);
-            this.#context.writeParameter('checkedPaths', this.#checkedPaths);
+            return entries.join(list.joiner);
+        }
+        /**
+         * The check states of this draw. Lists changed outside the tree since it last read or wrote them
+         * are the source (at the first draw, the nonempty lists); the other lists are rewritten from the
+         * states they give. Otherwise all lists together are the source and nothing is written.
+         */
+        #drawnChecks(store) {
+            const lists = this.#checkLists(), first = this.#seenLists === null;
+            const changed = lists.filter(list => first ? this.#entries(list).length
+                : (this.#seenLists.get(list.name) ?? '') !== (list.value ?? ''));
+            const states = this.#checkStates(store, this.#checkSources(changed.length || first ? changed : lists));
+            this.#seenLists = new Map(lists.map(list => [list.name, list.value ?? '']));
+            if (changed.length) for (const list of lists) {
+                if (changed.includes(list)) continue;
+                const text = this.#listText(store, states, list);
+                if (text === (list.value ?? '')) continue;
+                this.#seenLists.set(list.name, text);
+                list.write(text);
+            }
+            return states;
+        }
+        /**
+         * Toggle the check at `path` as the legacy click (a checked or mixed node unchecks) and write
+         * every list. With checkChildren a branch counts as checked when any leaf the click changes is
+         * checked: the disabled nodes below it, which the click does not change, do not decide.
+         */
+        #toggleCheck(path) {
+            const store = this.storeBag, lists = this.#checkLists();
+            const current = this.#checkStates(store, this.#checkSources(lists));
+            const state = current.get(path);
+            if (state === 'disabled:on' || state === 'disabled:off') return;
+            let checked = state !== false;
+            if (this.parameters.checkChildren) {
+                const below = [...current].filter(([key]) => key.startsWith(`${path}.`));
+                const fixed = below.filter(([, value]) => value === 'disabled:on' || value === 'disabled:off').map(([key]) => `${key}.`);
+                const leaves = below.filter(([key, value]) => value !== 'disabled:on' && value !== 'disabled:off'
+                    && !fixed.some(prefix => key.startsWith(prefix)) && !below.some(([other]) => other.startsWith(`${key}.`)));
+                if (leaves.length) checked = leaves.some(([, value]) => value === true);
+            }
+            const states = this.#checkStates(store, this.#checkSources(lists), {path, value: !checked});
+            for (const list of lists) {
+                const text = this.#listText(store, states, list, list, path);
+                this.#seenLists.set(list.name, text);
+                if (text !== (list.value ?? '')) list.write(text);
+            }
             this.#schedule();
         }
         #pendingCheckedPath(path) {
@@ -795,12 +832,6 @@ export const Tree = defineComponent({
                 bag = node.staticValue;
             }
             return false;
-        }
-        #checkStatus(bag) {
-            const values = bag.getNodes().map(child => child.attr.checked === 'disabled:on' ? true
-                : child.attr.checked === 'disabled:off' || child.attr.checked == null ? false : child.attr.checked);
-            return values.every(value => value === true) ? true
-                : values.every(value => value === false) ? false : -1;
         }
         #classes(value) {
             if (typeof value !== 'string') throw new TypeError('Tree classes must be a string');

@@ -33,7 +33,7 @@ function nativeDrag(f, type, path, dataTransfer, clientY = 0) {
     (path === null ? f.host : f.row(path).querySelector('.row')).dispatchEvent(event);
     return event;
 }
-function fixture(t, {collection = tree, tag = 'tree', two = false, attrs = {}, logic = null, actions = null, barAttrs = {}, initialChecked = null, initialPaths = null} = {}) {
+function fixture(t, {collection = tree, tag = 'tree', two = false, attrs = {}, logic = null, actions = null, barAttrs = {}, initialChecked = null, initialPaths = null, prepare = null} = {}) {
     const {window} = new JSDOM('<main id="gramlot-root"></main>');
     window.HTMLElement.prototype.showPopover = function () {};
     const app = new Gramlot({document: window.document, transport: false, collections: [collection]});
@@ -41,6 +41,7 @@ function fixture(t, {collection = tree, tag = 'tree', two = false, attrs = {}, l
     const store = new Bag({folder: children, other: 'C'});
     store.getNode('folder').setAttr({caption: 'Folder'});
     if (initialChecked !== null) store.getNode('other').setAttr({checked: initialChecked});
+    if (prepare) prepare(store);
     app.data.setItem('model.nodes', store);
     app.data.setItem('model.selection', null);
     app.data.setItem('model.checked', initialPaths);
@@ -382,7 +383,7 @@ test('marked loops open without a prompt by mouse, keyboard and selection', asyn
     assert.equal(f.window.document.querySelector('dialog'), null);
 });
 
-test('checking and bound paths resolve marked loops without prompts', async t => {
+test('checks of marked loop branches load nothing and follow the list after expansion', async t => {
     let calls = 0;
     class Loop extends BagResolver { load() { calls++; return new Bag({leaf: null}); } }
     const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
@@ -390,8 +391,10 @@ test('checking and bound paths resolve marked loops without prompts', async t =>
     f.store.setItem('second', new Loop({cacheTime: -1}), {loop: true}); await tick();
     f.row('first').querySelector('input').click(); await settle();
     f.app.data.setItem('model.checked', 'second'); await settle(); await settle();
-    assert.equal(calls, 2);
-    assert.equal(f.store.getNode('second.leaf').attr.checked, true);
+    assert.equal(calls, 0);
+    f.row('second').querySelector('button').click(); await settle(); await settle();
+    assert.equal(calls, 1);
+    assert.equal(f.row('second.leaf').querySelector('input').checked, true);
     assert.equal(f.window.document.querySelector('dialog'), null);
 });
 
@@ -1271,317 +1274,272 @@ test('Python tree grammar matches the current component document', async () => {
     assert.deepEqual(grammar, tree.toDocument());
 });
 
+/** The drawn check state of the row at `path`: true, false or -1 (mixed). */
+function checkState(f, path) {
+    const input = f.row(path).firstElementChild.querySelector('input[type=checkbox]');
+    return input.indeterminate ? -1 : input.checked;
+}
+const checkBox = (f, path) => f.row(path).firstElementChild.querySelector('input[type=checkbox]');
+const withIds = store => {
+    store.getNode('folder').setAttr({id: 'f'});
+    store.getNode('folder.alpha').setAttr({id: 'a'});
+    store.getNode('folder.beta').setAttr({id: 'b'});
+    store.getNode('other').setAttr({id: 'c'});
+};
+
 test('checkedPaths uses a two-way binding and propagates across loaded children', async t => {
     const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
-    const check = path => f.row(path).querySelector('input[type=checkbox]');
-    check('folder').click(); await tick();
-    assert.equal(f.store.getNode('folder').attr.checked, true);
-    assert.equal(f.store.getNode('folder.alpha').attr.checked, true);
-    assert.equal(f.store.getNode('folder.beta').attr.checked, true);
+    checkBox(f, 'folder').click(); await tick();
+    assert.deepEqual(['folder', 'folder.alpha', 'folder.beta'].map(path => checkState(f, path)), [true, true, true]);
     assert.equal(f.app.data.getItem('model.checked'), 'folder.alpha,folder.beta');
-    f.row('folder').querySelector('button').click();
-    check('folder.alpha').click(); await tick();
-    assert.equal(f.store.getNode('folder').attr.checked, -1);
+    checkBox(f, 'folder.alpha').click(); await tick();
+    assert.equal(checkState(f, 'folder'), -1);
+    assert.equal(f.row('folder').getAttribute('aria-checked'), 'mixed');
     assert.equal(f.app.data.getItem('model.checked'), 'folder.beta');
-    check('folder.beta').click(); await tick();
-    assert.equal(f.store.getNode('folder').attr.checked, false);
+    checkBox(f, 'folder.beta').click(); await tick();
+    assert.equal(checkState(f, 'folder'), false);
+    assert.equal(f.app.data.getItem('model.checked'), '');
     f.app.data.setItem('model.checked', 'other'); await tick(); await tick();
-    assert.equal(f.store.getNode('other').attr.checked, true);
-    assert.equal(f.store.getNode('folder.beta').attr.checked, false);
+    assert.equal(checkState(f, 'other'), true);
+    assert.equal(checkState(f, 'folder.beta'), false);
+    for (const path of ['folder', 'folder.alpha', 'other']) assert.equal(f.store.getNode(path).attr.checked, undefined);
+});
+
+test('a mixed branch unchecks on click, as the legacy toggle', async t => {
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}, initialPaths: 'folder.alpha'}); await tick();
+    assert.equal(checkState(f, 'folder'), -1);
+    checkBox(f, 'folder').click(); await tick();
+    assert.equal(checkState(f, 'folder'), false);
+    assert.equal(f.app.data.getItem('model.checked'), '');
+});
+
+test('the checkedPaths list is the source of the checks and emptying it clears them', async t => {
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}, initialPaths: 'folder'}); await tick();
+    assert.deepEqual(['folder', 'folder.alpha', 'folder.beta', 'other'].map(path => checkState(f, path)), [true, true, true, false]);
+    assert.equal(f.app.data.getItem('model.checked'), 'folder');
+    f.app.data.setItem('model.checked', 'folder.beta,other'); await settle();
+    assert.deepEqual(['folder', 'folder.alpha', 'folder.beta', 'other'].map(path => checkState(f, path)), [-1, false, true, true]);
+    assert.equal(f.app.data.getItem('model.checked'), 'folder.beta,other');
+    f.app.data.setItem('model.checked', ''); await settle();
+    assert.deepEqual(['folder', 'folder.alpha', 'folder.beta', 'other'].map(path => checkState(f, path)), [false, false, false, false]);
+    f.app.data.setItem('model.checked', 'other'); await settle();
+    f.app.data.setItem('model.checked', null); await settle();
+    assert.equal(checkState(f, 'other'), false);
 });
 
 test('checkChildren false leaves descendants independent and includes checked branches', async t => {
     const f = fixture(t, {attrs: {checkedPaths: '^.checked', checkChildren: false}}); await tick();
-    f.row('folder').querySelector('input').click(); await tick();
-    assert.equal(f.store.getNode('folder').attr.checked, true);
-    assert.equal(f.store.getNode('folder.alpha').attr.checked, undefined);
+    checkBox(f, 'folder').click(); await tick();
+    assert.equal(checkState(f, 'folder'), true);
+    assert.equal(checkState(f, 'folder.alpha'), false);
     assert.equal(f.app.data.getItem('model.checked'), 'folder');
+    checkBox(f, 'folder.alpha').click(); await tick();
+    assert.equal(checkState(f, 'folder'), true);
+    assert.equal(f.app.data.getItem('model.checked'), 'folder,folder.alpha');
 });
 
-test('checking a loaded parent carries its state to an unresolved descendant without loading it', async t => {
+test('checking an unloaded branch lists its path without loading and its children follow the list', async t => {
     let loads = 0;
     class Lazy extends BagResolver { load() { loads++; return new Bag({child: 1}); } }
     const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
     f.store.getItem('folder').setItem('lazy', new Lazy({cacheTime: -1})); await tick();
-    f.row('folder').querySelector('input').click(); await tick();
+    checkBox(f, 'folder').click(); await tick();
     assert.equal(loads, 0);
-    assert.equal(f.store.getNode('folder.lazy').attr.checked, true);
-    assert.equal(f.store.getNode('folder.alpha').attr.checked, true);
+    assert.equal(checkState(f, 'folder.lazy'), true);
     assert.equal(f.app.data.getItem('model.checked'), 'folder.alpha,folder.beta,folder.lazy');
     f.row('folder').querySelector('button').click();
     f.row('folder.lazy').querySelector('button').click(); await settle(); await settle();
-    assert.equal(f.store.getNode('folder.lazy.child').attr.checked, true);
-    assert.equal(f.app.data.getItem('model.checked'), 'folder.alpha,folder.beta,folder.lazy.child');
+    assert.equal(loads, 1);
+    assert.equal(checkState(f, 'folder.lazy.child'), true);
+    assert.equal(f.app.data.getItem('model.checked'), 'folder.alpha,folder.beta,folder.lazy');
 });
 
-test('checking a cached resolver branch preserves checked children without reloading', async t => {
-    const inputs = [];
-    class Lazy extends BagResolver {
-        load(kwargs) { inputs.push(kwargs); return new Bag({child: 1}); }
-    }
+test('children reloaded by a resolver with cacheTime 0 follow the list without memory', async t => {
+    let loads = 0;
+    class Lazy extends BagResolver { load() { loads++; return new Bag({child: 1, extra: loads}); } }
     const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
-    f.store.setItem('lazy', new Lazy({cacheTime: -1, query: 'first'})); await tick();
-    const children = f.store.getItem('lazy'); await tick();
-    f.row('lazy').querySelector('input').click(); await tick();
-    assert.equal(f.store.getItem('lazy'), children);
-    assert.equal(children.getNode('child').attr.checked, true);
+    f.store.setItem('lazy', new Lazy()); await tick();
+    const expand = async () => { f.row('lazy').querySelector('button').click(); await settle(); await settle(); };
+    await expand();
+    assert.equal(loads, 1);
+    checkBox(f, 'lazy.child').click(); await tick();
     assert.equal(f.app.data.getItem('model.checked'), 'lazy.child');
-    assert.deepEqual(inputs, [{query: 'first'}]);
-    f.store.getNode('lazy').setAttr({query: 'second'});
-    assert.notEqual(f.store.getItem('lazy'), children);
-    assert.deepEqual(inputs, [{query: 'first'}, {query: 'second'}]);
+    await expand(); await expand();
+    assert.equal(loads, 2);
+    assert.equal(checkState(f, 'lazy.child'), true);
+    assert.equal(checkState(f, 'lazy.extra'), false);
+    assert.equal(checkState(f, 'lazy'), -1);
+    f.app.data.setItem('model.checked', 'lazy'); await settle();
+    await expand(); await expand();
+    assert.equal(loads, 3);
+    assert.deepEqual(['lazy', 'lazy.child', 'lazy.extra'].map(path => checkState(f, path)), [true, true, true]);
+    assert.equal(f.app.data.getItem('model.checked'), 'lazy');
+    f.app.data.setItem('model.checked', ''); await settle();
+    await expand(); await expand();
+    assert.deepEqual(['lazy', 'lazy.child', 'lazy.extra'].map(path => checkState(f, path)), [false, false, false]);
+});
+
+test('a checked path below an unloaded branch is kept and checked when the branch loads', async t => {
+    class Lazy extends BagResolver { load() { return new Bag({child: 1, sibling: 2}); } }
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    f.store.setItem('first', new Lazy({cacheTime: -1}));
+    f.store.setItem('second', new Lazy({cacheTime: -1})); await tick();
+    f.app.data.setItem('model.checked', 'first.child,second.child'); await settle();
+    checkBox(f, 'other').click(); await tick();
+    assert.equal(f.app.data.getItem('model.checked'), 'other,first.child,second.child');
+    f.row('first').querySelector('button').click(); await settle(); await settle();
+    assert.equal(checkState(f, 'first.child'), true);
+    assert.equal(checkState(f, 'first'), -1);
+    checkBox(f, 'second').click(); await tick();
+    assert.equal(f.app.data.getItem('model.checked'), 'other,first.child,second');
+});
+
+test('checkChildren false does not propagate to a later resolved branch', async t => {
+    class Lazy extends BagResolver { load() { return new Bag({child: 1}); } }
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked', checkChildren: false}}); await tick();
+    f.store.setItem('lazy', new Lazy({cacheTime: -1})); await tick();
+    checkBox(f, 'lazy').click(); await tick();
+    f.row('lazy').querySelector('button').click(); await settle(); await settle();
+    assert.equal(checkState(f, 'lazy.child'), false);
+    assert.equal(checkState(f, 'lazy'), true);
+    assert.equal(f.app.data.getItem('model.checked'), 'lazy');
 });
 
 test('space toggles the checkbox without selecting the tree row', async t => {
     const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
     f.row('other').dispatchEvent(new f.window.KeyboardEvent('keydown', {key: ' ', bubbles: true, cancelable: true})); await tick();
-    assert.equal(f.store.getNode('other').attr.checked, true);
-    assert.equal(f.app.data.getItem('model.selection'), null);
-});
-
-test('checking an unloaded node applies selection when its resolver completes', async t => {
-    let finish, calls = 0;
-    class Lazy extends BagResolver { load() { calls++; return new Promise(resolve => {finish = resolve;}); } }
-    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
-    f.store.setItem('lazy', new Lazy({cacheTime: -1})); await tick();
-    f.row('lazy').querySelector('input').click(); await tick();
-    assert.equal(calls, 1);
-    assert.equal(f.store.getNode('lazy').attr.checked, true);
-    assert.equal(f.app.data.getItem('model.checked'), 'lazy');
-    finish(new Bag({child: 1})); await settle(); await settle();
-    assert.equal(f.store.getNode('lazy.child').attr.checked, true);
-    assert.equal(f.app.data.getItem('model.checked'), 'lazy.child');
-});
-
-test('checking a TreeStore resolver propagates to its returned children', async t => {
-    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
-    const store = new TreeStore({gramlot: {rpc: {call: async (_kind, _method, args) => {
-        await settle();
-        const bag = new Bag();
-        if (!args.path) bag.setItem('invoice', new TreeStoreResolver());
-        else { bag.setItem('id', null); bag.setItem('links', new Bag({field: null})); }
-        return bag;
-    }}}, method: 'relations'});
-    const root = await store.load();
-    f.app.data.setItem('model.nodes', root); await settle();
-    f.row('invoice').querySelector('input').click(); await settle(); await settle(); await settle();
-    f.row('invoice').querySelector('button').click(); await settle();
-    assert.equal(root.getNode('invoice.id').attr.checked, true);
-    assert.equal(root.getNode('invoice.links.field').attr.checked, true);
-    assert.equal(f.app.data.getItem('model.checked'), 'invoice.id,invoice.links.field');
-    store.dispose();
-});
-
-test('unchecking a pending branch applies the latest state after loading', async t => {
-    let finish, calls = 0;
-    class Lazy extends BagResolver { load() { calls++; return new Promise(resolve => {finish = resolve;}); } }
-    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
-    f.store.setItem('lazy', new Lazy({cacheTime: -1})); await tick();
-    f.row('lazy').querySelector('input').click(); await tick();
-    f.row('lazy').querySelector('input').click(); await tick();
-    assert.equal(calls, 1);
-    const children = new Bag(); children.setItem('child', 1, {checked: true});
-    finish(children); await settle(); await settle();
-    assert.equal(f.store.getNode('lazy.child').attr.checked, false);
-    assert.equal(f.store.getNode('lazy').attr.checked, false);
-});
-
-test('an external checkedPaths update is preserved when an earlier load finishes', async t => {
-    let finish;
-    class Lazy extends BagResolver { load() { return new Promise(resolve => {finish = resolve;}); } }
-    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
-    f.store.setItem('lazy', new Lazy({cacheTime: -1})); await tick();
-    f.row('lazy').querySelector('input').click(); await tick();
-    f.app.data.setItem('model.checked', 'other'); await settle();
-    finish(new Bag({child: 1})); await settle(); await settle();
+    assert.equal(checkState(f, 'other'), true);
     assert.equal(f.app.data.getItem('model.checked'), 'other');
-    assert.equal(f.store.getNode('other').attr.checked, true);
-    assert.equal(f.store.getNode('lazy.child').attr.checked, false);
-});
-
-test('unchecking an ancestor overrides an in-flight descendant load', async t => {
-    let finish, calls = 0;
-    class Lazy extends BagResolver { load() { calls++; return new Promise(resolve => {finish = resolve;}); } }
-    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
-    f.store.getItem('folder').setItem('lazy', new Lazy({cacheTime: -1})); await tick();
-    f.row('folder').querySelector('input').click(); await tick();
-    f.row('folder').querySelector('button').click();
-    f.row('folder.lazy').querySelector('button').click(); await tick();
-    f.row('folder').querySelector('input').click(); await tick();
-    finish(new Bag({child: 1})); await settle(); await settle();
-    assert.equal(calls, 1);
-    assert.equal(f.store.getNode('folder.lazy.child').attr.checked, false);
-    assert.equal(f.app.data.getItem('model.checked'), '');
-});
-
-test('checkChildren false does not propagate to a later resolved branch', async t => {
-    let finish;
-    class Lazy extends BagResolver { load() { return new Promise(resolve => {finish = resolve;}); } }
-    const f = fixture(t, {attrs: {checkedPaths: '^.checked', checkChildren: false}}); await tick();
-    f.store.setItem('lazy', new Lazy({cacheTime: -1})); await tick();
-    f.row('lazy').querySelector('input').click(); await tick();
-    finish(new Bag({child: 1})); await settle(); await settle();
-    assert.notEqual(f.store.getNode('lazy.child').attr.checked, true);
-    assert.equal(f.app.data.getItem('model.checked'), 'lazy');
-});
-
-test('a failed lazy check retains its branch path and propagates after retry', async t => {
-    let calls = 0;
-    class Lazy extends BagResolver { load() { if (++calls === 1) return Promise.reject(new Error('offline')); return new Bag({child: 1}); } }
-    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
-    f.store.setItem('lazy', new Lazy({cacheTime: -1})); await tick();
-    f.row('lazy').querySelector('input').click(); await settle(); await settle();
-    assert.equal(f.app.data.getItem('model.checked'), 'lazy');
-    assert.equal(f.row('lazy').classList.contains('error'), true);
-    f.row('lazy').querySelector('button').click(); await settle(); await settle();
-    assert.equal(calls, 2);
-    assert.equal(f.store.getNode('lazy.child').attr.checked, true);
-    assert.equal(f.app.data.getItem('model.checked'), 'lazy.child');
-});
-
-test('deferred propagation preserves disabled children and recomputes mixed parent state', async t => {
-    let finish;
-    class Lazy extends BagResolver { load() { return new Promise(resolve => {finish = resolve;}); } }
-    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
-    f.store.setItem('lazy', new Lazy({cacheTime: -1})); await tick();
-    f.row('lazy').querySelector('input').click(); await tick();
-    const children = new Bag();
-    children.setItem('enabled', 1); children.setItem('locked', 2, {checked: 'disabled:off'});
-    finish(children); await settle(); await settle();
-    assert.equal(children.getNode('enabled').attr.checked, true);
-    assert.equal(children.getNode('locked').attr.checked, 'disabled:off');
-    assert.equal(f.store.getNode('lazy').attr.checked, -1);
-    assert.equal(f.app.data.getItem('model.checked'), 'lazy.enabled');
-});
-
-test('a child inserted later inherits a checked loaded parent without resetting older children', async t => {
-    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
-    f.row('folder').querySelector('input').click(); await tick();
-    f.store.getItem('folder').setItem('late', 1, {checked: false}); await settle();
-    assert.equal(f.store.getNode('folder.late').attr.checked, true);
-    assert.equal(f.app.data.getItem('model.checked'), 'folder.alpha,folder.beta,folder.late');
-    f.row('folder').querySelector('button').click();
-    f.row('folder.alpha').querySelector('input').click(); await settle();
-    f.store.getItem('folder').setItem('later', 2); await settle();
-    assert.equal(f.store.getNode('folder.alpha').attr.checked, false);
-    assert.equal(f.store.getNode('folder.later').attr.checked, undefined);
-    assert.equal(f.store.getNode('folder').attr.checked, -1);
-});
-
-test('a checked path supplied before its ancestor loads selects the path after expansion', async t => {
-    class Lazy extends BagResolver { load() { return new Bag({child: 1}); } }
-    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
-    f.store.setItem('lazy', new Lazy({cacheTime: -1})); await tick();
-    f.app.data.setItem('model.checked', 'lazy.child'); await settle();
-    f.row('lazy').querySelector('button').click(); await settle(); await settle();
-    assert.equal(f.store.getNode('lazy.child').attr.checked, true);
-    assert.equal(f.app.data.getItem('model.checked'), 'lazy.child');
-});
-
-test('loading one branch preserves selected paths in other unloaded branches', async t => {
-    class Lazy extends BagResolver { load() { return new Bag({child: 1}); } }
-    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
-    f.store.setItem('first', new Lazy({cacheTime: -1}));
-    f.store.setItem('second', new Lazy({cacheTime: -1})); await tick();
-    f.app.data.setItem('model.checked', 'first.child,second.child'); await settle();
-    f.row('first').querySelector('button').click(); await settle(); await settle();
-    assert.equal(f.store.getNode('first.child').attr.checked, true);
-    assert.equal(f.app.data.getItem('model.checked'), 'first.child,second.child');
-    f.row('second').querySelector('button').click(); await settle(); await settle();
-    assert.equal(f.store.getNode('second.child').attr.checked, true);
-    assert.equal(f.app.data.getItem('model.checked'), 'first.child,second.child');
-});
-
-test('loading a selected nested branch propagates through groups without following an unloaded loop', async t => {
-    let loopLoads = 0;
-    class Loop extends BagResolver { load() { loopLoads++; return new Bag({leaf: 1}); } }
-    class Lazy extends BagResolver {
-        load() { const group = new Bag(); group.setItem('loop', new Loop({cacheTime: -1}), {loop: true});
-            const children = new Bag(); children.setItem('group', group); return children; }
-    }
-    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
-    f.store.getItem('folder').setItem('lazy', new Lazy({cacheTime: -1})); await tick();
-    f.row('folder').querySelector('input').click(); await tick();
-    assert.equal(loopLoads, 0);
-    f.row('folder').querySelector('button').click();
-    f.row('folder.lazy').querySelector('button').click(); await settle(); await settle();
-    assert.equal(f.store.getNode('folder.lazy.group.loop').attr.checked, true);
-    assert.equal(loopLoads, 0);
-    assert.equal(f.app.data.getItem('model.checked'), 'folder.alpha,folder.beta,folder.lazy.group.loop');
-    f.row('folder.lazy.group').querySelector('button').click();
-    f.row('folder.lazy.group.loop').querySelector('button').click();
-    await settle(); await settle();
-    assert.equal(loopLoads, 1);
-    assert.equal(f.window.document.querySelector('dialog'), null);
-    assert.equal(f.store.getNode('folder.lazy.group.loop.leaf').attr.checked, true);
-    assert.equal(f.app.data.getItem('model.checked'), 'folder.alpha,folder.beta,folder.lazy.group.loop.leaf');
+    assert.equal(f.app.data.getItem('model.selection'), null);
 });
 
 test('disabled checkbox cannot be changed by a direct click or parent propagation', async t => {
     const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
     f.store.getNode('folder.beta').setAttr({checked: 'disabled:off'}); await tick();
-    f.row('folder').querySelector('input').click(); await tick();
+    checkBox(f, 'folder').click(); await tick();
     assert.equal(f.store.getNode('folder.beta').attr.checked, 'disabled:off');
-    f.row('folder').querySelector('button').click();
-    assert.equal(f.row('folder.beta').querySelector('input').disabled, true);
-    assert.equal(f.row('folder').getAttribute('aria-checked'), 'mixed');
+    assert.equal(checkBox(f, 'folder.beta').disabled, true);
+    assert.equal(checkState(f, 'folder.beta'), false);
+    assert.equal(checkState(f, 'folder'), -1);
+    assert.equal(f.app.data.getItem('model.checked'), 'folder.alpha');
+    checkBox(f, 'folder.beta').click(); await tick();
+    assert.equal(f.app.data.getItem('model.checked'), 'folder.alpha');
+    f.app.data.setItem('model.checked', 'folder'); await settle();
+    assert.equal(checkState(f, 'folder.beta'), false);
+});
+
+test('a disabled:on node shows checked, is never listed and counts as checked for its parent', async t => {
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    f.store.getNode('folder.beta').setAttr({checked: 'disabled:on'}); await tick();
+    assert.equal(checkState(f, 'folder.beta'), true);
+    assert.equal(checkState(f, 'folder'), -1);
+    checkBox(f, 'folder.alpha').click(); await tick();
+    assert.equal(checkState(f, 'folder'), true);
+    assert.equal(f.app.data.getItem('model.checked'), 'folder.alpha');
 });
 
 test('onChecked Logic can veto without changing the Bag or checkedPaths', async t => {
     const calls = [];
     class Logic { check(source, {item, path}) { calls.push({source, item, path}); return false; } }
     const f = fixture(t, {attrs: {checkedPaths: '^.checked', onChecked: 'check'}, logic: Logic}); await tick();
-    f.row('other').querySelector('input').click(); await tick();
+    checkBox(f, 'other').click(); await tick();
     assert.equal(f.store.getNode('other').attr.checked, undefined);
     assert.equal(f.app.data.getItem('model.checked'), null);
-    assert.equal(f.row('other').querySelector('input').checked, false);
+    assert.equal(checkBox(f, 'other').checked, false);
     assert.equal(f.host.hasAttribute('onChecked'), false);
     assert.equal(calls[0].source, f.source);
     assert.equal(calls[0].item, f.store.getNode('other'));
     assert.equal(calls[0].path, 'other');
 });
 
-test('onChecked true enables independent checkbox display without checkedPaths', async t => {
+test('onChecked true without lists keeps the tree path list itself', async t => {
     const f = fixture(t, {attrs: {onChecked: true}}); await tick();
-    f.row('other').querySelector('input').click(); await tick();
-    assert.equal(f.store.getNode('other').attr.checked, true);
-});
-
-
-test('initial absent checkedPaths preserves preexisting disabled node state', async t => {
-    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}, initialChecked: 'disabled:on'}); await tick();
-    assert.equal(f.store.getNode('other').attr.checked, 'disabled:on');
-    assert.equal(f.row('other').querySelector('input').checked, true);
-    assert.equal(f.row('other').querySelector('input').disabled, true);
+    checkBox(f, 'other').click(); await tick();
+    assert.equal(checkState(f, 'other'), true);
+    assert.equal(f.store.getNode('other').attr.checked, undefined);
+    checkBox(f, 'folder').click(); await tick();
+    assert.deepEqual(['folder.alpha', 'other'].map(path => checkState(f, path)), [true, true]);
 });
 
 for (const state of ['disabled:on', 'disabled:off']) {
-    test(`empty initial checkedPaths preserves ${state}`, async t => {
-        const f = fixture(t, {attrs: {checkedPaths: '^.checked'}, initialChecked: state, initialPaths: ''});
-        await tick();
-        assert.equal(f.store.getNode('other').attr.checked, state);
-        assert.equal(f.row('other').querySelector('input').disabled, true);
-        assert.equal(f.row('other').querySelector('input').checked, state === 'disabled:on');
-        assert.equal(f.app.data.getItem('model.checked'), '');
-    });
-
     test(`external checkedPaths replacement preserves ${state} on nested nodes`, async t => {
         const f = fixture(t, {attrs: {checkedPaths: '^.checked'}, initialChecked: state});
         await tick();
         f.store.getNode('folder.beta').setAttr({checked: state});
         await tick();
-        for (const paths of ['folder.alpha,folder.beta,other', '', 'folder.alpha', null]) {
+        for (const paths of ['folder.alpha,folder.beta,other', '', 'folder.alpha', null, 'folder']) {
             f.app.data.setItem('model.checked', paths);
             await tick(); await tick();
             for (const path of ['other', 'folder.beta']) {
                 assert.equal(f.store.getNode(path).attr.checked, state);
-                assert.equal(f.row(path).querySelector('input').disabled, true);
-                assert.equal(f.row(path).querySelector('input').checked, state === 'disabled:on');
+                assert.equal(checkBox(f, path).disabled, true);
+                assert.equal(checkBox(f, path).checked, state === 'disabled:on');
             }
-            assert.equal(f.store.getNode('folder.alpha').attr.checked, Boolean(paths));
+            assert.equal(checkState(f, 'folder.alpha'), Boolean(paths));
+            assert.equal(f.app.data.getItem('model.checked'), paths);
         }
     });
 }
+
+test('checked_<attribute> writes the attribute values of the checked nodes and its list checks them', async t => {
+    const f = fixture(t, {attrs: {checked_id: '.ids'}, prepare: withIds}); await tick();
+    assert.equal(f.host.hasAttribute('checked_id'), false);
+    checkBox(f, 'folder').click(); await tick();
+    assert.equal(f.app.data.getItem('model.ids'), 'a,b');
+    checkBox(f, 'folder.alpha').click(); await tick();
+    assert.equal(f.app.data.getItem('model.ids'), 'b');
+    f.app.data.setItem('model.ids', 'c,a'); await settle();
+    assert.deepEqual(['folder', 'folder.alpha', 'folder.beta', 'other'].map(path => checkState(f, path)), [-1, true, false, true]);
+    assert.equal(f.app.data.getItem('model.ids'), 'c,a');
+    f.app.data.setItem('model.ids', 'f'); await settle();
+    assert.deepEqual(['folder', 'folder.alpha', 'folder.beta', 'other'].map(path => checkState(f, path)), [true, true, true, false]);
+    f.app.data.setItem('model.ids', ''); await settle();
+    assert.deepEqual(['folder', 'folder.alpha', 'folder.beta', 'other'].map(path => checkState(f, path)), [false, false, false, false]);
+});
+
+test('checked_<attribute> takes its joiner after a colon, as in the legacy', async t => {
+    const f = fixture(t, {attrs: {checked_id: '.ids:;', checkChildren: false}, prepare: withIds}); await tick();
+    checkBox(f, 'folder').click(); await tick();
+    checkBox(f, 'other').click(); await tick();
+    assert.equal(f.app.data.getItem('model.ids'), 'f;c');
+    f.app.data.setItem('model.ids', 'a;b'); await settle();
+    assert.deepEqual(['folder', 'folder.alpha', 'folder.beta', 'other'].map(path => checkState(f, path)), [false, true, true, false]);
+});
+
+test('checked_<attribute> keeps values that no loaded node carries', async t => {
+    class Lazy extends BagResolver { load() { const bag = new Bag(); bag.setItem('child', 1, {id: 'x'}); return bag; } }
+    const f = fixture(t, {attrs: {checked_id: '.ids'}, prepare: withIds}); await tick();
+    f.store.setItem('lazy', new Lazy({cacheTime: -1}), {id: 'l'}); await tick();
+    f.app.data.setItem('model.ids', 'x'); await settle();
+    checkBox(f, 'other').click(); await tick();
+    assert.equal(f.app.data.getItem('model.ids'), 'c,x');
+    f.row('lazy').querySelector('button').click(); await settle(); await settle();
+    assert.equal(checkState(f, 'lazy.child'), true);
+    checkBox(f, 'lazy').click(); await tick();
+    assert.equal(f.app.data.getItem('model.ids'), 'c');
+});
+
+test('checkedPaths and checked_<attribute> stay consistent', async t => {
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked', checked_id: '.ids'}, prepare: withIds, initialPaths: 'other'}); await tick();
+    assert.equal(f.app.data.getItem('model.ids'), 'c');
+    assert.equal(f.app.data.getItem('model.checked'), 'other');
+    checkBox(f, 'folder').click(); await tick();
+    assert.equal(f.app.data.getItem('model.checked'), 'folder.alpha,folder.beta,other');
+    assert.equal(f.app.data.getItem('model.ids'), 'a,b,c');
+    f.app.data.setItem('model.ids', 'b'); await settle();
+    assert.deepEqual(['folder.alpha', 'folder.beta', 'other'].map(path => checkState(f, path)), [false, true, false]);
+    assert.equal(f.app.data.getItem('model.checked'), 'folder.beta');
+    f.app.data.setItem('model.checked', 'folder'); await settle();
+    assert.equal(f.app.data.getItem('model.ids'), 'a,b');
+    assert.equal(f.app.data.getItem('model.checked'), 'folder');
+    f.app.data.setItem('model.checked', ''); await settle();
+    assert.equal(f.app.data.getItem('model.ids'), '');
+    assert.equal(checkState(f, 'folder'), false);
+});
+
+test('checked_<attribute> requires a Data path', async t => {
+    assert.throws(() => fixture(t, {attrs: {checked_id: '^.ids'}}), /tree checked_id requires a Data path/);
+});
 
 test('search stops at loop nodes without loading or exposing matching descendants', async t => {
     let calls = 0;

@@ -2,23 +2,26 @@ import {Bag} from '@gramlot/gramlot';
 
 /** Identity/caption projection only. The shared tree owns checks and lazy propagation. */
 export class CheckBoxTree {
-    // Derived index from the last projection: newly loaded codes are still pending
-    // until that projection has supplied their paths to the shared tree.
-    #knownCodes = new Set();
+    // Paths of the loaded options at the last projection: a path the tree cannot reach is kept.
+    #knownPaths = new Set();
     constructor(owner, context) {
         this.owner = owner;
         this.element = owner.ownerDocument.createElement('gramlot-tree');
-        // The inner tree has no Source node: it reads the host's `values` address at each use.
+        // The inner tree has no Source node: it reads the host's `values` address at each use. Its check
+        // list is the control value: the `checkedPaths` of the tree, or with an identifier its
+        // `checked_<identifier>`, which the tree reads and writes through the control at every draw.
         this.element.setSourceContext({...context, treeStore:() => context.getStaticData(context.attrDatapath('values')), writeParameter:(name, paths) => {
             if (name !== 'checkedPaths' || !owner.pageContext?.isActive()) return;
-            const rows = this.options(), byPath = new Map(rows.map(row => [row.path,row.id]));
-            const known = this.#knownCodes;
-            const selected = (paths || '').split(',').filter(Boolean).map(path => owner.parameters.identifier ? byPath.get(path) : path).filter(code => code !== undefined);
+            const selected = (paths || '').split(',').filter(Boolean);
             const old = (owner.readControlValue() || '').split(',').filter(Boolean);
-            const codes = old.filter(code => !known.has(code) || selected.includes(code));
+            const codes = old.filter(code => !this.#knownPaths.has(code) || selected.includes(code));
             for (const code of selected) if (!codes.includes(code)) codes.push(code);
             const value = codes.join(',') || null;
             if (value !== owner.readControlValue()) owner.acceptTreeValue(value);
+        },
+        readRelativeData:() => owner.readControlValue(),
+        setRelativeData:(_path, codes) => {
+            if (owner.pageContext?.isActive() && (codes || null) !== owner.readControlValue()) owner.acceptTreeValue(codes || null);
         }});
         owner.control.append(this.element);
     }
@@ -48,13 +51,11 @@ export class CheckBoxTree {
     }
     project(value) {
         const p = this.owner.parameters;
-        const byCode = new Map(this.options().map(row => [row.id,row.path]));
-        this.#knownCodes = new Set(byCode.keys());
-        const paths = value === null ? null : (value || '').split(',').filter(Boolean)
-            .map(code => p.identifier ? byCode.get(code) : code).filter(Boolean).join(',');
+        this.#knownPaths = new Set(this.options().map(row => row.path));
         this.element.inert = Boolean(p.disabled || p.readonly);
         this.element.setAttribute('aria-disabled', String(this.element.inert));
-        this.element.projectAttributes({checkedPaths:paths, checkChildren:p.checkChildren,
+        const checks = p.identifier ? {[`checked_${p.identifier}`]:'value'} : {checkedPaths:value};
+        this.element.projectAttributes({...checks, checkChildren:p.checkChildren,
             labelAttribute:p.labelAttribute ?? null, hideValues:true});
     }
     focus() { this.element.shadowRoot.querySelector('[role=treeitem]')?.focus(); }

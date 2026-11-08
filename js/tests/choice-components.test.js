@@ -254,10 +254,12 @@ test('hierarchical checkBoxText reuses the tree and original Bag, propagates and
     const check=path=>tree.shadowRoot.querySelector(`[data-path="${path}"] > .row > input`);
     check('folder').click();await settle();
     assert.equal(f.app.data.getItem('selection'),'folder.first,folder.second');
-    assert.equal(children.getNode('first').attr.checked,true);
+    assert.equal(check('folder.first').checked,true);assert.equal(check('folder').checked,true);
+    assert.equal(children.getNode('first').attr.checked,undefined);
     assert.equal(children.getNode('locked').attr.checked,'disabled:on');
+    assert.equal(check('folder.locked').checked,true);assert.equal(check('folder.locked').disabled,true);
     f.app.data.setItem('selection',null);await settle();
-    assert.equal(children.getNode('first').attr.checked,false);
+    assert.equal(check('folder.first').checked,false);assert.equal(check('folder').indeterminate,true);
     assert.equal(children.getNode('locked').attr.checked,'disabled:on');
     host.closeChoices();host.summary.click();assert.equal(host.control.querySelector('gramlot-tree'),tree);
 });
@@ -268,14 +270,17 @@ test('hierarchical identifiers keep unknown codes and follow external values wit
     const f=fixture(t,(r,a)=>{a.data.setItem('options',options);a.data.setItem('selection','a,unknown');
         r.checkBoxText({id:'multi',value:'^selection',values:'^options',identifier:'code',labelAttribute:'caption',hierarchical:true,readonly:'^locked'});});
     await settle();const host=f.host('multi'),tree=host.control.querySelector('gramlot-tree');
-    assert.equal(children.getNode('first').attr.checked,true);assert.equal(host.summary.value,'Alpha,unknown');
+    assert.equal(tree.shadowRoot.querySelector('[data-path="folder.first"] > .row > input').checked,true);assert.equal(host.summary.value,'Alpha,unknown');
+    // A mixed branch unchecks on click (legacy toggle); the next click checks it.
     tree.shadowRoot.querySelector('[data-path="folder"] > .row > input').click();await settle();
-    assert.equal(f.app.data.getItem('selection'),'a,unknown,b');
-    children.getNode('first').setAttr({caption:'Updated'});await settle();assert.equal(host.summary.value,'Updated,unknown,Beta');
+    assert.equal(f.app.data.getItem('selection'),'unknown');
+    tree.shadowRoot.querySelector('[data-path="folder"] > .row > input').click();await settle();
+    assert.equal(f.app.data.getItem('selection'),'a,b,unknown');
+    children.getNode('first').setAttr({caption:'Updated'});await settle();assert.equal(host.summary.value,'Updated,Beta,unknown');
     f.app.data.setItem('locked',true);await settle();assert.equal(tree.inert,true);
     const replacement=new Bag();replacement.setItem('leaf',null,{code:'a',caption:'Replacement'});
     f.app.data.setItem('options',replacement);await settle();assert.equal(tree.storeBag,replacement);
-    children.getNode('first').setAttr({caption:'Old'});await settle();assert.equal(host.summary.value,'Replacement,unknown,b');
+    children.getNode('first').setAttr({caption:'Old'});await settle();assert.equal(host.summary.value,'Replacement,b,unknown');
 });
 
 test('hierarchical checkBoxText delegates asynchronous lazy propagation to the shared tree', async t => {
@@ -286,10 +291,12 @@ test('hierarchical checkBoxText delegates asynchronous lazy propagation to the s
     await settle();assert.equal(calls,0);
     const tree=f.host('multi').control.querySelector('gramlot-tree');
     tree.shadowRoot.querySelector('[data-path="lazy"] > .row > input').click();await settle();
-    assert.equal(calls,1);assert.equal(f.app.data.getItem('selection'),'lazy');
+    assert.equal(calls,0);assert.equal(f.app.data.getItem('selection'),'lazy');
+    tree.shadowRoot.querySelector('[data-path="lazy"] > .row > .expander').click();await settle();
+    assert.equal(calls,1);
     finish(new Bag({first:null,second:null}));await settle();await settle();
-    assert.equal(options.getNode('lazy.first').attr.checked,true);
-    assert.equal(f.app.data.getItem('selection'),'lazy.first,lazy.second');
+    assert.equal(tree.shadowRoot.querySelector('[data-path="lazy.first"] > .row > input').checked,true);
+    assert.equal(f.app.data.getItem('selection'),'lazy');
     assert.equal(tree.storeBag,options);
 });
 
@@ -303,7 +310,8 @@ test('hierarchical explicit codes become checked when lazy children arrive', asy
     tree.shadowRoot.querySelector('[data-path="lazy"] > .row > .expander').click();await settle();
     const children=new Bag();children.setItem('first',null,{code:'a'});children.setItem('second',null,{code:'b'});
     finish(children);await settle();await settle();
-    assert.equal(children.getNode('first').attr.checked,true);assert.notEqual(children.getNode('second').attr.checked,true);
+    const box=path=>tree.shadowRoot.querySelector(`[data-path="${path}"] > .row > input`);
+    assert.equal(box('lazy.first').checked,true);assert.equal(box('lazy.second').checked,false);
     assert.equal(f.app.data.getItem('selection'),'a');
     tree.shadowRoot.querySelector('[data-path="lazy.second"] > .row > input').click();await settle();
     assert.equal(f.app.data.getItem('selection'),'a,b');
@@ -344,9 +352,11 @@ test('hierarchical descriptions select paths and cannot select disabled nodes', 
     const options=new Bag();options.setItem('folder.first',null,{caption:'Milano'});options.setItem('folder.fixed',null,{caption:'Fixed',checked:'disabled:on'});
     const f=fixture(t,(r,a)=>{a.data.setItem('options',options);r.checkBoxText({id:'cities',value:'^cities',values:'^options',hierarchical:true,popup:true,labelAttribute:'caption'});});
     await settle();const host=f.host('cities');host.summary.value='Milano';f.event(host.summary,'input');f.event(host.summary,'change');await settle();
-    assert.equal(f.app.data.getItem('cities'),'folder.first');assert.equal(options.getNode('folder.first').attr.checked,true);
+    const box=path=>host.control.querySelector('gramlot-tree').shadowRoot.querySelector(`[data-path="${path}"] > .row > input`);
+    assert.equal(f.app.data.getItem('cities'),'folder.first');assert.equal(box('folder.first').checked,true);
     host.summary.value='Fixed';f.event(host.summary,'input');f.event(host.summary,'change');
     assert.equal(f.app.data.getItem('cities'),'folder.first');assert.equal(options.getNode('folder.fixed').attr.checked,'disabled:on');
+    assert.equal(box('folder.fixed').checked,true);assert.equal(box('folder.fixed').disabled,true);
 });
 
 test('opening the choice popup focuses its field without scrolling the containing pane', async t => {

@@ -672,6 +672,16 @@ export class NodeBinding {
             // (such as tree) continue to receive every ordinary Data event.
             if (store && component.parameters.structpath) this.#storeRegistration = registration;
         }
+        // A tree `checked_<attribute>` names a Data path with the legacy syntax `path[:joiner]`: the tree
+        // reads that list when it draws, so a change at the path projects the tree again.
+        if (node.nodeTag === 'tree') for (const [name, value] of Object.entries(node.getAttr())) {
+            if (!name.startsWith('checked_')) continue;
+            if (typeof value !== 'string' || !value || /^[\^=]/.test(value)) {
+                throw new TypeError(`tree ${name} requires a Data path, optionally followed by :joiner`);
+            }
+            const path = node.absDatapath(value.split(':')[0]);
+            this.#registrations.push(this.runtime.router.register({path, recipient: this}));
+        }
         const timingDependencies = this.remote ? pointerDependencies(node, node.getAttr('_timing')) : new Set();
         if (this.remote) for (const [name, raw] of Object.entries(node.getAttr())) {
             if (name.startsWith('remote_')) for (const dependency of pointerDependencies(node, raw)) remoteDependencies.add(dependency);
