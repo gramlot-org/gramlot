@@ -36,7 +36,7 @@ FRAMEWORK_ATTRIBUTES = frozenset({"node_label", "node_position", "nodeId", "targ
                                   "iterate", "store", "_tag", "_meta", "ns"})
 # Source meta attributes of every node (Builder JS META_ATTRS).
 META_ATTRIBUTES = frozenset({"_meta", "datapath", "nodeId", "ns", "form", "formId", "_anchor", "updateOn",
-                             "_workspace", "_workspace_path", "childname", "_aliasDatapaths"})
+                             "_workspace", "_workspace_path", "childname"})
 # Export formats of the grid:export command, in menu order, with their captions.
 EXPORT_FORMATS = {"csv": "CSV", "json": "JSON", "tytx": "TYTX", "xml": "XML", "xlsx": "Excel"}
 # frameGrid composes these grid attributes itself; its own parameters reach the grid too.

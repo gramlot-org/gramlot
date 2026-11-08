@@ -195,24 +195,7 @@ function structFormulaCode(grid) {
 }
 
 /** Source attributes of the symbolic resolution, which never reach the DOM: the metadata of a node like `_anchor`. */
-export const SYMBOLIC_ATTRIBUTES = ['_workspace', '_workspace_path', 'childname', '_aliasDatapaths'];
-
-// Heads that are symbols of the resolver and cannot be declared as aliases.
-const RESERVED_ALIASES = new Set(['ROW', 'WORKSPACE', 'DATA', 'FORM', 'ANCHOR']);
-
-/** The aliases declared by `node` in `_aliasDatapaths` (`{alias: path}`), checked; an empty list when none. */
-export function declaredAliases(node) {
-    const declared = node.getAttr('_aliasDatapaths');
-    if (declared == null) return [];
-    if (typeof declared !== 'object' || Array.isArray(declared)) {
-        throw new TypeError(`${node.nodeTag} '${node.label}': _aliasDatapaths must map alias names to paths`);
-    }
-    for (const [name, path] of Object.entries(declared)) {
-        if (!/^[^.?/#]+$/.test(name) || RESERVED_ALIASES.has(name)) throw new TypeError(`${node.nodeTag} '${node.label}': '${name}' is not an alias name`);
-        if (typeof path !== 'string' || !path) throw new TypeError(`${node.nodeTag} '${node.label}': alias '${name}' requires a path`);
-    }
-    return Object.keys(declared);
-}
+export const SYMBOLIC_ATTRIBUTES = ['_workspace', '_workspace_path', 'childname'];
 
 /** The legacy `stringHash` of a text: 32-bit `h * 31 + code` over its UTF-16 units, as a positive number. */
 export function stringHash(text) {
@@ -232,22 +215,6 @@ function namedChild(bag, name) {
         if (found) return found;
     }
     return null;
-}
-
-/** The nodes of `bag` and their descendants, depth first. */
-function* sourceNodes(bag) {
-    for (const node of bag.getNodes()) {
-        yield node;
-        if (node.staticValue instanceof SourceBag) yield* sourceNodes(node.staticValue);
-    }
-}
-
-/** The node of the Source `source` that declares the alias `name` in `_aliasDatapaths`, or null; two declarations are an error. */
-function aliasOwner(source, name) {
-    if (source === null) return null;
-    const owners = [...sourceNodes(source)].filter(node => declaredAliases(node).includes(name));
-    if (owners.length > 1) throw new Error(`Duplicate alias '${name}'`);
-    return owners[0] ?? null;
 }
 
 export class GramlotBuilderBagNode extends SourceBagNode {
@@ -621,7 +588,7 @@ export class GramlotBuilderBagNode extends SourceBagNode {
     }
 
     /**
-     * Symbolic resolution of `#<head>[.relpath]`, in the legacy order: alias, `#ROW`, `#WORKSPACE`,
+     * Symbolic resolution of `#<head>[.relpath]`, in the legacy order: `#ROW`, `#WORKSPACE`,
      * `#DATA`, then a start node (`#FORM`, `#ANCHOR`, `#<nodeId>`, `#/<childpath>`, each with an
      * optional `/<childpath>`), from which `relpath` is resolved relatively.
      */
@@ -630,8 +597,6 @@ export class GramlotBuilderBagNode extends SourceBagNode {
         const dot = symbolic.indexOf('.');
         const head = dot === -1 ? symbolic : symbolic.slice(0, dot);
         const relpath = dot === -1 ? '' : symbolic.slice(dot + 1);
-        const alias = head.includes('/') ? null : this.#aliasDatapath(head);
-        if (alias !== null) return relpath ? `${alias}.${relpath}` : alias;
         if (head === 'ROW') throw new Error(`#ROW: no row context for ${raw}`);
         if (head === 'WORKSPACE') {
             const base = this.#workspaceDatapath(raw);
@@ -700,17 +665,6 @@ export class GramlotBuilderBagNode extends SourceBagNode {
             return `${rowpath}?${field}`;
         }
         return `${rowpath}${rest}${attr === null ? '' : `?${attr}`}`;
-    }
-
-    /** The path of the alias `name` resolved from the node that declares it in `_aliasDatapaths`, or null. */
-    #aliasDatapath(name) {
-        if (RESERVED_ALIASES.has(name)) return null;
-        this.#dependOn(`alias:${name}`);
-        const runtime = this.rootBuilder?.binding;
-        const owner = runtime ? runtime.aliases.get(name) ?? null : aliasOwner(this.rootBuilder?.source ?? null, name);
-        if (owner === null) return null;
-        this.#dependOn(owner);
-        return owner.absDatapath(owner.getAttr('_aliasDatapaths')[name]);
     }
 
     /**

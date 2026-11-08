@@ -47,26 +47,7 @@ test('the attributes of the symbolic resolution do not reach the DOM', () => {
     const {builder, document} = page();
     build(builder.root, FIXTURE.tree);
     const html = document.querySelector('main').innerHTML;
-    for (const name of ['_workspace', 'childname', '_aliasDatapaths', '_workspace_path']) assert.equal(html.toLowerCase().includes(name.toLowerCase()), false, name);
-});
-
-for (const [aliases, message] of [[{ROW: 'x'}, "'ROW' is not an alias name"], [{'a.b': 'x'}, "'a.b' is not an alias name"], [{A: ''}, "alias 'A' requires a path"]]) {
-    test(`alias declarations are checked: ${message}`, () => {
-        const builder = new GramlotBuilder();
-        const node = builder.root.div({_aliasDatapaths: aliases});
-        assert.throws(() => node.absDatapath('#A.x'), {message: new RegExp(message.replace('.', '\\.'))});
-        assert.throws(() => page().builder.root.div({_aliasDatapaths: aliases}), {message: new RegExp(message.replace('.', '\\.'))});
-    });
-}
-
-test('two declarations of an alias are an error', () => {
-    const builder = new GramlotBuilder();
-    builder.root.div({_aliasDatapaths: {A: 'one'}});
-    const node = builder.root.div({_aliasDatapaths: {A: 'two'}});
-    assert.throws(() => node.absDatapath('#A.x'), {message: "Duplicate alias 'A'"});
-    const live = page().builder;
-    live.root.div({_aliasDatapaths: {A: 'one'}});
-    assert.throws(() => live.root.div({_aliasDatapaths: {A: 'two'}}), {message: "Duplicate alias 'A'"});
+    for (const name of ['_workspace', 'childname', '_workspace_path']) assert.equal(html.toLowerCase().includes(name.toLowerCase()), false, name);
 });
 
 test('_workspace requires true or a name', () => {
@@ -160,39 +141,6 @@ test('#<nodeId>/<childname>: a change of the named child moves the pointer; a lo
     assert.equal(byId('p').textContent, 'B');
     data.setItem('box.a.x', 'stale');
     assert.equal(byId('p').textContent, 'B');
-});
-
-test('aliases: a change of the declaration or of its node context moves the pointers', () => {
-    const {app, builder, data, byId} = page();
-    data.setItem('c1.local.x', 'one');
-    data.setItem('c2.local.x', 'two');
-    data.setItem('g.x', 'global');
-    const owner = sourceTarget(builder.root.div({datapath: 'c1', _aliasDatapaths: {CFG: '.local'}}));
-    const reader = builder.root.p('^#CFG.x', {id: 'p'});
-    assert.equal(byId('p').textContent, 'one');
-    owner.setAttr({datapath: 'c2'});
-    assert.deepEqual(registered(app, reader), ['c2.local.x']);
-    assert.equal(byId('p').textContent, 'two');
-    owner.setAttr({_aliasDatapaths: {CFG: 'g'}});
-    assert.deepEqual(registered(app, reader), ['g.x']);
-    assert.equal(byId('p').textContent, 'global');
-    data.setItem('c2.local.x', 'stale');
-    assert.equal(byId('p').textContent, 'global');
-});
-
-test('aliases: an alias that enters later hides a nodeId of the same name, as legacy', () => {
-    const {app, builder, data, byId} = page();
-    data.setItem('t.x', 'node');
-    data.setItem('s.x', 'alias');
-    builder.root.div({datapath: 't', nodeId: 'X'});
-    const reader = builder.root.p('^#X.x', {id: 'p'});
-    assert.equal(byId('p').textContent, 'node');
-    const owner = sourceTarget(builder.root.div({_aliasDatapaths: {X: 's'}}));
-    assert.deepEqual(registered(app, reader), ['s.x']);
-    assert.equal(byId('p').textContent, 'alias');
-    app.src.source.popNode(owner.label);
-    assert.deepEqual(registered(app, reader), ['t.x']);
-    assert.equal(byId('p').textContent, 'node');
 });
 
 test('#WORKSPACE: a change of the owner name or of _workspace_path moves the branch', () => {

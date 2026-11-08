@@ -40,28 +40,8 @@ def test_string_hash_is_the_legacy_hash():
 
 def test_symbolic_attributes_are_not_rendered(builder):
     html = builder.render()
-    for name in ("_workspace", "childname", "_aliasDatapaths", "_workspace_path"):
+    for name in ("_workspace", "childname", "_workspace_path"):
         assert name not in html
-
-
-@pytest.mark.parametrize("aliases, message", [
-    ({"ROW": "x"}, "'ROW' is not an alias name"),
-    ({"a.b": "x"}, "'a.b' is not an alias name"),
-    ({"A": ""}, "alias 'A' requires a path"),
-])
-def test_alias_declarations_are_checked(aliases, message):
-    builder = GramlotBuilder()
-    node = builder.root.div(_aliasDatapaths=aliases)
-    with pytest.raises(TypeError, match=message):
-        node.abs_datapath("#A.x")
-
-
-def test_two_declarations_of_an_alias_are_an_error():
-    builder = GramlotBuilder()
-    builder.root.div(_aliasDatapaths={"A": "one"})
-    node = builder.root.div(_aliasDatapaths={"A": "two"})
-    with pytest.raises(ValueError, match="Duplicate alias 'A'"):
-        node.abs_datapath("#A.x")
 
 
 def test_workspace_requires_true_or_a_name():

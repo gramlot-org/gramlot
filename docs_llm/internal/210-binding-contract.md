@@ -176,15 +176,14 @@ decisions from unified-plan §2.
   effect. Corrects the P15 clause. S05: existing, default-created, absent, pointer.
 - Symbolic paths (superseded 2026-11-08, plan symbolic-references d-symbols: all legacy symbols):
   GramlotBuilderBagNode JS and Python, shared cases tests/fixtures/symbolic_paths.json; order
-  alias, #ROW, #WORKSPACE, #DATA, start node. #parent, #FORM, #ANCHOR, #<nodeId>, ?attr kept.
+  #ROW, #WORKSPACE, #DATA, start node. #parent, #FORM, #ANCHOR, #<nodeId>, ?attr kept.
   #WORKSPACE → _gramlot.workspace.<name> of nearest _workspace owner (string, else nodeId, else
   <tag>_<stringHash(fullpath)>); _workspace_path replaces the area. #ROW only with a row context
   (absDatapath(path,{row}) / abs_datapath(path,row=)): <storepath>.<key>[.field] or ?field in
-  rowMode 'attributes'; otherwise an error, never registered. #DATA.a.b → a.b. Aliases:
-  _aliasDatapaths={alias: path} on a Source node, page-wide map, path from the declaring node,
-  duplicates/reserved names are errors, alias hides a nodeId. #<head>/<childpath> and #/<childpath>
-  via childname (legacy getChild, parent, #symbol). The four attributes are metadata and context
-  attributes. JS rebinds NodeBindings whose start moved (node, id:, alias:, childname: keys);
+  rowMode 'attributes'; otherwise an error, never registered. #DATA.a.b → a.b. Datapath aliases
+  are excluded by owner decision (2026-11-08); an unknown #name is a #<nodeId>. #<head>/<childpath> and #/<childpath>
+  via childname (legacy getChild, parent, #symbol). The three attributes are metadata and context
+  attributes. JS rebinds NodeBindings whose start moved (node, id:, childname: keys);
   failure = explicit error, no stale registration. Not ported: _fakeform, .*S. S01/S04/p3b.
 - action (legacy _ButtonLogic._clickHandlerDo): inline click code, this = button node,
   receives current button attributes plus event/_counter/modifiers; D7 inline rules.

@@ -25,7 +25,6 @@
         {"label": "found", "attrs": {"childname": "nested", "datapath": ".nesteddata"}}
       ]}
     ]},
-    {"label": "aliases", "attrs": {"datapath": "cfg", "_aliasDatapaths": {"CHART": "gnr.chart", "LOCAL": ".local", "panel": "shadow"}}},
     {"label": "grid", "attrs": {"datapath": "gr", "storepath": ".rows", "rowMode": "values"}, "children": [{"label": "cell"}]},
     {"label": "agrid", "attrs": {"storepath": "arows", "rowMode": "attributes"}, "children": [{"label": "acell"}]},
     {"label": "nogrid", "attrs": {"storepath": "x"}, "children": [{"label": "ncell"}]}
@@ -55,10 +54,6 @@
     {"node": "box.region.bleaf", "path": "#/inner.v", "expect": "boxdata.topdata.innerdata.v"},
     {"node": "box.region.bleaf", "path": "#/inner.v?x", "expect": "boxdata.topdata.innerdata.v?x"},
     {"node": "anchor.a1.aleaf", "path": "#/top.v", "error": "#/: no ancestor with a nodeId"},
-    {"node": "box.region.bleaf", "path": "#panel.v", "expect": "shadow.v"},
-    {"node": "page.form.rec.field", "path": "#CHART.type", "expect": "gnr.chart.type"},
-    {"node": "page.form.rec.field", "path": "#CHART", "expect": "gnr.chart"},
-    {"node": "page.form.rec.field", "path": "#LOCAL.k", "expect": "cfg.local.k"},
     {"node": "page.form.rec.field", "path": "#DATA.a.b", "expect": "a.b"},
     {"node": "page.form.rec.field", "path": "^#DATA.a.b?x", "expect": "a.b?x"},
     {"node": "page.form.rec.field", "path": "#DATA", "error": "#DATA requires a path"},

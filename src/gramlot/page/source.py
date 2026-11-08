@@ -8,7 +8,6 @@ Python's ``__getattr__`` uses ``GramlotBuilder.schema_tag`` for authoring dispat
 JavaScript uses Builder's Source proxy and ``GramlotBuilder.schemaTag``.
 """
 
-import re
 from typing import Any
 
 from genro_builders.builder import SourceBag, SourceBagNode
@@ -20,25 +19,7 @@ from genro_builders.builder.pointers import pointer_transform
 # The control attributes of ``remote``, written on the node as they are; every other parameter becomes ``remote_<k>``.
 REMOTE_CONTROLS = ("_cachedRemote", "_if", "_else", "_onRemote", "_onCalling", "_delay", "_timing", "_userChanges")
 # Source attributes of the symbolic resolution, never rendered: the metadata of a node like ``_anchor``.
-SYMBOLIC_ATTRIBUTES = frozenset({"_workspace", "_workspace_path", "childname", "_aliasDatapaths"})
-# Heads that are symbols of the resolver and cannot be declared as aliases.
-RESERVED_ALIASES = frozenset({"ROW", "WORKSPACE", "DATA", "FORM", "ANCHOR"})
-ALIAS_NAME = re.compile(r"^[^.?/#]+$")
-
-
-def declared_aliases(node):
-    """The aliases declared by ``node`` in ``_aliasDatapaths`` (``{alias: path}``), checked; empty when none."""
-    declared = node.attr.get("_aliasDatapaths")
-    if declared is None:
-        return []
-    if not isinstance(declared, dict):
-        raise TypeError(f"{node.node_tag} '{node.label}': _aliasDatapaths must map alias names to paths")
-    for name, path in declared.items():
-        if not isinstance(name, str) or not ALIAS_NAME.match(name) or name in RESERVED_ALIASES:
-            raise TypeError(f"{node.node_tag} '{node.label}': '{name}' is not an alias name")
-        if not isinstance(path, str) or not path:
-            raise TypeError(f"{node.node_tag} '{node.label}': alias '{name}' requires a path")
-    return list(declared)
+SYMBOLIC_ATTRIBUTES = frozenset({"_workspace", "_workspace_path", "childname"})
 
 
 def string_hash(text):
@@ -48,14 +29,6 @@ def string_hash(text):
     for index in range(0, len(data), 2):
         value = (((value << 5) - value) + (data[index] | data[index + 1] << 8)) & 0xFFFFFFFF
     return abs(value - 0x100000000 if value >= 0x80000000 else value)
-
-
-def _source_nodes(bag):
-    """The nodes of ``bag`` and their descendants, depth first."""
-    for node in bag:
-        yield node
-        if isinstance(node.static_value, SourceBag):
-            yield from _source_nodes(node.static_value)
 
 
 def _named_child(bag, name):
@@ -111,13 +84,10 @@ class GramlotBuilderBagNode(SourceBagNode):
         return path
 
     def _resolve_symbolic_datapath(self, path: str, raw: str) -> str:
-        """Symbolic resolution of ``#<head>[.relpath]``, in the legacy order: alias, ``#ROW``, ``#WORKSPACE``,
+        """Symbolic resolution of ``#<head>[.relpath]``, in the legacy order: ``#ROW``, ``#WORKSPACE``,
         ``#DATA``, then a start node (``#FORM``, ``#ANCHOR``, ``#<nodeId>``, ``#/<childpath>``, each with an
         optional ``/<childpath>``), from which ``relpath`` is resolved relatively."""
         head, _, relpath = path[1:].partition(".")
-        alias = None if "/" in head else self._alias_datapath(head)
-        if alias is not None:
-            return f"{alias}.{relpath}" if relpath else alias
         if head == "ROW":
             raise KeyError(f"#ROW: no row context for {raw}")
         if head == "WORKSPACE":
@@ -188,18 +158,6 @@ class GramlotBuilderBagNode(SourceBagNode):
                 raise ValueError(f"#ROW: a row in rowMode 'attributes' has only attribute fields: {raw}")
             return f"{rowpath}?{field}"
         return f"{rowpath}{rest}{'?' + attr if separator else ''}"
-
-    def _alias_datapath(self, name: str) -> str | None:
-        """The path of the alias ``name`` resolved from the node that declares it in ``_aliasDatapaths``, or None."""
-        if name in RESERVED_ALIASES:
-            return None
-        builder = self._resolve_builder()
-        if builder is None:
-            return None
-        owners = [node for node in _source_nodes(builder.source) if name in declared_aliases(node)]
-        if len(owners) > 1:
-            raise ValueError(f"Duplicate alias '{name}'")
-        return owners[0].abs_datapath(owners[0].attr["_aliasDatapaths"][name]) if owners else None
 
     def _symbolic_node(self, head: str, raw: str) -> "GramlotBuilderBagNode":
         """The start node of a symbolic head, as legacy ``nodeById``: ``/<childpath>`` from the nearest

@@ -21045,3 +21045,7 @@ implementation. Build and 14 frame-grid tests pass. Local preview 61535 restarte
 browser confirms the rendered border and settings drawer in the standalone dark
 preview. Light-theme visual verification remains pending; theme tokens define
 both variants. No publication.
+
+### 2026-11-08 — Datapath aliases excluded
+
+Datapath aliases (`_aliasDatapaths`) are excluded from the symbolic paths by owner decision (2026-11-08); an unknown `#name` resolves as a `#<nodeId>`.
