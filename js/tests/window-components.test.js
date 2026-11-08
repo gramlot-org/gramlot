@@ -212,7 +212,7 @@ test('docking a floatingPane retains its content, geometry and collapsed state',
  f.app.data.setItem('docked',false);await settle();
  assert.equal(w.shell.hasAttribute('data-docked'),false);assert.equal(f.element('draft'),input);assert.equal(input.value,'Still here');
  assert.deepEqual(['left','top','width','height'].map(k=>w.shell.style[k]),geometry);
- w.collapseButton.click();await settle();f.app.data.setItem('docked',true);await settle();assert.equal(w.body.hidden,false);
+ w.collapseButton.click();await settle();f.app.data.setItem('docked',true);await settle();assert.equal(w.body.hidden,false);assert.equal(w.shell.style.getPropertyValue('--collapsed-height'),'0px');
  f.app.data.setItem('docked',false);await settle();assert.equal(w.body.hidden,true);
 });
 
@@ -226,4 +226,96 @@ test('a floatingPane first opened docked restores its configured geometry when u
  f.app.data.setItem('docked',false);await settle();
  assert.equal(w.shell.hasAttribute('data-docked'),false);assert.equal(f.element('draft'),input);
  assert.deepEqual(['left','top','width','height'].map(k=>w.shell.style[k]),['60px','80px','360px','240px']);
+});
+
+test('titlebar=false hides the title bar; the framePane top region moves the window and remains when collapsed',async t=>{
+ const f=await fixture(t,(root,app)=>{
+  app.data.setItem('collapsed',false);
+  const frame=root.floatingPane({id:'float',open:'^open',titlebar:false,collapsed:'^collapsed',width:'360px',height:'240px',left:'60px',top:'80px'}).frame;
+  const bar=frame.top.div({id:'bar'});bar.span('Name',{id:'name'});bar.button('Act',{id:'act'});
+  frame.center.input({id:'draft'});
+  root.floatingPane({id:'plain',open:true}).frame.center.div('Plain');
+ });
+ const w=f.element('float'),top=w.querySelector('gramlot-frame-pane>[slot="top"]');
+ assert.equal(w.titlebar.hidden,true);assert.equal(f.element('plain').titlebar.hidden,false);
+ w.shell.getBoundingClientRect=()=>Object.fromEntries(['left','top','width','height'].map(k=>[k,parseFloat(w.shell.style[k])||0]));
+ top.getBoundingClientRect=()=>({height:24});
+ f.app.data.setItem('open',true);await settle();
+ let capture=false;top.setPointerCapture=()=>capture=true;top.hasPointerCapture=()=>capture;top.releasePointerCapture=()=>capture=false;
+ const send=(target,type,x,y)=>{const e=new f.window.MouseEvent(type,{bubbles:true,composed:true,clientX:x,clientY:y,button:0});Object.defineProperty(e,'pointerId',{value:1});target.dispatchEvent(e);};
+ send(f.element("act").shadowRoot.querySelector("button"),"pointerdown",0,0);assert.equal(capture,false);
+ const start=[w.shell.style.left,w.shell.style.top].map(parseFloat);
+ send(f.element('name'),'pointerdown',0,0);assert.equal(capture,true);
+ send(top,'pointermove',30,20);send(top,'pointerup',30,20);
+ assert.deepEqual([w.shell.style.left,w.shell.style.top],[`${start[0]+30}px`,`${start[1]+20}px`]);assert.equal(capture,false);
+ send(f.element("draft"),"pointerdown",0,0);assert.equal(capture,false);
+ f.app.data.setItem('collapsed',true);await settle();
+ assert.equal(w.body.hidden,false);assert.equal(w.shell.style.height,'26px');
+ f.app.data.setItem('collapsed',false);await settle();assert.equal(w.shell.style.height,'240px');
+});
+
+test('a docked floatingPane collapses to its framePane top region and maximizes over the page, restoring into its cell',async t=>{
+ const f=await fixture(t,(root,app)=>{
+  app.data.setItem('collapsed',false);app.data.setItem('maximized',false);app.data.setItem('docked',true);
+  const frame=root.floatingPane({id:'float',open:true,docked:'^docked',titlebar:false,maximizable:true,collapsed:'^collapsed',maximized:'^maximized',
+   width:'360px',height:'240px',left:'60px',top:'80px'}).frame;
+  frame.top.div('Name');frame.center.input({id:'draft'});
+ });
+ const w=f.element('float'),input=f.element('draft'),top=w.querySelector('gramlot-frame-pane>[slot="top"]');
+ w.shell.getBoundingClientRect=()=>Object.fromEntries(['left','top','width','height'].map(k=>[k,parseFloat(w.shell.style[k])||0]));
+ top.getBoundingClientRect=()=>({height:24});
+ f.app.data.setItem('collapsed',true);await settle();
+ assert.equal(w.shell.hasAttribute('data-docked'),true);assert.equal(w.body.hidden,false);
+ assert.equal(w.shell.style.getPropertyValue('--collapsed-height'),'24px');
+ f.app.data.setItem('collapsed',false);await settle();assert.equal(w.shell.style.getPropertyValue('--collapsed-height'),'');
+ f.app.data.setItem('maximized',true);await settle();
+ assert.equal(w.shell.hasAttribute('data-docked'),false);assert.equal(w.shell.hasAttribute('data-maximized'),true);
+ assert.deepEqual(['left','top','width','height'].map(k=>w.shell.style[k]),['0px','0px','1024px','768px']);assert.ok(Number(w.shell.style.zIndex)>=100);
+ f.app.data.setItem('maximized',false);await settle();
+ assert.equal(w.shell.hasAttribute('data-docked'),true);assert.equal(w.shell.hasAttribute('data-maximized'),false);
+ assert.equal(f.element('draft'),input);
+ f.app.data.setItem('docked',false);await settle();
+ assert.deepEqual(['left','top','width','height'].map(k=>w.shell.style[k]),['60px','80px','360px','240px']);
+});
+
+test('detachable: a drag past 6 px on the move handle of a docked window undocks it under the pointer; double click toggles docked',async t=>{
+ const f=await fixture(t,(root,app)=>{
+  app.data.setItem('docked',true);app.data.setItem('maximized',false);
+  const frame=root.floatingPane({id:'float',open:true,docked:'^docked',detachable:true,titlebar:false,maximizable:true,maximized:'^maximized',
+   left:'^left',top:'^top'}).frame;
+  frame.top.div({id:'bar'}).span('Name',{id:'name'});frame.center.input({id:'draft'});
+  const plain=root.floatingPane({id:'plain',open:true,docked:true}).frame;plain.top.div({id:'plainBar'});
+ });
+ const w=f.element('float'),top=w.querySelector('gramlot-frame-pane>[slot="top"]');
+ // Docked at 100,200 in its cell, 300x160.
+ w.shell.getBoundingClientRect=()=>w.shell.hasAttribute('data-docked')?{left:100,top:200,width:300,height:160}
+  :Object.fromEntries(['left','top','width','height'].map(k=>[k,parseFloat(w.shell.style[k])||0]));
+ let capture=false;top.setPointerCapture=()=>capture=true;top.hasPointerCapture=()=>capture;top.releasePointerCapture=()=>capture=false;
+ const send=(target,type,x,y)=>{const e=new f.window.MouseEvent(type,{bubbles:true,composed:true,clientX:x,clientY:y,button:0});Object.defineProperty(e,'pointerId',{value:1});target.dispatchEvent(e);};
+ assert.equal(w.parameters.detachable,true);assert.equal(f.element('plain').parameters.detachable,false);
+ // Below the threshold nothing changes.
+ send(f.element('name'),'pointerdown',110,210);assert.equal(capture,true);
+ send(top,'pointermove',113,213);send(top,'pointerup',113,213);
+ assert.equal(f.app.data.getItem('docked'),true);assert.equal(w.shell.hasAttribute('data-docked'),true);
+ // Past the threshold the window undocks with its docked size and the grab point under the pointer, then follows it.
+ send(f.element('name'),'pointerdown',110,210);send(top,'pointermove',150,260);
+ assert.equal(f.app.data.getItem('docked'),false);assert.equal(w.shell.hasAttribute('data-docked'),false);
+ assert.deepEqual(['left','top','width','height'].map(k=>w.shell.style[k]),['140px','250px','300px','160px']);
+ send(top,'pointermove',200,300);send(top,'pointerup',200,300);
+ assert.deepEqual([w.shell.style.left,w.shell.style.top],['190px','290px']);
+ assert.deepEqual([f.app.data.getItem('left'),f.app.data.getItem('top')],['190px','290px']);
+ await settle();assert.equal(w.parameters.docked,false);
+ // Double click docks; again, it floats where its cell is.
+ send(f.element('name'),'dblclick',200,300);await settle();
+ assert.equal(f.app.data.getItem('docked'),true);assert.equal(w.shell.hasAttribute('data-docked'),true);
+ send(f.element('name'),'dblclick',110,210);await settle();
+ assert.equal(f.app.data.getItem('docked'),false);assert.deepEqual([w.shell.style.left,w.shell.style.top],['190px','290px']);
+ // A maximized floating window docks at normal size.
+ f.app.data.setItem('maximized',true);await settle();
+ send(f.element('name'),'dblclick',10,10);await settle();
+ assert.deepEqual([f.app.data.getItem('docked'),f.app.data.getItem('maximized')],[true,false]);
+ // Without detachable a docked window neither moves nor toggles.
+ const p=f.element('plain'),plainTop=p.querySelector('gramlot-frame-pane>[slot="top"]');let plainCapture=false;plainTop.setPointerCapture=()=>plainCapture=true;
+ send(f.element('plainBar'),'pointerdown',0,0);send(f.element('plainBar'),'dblclick',0,0);await settle();
+ assert.equal(plainCapture,false);assert.equal(p.parameters.docked,true);
 });

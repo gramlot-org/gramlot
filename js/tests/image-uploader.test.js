@@ -7,10 +7,11 @@ import {Gramlot, GramlotBuilder} from '../src/index.js';
 import uploads from '../src/components/uploads.js';
 
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
-async function setup(t, operation = null, result = '/images/photo.png', contextPath = null, getDisplayMedia = null, onComplete = null, logic = null) {
+async function setup(t, operation = null, result = '/images/photo.png', contextPath = null, getDisplayMedia = null, onComplete = null, logic = null, attributes = {}) {
     const {window} = new JSDOM('<main id="gramlot-root"></main>');
     window.URL.createObjectURL = () => 'blob:original'; window.URL.revokeObjectURL = () => {};
     window.Image = class { naturalWidth = 4; naturalHeight = 4; async decode() {} };
+    window.ResizeObserver = class { observe() {} disconnect() {} };
     window.HTMLDialogElement.prototype.showModal = function() { this.setAttribute('open',''); };
     window.HTMLDialogElement.prototype.close = function() { this.removeAttribute('open'); };
     window.HTMLCanvasElement.prototype.getContext = () => ({scale() {},translate() {},rotate() {},drawImage() {}});
@@ -35,7 +36,7 @@ async function setup(t, operation = null, result = '/images/photo.png', contextP
     app.data.setItem('form.context',new Bag({recordId:'saved-image-record'}));
     if (logic) app.src.logicRegistry.register(logic, {group:null, resource:'/image-upload-test.js'});
     const b = new GramlotBuilder(null,{collections:[uploads]});
-    b.root.div({datapath:'form'}).imageUploader({id:'image',value:'^.image',storepath:'.queue',contextPath,operation,onComplete});
+    b.root.div({datapath:'form'}).imageUploader({id:'image',value:'^.image',storepath:'.queue',contextPath,operation,onComplete,...attributes});
     app.src.startSource(b.toTytx());
     const host = window.document.getElementById('image');
     const file = new window.File(['original'],'photo.jpg',{type:'image/jpeg'});
@@ -231,4 +232,13 @@ test('screen chooser denial retains the value and unsupported browsers hide the 
     const denied=await setup(t,null,'/images/photo.png',null,()=>Promise.reject(Object.assign(new Error('denied'),{name:'NotAllowedError'})));
     denied.app.data.setItem('form.image','/images/old.png');denied.host.screenButton.click();await tick();
     assert.equal(denied.app.data.getItem('form.image'),'/images/old.png');assert.match(denied.host.message.textContent,/cancelled or not permitted/);
+});
+
+test('screenCapture false hides Capture screen; the editor offers Crop',async t=>{
+    const f=await setup(t,null,'/images/photo.png',null,()=>Promise.reject(new Error('unused')),null,null,{screenCapture:false});
+    assert.equal(f.host.screenButton.hidden,true);
+    await f.select();
+    assert.ok(f.window.document.querySelector('dialog .crop-crop-handle'));
+    await f.action('Confirm');
+    assert.equal(f.app.data.getItem('form.image'),'data:image/png;base64,Y3JvcA==');
 });

@@ -1718,6 +1718,20 @@ movement and resize to `gridStep`, rotation to `rotationStep`; zero disables a
 step. Without Shift, movement remains free. `gridVisible` only changes the grid's
 presentation. Defaults are false, 10, false and 15 respectively.
 
+Bind `autoArrange` (twoWay) and `autoSize` to Data for automatic arrangement.
+With `autoArrange` true, the tray writes an even grid of its direct children into
+the layout rows, in Source order. It rearranges when a child is added or removed
+and when the pane is resized. The column count is the one that gives the cards the
+largest area without overflow; `gridStep` is the gap between cells and the pane
+edge, and an incomplete last row is centered. Without `autoSize`, each card keeps
+its size and only `left`/`top` change. With `autoSize`, each card fills its cell
+and keeps its `aspectRatio` (for example `aspectRatio=16/9`); a card without
+`aspectRatio` fills the whole cell. `minWidth` and `minHeight` take precedence
+over the visible area. A user move or resize writes `autoArrange=false`, so the
+user arrangement stays; setting it true again rearranges immediately. Bind
+`autoArrange` outside the layout Bag. Arrangement ignores rotation and scale, and
+a manual resize stays free of `aspectRatio`. Both default to false.
+
 Saving is an application Data operation: copy the layout Bag with `deepcopy()`,
 then assign a copy back to restore it. Persist its TYTX through your application's
 storage when durability is needed. The gallery's **Tray workspace** lesson shows
@@ -1792,6 +1806,8 @@ pane.imageUploader(value="^.image", storepath=".imageQueue", operation="save_ima
 ```
 
 Set `cropWidth`, `cropHeight`, `outputWidth` and `outputHeight` to positive integers with matching crop/output aspect ratios. PNG, JPEG and WebP input is accepted through selection or file drop; output is PNG. The original and framing are retained while the component is mounted. An existing value can be edited if its URL permits canvas access (CORS); after a reload it is the source image. Clear changes the value and does not delete an application-owned file.
+
+Beside the rotate and zoom controls, **Crop** shows the whole image with a dashed rectangle: drag it to move, drag one of its eight handles to resize, or use the arrow keys. The rectangle keeps the crop aspect ratio and stays inside the image. **Apply** frames the selected area and returns to the frame with rotation 0; **Back** leaves the frame unchanged. `screenCapture=False` hides **Capture screen**.
 
 In the crop dialog, drag to move the image, Shift-drag vertically to zoom, and Alt-drag vertically to rotate. On touch, use one finger to move or two fingers to move, pinch and rotate. The focused preview responds to arrow keys for movement.
 

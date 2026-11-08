@@ -280,6 +280,10 @@
               "default": 512,
               "dtype": "L"
             },
+            "screenCapture": {
+              "default": true,
+              "dtype": "B"
+            },
             "storepath": {
               "dtype": "T"
             },
@@ -412,6 +416,17 @@
             "has_default": true,
             "kind": "keyword_only",
             "name": "outputHeight",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "B",
+              "kind": "dtype"
+            },
+            "default": true,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "screenCapture",
             "role": "attribute"
           },
           {

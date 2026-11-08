@@ -58,6 +58,9 @@ runtime contract. Source children and private component DOM are distinct;
 
 `dtype`, `nullable`, `binding`, `default` and qualifications export the portable
 contract. `NativeControl` projects `target: 'control'` to control properties.
+`childParameter: true` offers the value, or the default when the Source omits it,
+to a parent child parameter of the same name; the child keeps it (a tile
+`aspectRatio` for trayPane).
 `intl_str` is metadata, not translation. Arbitrary metadata does not implement
 validation. Open extra attributes do not guarantee typo detection. The recorded
 Python nested-regex union limitation remains; no permissive input contract follows.

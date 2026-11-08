@@ -266,7 +266,9 @@ Applies to: [dialog](#gc-345-dialog), [floatingPane](#gc-345-floatingpane).
 | `movable` | B | True | read | — | [floatingPane](#gc-345-floatingpane) |
 | `resizable` | B | True | read | — | [floatingPane](#gc-345-floatingpane) |
 | `collapsible` | B | True | read | — | [floatingPane](#gc-345-floatingpane) |
-| `docked` | B | False | read | — | [floatingPane](#gc-345-floatingpane) |
+| `docked` | B | False | twoWay | — | [floatingPane](#gc-345-floatingpane) |
+| `titlebar` | B | True | read | — | [floatingPane](#gc-345-floatingpane) |
+| `detachable` | B | False | read | — | [floatingPane](#gc-345-floatingpane) |
 
 <a id="gc-345-260"></a>
 <a id="gc-345-shared-regions"></a>
@@ -366,6 +368,8 @@ Collection: **drawing**. Browser element: `gramlot-drawing-pane`.
 | --- | --- | --- | --- | --- |
 | `image` | T or None | None | read | — |
 | `annotations` | X | — | read | — |
+| `aspectRatio` | R or None | None | read | — |
+| `toolbar` | B | True | read | — |
 
 Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
@@ -2107,16 +2111,16 @@ Collection: **layout**. Browser element: `gramlot-tray-pane`.
 [Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-traypane).
 
 
-**Data contract.** storepath resolves to a Bag keyed by direct child Source labels. Each position Bag holds x, y, width, height, rotation, scale, selected and layer. Gesture changes write geometry and selection to those rows while the existing controls stay mounted.
+**Data contract.** storepath resolves to a Bag keyed by direct child Source labels. Each position Bag holds left, top, width, height, rotation, scale, selected and layer. Gesture changes write geometry and selection to those rows while the existing controls stay mounted. With autoArrange, the tray writes an even grid into the rows when children are added or removed and when the pane is resized; autoSize also writes width and height to fill the visible pane.
 
 
-**Interaction and events.** Drag, resize and rotation handles edit geometry. Shift applies configured snapping. Click and marquee gestures select blocks, and selected blocks can move together. Opt-in close removes the block Source and its geometry row.
+**Interaction and events.** Drag, resize and rotation handles edit geometry. Shift applies configured snapping. Click and marquee gestures select blocks, and selected blocks can move together. Opt-in close removes the block Source and its geometry row. A user move or resize writes autoArrange false, keeping the user arrangement; setting it true again rearranges immediately.
 
 
-**Composition.** Give each direct child a Labelbox with lbl. Child options include minWidth, minHeight and closable. A tray can contain interactive fields and nested trays.
+**Composition.** Give each direct child a Labelbox with lbl. Child options include minWidth, minHeight, aspectRatio and closable. A tray can contain interactive fields and nested trays.
 
 
-**Limits and lifecycle.** Bounds and same-layer contact constrain edits. Lock hides editing chrome while external Data still projects. Cancellation restores the gesture state, and store replacement ends the old gesture without overwriting the replacement.
+**Limits and lifecycle.** Bounds and same-layer contact constrain edits. Lock hides editing chrome while external Data still projects. Cancellation restores the gesture state, and store replacement ends the old gesture without overwriting the replacement. Automatic arrangement ignores rotation and scale; minimum dimensions take precedence over the visible area.
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
@@ -2125,6 +2129,8 @@ Collection: **layout**. Browser element: `gramlot-tray-pane`.
 | `gridStep` | L | 10 | read | — |
 | `gridVisible` | B | False | read | — |
 | `rotationStep` | N | 15 | read | — |
+| `autoArrange` | B | False | twoWay | — |
+| `autoSize` | B | False | read | — |
 
 Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
@@ -2134,6 +2140,7 @@ Parameters projected by this parent from its children:
 | `closable` | `{"default": false, "dtype": "B"}` |
 | `minWidth` | `{"default": 100, "dtype": "N"}` |
 | `minHeight` | `{"default": 64, "dtype": "N"}` |
+| `aspectRatio` | `{"default": null, "dtype": "N", "nullable": true}` |
 
 <a id="gc-345-410"></a>
 <a id="gc-345-transformpane"></a>
@@ -2413,6 +2420,7 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 | `cropHeight` | L | 256 | — | — |
 | `outputWidth` | L | 512 | — | — |
 | `outputHeight` | L | 512 | — | — |
+| `screenCapture` | B | True | — | — |
 | `onComplete` | T or None | None | — | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.

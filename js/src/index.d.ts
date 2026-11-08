@@ -69,6 +69,9 @@ export {VisualEditor} from './server/visual-editor.js';
 export {SourceImport} from './server/source-import.js';
 export {SourcePicker} from './source-picker.js';
 
+/** 16 random bytes as 32 lowercase hex characters, the format of the Python `uuid4().hex` ids of the server. */
+export declare function randomId(): string;
+
 /** The libraries and runtime modules shared with prepared collections, keyed by import specifier. */
 export declare const sharedModules: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
 /** One third-party library of the manifest (GC-325 §160). */

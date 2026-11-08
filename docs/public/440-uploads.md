@@ -165,6 +165,7 @@ Shared contracts: [Values and bindings](#gc-440-shared-value), [Disabled, readon
 | `cropHeight` | L | 256 | — | — |
 | `outputWidth` | L | 512 | — | — |
 | `outputHeight` | L | 512 | — | — |
+| `screenCapture` | B | True | — | — |
 | `onComplete` | T or None | None | — | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.

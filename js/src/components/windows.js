@@ -18,7 +18,8 @@ function WindowShell(HTMLElement) {
                     if (this.children.length !== 1 || labelboxContent(this.firstElementChild).localName !== 'gramlot-frame-pane') {
                         throw new TypeError('A window requires exactly one framePane child');
                     }
-                }});
+                },
+                content:() => labelboxContent(this.firstElementChild)});
         }
         get shell() { return this.surface.shell; }
         get titlebar() { return this.surface.titlebar; }
@@ -52,4 +53,4 @@ WindowShell.parameters={
 };
 export const Dialog=defineComponent({name:'dialog',tag:'gramlot-dialog',base:WindowShell,sourceContext:true,subTags:'framePane',implementation:Base=>class extends Base{}});
 export const FloatingPane=defineComponent({name:'floatingPane',tag:'gramlot-floating-pane',base:WindowShell,sourceContext:true,subTags:'framePane',
-    parameters:{movable:bool(true),resizable:bool(true),collapsible:bool(true),docked:bool(false)},implementation:Base=>class extends Base{}});
+    parameters:{movable:bool(true),resizable:bool(true),collapsible:bool(true),docked:bool(false,'twoWay'),titlebar:bool(true),detachable:bool(false)},implementation:Base=>class extends Base{}});

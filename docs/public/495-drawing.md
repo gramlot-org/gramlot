@@ -70,5 +70,7 @@ Collection: **drawing**. Browser element: `gramlot-drawing-pane`.
 | --- | --- | --- | --- | --- |
 | `image` | T or None | None | read | — |
 | `annotations` | X | — | read | — |
+| `aspectRatio` | R or None | None | read | — |
+| `toolbar` | B | True | read | — |
 
 Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.

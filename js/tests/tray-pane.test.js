@@ -4,6 +4,7 @@ import {JSDOM} from 'jsdom';
 import {sourceTarget} from '@genrojs/builders';
 import {Bag, Gramlot, GramlotBuilder} from '../src/index.js';
 import layout from '../src/components/layout.js';
+import {arrangeGrid} from '../src/components/tray-geometry.js';
 import inputs from '../src/components/inputs.js';
 import {layoutWindow} from './helpers/layout-window.js';
 import {toTytx,fromTytx} from '@genrojs/tytx';
@@ -606,4 +607,91 @@ test('tray close is opt-in and obeys layout lock and dynamic closable changes',a
     card.setAttr({closable:true});await settle();
     assert.equal(f.box.labelbox.closeButton,button);
     assert.equal(button.hidden,false);
+});
+
+async function arrangeFixture(t,{autoSize=true,count=2}={}) {
+    const {window}=new JSDOM('<main id="gramlot-root"></main>');
+    const layoutState=layoutWindow(window);
+    const app=new Gramlot({document:window.document,transport:false,collections:[layout,inputs]});
+    app.data.setItem('scope.ui',new Bag({autoArrange:true,autoSize}));app.data.setItem('scope.layout',new Bag());
+    const builder=new GramlotBuilder(null,{collections:[layout,inputs]});
+    const root=builder.root.div({datapath:'scope'});
+    const tray=root.trayPane({id:'tray',storepath:'.layout',autoArrange:'^.ui.autoArrange',autoSize:'^.ui.autoSize'});
+    const add=index=>tray.div({node_label:`c${index}`,id:`c${index}`,lbl:`Card ${index}`,aspectRatio:16/9,minWidth:32,minHeight:18});
+    for(let index=1;index<=count;index++)add(index);
+    app.src.startSource(builder.source);
+    await settle();
+    t.after(()=>{app.dispose();window.close();});
+    const host=window.document.getElementById('tray');
+    const resize=async(width,height)=>{
+        Object.defineProperties(host,{clientWidth:{value:width,configurable:true},clientHeight:{value:height,configurable:true}});
+        for(const observer of layoutState.observers)if(observer.targets.has(host))observer.callback([]);
+        await settle();
+    };
+    const rows=()=>{const store=app.data.getItem('scope.layout');
+        return [...host.children].map(box=>['left','top','width','height'].map(key=>store.getItem([box.querySelector('[id^="c"]').id,key])));};
+    let capture=null;
+    host.setPointerCapture=id=>{capture=id;};host.hasPointerCapture=id=>capture===id;host.releasePointerCapture=()=>{capture=null;};
+    host.getBoundingClientRect=()=>({left:0,top:0,width:host.clientWidth,height:host.clientHeight});
+    const send=(target,type,x,y,id=1)=>{
+        const event=new window.MouseEvent(type,{bubbles:true,composed:true,cancelable:true,clientX:x,clientY:y,button:0});
+        Object.defineProperty(event,'pointerId',{value:id});target.dispatchEvent(event);return event;
+    };
+    return {app,host,tray,add,resize,rows,send,window};
+}
+
+const grid=(width,height,count,fit=true,size={})=>arrangeGrid({width,height,gap:10,fit,
+    items:Array.from({length:count},()=>({aspectRatio:16/9,minWidth:32,minHeight:18,...size}))})
+    .map(r=>[r.left,r.top,r.width,r.height]);
+
+test('autoArrange waits for a laid-out pane, then sizes 16/9 cards on add, removal and resize',async t=>{
+    const f=await arrangeFixture(t);
+    assert.equal(f.app.data.getItem('scope.layout.c1.width'),null);
+    await f.resize(400,200);
+    assert.deepEqual(f.rows(),[[10,47.96875,185,104.0625],[205,47.96875,185,104.0625]]);
+    f.add(3);await settle();
+    assert.equal(f.host.children.length,3);
+    assert.deepEqual(f.rows(),grid(400,200,3));
+    sourceTarget(f.tray).value.popNode('c2');await settle();
+    assert.equal(f.host.children.length,2);
+    assert.deepEqual(f.rows(),grid(400,200,2));
+    await f.resize(170,400);
+    assert.deepEqual(f.rows(),[[10,60.3125,150,84.375],[10,255.3125,150,84.375]]);
+    assert.equal(f.app.data.getItem('scope.ui.autoArrange'),true);
+});
+
+test('a manual move or resize turns autoArrange off; setting it again rearranges; cancel restores it',async t=>{
+    const f=await arrangeFixture(t);await f.resize(400,200);
+    const first=f.host.children[0],arranged=f.rows();
+    f.send(first.labelbox.fieldLabel,'pointerdown',20,60);f.send(f.host,'pointermove',20,70);
+    assert.equal(f.app.data.getItem('scope.ui.autoArrange'),false);
+    f.send(f.host,'pointercancel',20,70);await settle();
+    assert.equal(f.app.data.getItem('scope.ui.autoArrange'),true);assert.deepEqual(f.rows(),arranged);
+    f.send(first.labelbox.fieldLabel,'pointerdown',20,60);f.send(f.host,'pointermove',20,70);f.send(f.host,'pointerup',20,70);await settle();
+    assert.equal(f.app.data.getItem('scope.ui.autoArrange'),false);
+    const moved=f.rows();
+    assert.equal(moved[0][1],Math.round(arranged[0][1]+10));
+    await f.resize(400,300);
+    assert.deepEqual(f.rows(),moved);
+    f.add(3);await settle();
+    assert.deepEqual(f.rows().slice(0,2),moved);
+    f.app.data.setItem('scope.ui.autoArrange',true);await settle();
+    assert.deepEqual(f.rows(),grid(400,300,3));
+    first.labelbox.resizeHandle.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'ArrowLeft',bubbles:true,composed:true}));
+    assert.equal(f.app.data.getItem('scope.ui.autoArrange'),false);
+});
+
+test('autoArrange without autoSize keeps card sizes; aspectRatio is validated; defaults change nothing',async t=>{
+    const f=await arrangeFixture(t,{autoSize:false});
+    for(const label of ['c1','c2']){const row=f.app.data.getItem(`scope.layout.${label}`);row.setItem('width',100);row.setItem('height',50);}
+    await f.resize(400,200);
+    assert.deepEqual(f.rows(),grid(400,200,2,false,{width:100,height:50}));
+    assert.deepEqual(f.rows().map(r=>r.slice(2)),[[100,50],[100,50]]);
+    f.app.data.setItem('scope.ui.autoSize',true);await settle();
+    assert.deepEqual(f.rows(),grid(400,200,2));
+    assert.throws(()=>f.host.constructor.projectChild(f.host.children[0],{aspectRatio:0},{label:'c1'}),
+        /aspectRatio must be a positive number or null/);
+    const plain=await fixture(t);
+    assert.deepEqual(['left','top'].map(key=>plain.store.getItem(['card',key])),[10,20]);
+    assert.equal(plain.store.getItem('card.width'),null);
 });

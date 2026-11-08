@@ -433,6 +433,17 @@
             "default": 512
           },
           {
+            "name": "screenCapture",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "B"
+            },
+            "has_default": true,
+            "default": true
+          },
+          {
             "name": "disabled",
             "kind": "keyword_only",
             "role": "attribute",
@@ -533,6 +544,10 @@
             "outputHeight": {
               "dtype": "L",
               "default": 512
+            },
+            "screenCapture": {
+              "dtype": "B",
+              "default": true
             },
             "disabled": {
               "dtype": "B",
