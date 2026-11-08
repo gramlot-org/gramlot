@@ -24,6 +24,8 @@ export class BagCollectionView {
     /** The absolute Data path of the store: two views over the same path and rowMode share the collection. */
     get path() { return this.#store.path; }
     get rowMode() { return this.#store.rowMode; }
+    /** The key of the store the view reads: two views over the same key show the same collection. */
+    get storeKey() { return this.#store.key; }
     get sortedBy() { return this.#sortedBy; }
     get criteria() { return parseSort(this.#sortedBy); }
     get filter() { return this.#filters.get('search')?.definition ?? null; }

@@ -2,6 +2,7 @@ import {defineComponent} from '@gramlot/gramlot/components';
 import {Container} from './container.js';
 import {randomId} from '../random-id.js';
 import {timeProfile,timeLabel,timeDate,timePeriod} from './chart-time.js';
+import {chartRows} from './chart-fields.js';
 
 const scripts=new WeakMap();
 export function chartTimeLogic(binding){
@@ -31,7 +32,7 @@ export const ChartTimeline=defineComponent({
         connectedCallback(){this.#active=true;this.#connect();}
         #connect(){
             const store=this.#context.sourceNode.rootBuilder.binding.collectionStore(this.#context.attrDatapath('storepath'),this.parameters.rowMode);
-            if(store!==this.#store){this.#release?.();this.#store=store;this.#profile=null;this.#release=store.subscribe(()=>{this.#profile=null;this.#sync();});}
+            if(store.key!==this.#store?.key){this.#release?.();this.#store=store;this.#profile=null;this.#release=store.subscribe(()=>{this.#profile=null;this.#sync();});}
             this.#sync();
         }
         #sync(){
@@ -40,6 +41,8 @@ export const ChartTimeline=defineComponent({
                 const node=this.#context.sourceNode,path=this.parameters.configpath,config=node.getRelativeData(path);
                 const put=(key,value)=>{const old=config.getItem(key);if(old instanceof Date&&value instanceof Date?old.getTime()!==value.getTime():old!==value)node.setRelativeData(`${path}.${key}`,value);};
                 const {timeField:field,timeStep:requested}=this.parameters;
+                // An address without a readable collection leaves the timeline as it is; the chart view shows the error.
+                if(chartRows(this.#store)===null)return;
                 if(!this.#profile||field!==this.#field){this.#profile=timeProfile(this.#store,field);this.#field=field;}
                 const profile=this.#profile,step=requested==='auto'?profile.suggested:requested;
                 put('timeHasClock',profile.hasClock);put('timeUnit',step);

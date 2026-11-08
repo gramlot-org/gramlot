@@ -20,6 +20,19 @@ function measureAction(binding) {
     return chartLogic.get(binding);
 }
 
+/**
+ * The rows of `store`, or null when its address holds no readable collection. Chart fields and the
+ * timeline derive configuration from the rows; the chart view, which reads the same address when it
+ * draws, shows that error in its notice.
+ */
+export function chartRows(store) {
+    try { return store.getRows(); }
+    catch (error) {
+        if (error instanceof TypeError) return null;
+        throw error;
+    }
+}
+
 /** Schema comes from the complete store, independently of any grid filter. */
 export function chartFields(store) {
     const rows = store.getRows();
@@ -45,13 +58,13 @@ export const ChartFields = defineComponent({
         #connectStore() {
             const binding=this.#context.sourceNode.rootBuilder.binding;
             const store=binding.collectionStore(this.#context.attrDatapath('storepath'),this.parameters.rowMode);
-            if(store===this.#store)return;
+            if(store.key===this.#store?.key)return;
             this.#release?.();this.#store=store;this.#signature=undefined;
             this.#release=store.subscribe(()=>this.#sync(store));
             this.#sync(store);
         }
         #sync(store) {
-            if(!store.getRows().length)return;
+            if(!chartRows(store)?.length)return;
             const {fields,measures,dates}=chartFields(store);
             const signature=JSON.stringify([fields,measures,dates]);
             if(signature===this.#signature)return;

@@ -1,6 +1,6 @@
 import {Bag} from '@genrojs/bag';
 import {BagCollectionView} from '../stores/bag-collection-view.js';
-import {BagCollectionStore} from '../stores/bag-collection-store.js';
+import {BagCollectionStore, collectionKey} from '../stores/bag-collection-store.js';
 import {SourceBag} from '@genrojs/builders';
 import {DataRouter} from './router.js';
 import {DataInstaller} from './installation.js';
@@ -159,7 +159,7 @@ export class BindingRuntime {
      */
     collectionStore(path, rowMode) {
         if (this.disposed) throw new Error('BindingRuntime is disposed');
-        const key = `${rowMode}:${path}`;
+        const key = collectionKey(path, rowMode);
         let store = this.#collectionStores.get(key);
         if (!store) {
             store = new BagCollectionStore(this.data, path, rowMode);

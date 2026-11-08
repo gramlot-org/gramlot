@@ -6,6 +6,7 @@ import grid from '../src/components/grid.js';
 import {layoutWindow} from './helpers/layout-window.js';
 import {ChartDataView} from '../src/components/chart-data-view.js';
 import {ChartRenderer} from '../src/components/chart-renderer.js';
+import {optionsAddress} from './helpers/chart-options.js';
 
 const seriesOptions = new Bag({amount:new Bag({axis:'left',color:'#5470c6'}),revenue:new Bag({axis:'left',color:'#5470c6'}),margin:new Bag({axis:'right',color:'#ee6666'})});
 
@@ -28,7 +29,7 @@ for (const mode of ['values','attributes']) test(`chart experiment observes real
     const chartView = new ChartDataView(app.src.binding.collectionStore('model.rows',mode),view);
     const chart = new ChartRenderer(null,chartView.view,{renderer:'svg',ssr:true,width:640,height:320});
     const config = new Bag({chartType:'bar',captionField:'name',valueFields:'amount'});
-    const release = chartView.view.subscribe(() => chart.update(config,seriesOptions)); chart.update(config,seriesOptions);
+    const release = chartView.view.subscribe(() => chart.update(config,optionsAddress(seriesOptions))); chart.update(config,optionsAddress(seriesOptions));
     t.after(()=>{release();chart.dispose();chartView.dispose();app.dispose();window.close();});
     view.applyFilter({value:'^Al',columns:['name'],dtype:'T',locale:'en-GB'});
     assert.match(chart.svg(),/Alpha/);assert.doesNotMatch(chart.svg(),/Beta/);

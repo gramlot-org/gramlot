@@ -21,6 +21,8 @@ export class BagCollectionStore {
     /** The absolute Data path of the collection. */
     get path() { return this.#path; }
     get rowMode() { return this.#rowMode; }
+    /** The key of the store among the page's stores: one store per absolute path and rowMode. */
+    get key() { return collectionKey(this.#path, this.#rowMode); }
     subscribe(listener) {
         this.#listeners.add(listener);
         return () => this.#listeners.delete(listener);
@@ -56,6 +58,9 @@ export class BagCollectionStore {
         return cell?.staticValue;
     }
 }
+
+/** The key of the collection store at the absolute Data `path` read in `rowMode`. */
+export function collectionKey(path, rowMode) { return `${rowMode}:${path}`; }
 
 /**
  * One invalidation protocol at both collection levels; failures cannot skip siblings.

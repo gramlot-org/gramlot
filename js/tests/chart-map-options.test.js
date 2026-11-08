@@ -5,6 +5,7 @@ import {BagCollectionStore} from '../src/stores/bag-collection-store.js';
 import {BagCollectionView} from '../src/stores/bag-collection-view.js';
 import {chartMapOptions} from '../src/components/chart-map-options.js';
 import {ChartRenderer} from '../src/components/chart-renderer.js';
+import {optionsAddress} from './helpers/chart-options.js';
 const geo={type:'FeatureCollection',features:['Alpha','Beta','Missing'].map((name,i)=>({type:'Feature',properties:{name},geometry:{type:'Polygon',coordinates:[[[i,0],[i+.8,0],[i+.8,1],[i,0]]]}}))};
 for(const mode of ['attributes','values'])test(`2D choropleth scale, labels, unique territories and SVG rendering: ${mode}`,()=>{
  const rows=new Bag(),data=new Bag();data.setItem('rows',rows);data.setBackref();
@@ -22,7 +23,7 @@ for(const mode of ['attributes','values'])test(`2D choropleth scale, labels, uni
   const structure=new Bag({chartType:'map',captionField:'territory',mapLabelField:'label',mapValueField:'change',valueFields:'amount'});
   structure.setItem('geoJSON',geo);
   const chart=new ChartRenderer(null,view,{renderer:'svg',ssr:true,width:640,height:400});
-  try{chart.update(structure,new Bag({amount:new Bag({axis:'left',color:'#123456'}),change:new Bag({caption:'Annual change (%)'})}));assert.match(chart.svg(),/Annual change/);}finally{chart.dispose();}
+  try{chart.update(structure,optionsAddress(new Bag({amount:new Bag({axis:'left',color:'#123456'}),change:new Bag({caption:'Annual change (%)'})})));assert.match(chart.svg(),/Annual change/);}finally{chart.dispose();}
   put('c',{territory:'Alpha',label:'A',amount:2,change:2});
   assert.throws(()=>make('amount'),/upstream/);
   view.applyFilter({value:'^Beta',columns:['territory'],dtype:'T',locale:'en-GB'});

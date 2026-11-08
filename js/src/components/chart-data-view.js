@@ -15,10 +15,12 @@ export class ChartDataView {
 
     get view() { return this.#view; }
 
+    /** Follow the filter of `gridView`, a view over the same store key; following the same view again changes nothing. */
     follow(gridView) {
-        if (gridView.path !== this.#view.path || gridView.rowMode !== this.#view.rowMode) {
-            throw new TypeError('Chart and grid must use the same collection');
+        if (gridView.storeKey !== this.#view.storeKey) {
+            throw new TypeError(`Chart and grid must use the same collection: the grid reads ${gridView.storeKey}, the chart ${this.#view.storeKey}`);
         }
+        if (gridView === this.#gridView) return;
         this.#releaseGrid?.();
         this.#gridView = gridView;
         this.#filterSignature = undefined;

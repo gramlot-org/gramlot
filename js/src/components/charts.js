@@ -2,6 +2,7 @@ import {ChartTimeView,timeLabel} from './chart-time.js';
 import {ChartTimeline} from './chart-timeline.js';
 import {ChartPane} from './chart-pane.js';
 import {Bag} from '@gramlot/gramlot';
+import {collectionKey} from '../stores/bag-collection-store.js';
 import {defineCollection, defineComponent} from '@gramlot/gramlot/components';
 import {Container} from './container.js';
 import {gridSearch} from './grid-search.js';
@@ -20,7 +21,7 @@ const ChartView = defineComponent({
     parameters:{sampleMin:{dtype:'R',nullable:true,binding:'read'},sampleMax:{dtype:'R',nullable:true,binding:'read'},sampleStep:{dtype:'R',default:1,binding:'read'},sampleStart:{dtype:'R',default:0,binding:'read'},mapLabelMode:{dtype:'T',default:'value',binding:'read'},mapBarScale:{dtype:'T',default:'zero',binding:'read'},selectedTerritory:{dtype:'T',default:'',binding:'twoWay'},configpath:{dtype:'T'},timeEmpty:{dtype:'T',default:'previous',binding:'read'},timeField:{dtype:'T',default:'',binding:'read'},timeValue:{dtype:'X',nullable:true,binding:'read'},timeStep:{dtype:'T',default:'month',binding:'read'},engine:{dtype:'T',default:'echarts',binding:'read'},mapValueField:{dtype:'T',binding:'read'},mapLabelField:{dtype:'T',binding:'read'},geoJSON:{dtype:'X',nullable:true,binding:'read'},geometryField:{dtype:'T',binding:'read'},secondCaptionField:{dtype:'T',binding:'read'},seriesOptions:{dtype:'X',binding:'read'},storepath:{dtype:'T'}, rowMode:{dtype:'T'}, gridId:{dtype:'T'},
         chartType:{dtype:'T',binding:'read'}, captionField:{dtype:'T',binding:'read'}, valueFields:{dtype:'T',nullable:true,binding:'read'}},
     implementation:Base => class extends Base {
-        #sampleView; #timeView; #revision=0; #active=false; #notice; #context; #grid; #releaseGrid; #view; #releaseView; #renderer; #resize; #options; #optionsSubscription = Symbol('chart-options');
+        #sampleView; #timeView; #revision=0; #active=false; #notice; #context; #grid; #releaseGrid; #view; #releaseView; #renderer; #resize;
         constructor() {
             super();
             this.control.replaceChildren();
@@ -35,88 +36,87 @@ const ChartView = defineComponent({
             this.#resize = new this.ownerDocument.defaultView.ResizeObserver(() => this.#renderer?.resize());
         }
         setSourceContext(context) { this.#context = context; }
+        // seriesOptions is a `^` parameter of dtype 'X': a change inside the options Bag or a replacement
+        // at its address projects the chart again, and the draw reads the options at that address.
         projectAttributes(attrs, adapt) {
             const rest = super.projectAttributes(attrs,adapt);
-            this.#bindOptions();
-            if (this.#active) { this.#connectStore(); this.#render(); }
+            if (this.#active) this.#render();
             return rest;
-        }
-        #bindOptions() {
-            const options = this.parameters.seriesOptions;
-            if (!(options instanceof Bag)) throw new TypeError('seriesOptions requires a Bag');
-            if (options === this.#options) return;
-            this.#options?.unsubscribe(this.#optionsSubscription,{any:true});
-            this.#options = options;
-            options.subscribe(this.#optionsSubscription,{any:() => this.#render()});
         }
         connectedCallback() {
             this.#active = true;
-            this.#bindOptions();
-            const binding = this.#context.sourceNode.rootBuilder.binding;
-            if (this.parameters.gridId) {
-                const target = binding.nodeIds.get(this.parameters.gridId);
-                if (!target || target.nodeTag !== 'grid') throw new TypeError('gridId requires an existing grid nodeId');
-                if (target.absDatapath(target.getAttr('storepath')) !== this.#context.sourceNode.absDatapath(this.parameters.storepath)) {
-                    throw new TypeError('Chart and grid must use the same storepath');
-                }
-                this.#grid = gridSearch(target);
-                this.#releaseGrid = this.#grid.subscribe(() => this.#syncGrid());
-            }
-            this.#connectStore();
             this.#render();
             this.#resize.observe(this.control);
         }
-        #connectStore() {
-            if (this.parameters.rowMode === 'samples') {
-                if (this.parameters.gridId || this.parameters.timeField) throw new TypeError('Sample charts do not use grid filters or temporal playback');
+        /**
+         * Connect the chart to the collection at its storepath and to the grid of gridId, at each draw.
+         * Every link error is thrown here, inside the draw, and shows in the chart notice.
+         */
+        #connect() {
+            const {rowMode,gridId,timeField} = this.parameters;
+            if (rowMode === 'samples') {
+                if (gridId || timeField) throw new TypeError('Sample charts do not use grid filters or temporal playback: remove gridId and timeField, or use rowMode values or attributes');
                 if (!this.#sampleView) {
-                    this.#releaseView?.(); this.#releaseView = null;
-                    this.#view?.dispose(); this.#view = null;
-                    this.#renderer?.dispose(); this.#renderer = null;
+                    this.#release();
                     this.#sampleView = new ChartSampleView();
-                }
-                if (!this.#renderer) {
                     this.#timeView = new ChartTimeView(this.#sampleView);
                     this.#renderer = new ChartRenderer(this.control, this.#timeView, {renderer:'svg', domains:context=>this.#sampleView.domains(context,this.parameters.sampleMin,this.parameters.sampleMax)});
                 }
                 return;
             }
-            if (this.#sampleView) {
-                this.#renderer.dispose(); this.#renderer = null; this.#sampleView = null;
-            }
-            const store = this.#context.sourceNode.rootBuilder.binding.collectionStore(this.#context.attrDatapath('storepath'),this.parameters.rowMode);
+            const path = this.#context.attrDatapath('storepath');
             // The view follows the store address: a replacement at the address keeps it, a new address replaces it.
-            if (this.#view && (this.#view.view.path !== store.path || this.#view.view.rowMode !== store.rowMode)) {
-                this.#releaseView?.(); this.#releaseView = null;
-                this.#view.dispose(); this.#view = null;
-                this.#renderer?.dispose(); this.#renderer = null;
-            }
+            if (this.#sampleView || this.#view && this.#view.view.storeKey !== collectionKey(path,rowMode)) this.#release();
             if (!this.#view) {
                 // The view reads the rows at the address when it is created: an address without rows
                 // shows in the notice, and the Data change that brings them projects the chart again.
-                try { this.#view = new ChartDataView(store); }
-                catch (error) { this.#showError(error); return; }
+                this.#view = new ChartDataView(this.#context.sourceNode.rootBuilder.binding.collectionStore(path,rowMode));
                 this.#timeView = new ChartTimeView(this.#view.view);
                 this.#renderer = new ChartRenderer(this.control,this.#timeView,{renderer:'svg',domains:context=>this.#timeView.domains(context),onTerritorySelect:name=>this.#context.writeParameter('selectedTerritory',name)});
                 this.#releaseView = this.#view.view.subscribe(() => {this.#timeView.invalidateDomains();this.#render();});
             }
-            if (this.#grid) this.#syncGrid();
+            this.#linkGrid();
         }
-        #syncGrid() {
-            const gridView = this.#grid.view;
-            if (!gridView) { this.#view?.detach(); return; }
-            // Grid and chart reach the same store by path; after a change of storepath,
-            // follow only once both consumers read the same address.
-            if (!this.#view || gridView.path !== this.#view.view.path) return;
-            this.#view.follow(gridView);
-            this.#render();
+        /**
+         * gridId names the grid by nodeId, in the page's nodeId map that `#<nodeId>` paths read. The chart
+         * and the grid reach the same store by path and rowMode; the chart view follows the filter of the
+         * grid view while the grid shows, and keeps the last filter when the grid closes or leaves the page.
+         * A gridId that never reached a grid is an error.
+         */
+        #linkGrid() {
+            const gridId = this.parameters.gridId;
+            if (!gridId) { this.#unlinkGrid(); this.#view.detach(); return; }
+            const target = this.#context.sourceNode.rootBuilder.binding.nodeIds.get(gridId);
+            if (!target && this.#grid) { this.#view.detach(); return; }
+            if (!target) throw new TypeError(`gridId '${gridId}': the page has no node with this nodeId`);
+            if (target.nodeTag !== 'grid') throw new TypeError(`gridId '${gridId}': the node is a ${target.nodeTag}, not a grid`);
+            const gridKey = collectionKey(target.absDatapath(target.getAttr('storepath')), target.getAttr('rowMode'));
+            if (gridKey !== this.#view.view.storeKey) {
+                throw new TypeError(`gridId '${gridId}': chart and grid must use the same storepath and rowMode; the grid reads ${gridKey}, the chart ${this.#view.view.storeKey}`);
+            }
+            const search = gridSearch(target);
+            if (search !== this.#grid) {
+                this.#unlinkGrid();
+                this.#grid = search;
+                this.#releaseGrid = search.subscribe(() => this.#render());
+            }
+            const gridView = search.view;
+            if (!gridView) this.#view.detach();
+            // The grid view reaches the new store when the grid draws; its notice draws the chart again.
+            else if (gridView.storeKey === this.#view.view.storeKey) this.#view.follow(gridView);
+        }
+        #unlinkGrid() { this.#releaseGrid?.(); this.#releaseGrid = this.#grid = null; }
+        /** Release the view and the engine of the current store, as a new store or the samples mode require. */
+        #release() {
+            this.#releaseView?.(); this.#view?.dispose(); this.#renderer?.dispose();
+            this.#releaseView = this.#view = this.#renderer = this.#timeView = this.#sampleView = null;
         }
         async #render() {
-            if (!this.#renderer) return;
             const {engine,chartType:typeId,captionField,valueFields,secondCaptionField,geometryField,geoJSON,mapValueField,mapLabelField,mapLabelMode,mapBarScale} = this.parameters;
             const revision=++this.#revision;
-            this.#renderer.invalidate();
             try {
+                this.#connect();
+                this.#renderer.invalidate();
                 // The samples are read at the store address when the chart draws: a value that is not
                 // an array of numbers shows in the notice, as a store address without rows.
                 if (this.#sampleView) this.#sampleView.bind(this.#context.getStaticData(this.#context.attrDatapath('storepath')) ?? [],
@@ -138,13 +138,14 @@ const ChartView = defineComponent({
                 this.control.hidden = false;
                 const structure=new Bag({engine,chartType:typeId,captionField,valueFields,secondCaptionField,geometryField,mapValueField,mapLabelField,mapLabelMode,mapBarScale});
                 structure.setItem('geoJSON',geoJSON);
-                await this.#renderer.update(structure, this.#options);
+                // The final read: the renderer reads seriesOptions at its address where it hands the values to the engine.
+                await this.#renderer.update(structure, {data:this.#context.sourceNode.data, path:this.#context.attrDatapath('seriesOptions')});
                 if(revision!==this.#revision || !this.#renderer)return;
                 this.#notice.hide();
                 this.#renderer.resize();
             }
             catch (error) {
-                if(revision!==this.#revision || !this.#renderer)return;
+                if(revision!==this.#revision)return;
                 this.#showError(error);
             }
         }
@@ -168,11 +169,7 @@ const ChartView = defineComponent({
         disconnectedCallback() {
             this.#active = false;
             this.#revision++;
-            this.#options?.unsubscribe(this.#optionsSubscription,{any:true}); this.#options = null;
-            this.#resize.disconnect(); this.#releaseGrid?.(); this.#releaseView?.();
-            this.#view?.dispose(); this.#renderer?.dispose();
-            this.#sampleView = null;
-            this.#grid = this.#view = this.#renderer = this.#releaseGrid = this.#releaseView = null;
+            this.#resize.disconnect(); this.#unlinkGrid(); this.#release();
         }
     }
 });

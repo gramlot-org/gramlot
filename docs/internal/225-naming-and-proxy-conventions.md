@@ -2780,6 +2780,13 @@ Chart multiple measures — 2026-11-04: owner clarifies “intendo piu curve o p
 
 
 Chart series presentation — 2026-11-04: owner says “procedi” to per-measure axis/color configuration and a separate right Y axis for Units. Private `seriesOptions` follows ECharts series vocabulary; it is a Data Bag keyed by field with `axis` (left/right) and `color` (six-digit hex). Units defaults right, revenue/margin left. The chart subscribes to that Bag and releases subscriptions with its lifecycle. Settings survive measure deselection and bar/line switching. This remains an experimental chart contract.
+Superseded for the chart on 2026-11-08 (plan symbolic-references p5): the chart neither keeps nor
+subscribes to the `seriesOptions` Bag. `seriesOptions='^<path>'` is a subtree registration that projects
+the chart again; `ChartRenderer.update(structure, {data, path})` receives the address and reads the options
+at it, without resolvers, where the context goes to the engine adapter. Store keys: `collectionKey(path,
+rowMode)` is the key of a collection store, `BagCollectionStore.key` and `BagCollectionView.storeKey` expose
+it; `ChartDataView.follow` compares store keys. `chartRows(store)` gives the rows or null when the address
+holds no readable collection, so chart fields and the timeline leave that error to the chart notice.
 
 ### Eager tree search — 2026-11-04
 

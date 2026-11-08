@@ -5,6 +5,7 @@ import {BagCollectionStore} from '../src/stores/bag-collection-store.js';
 import {BagCollectionView} from '../src/stores/bag-collection-view.js';
 import {ChartDataView} from '../src/components/chart-data-view.js';
 import {ChartRenderer} from '../src/components/chart-renderer.js';
+import {optionsAddress} from './helpers/chart-options.js';
 
 const seriesOptions = new Bag({amount:new Bag({axis:'left',color:'#5470c6'}),revenue:new Bag({axis:'left',color:'#5470c6'}),margin:new Bag({axis:'right',color:'#ee6666'})});
 
@@ -18,12 +19,12 @@ for (const mode of ['values','attributes']) test(`ECharts uses filtered collecti
     const chart = new ChartRenderer(null,chartView.view,{renderer:'svg',ssr:true,width:640,height:320});
     const structure = new Bag({chartType:'bar',captionField:'name',valueFields:'amount'});
     try {
-        chart.update(structure,seriesOptions); assert.match(chart.svg(),/Alpha/); assert.match(chart.svg(),/Beta/);
+        chart.update(structure,optionsAddress(seriesOptions)); assert.match(chart.svg(),/Alpha/); assert.match(chart.svg(),/Beta/);
         grid.applyFilter({value:'^Al',columns:['name'],dtype:'T',locale:'en-GB'});
-        chart.update(structure,seriesOptions); assert.match(chart.svg(),/Alpha/); assert.doesNotMatch(chart.svg(),/Beta/);
-        const bars = chart.svg(); structure.setItem('chartType','line'); chart.update(structure,seriesOptions);
+        chart.update(structure,optionsAddress(seriesOptions)); assert.match(chart.svg(),/Alpha/); assert.doesNotMatch(chart.svg(),/Beta/);
+        const bars = chart.svg(); structure.setItem('chartType','line'); chart.update(structure,optionsAddress(seriesOptions));
         assert.notEqual(chart.svg(),bars); assert.match(chart.svg(),/Alpha/);
-        chartView.detach(); grid.disconnect(); store.receiveData({},null); chart.update(structure,seriesOptions);
+        chartView.detach(); grid.disconnect(); store.receiveData({},null); chart.update(structure,optionsAddress(seriesOptions));
         assert.doesNotMatch(chart.svg(),/Beta/);
     } finally { chart.dispose(); chartView.dispose(); grid.disconnect(); }
 });
@@ -37,10 +38,10 @@ for (const mode of ['values','attributes']) test(`date axis and white background
     const chart=new ChartRenderer(null,view,{renderer:'svg',ssr:true,width:640,height:320});
     const config=new Bag({chartType:'line',captionField:'date',valueFields:'amount'});
     try {
-        chart.update(config,seriesOptions); const svg=chart.svg(); assert.match(svg,/<svg/);assert.match(svg,/fill="#ffffff"/);
+        chart.update(config,optionsAddress(seriesOptions)); const svg=chart.svg(); assert.match(svg,/<svg/);assert.match(svg,/fill="#ffffff"/);
         rows.setItem('r2',mode==='values'?new Bag({date:'not a date',amount:8}):null,mode==='attributes'?{date:'not a date',amount:8}:{});
         store.receiveData({},null);
-        assert.throws(()=>chart.update(config,seriesOptions),/consistent text, numeric/);
+        assert.throws(()=>chart.update(config,optionsAddress(seriesOptions)),/consistent text, numeric/);
     } finally {chart.dispose();view.disconnect();}
 });
 
@@ -50,17 +51,17 @@ for (const type of ['bar','line']) test(`multiple ${type} series, removal and em
     const renderer=new ChartRenderer(null,view,{renderer:'svg',ssr:true,width:640,height:320});
     const config=new Bag({chartType:type,captionField:'name',valueFields:'revenue,margin'});
     try {
-        renderer.update(config,seriesOptions);
+        renderer.update(config,optionsAddress(seriesOptions));
         const both=renderer.svg();
         assert.match(both,/revenue/); assert.match(both,/margin/);
-        config.setItem('valueFields','margin'); renderer.update(config,seriesOptions);
+        config.setItem('valueFields','margin'); renderer.update(config,optionsAddress(seriesOptions));
         assert.doesNotMatch(renderer.svg(),/revenue/); assert.match(renderer.svg(),/margin/);
         config.setItem('valueFields',null);
-        assert.throws(()=>renderer.update(config,seriesOptions),{name:'ChartSyntaxError',message:/needs at least one measure/});
+        assert.throws(()=>renderer.update(config,optionsAddress(seriesOptions)),{name:'ChartSyntaxError',message:/needs at least one measure/});
         config.setItem('valueFields','revenue,missing');
-        assert.throws(()=>renderer.update(config,seriesOptions),/Missing seriesOptions/);
+        assert.throws(()=>renderer.update(config,optionsAddress(seriesOptions)),/Missing seriesOptions/);
         config.setItem('valueFields','revenue,revenue');
-        assert.throws(()=>renderer.update(config,seriesOptions),/distinct/);
+        assert.throws(()=>renderer.update(config,optionsAddress(seriesOptions)),/distinct/);
     } finally {renderer.dispose();view.disconnect();}
 });
 
@@ -72,17 +73,17 @@ test('per-measure colors and axes update without changing the data', () => {
     const config=new Bag({chartType:'bar',captionField:'name',valueFields:'revenue,units'});
     const options=new Bag({revenue:new Bag({axis:'left',color:'#5470c6'}),units:new Bag({axis:'right',color:'#ee6666'})});
     try {
-        renderer.update(config,options);
+        renderer.update(config,optionsAddress(options));
         assert.match(renderer.svg(),/#ee6666/);
         assert.match(renderer.svg(),/>20<\/text>/);
-        options.setItem('units.color','#b43cde'); renderer.update(config,options);
+        options.setItem('units.color','#b43cde'); renderer.update(config,optionsAddress(options));
         assert.match(renderer.svg(),/#b43cde/);assert.doesNotMatch(renderer.svg(),/#ee6666/);
-        options.setItem('units.axis','left');renderer.update(config,options);
+        options.setItem('units.axis','left');renderer.update(config,optionsAddress(options));
         assert.match(renderer.svg(),/revenue, units/);
         assert.equal(rows.getNode('r0').getAttr('units'),20);
-        options.setItem('units.axis','invalid');assert.throws(()=>renderer.update(config,options),/left\/right/);
+        options.setItem('units.axis','invalid');assert.throws(()=>renderer.update(config,optionsAddress(options)),/left\/right/);
         options.setItem('units.axis','right');options.setItem('units.color','invalid');
-        assert.throws(()=>renderer.update(config,options),/hex color/);
+        assert.throws(()=>renderer.update(config,optionsAddress(options)),/hex color/);
     } finally {renderer.dispose();view.disconnect();}
 });
 
@@ -91,7 +92,7 @@ for (const type of ['area','stackedArea','stackedBar','horizontalBar','pie','don
     const view=new BagCollectionView(new BagCollectionStore(data,'rows','attributes'));view.connect();
     const renderer=new ChartRenderer(null,view,{renderer:'svg',ssr:true,width:640,height:320});
     try {
-        renderer.update(new Bag({chartType:type,captionField:'x',valueFields:'amount'}),seriesOptions);
+        renderer.update(new Bag({chartType:type,captionField:'x',valueFields:'amount'}),optionsAddress(seriesOptions));
         assert.match(renderer.svg(),/<path/);
     } finally {renderer.dispose();view.disconnect();}
 });
@@ -103,12 +104,12 @@ for(const type of ['pie','donut']) test(`${type} rejects a second measure withou
     const chart=new ChartRenderer(null,view,{renderer:'svg',ssr:true,width:640,height:320});
     const config=new Bag({chartType:type,captionField:'name',valueFields:'revenue,margin'});
     try {
-        assert.throws(()=>chart.update(config,seriesOptions),{name:'ChartSyntaxError',message:/takes one measure; received 2: revenue, margin/});
+        assert.throws(()=>chart.update(config,optionsAddress(seriesOptions)),{name:'ChartSyntaxError',message:/takes one measure; received 2: revenue, margin/});
         assert.equal(config.getItem('valueFields'),'revenue,margin');
         const paths=svg=>[...svg.matchAll(/ d="([^"]+)"/g)].map(match=>match[1]).filter(path=>/A\d{2}/.test(path));
-        config.setItem('valueFields','revenue');chart.update(config,seriesOptions);
+        config.setItem('valueFields','revenue');chart.update(config,optionsAddress(seriesOptions));
         const revenue=paths(chart.svg());
-        config.setItem('valueFields','margin');chart.update(config,seriesOptions);
+        config.setItem('valueFields','margin');chart.update(config,optionsAddress(seriesOptions));
         assert.notDeepEqual(paths(chart.svg()),revenue);
     } finally {chart.dispose();view.disconnect();}
 });
