@@ -8,7 +8,6 @@
     "vizabiBubble": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
