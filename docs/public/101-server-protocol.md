@@ -59,7 +59,10 @@ Block ID: **GC-101-010**.
   **owner** (§135) and returns the bootstrap: the page ID, the HTML document and its
   nonce.
 - The HTML document has a `<title>` from `Page.title`, an import map that maps
-  `@gramlot/gramlot/page` to the runtime URL, the root `div` (`gramlot-root` by
+  `@gramlot/gramlot/page` to the runtime URL (and, for each declared core collection
+  of the page such as `typst`, `@gramlot/gramlot/collections/<name>` to the
+  collection module, so a page module that imports it for `gramlots` loads in the
+  browser), the root `div` (`gramlot-root` by
   default) and a module script that imports `PageBootstrap` and runs it with
   `{config, resources}`. The import map and the module script carry the same nonce.
 - `config` is `{pageId, rpcUrl, closeUrl, rootId, capabilities, nameSyntax}`, plus

@@ -51,14 +51,14 @@ const markdown = await build({absWorkingDir:path(''), entryPoints:[path('src/mar
 const staging = await mkdtemp(join(tmpdir(),'gramlot-core-collections-'));
 try {
     const standardNames = JSON.parse(await readFile(path('../src/gramlot/collections/standard.json'), 'utf8'));
-    // typst leaves the standard set (gramlot-org/gramlot#84): a page declares it in Page.gramlots.
-    const declaredNames = ['typst'];
+    // Collections outside the standard set (gramlot-org/gramlot#84): a page declares them in Page.gramlots.
+    const declaredNames = JSON.parse(await readFile(path('../src/gramlot/collections/declared.json'), 'utf8'));
     const names = [...standardNames, ...declaredNames, 'selection_trial'];
     const config = {output:'../src', collections:names.map(name=>({
         entry:name === 'selection_trial' ? './src/experiments/selection-trial.js' : `./src/components/${name}.js`,pythonPackage:`gramlot.collections.${name}`}))};
     const result = await generate({protocolVersion:1,operation:'build',
         configPath:path('gramlot.build.json'),projectRoot:path(''),stagingDirectory:staging,config,externals:[]});
-    const standardDescriptors = [];
+    const standardDescriptors = [], declaredDescriptors = [];
     await rm(path('dist/collections'),{recursive:true,force:true});await mkdir(path('dist/collections'),{recursive:true});
     for (const record of result.collections) {
         const prepared = join(staging,...record.pythonPackage.split('.'));
@@ -75,11 +75,15 @@ try {
             grammar:JSON.parse(await readFile(join(prepared,record.grammar),'utf8')),
             buildId:record.buildId, module:url+record.module, dependencies:record.dependencies,
             css:record.css.map(file=>url+file)};
-        if (standardNames.includes(record.name)) standardDescriptors.push(descriptor);
-        // The JavaScript counterpart of the Python descriptor gramlot.collections.<name>.mygramlot.
-        else await writeFile(path(`dist/collections/${record.name}.js`), '// Generated from the shipped collection inventory; do not edit.\nexport default '+JSON.stringify(descriptor)+';\n');
+        if (standardNames.includes(record.name)) { standardDescriptors.push(descriptor); continue; }
+        declaredDescriptors.push(descriptor);
+        // The JavaScript counterpart of the Python descriptor gramlot.collections.<name>.mygramlot: the same object
+        // as the entry of declaredCollections, which the hosts read through collectionAssets().
+        await writeFile(path(`dist/collections/${record.name}.js`), '// Generated from the shipped collection inventory; do not edit.\n' +
+            `import {declaredCollections} from '../declared-collections.js';\nexport default declaredCollections.find(collection => collection.name === ${JSON.stringify(record.name)});\n`);
     }
     await writeFile(path('dist/standard-collections.js'), '// Generated from the shipped collection inventory; do not edit.\nexport const standardCollections = '+JSON.stringify(standardDescriptors)+';\n');
+    await writeFile(path('dist/declared-collections.js'), '// Generated from the shipped collection inventory; do not edit.\nexport const declaredCollections = '+JSON.stringify(declaredDescriptors)+';\n');
 } finally { await rm(staging,{recursive:true,force:true}); }
 // The minified runtime is served in deploy and in development without GRAMLOT_DEV=DEBUG.
 await build({...runtimeOptions['gramlot.min.js'], outfile: path('dist/gramlot.min.js')});

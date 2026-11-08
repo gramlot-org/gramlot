@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 # Core collections outside the standard set: a page declares them in Page.gramlots (GC-340 §050).
-DECLARED = ('typst',)
+DECLARED = tuple(json.loads((ROOT / 'src/gramlot/collections/declared.json').read_text()))
 COLLECTIONS = ('inputs', 'buttons', 'layout', 'tree', 'editors', 'typst', 'uploads', 'grid', 'chat', 'grouplets', 'charts', 'vizabi', 'audio', 'drawing')
 from widget_reference_content import COLLECTION_GUIDES
 from widget_manual_content import COLLECTION_EXPLANATIONS

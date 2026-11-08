@@ -2,7 +2,7 @@
 
 from urllib.parse import quote
 from copy import deepcopy
-from ..collection import collection_graph, page_collections, standard_collections
+from ..collection import collection_graph, declared_collections, page_collections, standard_collections
 
 import inspect
 import json
@@ -437,6 +437,7 @@ class GramlotServer:
         resources = load_order({**resolved, "css": [*self.theme_css(cls), *collection_css, *resolved["css"]]})
         collection_records = [{"name": c.name, "url": _prefixed(prefix, self.collection_url(c, c.module)),
                                "buildId": c.build_id} for c in selected]
+        declared = {c.name for c in declared_collections()}
         self._prune()
         if len(self._pages) >= self.max_pages:
             raise ServerCapacity("Page registry capacity reached")
@@ -489,7 +490,10 @@ class GramlotServer:
                                                 "@gramlot/gramlot/components": _prefixed(prefix, self.runtime_url),
                                                 "@gramlot/gramlot/markdown": _prefixed(prefix, self.markdown_url),
                                                 **{"@gramlot/collections/" + quote(item["name"], safe="-_.!~*'()"):
-                                                   item["url"] for item in collection_records}},
+                                                   item["url"] for item in collection_records},
+                                                # A page module imports a declared core collection for gramlots.
+                                                **{"@gramlot/gramlot/collections/" + item["name"]: item["url"]
+                                                   for item in collection_records if item["name"] in declared}},
                                     **({"integrity": {entry["url"]: entry["integrity"] for entry in self.libraries.values()
                                                       if entry["url"] is not None and entry["format"] != "style"}}
                                        if self.library_source == "cdn" else {})}),

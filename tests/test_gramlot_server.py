@@ -298,7 +298,12 @@ def test_typst_is_declared_by_the_page_not_standard():
     server = memory_server(TypstPage)
     assert "typst" not in {c.name for c in server.collections}
     assert typst in server.page_collections(DerivedPage)
-    page_id = open_page(server)
-    result = call(server, page_id, "source", "main")
+    opened = asyncio.run(server.open_page("/"))
+    # The page module imports the descriptor for gramlots; in the browser the specifier names the collection module.
+    import json, re
+    imports = json.loads(re.search(r'<script type="importmap"[^>]*>(.*?)</script>', opened.html, re.S)[1])["imports"]
+    assert imports["@gramlot/gramlot/collections/typst"] == imports["@gramlot/collections/typst"]
+    assert "@gramlot/gramlot/collections/inputs" not in imports
+    result = call(server, opened.page_id, "source", "main")
     assert "error" not in result
     assert result["value"].nodes[0].node_tag == "typstPreview"

@@ -3011,7 +3011,7 @@ packages. `standard_collections` (Python) and generated `standardCollections`
 `collections/standard.json` inventory drives both distributions. Experimental
 selection_trial is outside the standard set; no Invoice integration is included.
 
-`standardCollectionAssets()` exposes the packaged standard entry URL/file pairs
+`standardCollectionAssets()` (since 2026-11-08 `collectionAssets()`, below) exposes the packaged standard entry URL/file pairs
 through the existing server assets API; adapters retain artifact hash validation.
 The generated JavaScript inventory lives in `dist/standard-collections.js`.
 
@@ -3138,12 +3138,27 @@ xmldom in the browser runtime, typst out of the standard set). Names applied:
   `gramlot.collections.typst`, by the Python/JS spelling row of §010; the default
   export takes the place of the Python attribute `mygramlot`, as the generated
   `descriptor.js` files of gramlot-examples do.
-- The build list `declaredNames` (`js/scripts/build-runtime.mjs`) and the tuple
-  `DECLARED` (`scripts/generate_widget_reference.py`) name the core collections
-  that a page declares, after the Page attribute `gramlots`.
+- The inventory `src/gramlot/collections/declared.json`, the Python function
+  `declared_collections()` (`gramlot.collection`), the build list `declaredNames`
+  (`js/scripts/build-runtime.mjs`) and the tuple `DECLARED`
+  (`scripts/generate_widget_reference.py`) name the core collections that a page
+  declares, after the Page attribute `gramlots`; they mirror `standard.json`,
+  `standard_collections()` and `standardNames`.
+- The bootstrap import map entry `@gramlot/gramlot/collections/<name>` repeats the
+  package export path of the descriptor; in the browser it points at the collection
+  module, as `@gramlot/gramlot/page` points at the runtime.
+- `collectionAssets()` (`@gramlot/gramlot/server`) replaces `standardCollectionAssets()`
+  without alias: it lists the entry files of every collection the core packages,
+  standard and declared, so a JS host serves a declared `typst` as Python reads it
+  from its package. The name drops the qualifier that no longer holds, following the
+  "Helper modules" row of §010 (named after what it holds). The generated inventory
+  `js/dist/declared-collections.js` with export `declaredCollections` follows
+  `dist/standard-collections.js` and `standardCollections`; it is internal.
 - The esbuild namespace `absent-package` and the table `absentPackages`
   (`js/scripts/runtime-options.mjs`) follow the `shared-module` namespace and the
   `sharedModules` table: named after what they hold.
 
-Chosen in implementation; the package export is public API and waits for owner
-confirmation.
+Chosen in implementation; the package export, `collectionAssets()`,
+`declared_collections()` and the import map entry are public API and wait for owner
+confirmation. gramlot-js-server applies the same
+`absentPackagePlugin` to the window runtime of its exports.

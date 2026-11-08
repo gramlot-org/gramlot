@@ -477,8 +477,20 @@ export class Page extends BasePage {
 ```
 
 The default export of `@gramlot/gramlot/collections/typst` is the JavaScript
-descriptor of the same prepared artifact as the Python `mygramlot`. The Python
+descriptor of the same prepared artifact as the Python `mygramlot`. In the browser,
+where the page module is imported for its Logic, the bootstrap import map points the
+same specifier at the collection module. The inventory of these collections is
+`collections/declared.json` beside `standard.json`; Python lists their descriptors
+with `gramlot.collection.declared_collections()`, as `standard_collections()` lists
+the standard set. The Python
 `IdePage` declares `typst` for its Typst preview.
+
+Hosts serve only the collections of the page graph. Python reads a declared
+collection from its package (`GramlotCollection.resource`). JavaScript hosts read
+the entry files of the collections packaged with the core, standard and declared,
+from `collectionAssets()` of `@gramlot/gramlot/server`; custom collections come from
+the host `assets`. Exports therefore carry the typst WebAssembly only for pages that
+declare it.
 
 <a id="gc-340-055"></a>
 ## 055 · What the host and bootstrap do for you

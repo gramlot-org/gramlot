@@ -123,8 +123,13 @@ descriptor. Built-in prepared collections use the same selection shape.
 outside the standard set (owner, 2026-11-08, #84). A page declares it: Python
 `from gramlot.collections.typst import mygramlot as typst`, `gramlots = [typst]`;
 JS `import typst from '@gramlot/gramlot/collections/typst'`, `static gramlots =
-[typst]` (default export: the JS descriptor of the same artifact). Declarations
-accumulate along the class hierarchy. Python `IdePage` declares it.
+[typst]` (default export: the JS descriptor of the same artifact; in the browser the
+import map points the specifier at the collection module). Inventory:
+`collections/declared.json`; Python `declared_collections()` beside `standard_collections()`. Declarations
+accumulate along the class hierarchy. Python `IdePage` declares it. Hosts serve
+only the page graph: Python reads a declared collection from its package, JS hosts
+from `collectionAssets()` (`@gramlot/gramlot/server`, standard and declared core
+collections); exports carry the typst WebAssembly only for pages that declare it.
 
 `gramlot.getCollection(name)` returns the page's activated component collection,
 or `undefined`. Optional tools can pass that object to their own Gramlot instance
