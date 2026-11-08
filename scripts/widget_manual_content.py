@@ -275,7 +275,7 @@ pane.codeMirror(value="^.content", language="typst", height="360px")
 pane.typstPreview(value="^.content", filename="report.pdf", height="480px")
 ```
 
-Initialize `.content` as text. Include both collections in the environment Page when using this pair; importing a collection descriptor alone does not activate it. See [collection setup](340-components-and-collections-guide.md#gc-340-050) and [the Typst contract](105-components.md#gc-105-145).
+Initialize `.content` as text. `editors` is a standard collection; `typst` is not, so the page declares it in `Page.gramlots` (`from gramlot.collections.typst import mygramlot as typst`, then `gramlots = [typst]`). See [declaring typst](340-components-and-collections-guide.md#gc-340-050-typst) and [the Typst contract](105-components.md#gc-105-145).
 
 ### Updates, diagnostics and resource limits
 

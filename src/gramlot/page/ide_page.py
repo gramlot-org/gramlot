@@ -1,10 +1,12 @@
 """A Source-composed IDE for host-backed text documents."""
 from genro_bag import Bag
+from gramlot.collections.typst import mygramlot as typst
 from .frame_page import FramePage
 from .filesystem import file_system_tree
 
 
 class IdePage(FramePage):
+    gramlots = [typst]
     title = "Gramlot IDE"
     shell_id = "gramlot-ide"
     datapath = "ide"

@@ -4,7 +4,8 @@
 standard collection to every site's Page base, in Python and JavaScript. Do not
 import `gramlot.collections.*` or repeat `gramlots = [...]` for these collections.
 Write component declarations directly. Explicit imports and collection declarations
-are for custom additions. A missing standard component is a server/package defect,
+are for custom additions and for `typst`, the core collection outside the standard
+set (§050). A missing standard component is a server/package defect,
 not a reason for a one-off page import. The packaged inventory drives grammar and
 bootstrap resources; it does not scan installed packages. External engines load on
 first use in hosted pages. File exports embed the required resource bytes.
@@ -445,6 +446,39 @@ Prepared built-in collections are automatic for every GramlotServer site: pages
 import only `Page`, not `inputs`, `layout` or `grid`. The host integration serves
 the matching verified prepared artifacts. A grammar-only JSON file
 is not a substitute for this package descriptor in `Page.gramlots`.
+
+<a id="gc-340-050-typst"></a>
+The core ships one prepared collection outside the standard set: `typst`
+(`typstPreview`). Its compiler is a WebAssembly module of about 41 MiB, so a page
+that uses it declares it (owner, 2026-11-08, gramlot-org/gramlot#84). The
+declaration accumulates along the class hierarchy (§065), so a base class can
+declare it once for the pages that derive from it.
+
+```python
+from gramlot import Page as GramlotPage
+from gramlot.collections.typst import mygramlot as typst
+
+
+class Page(GramlotPage):
+    gramlots = [typst]
+
+    def main(self, root):
+        root.typstPreview(value="^document.source", height="360px")
+```
+
+```javascript
+import {Page as BasePage} from '@gramlot/gramlot/page';
+import typst from '@gramlot/gramlot/collections/typst';
+
+export class Page extends BasePage {
+    static gramlots = [typst];
+    main(root) { root.typstPreview({value: '^document.source', height: '360px'}); }
+}
+```
+
+The default export of `@gramlot/gramlot/collections/typst` is the JavaScript
+descriptor of the same prepared artifact as the Python `mygramlot`. The Python
+`IdePage` declares `typst` for its Typst preview.
 
 <a id="gc-340-055"></a>
 ## 055 · What the host and bootstrap do for you

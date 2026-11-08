@@ -281,3 +281,24 @@ def test_standard_components_without_page_or_site_collection_declarations():
     assert len(result["value"].nodes) == 2
     assert "gramlots" not in StandardPage.__dict__
     assert "selection_trial" not in {c.name for c in server.collections}
+
+
+def test_typst_is_declared_by_the_page_not_standard():
+    from gramlot.collections.typst import mygramlot as typst
+
+    class TypstPage(Page):
+        gramlots = [typst]
+
+        def main(self, root):
+            root.typstPreview(value="^source")
+
+    class DerivedPage(TypstPage):
+        pass
+
+    server = memory_server(TypstPage)
+    assert "typst" not in {c.name for c in server.collections}
+    assert typst in server.page_collections(DerivedPage)
+    page_id = open_page(server)
+    result = call(server, page_id, "source", "main")
+    assert "error" not in result
+    assert result["value"].nodes[0].node_tag == "typstPreview"

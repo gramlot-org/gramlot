@@ -706,3 +706,19 @@ test('ordinary pages receive standard component grammars without page declaratio
     assert.equal(Object.hasOwn(StandardPage,'gramlots'),false);
     assert.ok(!server.collections.some(item=>item.name==='selection_trial'));
 });
+
+test('typst is outside the standard set: a page declares it in Page.gramlots (#84)', async () => {
+    const {default: typst} = await import('@gramlot/gramlot/collections/typst');
+    class TypstPage extends EmptyPage {
+        static gramlots = [typst];
+        main(root) { root.typstPreview({value:'^source'}); }
+    }
+    class DerivedPage extends TypstPage {}
+    const server = memoryServer(TypstPage);
+    assert.ok(!server.collections.some(item=>item.name==='typst'));
+    assert.deepEqual(server.pageCollections(DerivedPage).filter(item=>item.name==='typst'), [typst]);
+    const {pageId} = await server.openPage('/');
+    const result = await main(server,pageId);
+    assert.equal(result.error, undefined);
+    assert.equal(result.value.getNodes()[0].nodeTag, 'typstPreview');
+});
