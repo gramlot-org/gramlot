@@ -9,7 +9,7 @@ export const ChatMessages = defineComponent({
             super();
             const style = this.ownerDocument.createElement('style');
             style.textContent = `:host{height:100%;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
-                .control-box{padding:20px max(20px,calc((100% - 880px)/2))}
+                .control-box{padding:var(--gramlot-chat-padding,20px max(20px,calc((100% - 880px)/2)))}
                 ::slotted(article){box-sizing:border-box;margin:0 0 24px;padding:16px 20px;border-radius:18px;
                     line-height:1.6;overflow-wrap:anywhere;background:var(--gramlot-chat-assistant-background,
                     color-mix(in srgb,var(--gramlot-surface-subtle,#eee) 88%,#628099))}

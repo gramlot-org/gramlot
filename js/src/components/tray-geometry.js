@@ -85,3 +85,38 @@ export function contactFraction(start,end,obstacles,bounds) {
     }
     return search(0,1);
 }
+
+/**
+ * Even grid for autoArrange, in item order. With fit, each card fills its cell
+ * (keeping aspectRatio when set), then grows to minWidth/minHeight. Without fit,
+ * each card keeps its width/height. The column count is the one whose cards fit
+ * their cells with the largest total area (fit), or the largest scale margin.
+ */
+export function arrangeGrid({width,height,gap,fit,items}) {
+    let best=null;
+    for(let columns=1;columns<=items.length;columns++) {
+        const rows=Math.ceil(items.length/columns);
+        const cellWidth=Math.max(0,(width-gap*(columns+1))/columns),cellHeight=Math.max(0,(height-gap*(rows+1))/rows);
+        const sizes=items.map(item=>fit ? fitCell(item,cellWidth,cellHeight) : {width:item.width,height:item.height});
+        const margin=Math.min(...sizes.map(size=>Math.min(cellWidth/size.width,cellHeight/size.height)));
+        const area=sizes.reduce((sum,size)=>sum+size.width*size.height,0);
+        const fits=margin>=1-EPSILON;
+        const better=!best || (!fit ? margin>best.margin+EPSILON
+            : fits ? !best.fits||area>best.area+EPSILON : !best.fits&&margin>best.margin+EPSILON);
+        if(better)best={columns,rows,cellWidth,cellHeight,sizes,margin,area,fits};
+    }
+    if(!best)return [];
+    const {columns,cellWidth,cellHeight,sizes}=best;
+    return sizes.map((size,index)=>{
+        const row=Math.floor(index/columns),column=index%columns;
+        // An incomplete last row is centered horizontally.
+        const inRow=Math.min(columns,items.length-row*columns),offset=(columns-inRow)*(cellWidth+gap)/2;
+        return {left:offset+gap+column*(cellWidth+gap)+(cellWidth-size.width)/2,
+            top:gap+row*(cellHeight+gap)+(cellHeight-size.height)/2,width:size.width,height:size.height};
+    });
+}
+function fitCell({aspectRatio,minWidth,minHeight},cellWidth,cellHeight) {
+    if(aspectRatio==null)return {width:Math.max(cellWidth,minWidth),height:Math.max(cellHeight,minHeight)};
+    const width=Math.max(Math.min(cellWidth,cellHeight*aspectRatio),minWidth,minHeight*aspectRatio);
+    return {width,height:width/aspectRatio};
+}

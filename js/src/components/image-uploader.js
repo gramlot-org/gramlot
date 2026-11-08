@@ -13,6 +13,7 @@ export const ImageUploader = defineComponent({
         storepath:{dtype:'T'}, contextPath:{dtype:'T',nullable:true,default:null}, operation:{dtype:'T', nullable:true, default:null},
         cropWidth:{dtype:'L', default:256}, cropHeight:{dtype:'L', default:256},
         outputWidth:{dtype:'L', default:512}, outputHeight:{dtype:'L', default:512},
+        screenCapture:{dtype:'B', default:true},
         disabled:{dtype:'B', default:false, binding:'read'}, onComplete:{dtype:'T', nullable:true, default:null}},
     implementation: Base => class extends Base {
         #context; #store; #engine; #original; #dialog; #pending; #generation = 0; #projected; #written;
@@ -162,7 +163,7 @@ export const ImageUploader = defineComponent({
             if (value) { this.preview.src = value; this.preview.hidden = false; } else { this.preview.removeAttribute('src'); this.preview.hidden = true; }
             const state = this.#pending && this.#store.getItem(this.#pending.id)?.getItem('status');
             const busy = Boolean(this.#pending || this.#cameraToken !== null || this.#screenRequest);
-            this.screenButton.hidden = !this.ownerDocument.defaultView.navigator.mediaDevices?.getDisplayMedia;
+            this.screenButton.hidden = this.parameters.screenCapture === false || !this.ownerDocument.defaultView.navigator.mediaDevices?.getDisplayMedia;
             this.screenButton.disabled = Boolean(this.parameters.disabled || busy);
             this.cancelScreenButton.hidden = !this.#screenRequest;
             this.cameraButton.hidden = !this.#cameraAvailable;

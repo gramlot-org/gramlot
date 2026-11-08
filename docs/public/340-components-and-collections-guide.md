@@ -171,6 +171,13 @@ They do not themselves implement parsing or a new editor commit policy.
 property of the inner control. It is not a universal DOM selector. A different
 base must implement its own projection contract.
 
+`childParameter: true` offers the parameter to the parent. When the parent
+declares a child parameter of the same name in `childParameters`, its
+`projectChild` receives the child's value, or the child's `default` when the
+Source omits it. The child keeps the value for its own projection. A tile that
+declares `aspectRatio` (16/9 by default) this way gives a trayPane parent its
+shape. Without such a parent the flag has no effect.
+
 `qualification: 'intl_str'` marks text for localization metadata. It does not
 translate the string. Nor should a component author assume that an arbitrary
 metadata key automatically becomes validation: for example, label positions have

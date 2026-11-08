@@ -215,7 +215,13 @@ export class HtmlElement {
         const parent = node.parentNode;
         if (parent?._getMeta('gramlot_component')?.childParameters) {
             const Parent = element.ownerDocument.defaultView.customElements.get(parent._getMeta('render_tag'));
-            attrs = Parent.projectChild(record.presentation, attrs, {
+            // A child parameter marked childParameter is offered to the parent's child parameter of the same name;
+            // the child keeps it for its own projection.
+            const childParameters = parent._getMeta('gramlot_component').childParameters;
+            const offered = Object.entries(this.definition(node).meta.gramlot_component?.parameters ?? {})
+                .filter(([name, spec]) => spec.childParameter && Object.hasOwn(childParameters, name))
+                .map(([name, spec]) => [name, attrs[name] ?? spec.default]);
+            const projected = Parent.projectChild(record.presentation, {...attrs, ...Object.fromEntries(offered)}, {
                 label: node.label,
                 adapt,
                 invoke: (name, code, keywords) => this.invokeScript(node, name, code, keywords),
@@ -225,6 +231,7 @@ export class HtmlElement {
                 writeParameter: (name, value) => this.writeParameter(node, name, value),
                 remove: () => node.parentBag.popNode(node.label),
             });
+            attrs = {...projected, ...Object.fromEntries(offered.filter(([name]) => attrs[name] != null).map(([name]) => [name, attrs[name]]))};
         }
         if (record.labelbox) {
             record.labelbox.box.style.visibility = '';

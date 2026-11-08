@@ -35,6 +35,7 @@ import * as bagCollectionStore from './stores/bag-collection-store.js';
 import * as bagCollectionView from './stores/bag-collection-view.js';
 import * as bases from './components/bases.js';
 import * as choices from './components/choices.js';
+import * as container from './components/container.js';
 import * as choiceFieldStyles from './components/choice-field-styles.js';
 import * as fieldState from './components/field-state.js';
 import * as gridFormulas from './components/grid-formulas.js';
@@ -68,6 +69,7 @@ export const sharedModules = Object.freeze({
     './stores/bag-collection-view.js': bagCollectionView,
     './components/bases.js': bases,
     './components/choices.js': choices,
+    './components/container.js': container,
     './components/choice-field-styles.js': choiceFieldStyles,
     './components/field-state.js': fieldState,
     './components/grid-formulas.js': gridFormulas,

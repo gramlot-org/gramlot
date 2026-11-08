@@ -3125,3 +3125,44 @@ of the adapter option it serves; `library_origins`/`libraryOrigins` is a read-on
 property. No proxy is added: components read the source from their document. Chosen
 in implementation; the exports and the server option are public API and wait for
 owner confirmation.
+
+### Tray automatic arrangement — 2026-11-06
+
+Owner d-auto-arrange/d-auto-size (2026-11-06): trayPane `autoArrange` (B, twoWay,
+false), `autoSize` (B, read, false); child `aspectRatio` (N, nullable, null = free).
+camelCase like gridStep. Writes existing left/top (width/height with autoSize); no
+new row field. User move/resize writes autoArrange=false via writeParameter
+(sourceContext component). Private pure `arrangeGrid` in tray-geometry.js. Cell gap
+reuses gridStep (implementation choice, open for owner review); no gap parameter.
+
+### Window without title bar — 2026-11-06
+
+floatingPane `titlebar` (B, read, true) names the part it controls
+(`WindowSurface.titlebar`, `.titlebar`); false omits it and the framePane top region
+moves the window. `collapsed`/`maximized` also apply when docked. Internal
+`--collapsed-height`, internal WindowSurface option `content`. Open for owner review.
+
+### Detachable window — 2026-11-06
+
+floatingPane `detachable` (B, read, false) as in tabContainer/borderContainer;
+pulling a docked window out detaches it, double click on the bar toggles docked.
+`docked` becomes twoWay like `collapsed`. Internal `#written`, `DETACH_DISTANCE`
+(6 px). chatMessages custom property `--gramlot-chat-padding`. Open for owner review.
+
+### Child parameter offered to the parent — 2026-11-06
+
+Parameter-spec key `childParameter`: html.js offers the child's value (or default)
+to a parent child parameter of the same name; the child keeps it. Opt-in.
+Open for owner review.
+
+### Drawing surface without an image — 2026-11-06
+
+drawingPane `aspectRatio` (R, nullable, null): surface ratio without an image;
+`toolbar` (B, read, true): false omits the tool menu. Custom property
+`--gramlot-drawing-background`. Open for owner review.
+
+### Exports for collections prepared outside the core — 2026-11-08
+
+`@gramlot/gramlot/components` exports `Container`; `@gramlot/gramlot` exports
+`randomId`; `components/container.js` joins `sharedModules`. First consumer:
+gramlot-webrtc. Public API awaiting owner confirmation.

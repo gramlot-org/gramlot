@@ -3130,3 +3130,79 @@ of the adapter option it serves; `library_origins`/`libraryOrigins` is a read-on
 property. No proxy is added: components read the source from their document. Chosen
 in implementation; the exports and the server option are public API and wait for
 owner confirmation.
+
+### Tray automatic arrangement — 2026-11-06
+
+Owner decisions d-auto-arrange and d-auto-size (meeting-room proposal, 2026-11-06):
+trayPane parameter `autoArrange` (B, twoWay, default false) and `autoSize`
+(B, read, default false); child option `aspectRatio` (N, nullable, default null =
+free) beside `minWidth`/`minHeight`. Parameter names follow the camelCase
+component parameters gridStep/gridVisible/rotationStep. Arrangement writes the
+existing `left`/`top` (and `width`/`height` with autoSize) row fields; no new row
+field. A user move or resize writes `autoArrange=false` through the existing
+writeParameter; trayPane becomes a sourceContext component for this. The private
+pure helper `arrangeGrid` lives in `tray-geometry.js` beside `contactFraction`.
+The cell gap reuses `gridStep` (implementation choice open for owner review); no
+gap parameter is introduced.
+
+### Window without title bar — 2026-11-06
+
+Owner decision (RtcMeeting tiles, 2026-11-06): one bar per tile window; floatingPane
+gets an option to omit its own title bar, the framePane top region then moves the
+window, and `collapsed`/`maximized` also apply to a docked floatingPane.
+floatingPane `titlebar` (B, read, default true) reuses the existing name of the part
+it controls: `WindowSurface.titlebar`, the window element's `titlebar` getter and
+the `.titlebar` CSS class. Boolean component parameters name the part they show
+without a prefix, like grid `rowHeaders`; `false` omits it. The default
+keeps today's behaviour. The internal `--collapsed-height` custom property follows
+the unprefixed private variables of the border engine (`--region-splitter`); the
+internal `content` option of WindowSurface names the window's framePane child.
+The parameter name is an implementation choice open for owner review.
+
+### Detachable window — 2026-11-06
+
+floatingPane `detachable` (B, read, default false) reuses the existing boolean
+of the same behaviour in tabContainer children and borderContainer regions
+(“can be pulled out into a floating window”); `false` keeps today's behaviour.
+Pulling a docked window out by its bar detaches it; double click on the bar
+toggles docked. While docked the title bar is hidden, so the framePane top region
+is the move handle (as with `titlebar=false`). `docked` becomes twoWay like
+`collapsed` and `maximized`: the window writes the state the user gives it.
+Undocking also writes `width`/`height`, and a geometry value the window wrote
+itself is not treated as a new placement when it comes back through Data
+(internal `#written`). The 6 px threshold is the internal constant
+`DETACH_DISTANCE`. chatMessages gains the custom property `--gramlot-chat-padding`,
+named like `--gramlot-chat-bubble`. Owner decisions of the meeting work,
+2026-11-06; the names are implementation choices open for owner review.
+
+### Child parameter offered to the parent — 2026-11-06
+
+A component parameter spec may carry the key `childParameter`, derived from the
+existing descriptor field `childParameters`. html.js offers the child's value (or
+its default when the Source omits it) to a parent child parameter of the same
+name; the child keeps the value for its own projection. A tile with a default
+`aspectRatio` thus gives a trayPane parent its shape without the author writing
+it. The flag is opt-in because floatingPane `closable`/`title` defaults would
+otherwise change trayPane and tab behaviour. Implementation choice open for owner
+review.
+
+### Drawing surface without an image — 2026-11-06
+
+drawingPane `aspectRatio` (R, nullable, default null) sets the ratio
+(width/height) of the 1000 units high surface used when there is no image, so a
+transparent drawing layer can match a video below it. `toolbar` (B, read, default
+true) omits the tool menu when false; the drawing state still exists. Both follow
+the camelCase parameter names of the components (`aspectRatio` as in trayPane
+children). The custom property `--gramlot-drawing-background` follows
+`--gramlot-chat-padding`. Implementation choices open for owner review.
+
+### Exports for collections prepared outside the core — 2026-11-08
+
+A collection prepared in another package can import only what `@gramlot/gramlot`
+exports. `@gramlot/gramlot/components` now also exports `Container`, the base of
+container components, and `@gramlot/gramlot` exports `randomId`. The exported
+names are the existing module names. `components/container.js` joins
+`sharedModules`, since the components entry now imports it and the generator
+refuses a collection that bundles a runtime module missing from the table.
+First consumer: the gramlot-webrtc collection. Public API awaiting owner
+confirmation.

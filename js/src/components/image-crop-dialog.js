@@ -1,9 +1,14 @@
-/** Private, reusable framing dialog. It returns a Blob and never replaces the source. */
+/**
+ * Private, reusable framing dialog. It returns a Blob and never replaces the source. The Crop control switches to
+ * a rectangle selection on the whole image (ImageRectangleSelection); Apply frames the selected area and returns
+ * to the frame, rotation 0.
+ */
 import {ImageCropSession} from './image-crop.js';
+import {ImageRectangleSelection, RECTANGLE_SELECTION_STYLE} from './image-rectangle-selection.js';
 
 export class ImageCropDialog {
     #document; #image; #session; #options; #dialog; #frameImage; #minZoom; #maxZoom;
-    #resolve; #settled = false; #events; #frame; #points = new Map(); #gesture; #trackpadGesture;
+    #resolve; #settled = false; #events; #frame; #points = new Map(); #gesture; #trackpadGesture; #selection = null;
     constructor({state, document, original, image, sourceWidth, sourceHeight, width, height,
         x = 0, y = 0, zoom = 1, rotate = 0, outputWidth, outputHeight, type, quality}) {
         this.#document = document;
@@ -49,6 +54,11 @@ export class ImageCropDialog {
             .gramlot-image-crop-dialog button.primary{background:var(--gramlot-action,#3766b5);border-color:var(--gramlot-action,#3766b5);color:#fff}
             .gramlot-image-crop-dialog button:disabled{opacity:.55;cursor:default}
             .gramlot-image-crop-dialog [role=alert]:not(:empty){color:var(--gramlot-error,#ae2020);margin-top:.75rem}
+            .gramlot-image-crop-dialog.cropping{width:min(100vw - 2rem, 760px)}
+            .gramlot-image-crop-dialog [hidden]{display:none}
+            .gramlot-image-crop-dialog .crop-rectangle-view{height:min(60vh, 460px);padding:0 24px}
+            .gramlot-image-crop-dialog .crop-crop-handle{cursor:pointer;font-size:18px}
+            ${RECTANGLE_SELECTION_STYLE}
             @media(max-width:380px){.gramlot-image-crop-dialog{width:calc(100vw - 8px);max-width:calc(100vw - 8px)}
                 .gramlot-image-crop-dialog .crop-heading,.gramlot-image-crop-dialog .crop-body{padding-left:8px;padding-right:8px}
                 .gramlot-image-crop-dialog .crop-actions{padding:12px 8px}}
@@ -75,11 +85,14 @@ export class ImageCropDialog {
         };
         const rotateHandle = handle('rotate','Rotate image','↻');
         const zoomHandle = handle('zoom','Zoom image','↘');
+        // Crop is a command, not a drag gesture: it has no data-crop-handle.
+        const cropHandle = handle('crop','Crop: select an area on the whole image','⬚');
+        delete cropHandle.dataset.cropHandle;
         const viewport = document.createElement('div'); viewport.className = 'crop-viewport'; viewport.append(frame);
         const position = document.createElement('div'); position.className = 'crop-position';
         position.style.width = `${width + 42}px`;
         const handles = document.createElement('div'); handles.className = 'crop-handles';
-        handles.append(rotateHandle,zoomHandle); position.append(viewport,handles);
+        handles.append(rotateHandle,zoomHandle,cropHandle); position.append(viewport,handles);
         const hint = document.createElement('p'); hint.className = 'crop-help';
         hint.textContent = 'Drag to move · pinch to zoom';
         const body = document.createElement('div'); body.className = 'crop-body'; body.append(position);
@@ -89,7 +102,21 @@ export class ImageCropDialog {
         const cancel = document.createElement('button'); cancel.type = 'button'; cancel.textContent = 'Cancel';
         const confirm = document.createElement('button'); confirm.type = 'button'; confirm.textContent = 'Confirm'; confirm.className = 'primary';
         const buttons = document.createElement('div'); buttons.className = 'crop-action-buttons'; buttons.append(reset,cancel,confirm);
-        actions.append(hint,buttons); body.append(error); dialog.append(style,heading,body,actions);
+        actions.append(hint,buttons); body.append(error);
+        // The Crop view: the rectangle selection and its own actions, in place of the frame and the dialog actions.
+        const rectangleView = document.createElement('div'); rectangleView.className = 'crop-rectangle-view'; rectangleView.hidden = true;
+        const rectangleActions = document.createElement('div'); rectangleActions.className = 'crop-actions'; rectangleActions.hidden = true;
+        const rectangleHint = document.createElement('p'); rectangleHint.className = 'crop-help'; rectangleHint.textContent = 'Drag the area or its handles';
+        const back = document.createElement('button'); back.type = 'button'; back.textContent = 'Back';
+        const apply = document.createElement('button'); apply.type = 'button'; apply.textContent = 'Apply'; apply.className = 'primary';
+        const rectangleButtons = document.createElement('div'); rectangleButtons.className = 'crop-action-buttons'; rectangleButtons.append(back,apply);
+        rectangleActions.append(rectangleHint,rectangleButtons);
+        dialog.append(style,heading,body,actions,rectangleView,rectangleActions);
+        const showRectangle = shown => {
+            dialog.classList.toggle('cropping', shown);
+            body.hidden = shown; actions.hidden = shown; rectangleView.hidden = !shown; rectangleActions.hidden = !shown;
+            subtitle.textContent = shown ? 'Select the area to keep.' : 'Move and adjust the image within the frame.';
+        };
         this.#events = new document.defaultView.AbortController();
         const listen = {signal:this.#events.signal};
         frame.addEventListener('pointerdown', event => this.#down(event), listen);
@@ -124,6 +151,19 @@ export class ImageCropDialog {
             this.#session.setTransform(value); this.#paint();
         }, listen);
         reset.addEventListener('click', () => { this.#cancelGesture(); this.#session.reset(); this.#paint(); }, listen);
+        cropHandle.addEventListener('click', () => {
+            this.#cancelGesture();
+            this.#selection ??= new ImageRectangleSelection({document,image,sourceWidth,sourceHeight,width,height,signal:this.#events.signal});
+            if (!this.#selection.element.isConnected) rectangleView.append(this.#selection.element);
+            showRectangle(true);
+            this.#selection.show(this.#session.transform);
+            this.#selection.element.querySelector('.crop-selection').focus();
+        }, listen);
+        back.addEventListener('click', () => { showRectangle(false); this.#frame.focus(); }, listen);
+        apply.addEventListener('click', () => {
+            this.#session.setTransform(this.#selection.transform); this.#paint();
+            showRectangle(false); this.#frame.focus();
+        }, listen);
         cancel.addEventListener('click', () => this.cancel(), listen);
         dialog.addEventListener('cancel', event => { event.preventDefault(); this.cancel(); }, listen);
         dialog.addEventListener('close', () => { if (!this.#settled) this.cancel(); }, listen);
