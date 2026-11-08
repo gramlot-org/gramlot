@@ -16,8 +16,13 @@ export const RowActions = defineComponent({
         #context;
         connectedCallback() { this.slot = 'row-actions'; this.hidden = true; }
         setSourceContext(context) { this.#context = context; }
-        setRowContext(item, path) { this.#rowContext = {item, path}; this.#refresh(); }
-        getRowContext() { return this.#rowContext; }
+        /** Keep the row's tree `path`; `read` gives the row's item at each use, or null when the row is gone. */
+        setRowContext(path, read) { this.#rowContext = {path, read}; this.#refresh(); }
+        getRowContext() {
+            if (!this.#rowContext) return null;
+            const {path, read} = this.#rowContext, item = read();
+            return item ? {item, path} : null;
+        }
         clearRowContext() { this.#rowContext = null; this.hidden = true; }
         projectAttributes(attrs, adapt) {
             const rest = super.projectAttributes(attrs, adapt);
@@ -26,12 +31,13 @@ export const RowActions = defineComponent({
             return rest;
         }
         #refresh() {
-            if (!this.#rowContext || !this.parameters.actionState) return;
+            const context = this.getRowContext();
+            if (!context || !this.parameters.actionState) return;
             for (const action of this.children) {
                 const code = action.getAttribute('rowAction');
                 if (code === null) continue;
                 const presentation = this.#context.callLogic(this.parameters.actionState,
-                    {...this.#rowContext, action: code, state: this.parameters.state});
+                    {...context, action: code, state: this.parameters.state});
                 if (!presentation || typeof presentation.hidden !== 'boolean' ||
                     typeof presentation.icon !== 'string' || typeof presentation.title !== 'string') {
                     throw new TypeError('rowActions actionState must return hidden, icon and title');
@@ -87,7 +93,8 @@ export const Tree = defineComponent({
         #checksEnabled = false;
         #pathsEnabled = false;
         #checkedBags = new WeakMap();
-        // Expansion and checks are kept by tree path (row keys from the store root), never by BagNode.
+        // Expansion, checks, loading, errors and resolutions are kept by tree path (row keys from
+        // the store root), never by BagNode.
         #checkedNodes = new Set();
         #loading = new Set();
         #errors = new Map();
@@ -98,7 +105,7 @@ export const Tree = defineComponent({
         #searchVersion = 0;
         #searchOpen = new Set();
         #searchClosed = new Set();
-        #searchAttempted = new WeakSet();
+        #searchAttempted = new Set();
         #searching = false;
         #resolutions = new Map();
 
@@ -157,7 +164,9 @@ export const Tree = defineComponent({
             for (const element of event.composedPath()) {
                 const row = this.#dragRows.get(element);
                 if (!row) continue;
-                const {item, path, caption} = row;
+                const {path, caption, favorite} = row;
+                const item = this.#rowItem(path, favorite);
+                if (!item) return null;
                 const rect = element.getBoundingClientRect();
                 const fraction = rect.height ? (event.clientY - rect.top) / rect.height : 0.5;
                 const placement = fraction < 0.25 ? 'before' : fraction > 0.75 ? 'after' : 'inside';
@@ -204,7 +213,7 @@ export const Tree = defineComponent({
         #resetSearch() {
             clearTimeout(this.#searchTimer); this.#searchTimer = null;
             this.#searchVersion++; this.#searching = false;
-            this.#searchAttempted = new WeakSet(); this.#searchOpen.clear(); this.#searchClosed.clear();
+            this.#searchAttempted.clear(); this.#searchOpen.clear(); this.#searchClosed.clear();
         }
         #opened(path) { return this.#searchText ? this.#searchOpen.has(path) : this.#expanded.has(path); }
         async #searchBranches() {
@@ -222,8 +231,8 @@ export const Tree = defineComponent({
                     if (node.attr.loop === true) continue;
                     if (node.resolver !== null && !this.parameters.resolveLazy) continue;
                     const path = prefix ? `${prefix}.${node.label}` : node.label;
-                    if (node.resolver !== null && node.resolver.expired && !this.#searchAttempted.has(node)) {
-                        this.#searchAttempted.add(node);
+                    if (node.resolver !== null && node.resolver.expired && !this.#searchAttempted.has(path)) {
+                        this.#searchAttempted.add(path);
                         await this.#resolve(node, path, true);
                     }
                     if (!current()) return;
@@ -295,18 +304,12 @@ export const Tree = defineComponent({
                 seen.delete(bag);
             };
             visit(store, '', []);
-            if (this.parameters.searchEager && this.parameters.resolveLazy && this.#searchText && this.#searchTimer === null && !this.#searching && [...items.values()].some(({node}) =>
-                node.attr.loop !== true && node.resolver !== null && node.resolver.expired && !this.#searchAttempted.has(node))) {
+            if (this.parameters.searchEager && this.parameters.resolveLazy && this.#searchText && this.#searchTimer === null && !this.#searching && [...items].some(([path, {node}]) =>
+                node.attr.loop !== true && node.resolver !== null && node.resolver.expired && !this.#searchAttempted.has(path))) {
                 void this.#searchBranches();
             }
             const actionBar = this.#rowActions();
-            const actionContext = actionBar ? actionBar.getRowContext() : null;
-            if (actionContext) {
-                const favorite = actionContext.item.getAttr('favoriteEntry') === true;
-                const valid = favorite ? this.parameters.favorites instanceof Bag && this.parameters.favorites.getNodes().includes(actionContext.item)
-                    : items.get(actionContext.path)?.node === actionContext.item;
-                if (!valid) actionBar.clearRowContext();
-            }
+            if (actionBar && actionBar.getRowContext() === null) actionBar.clearRowContext();
             if (this.#pathsEnabled && this.parameters.checkedPaths !== this.#checkedPaths) {
                 const initial = this.#checkedPaths === undefined;
                 this.#checkedPaths = this.parameters.checkedPaths;
@@ -324,17 +327,17 @@ export const Tree = defineComponent({
                     const item = items.get(path);
                     if (!item || item.node.attr.checked === true || item.node.attr.checked === 'disabled:on' ||
                         item.node.attr.checked === 'disabled:off') continue;
-                    let bag = item.node.parentBag;
-                    while (bag && !loaded.includes(bag)) bag = bag.parentNode?.parentBag;
-                    if (bag) this.#check(item.node, path, true, false);
+                    const parts = path.split('.');
+                    if (parts.slice(1).some((_, index) => loaded.includes(parts.slice(0, index + 1).join('.')))) {
+                        this.#check(item.node, path, true, false);
+                    }
                 }
                 if (checksChanged || paths.length) this.#publishChecked(true);
             } else if (checksChanged) {
                 this.#publishChecked(true);
             }
-            const identities = new Set([...items.values()].map(item => item.node));
             for (const path of this.#expanded) if (!items.has(path)) this.#expanded.delete(path);
-            for (const node of this.#errors.keys()) if (!identities.has(node)) this.#errors.delete(node);
+            for (const path of this.#errors.keys()) if (!items.has(path)) this.#errors.delete(path);
             const requested = this.parameters.selectedPath;
             let reveal = null;
             if (requested !== this.#requestedPath) {
@@ -371,20 +374,20 @@ export const Tree = defineComponent({
                     const entry = this.ownerDocument.createElement('li');
                     entry.className = `node ${branch ? 'branch' : 'leaf'}`;
                     entry.setAttribute('part', `node ${branch ? 'branch' : 'leaf'}`);
-                    entry.classList.toggle('loading', this.#loading.has(node));
-                    entry.classList.toggle('error', this.#errors.has(node));
-                    entry.setAttribute('aria-busy', String(this.#loading.has(node)));
+                    entry.classList.toggle('loading', this.#loading.has(path));
+                    entry.classList.toggle('error', this.#errors.has(path));
+                    entry.setAttribute('aria-busy', String(this.#loading.has(path)));
                     entry.setAttribute('role', 'treeitem');
                     entry.setAttribute('aria-selected', String(selected === path));
                     entry.classList.toggle('selected', selected === path);
                     entry.dataset.path = path;
                     entry.tabIndex = -1;
                     const row = this.ownerDocument.createElement('div'); row.className = 'row';
-                    row.addEventListener('pointerenter', () => this.#showRowActions(row, node, path));
-                    entry.addEventListener('focus', () => this.#showRowActions(row, node, path));
+                    row.addEventListener('pointerenter', () => this.#showRowActions(row, path, false));
+                    entry.addEventListener('focus', () => this.#showRowActions(row, path, false));
                     row.draggable = this.parameters.draggable;
                     row.setAttribute('part', `row ${branch ? 'branch-row' : 'leaf-row'}${selected === path ? ' selected-row' : ''}`);
-                    if (this.#errors.has(node)) row.title = String(this.#errors.get(node));
+                    if (this.#errors.has(path)) row.title = String(this.#errors.get(path));
                     const expander = this.ownerDocument.createElement(branch ? 'button' : 'span');
                     expander.setAttribute('part', branch ? 'expander' : 'spacer');
                     if (branch) {
@@ -405,7 +408,7 @@ export const Tree = defineComponent({
                     const caption = this.ownerDocument.createElement('span'); caption.className = 'caption';
                     const badge = this.ownerDocument.createElement('span'); badge.className = 'badge';
                     badge.setAttribute('part', 'badge');
-                    this.#dragRows.set(row, {item: node, path, caption});
+                    this.#dragRows.set(row, {path, caption, favorite: false});
                     caption.setAttribute('part', 'caption');
                     const icon = this.ownerDocument.createElement('span');
                     icon.className = `icon ${branch ? 'branch-icon' : 'leaf-icon'}`;
@@ -486,7 +489,7 @@ export const Tree = defineComponent({
                         const nodeClasses = this.#classes(node.attr.node_class ?? '');
                         entry.className = ['node', branch ? 'branch' : 'leaf', ...nodeClasses,
                             ...(selected ? ['selected'] : []), ...(branch ? [opened ? 'opened' : 'closed'] : []),
-                            ...(this.#loading.has(node) ? ['loading'] : []), ...(this.#errors.has(node) ? ['error'] : [])].join(' ');
+                            ...(this.#loading.has(path) ? ['loading'] : []), ...(this.#errors.has(path) ? ['error'] : [])].join(' ');
                         entry.setAttribute('part', ['node', branch ? 'branch' : 'leaf', ...nodeClasses].join(' '));
                         const customIcon = !check && this.parameters.getIconClass !== null;
                         const iconClasses = customIcon ? this.#classes(this.#call('getIconClass', keywords))
@@ -527,7 +530,7 @@ export const Tree = defineComponent({
                         for (const update of branchSync.values()) update();
                         this.#tabStop(path);
                     };
-                    if (branch) { branchSync.set(node, sync); sync(); } else present();
+                    if (branch) { branchSync.set(path, sync); sync(); } else present();
                     row.addEventListener('click', () => this.#select(path));
                     entry.addEventListener('keydown', event => {
                         if (event.target !== entry) return;
@@ -572,17 +575,17 @@ export const Tree = defineComponent({
                         });
                     const match = [caption.textContent, ...metadata].some(text => text.toLowerCase().includes(this.#searchText));
                     if (match) matches.push(caption);
-                    if (match || this.#errors.has(item.node) || this.#loading.has(item.node)) {
-                        visible.add(item.node);
+                    if (match || this.#errors.has(path) || this.#loading.has(path)) {
+                        visible.add(path);
                         const parts = path.split('.');
-                        for (const [index, ancestor] of item.ancestors.entries()) {
+                        for (const index of item.ancestors.keys()) {
                             const ancestorPath = parts.slice(0, index + 1).join('.');
-                            visible.add(ancestor);
+                            visible.add(ancestorPath);
                             if (!this.#searchClosed.has(ancestorPath)) this.#searchOpen.add(ancestorPath);
                         }
                     }
                 }
-                for (const [path, row] of this.#rows) row.hidden = !visible.has(items.get(path).node);
+                for (const [path, row] of this.#rows) row.hidden = !visible.has(path);
                 for (const update of branchSync.values()) update();
                 const status = this.ownerDocument.createElement('div'); status.className = 'search-status'; status.setAttribute('role', 'status');
                 status.textContent = this.#searching ? 'Searching…' : this.#errors.size ? 'Some branches could not be searched. Expand them to retry.' : matches.length ? '' : 'No matches';
@@ -641,9 +644,9 @@ export const Tree = defineComponent({
                 caption.textContent = node.getAttr(this.parameters.internalNames ? 'fieldpath' : 'fullcaption');
                 favoriteRow.title = node.getAttr('fieldpath');
                 favoriteRow.draggable = this.parameters.draggable;
-                this.#dragRows.set(favoriteRow, {item: node, path, caption});
-                favoriteRow.addEventListener('pointerenter', () => this.#showRowActions(favoriteRow, node, path));
-                entry.addEventListener('focus', () => this.#showRowActions(favoriteRow, node, path));
+                this.#dragRows.set(favoriteRow, {path, caption, favorite: true});
+                favoriteRow.addEventListener('pointerenter', () => this.#showRowActions(favoriteRow, path, true));
+                entry.addEventListener('focus', () => this.#showRowActions(favoriteRow, path, true));
                 favoriteRow.addEventListener('click', () => this.#selectFavorite(path));
                 entry.addEventListener('keydown', event => {
                     if (event.target !== entry) return;
@@ -669,36 +672,32 @@ export const Tree = defineComponent({
             const current = () => this.isConnected && this.#selectionVersion === version &&
                 this.parameters.selectedPath === requested && this.#selectedPath === requested;
             const parts = requested.split('.');
-            let bag = this.storeBag;
-            for (const [index, part] of parts.slice(0, -1).entries()) {
+            for (const index of parts.slice(0, -1).keys()) {
                 const path = parts.slice(0, index + 1).join('.');
                 if (!current()) return;
-                const node = bag.getNode(part);
+                const node = this.#rowNode(path);
                 if (!node) return;
                 if (node.resolver !== null && !this.parameters.resolveLazy) return;
                 if (node.resolver === null && !(node.staticValue instanceof Bag)) return;
-                if (!current() || bag.getNode(part) !== node) return;
                 this.#expand(path);
                 this.#schedule();
                 if (node.resolver !== null && !(node.staticValue instanceof Bag)) await this.#resolve(node, path);
-                if (!current() || bag.getNode(part) !== node || !(node.staticValue instanceof Bag)) return;
-                bag = node.staticValue;
             }
-            if (current() && bag.getNode(parts.at(-1))) this.#schedule();
+            if (current() && this.#rowNode(requested)) this.#schedule();
         }
         #check(node, path, value, publish) {
             if (node.attr.checked === 'disabled:on' || node.attr.checked === 'disabled:off') return;
-            const children = this.#resolutions.get(node) ?? node.getValue();
-            if (children instanceof Promise && !this.#resolutions.has(node)) {
-                this.#errors.delete(node);
+            const children = this.#resolutions.get(path) ?? node.getValue();
+            if (children instanceof Promise && !this.#resolutions.has(path)) {
+                this.#errors.delete(path);
                 const pending = children.catch(error => {
-                    this.#errors.set(node, error);
+                    this.#errors.set(path, error);
                     this.#expanded.delete(path);
                 }).finally(() => {
-                    if (this.#resolutions.get(node) === pending) this.#resolutions.delete(node);
+                    if (this.#resolutions.get(path) === pending) this.#resolutions.delete(path);
                     this.#schedule();
                 });
-                this.#resolutions.set(node, pending);
+                this.#resolutions.set(path, pending);
             }
             if (this.parameters.checkChildren && children instanceof Bag) {
                 if (node.resolver !== null) this.#checkedBags.set(node, children);
@@ -707,8 +706,10 @@ export const Tree = defineComponent({
             node.setAttr({checked: this.parameters.checkChildren && children instanceof Bag && children.length
                 ? this.#checkStatus(children) : value});
             if (this.parameters.checkChildren) {
-                const root = this.storeBag.parentNode;
-                for (let parent = node.parentBag.parentNode; parent && parent !== root; parent = parent.parentBag.parentNode) {
+                // The ancestors are the prefixes of the tree path, from the nearest one up.
+                const parts = path.split('.');
+                for (let index = parts.length - 1; index > 0; index--) {
+                    const parent = this.#rowNode(parts.slice(0, index).join('.'));
                     parent.setAttr({checked: this.#checkStatus(parent.staticValue)});
                 }
             }
@@ -741,14 +742,14 @@ export const Tree = defineComponent({
                 let childChanged = false;
                 if (node.resolver !== null && this.#checkedBags.get(node) !== children) {
                     this.#checkedBags.set(node, children);
-                    loaded.push(children);
+                    loaded.push(path);
                     if (typeof node.attr.checked === 'boolean') {
                         this.#applyChecked(children, path, node.attr.checked);
                         childChanged = true;
                     }
                 } else if (typeof node.attr.checked === 'boolean' && children.getNodes().some(child => !this.#checkedNodes.has(`${path}.${child.label}`))) {
                     this.#applyChecked(children, path, node.attr.checked, true);
-                    loaded.push(children);
+                    loaded.push(path);
                     childChanged = true;
                 }
                 childChanged = this.#syncChecked(children, path, ancestors, loaded, visited) || childChanged;
@@ -810,11 +811,11 @@ export const Tree = defineComponent({
             if (bars.length > 1) throw new Error('tree accepts one rowActions bar');
             return bars[0] ?? null;
         }
-        #showRowActions(row, item, path) {
+        #showRowActions(row, path, favorite) {
             const bar = this.#rowActions();
             if (!bar || bar.contains(this.ownerDocument.activeElement)) return;
             const hostBox = this.getBoundingClientRect(), rowBox = row.getBoundingClientRect();
-            bar.setRowContext(item, path);
+            bar.setRowContext(path, () => this.#rowItem(path, favorite));
             bar.style.position = 'absolute';
             bar.style.top = `${rowBox.top - hostBox.top}px`;
             bar.style.left = bar.parameters.position === 'start' ? `${rowBox.left - hostBox.left}px` : 'auto';
@@ -857,15 +858,32 @@ export const Tree = defineComponent({
             this.#expanded.add(path);
         }
         #resolve(node, path, searching = false) {
-            if (this.#resolutions.has(node)) return this.#resolutions.get(node);
-            this.#loading.add(node); this.#errors.delete(node); this.#schedule();
+            if (this.#resolutions.has(path)) return this.#resolutions.get(path);
+            this.#loading.add(path); this.#errors.delete(path); this.#schedule();
             const pending = (async () => {
                 try { await Promise.resolve().then(() => node.getValue()); }
-                catch (error) { this.#errors.set(node, error); if (!searching) this.#expanded.delete(path); }
-                finally { this.#loading.delete(node); this.#resolutions.delete(node); this.#schedule(); }
+                catch (error) { this.#errors.set(path, error); if (!searching) this.#expanded.delete(path); }
+                finally { this.#loading.delete(path); this.#resolutions.delete(path); this.#schedule(); }
             })();
-            this.#resolutions.set(node, pending);
+            this.#resolutions.set(path, pending);
             return pending;
+        }
+        /** The node at tree `path`, read from the store without running resolvers; null when absent. */
+        #rowNode(path) {
+            let bag = this.storeBag, node = null;
+            for (const label of path.split('.')) {
+                if (!(bag instanceof Bag)) return null;
+                node = bag.getNode(label);
+                if (!node) return null;
+                bag = node.staticValue;
+            }
+            return node;
+        }
+        /** The item of a drawn row: the store node at `path`, or the favorite whose originalPath is `path`. */
+        #rowItem(path, favorite) {
+            if (!favorite) return this.#rowNode(path);
+            const favorites = this.parameters.favorites;
+            return favorites instanceof Bag ? favorites.getNodes().find(node => node.getAttr('originalPath') === path) ?? null : null;
         }
         #tabStop(path) {
             const visible = this.#visible(), target = typeof path === 'string' || path == null

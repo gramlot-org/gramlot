@@ -250,6 +250,25 @@ test('a shared Source rowActions bar invokes a controller with row context witho
     assert.equal(bar.getRowContext(), null);
 });
 
+test('rowActions reads its row item by tree path at each use', async t => {
+    const calls = [];
+    class Logic { inspect(source, args) { calls.push(args); } }
+    const f = fixture(t, {logic: Logic, actions: bar => bar.button({id: 'inspect-path', action: 'inspect'})});
+    await tick();
+    const bar = f.host.querySelector('gramlot-row-actions');
+    f.row('other').querySelector('.row').dispatchEvent(new f.window.Event('pointerenter'));
+    const previous = f.store.getNode('other');
+    // The node at the hovered path is replaced by a new node before the tree draws again.
+    f.store.popNode('other'); f.store.setItem('other', 'D', {caption: 'Replaced'}); await tick();
+    assert.notEqual(f.store.getNode('other'), previous);
+    assert.equal(bar.hidden, false);
+    assert.equal(bar.getRowContext().item, f.store.getNode('other'));
+    f.window.document.getElementById('inspect-path').shadowRoot.querySelector('button').click();
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].item.getAttr('caption'), 'Replaced');
+    assert.equal(calls[0].path, 'other');
+});
+
 test('rowActions uses focused row context for a named action', async t => {
     const calls = [];
     class Logic { inspect(source, args) { calls.push(args); } }
