@@ -135,13 +135,20 @@ try {
             // macOS WebKit retains overlay scrollbars even with an explicit scrollbar width.
             console.log(`${engine.name()}: measured scrollbar gutter ${(await geometry()).gutter}px`);
             // Resize, hiding/revealing and RTL must use the same CSS sizing contract.
+            // A row selected before hiding must still be selected, by key, after the grid is shown again.
+            const key = await first.locator('tbody tr[data-row]').first().getAttribute('data-row');
+            await first.locator(`tbody tr[data-row="${key}"] td`).first().click(); await settle();
+            assert.equal(await first.locator(`tbody tr[data-row="${key}"]`).getAttribute('aria-selected'), 'true', 'row is selected before hiding');
             await first.evaluate(host => {host.style.width = '473.5px'; host.style.direction = 'rtl';});
             await settle();
             await first.locator('.body-viewport').evaluate(element => {element.scrollLeft = -160;});
             await settle(); aligned(await geometry());
             await first.evaluate(host => {host.style.display = 'none';}); await settle();
             await first.evaluate(host => {host.style.display = '';}); await settle(); aligned(await geometry());
-            assert.equal(await rowHandle.evaluate(row => row.isConnected), true);
+            // Rows may be unmounted and redrawn; the user-visible state must survive hide and show.
+            assert.equal(await first.locator('tbody tr[data-row]').first().getAttribute('data-row'), key, 'first row key is present after show');
+            assert.equal(await first.locator('.body-viewport').evaluate(element => element.scrollLeft), -160, 'horizontal scroll is kept');
+            assert.equal(await first.locator(`tbody tr[data-row="${key}"]`).getAttribute('aria-selected'), 'true', 'selection is kept');
             await first.evaluate(host => {host.style.width = ''; host.style.direction = '';}); await settle();
             // Mixed relative/fixed widths and live structure changes must align as well.
             await page.evaluate(() => {
