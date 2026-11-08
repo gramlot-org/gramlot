@@ -38,6 +38,24 @@ for (const [kind, make] of [['page runtime', () => page().builder], ['builder wi
     });
 }
 
+for (const [kind, make] of [['page runtime', () => page().builder], ['builder without runtime', () => new GramlotBuilder()]]) {
+    test(`rowField is the inverse of #ROW.<field>, shared cases, ${kind}`, () => {
+        const builder = make();
+        build(builder.root, FIXTURE.tree);
+        for (const item of FIXTURE.row_fields) {
+            const read = () => builder.source.getNode(item.node).rowField(item.path);
+            if (item.error) assert.throws(read, error => error.message.includes(item.error), `${item.node}: ${item.path}`);
+            else assert.deepEqual(read(), item.expect && {row:item.expect[0], field:item.expect[1]}, `${item.node}: ${item.path}`);
+        }
+    });
+
+    test(`workspaceDatapath is the private area of a node, also without _workspace, shared cases, ${kind}`, () => {
+        const builder = make();
+        build(builder.root, FIXTURE.tree);
+        for (const item of FIXTURE.workspace_datapaths) assert.equal(builder.source.getNode(item.node).workspaceDatapath, item.expect, item.node);
+    });
+}
+
 test('stringHash is the legacy hash', () => {
     assert.equal(stringHash('page.ws3'), 858339576);
     assert.equal(stringHash('é€😀abc'.repeat(50)), 2111466368);

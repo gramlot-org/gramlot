@@ -33,6 +33,22 @@ def test_symbolic_resolution(builder, case):
         assert node.abs_datapath(case["path"], row=case.get("row")) == case["expect"]
 
 
+@pytest.mark.parametrize("case", FIXTURE["row_fields"], ids=lambda case: f"{case['node']}:{case['path']}")
+def test_row_field_is_the_inverse_of_row(builder, case):
+    node = builder.source.get_node(case["node"])
+    if "error" in case:
+        with pytest.raises((KeyError, ValueError), match=case["error"]):
+            node.row_field(case["path"])
+    else:
+        expect = case["expect"]
+        assert node.row_field(case["path"]) == (tuple(expect) if expect is not None else None)
+
+
+@pytest.mark.parametrize("case", FIXTURE["workspace_datapaths"], ids=lambda case: case["node"])
+def test_workspace_datapath_is_the_private_area_of_a_node(builder, case):
+    assert builder.source.get_node(case["node"]).workspace_datapath == case["expect"]
+
+
 def test_string_hash_is_the_legacy_hash():
     assert string_hash("page.ws3") == 858339576
     assert string_hash("é€😀abc" * 50) == 2111466368

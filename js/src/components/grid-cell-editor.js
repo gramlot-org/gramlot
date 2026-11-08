@@ -1,7 +1,14 @@
 import {Bag, sourceTarget, toTytx} from '@gramlot/gramlot';
 
-/** Grid navigation and temporary Source controls; all editing registers belong to the shared session. */
+/**
+ * Grid navigation and temporary Source controls; all editing registers belong to the shared session.
+ * A row is its key (node label): the editor keeps keys and Data paths, never row nodes.
+ */
 export class GridCellEditor {
+    /**
+     * `cellFor(label, field)` gives the rendered cell; `store()` gives `{labels(), window}`;
+     * `renderedRows()` the rendered rows by key; `navigate(label, field, step)` opens a neighbour editor.
+     */
     constructor(grid, context, cellFor, store, renderedRows, navigate, focusField) {
         this.grid = grid;
         this.context = context;
@@ -74,9 +81,9 @@ export class GridCellEditor {
         this.grid.removeEventListener('keydown',this.arrowKeydown,true);
         this.releaseNavigator?.(); this.releaseNavigator = null;
     }
+    /** The Data path of `field` in the row of key `row`: `#ROW.<field>` of the grid for that row. */
     path(row, field) {
-        const {mode} = this.store();
-        return this.context.sourceNode.absDatapath(this.context.sourceNode.getAttr('storepath')) + '.' + row.label + (mode === 'attributes' ? '?' : '.') + field;
+        return this.context.sourceNode.absDatapath(`#ROW.${field}`, {row});
     }
     configure(columns) {
         const editable = columns.filter(column => column.edit);
@@ -124,9 +131,10 @@ export class GridCellEditor {
     *validationFields() {
         const owner = this.context.sourceNode;
         this.session.trackValidationDependency(owner.absDatapath(owner.getAttr('structpath')));
-        for (const row of this.store().rows()) for (const column of this.columns) {
-            // A row deleted or replaced while the validation pass runs has no field to declare.
-            if (row.parentBag !== this.collection()) continue;
+        for (const row of this.store().labels()) for (const column of this.columns) {
+            // A row deleted while the validation pass runs has no field to declare.
+            const bag = this.collection();
+            if (!(bag instanceof Bag) || !bag.getNode(row)) continue;
             const path = this.path(row,column.field);
             this.checking.add(path);
             try {
@@ -140,7 +148,7 @@ export class GridCellEditor {
     }
     open(row, column, cell) {
         if (this.store().window !== null) throw new Error('Editing requires a fully resident Bag; remote windows are read-only.');
-        if (this.active?.row.label === row.label && this.active.column.field === column.field) { this.active.element.control.focus(); return; }
+        if (this.active?.row === row && this.active.column.field === column.field) { this.active.element.control.focus(); return; }
         this.close();
         const path = this.path(row,column.field), declaration = this.declare(row,column,true);
         const element = this.grid.ownerDocument.getElementById(declaration.id);
@@ -151,7 +159,7 @@ export class GridCellEditor {
     }
     declare(row,column,mount) {
         const owner = this.context.sourceNode, path = this.path(row,column.field);
-        if (!this.retained.has(path)) { this.session.retainField(path); this.retained.set(path,row.label); }
+        if (!this.retained.has(path)) { this.session.retainField(path); this.retained.set(path,row); }
         let declaration = this.declarations.get(path);
         if (!declaration) {
             const {tag,options} = this.definition(column);
@@ -233,12 +241,11 @@ export class GridCellEditor {
      */
     refresh() {
         const bag = this.collection();
-        const rows = new Map(bag instanceof Bag ? bag.getNodes().map(row => [row.label,row]) : []);
+        const rows = new Set(bag instanceof Bag ? bag.keys() : []);
         for (const [path,label] of this.retained) if (!rows.has(label)) {
             this.releaseField(path);
-            if (this.active?.row.label === label) this.close();
+            if (this.active?.row === label) this.close();
         }
-        if (this.active) this.active.row = rows.get(this.active.row.label);
         for (const path of this.retained.keys()) if (path !== this.active?.path) this.releaseCleanField(path);
         for (const [row,tr] of this.renderedRows()) this.decorate(tr,row);
     }

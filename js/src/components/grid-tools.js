@@ -50,7 +50,7 @@ export class GridTools {
 
     /**
      * `host` gives `columns()`, `rows()` (visible, in view order), `reader()` (shown values),
-     * `store()` ({bag, mode}), `selected()` (selected rows in view order), `selectionMode()`,
+     * `store()` ({mode}), `selected()` (selected rows in view order), `selectionMode()`,
      * `parameters()` and `document`.
      */
     constructor(context, host) {
@@ -184,29 +184,29 @@ export class GridTools {
         else this.source.setAttr({rowHeaders:value});
     }
 
-    /** Append one row with `defaults` to the store Bag; an editing session records it as a change. */
+    /** The Data path of the row of key `label`: `#ROW` of the grid for that row. */
+    #rowPath(label) { return this.source.absDatapath('#ROW', {row:label}); }
+
+    /** Append one row with `defaults` at its path in the store; an editing session records it as a change. */
     addRow(defaults) {
-        const {bag, mode} = this.#host.store();
-        const label = `r_${crypto.randomUUID().replaceAll('-', '')}`;
-        if (mode === 'values') bag.setItem(label, new Bag(defaults));
-        else bag.setItem(label, null, defaults);
-        return bag.getNode(label);
+        const path = this.#rowPath(`r_${crypto.randomUUID().replaceAll('-', '')}`);
+        if (this.#host.store().mode === 'values') this.source.data.setItem(path, new Bag(defaults));
+        else this.source.data.setItem(path, null, defaults);
     }
 
     /** Append a copy of each selected row, with a new identity. */
     duplicateRows() {
-        const {bag, mode} = this.#host.store();
+        const values = this.#host.store().mode === 'values';
         for (const node of this.#host.selected()) {
-            const label = `r_${crypto.randomUUID().replaceAll('-', '')}`;
-            if (mode === 'values') bag.setItem(label, node.staticValue.deepcopy());
-            else bag.setItem(label, null, {...node.getAttr()});
+            const path = this.#rowPath(`r_${crypto.randomUUID().replaceAll('-', '')}`);
+            if (values) this.source.data.setItem(path, node.staticValue.deepcopy());
+            else this.source.data.setItem(path, null, {...node.getAttr()});
         }
     }
 
-    /** Remove the selected rows from the store Bag; an editing session records each removal. */
+    /** Remove the selected rows at their paths in the store; an editing session records each removal. */
     deleteRows() {
-        const {bag} = this.#host.store();
-        for (const node of this.#host.selected()) bag.popNode(node.label);
+        for (const label of this.#host.selected().map(node => node.label)) this.source.data.popNode(this.#rowPath(label));
     }
 
     /** Edit tools declared in the grid's frame require an editable column; selection tools a selection mode. */

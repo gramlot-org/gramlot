@@ -69,12 +69,12 @@ export class BagCollectionView {
         const nodes = this.#sorted(this.#orderedNodes(),parseSort(sortedBy));
         this.#commit(nodes,sortedBy,this.#filters);
     }
-    /** Move the row of `node` before or after the row of `target`; rows are matched by key. */
-    moveRow(node, target, after = false) {
-        const nodes = this.getRows(false), from = nodes.findIndex(row => row.label === node.label);
-        if (node.label === target.label || from < 0 || !nodes.some(row => row.label === target.label)) return;
+    /** Move the row of key `label` before or after the row of key `target`; a key absent from the collection moves nothing. */
+    moveRow(label, target, after = false) {
+        const nodes = this.getRows(false), from = nodes.findIndex(row => row.label === label);
+        if (label === target || from < 0 || !nodes.some(row => row.label === target)) return;
         const [moved] = nodes.splice(from,1);
-        nodes.splice(nodes.findIndex(row => row.label === target.label)+Number(after),0,moved);
+        nodes.splice(nodes.findIndex(row => row.label === target)+Number(after),0,moved);
         this.#commit(nodes,'',this.#filters);
     }
     applyFilter(filter, contribution = 'search') {

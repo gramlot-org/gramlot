@@ -632,22 +632,47 @@ export class GramlotBuilderBagNode extends SourceBagNode {
     }
 
     /**
-     * The name of the private Data area of this node, which declares `_workspace`: the string value,
-     * or for `true` the nodeId, else the tag followed by a hash of the node's Source path, as legacy.
+     * The name of the private Data area of this node: the `_workspace` string value, or for `true`
+     * the nodeId, else the tag followed by a hash of the node's Source path, as legacy. A node that
+     * declares no `_workspace` has the name it would have with `_workspace=true`.
      */
     get workspaceName() {
-        const value = this.getAttr('_workspace');
+        const value = this.getAttr('_workspace') ?? true;
         if (value === true) return this.getAttr('nodeId') ?? `${this.nodeTag}_${stringHash(this.fullpath)}`;
         if (typeof value === 'string' && value) return value;
         throw new TypeError(`${this.nodeTag} '${this.label}': _workspace must be true or a name, not ${value}`);
     }
 
-    /** `#WORKSPACE`: `_workspace_path` of the owner resolved from it, else `_gramlot.workspace.<name>`. */
+    /**
+     * The private Data area of this node, as `#WORKSPACE` sees it from the node that owns it:
+     * `_workspace_path` resolved from this node, else `_gramlot.workspace.<workspaceName>`. A component
+     * keeps its private states under the area of its own node, addressed by path.
+     */
+    get workspaceDatapath() {
+        const explicit = this.getAttr('_workspace_path');
+        return explicit == null ? `_gramlot.workspace.${this.workspaceName}` : this.absDatapath(explicit);
+    }
+
+    /** `#WORKSPACE`: the private Data area of the nearest node with `_workspace`. */
     #workspaceDatapath(raw) {
         const owner = this.attributeOwnerNode('_workspace');
         if (!owner) throw new Error(`#WORKSPACE: no ancestor with _workspace for ${raw}`);
-        const explicit = owner.getAttr('_workspace_path');
-        return explicit == null ? `_gramlot.workspace.${owner.workspaceName}` : owner.absDatapath(explicit);
+        return owner.workspaceDatapath;
+    }
+
+    /**
+     * The inverse of `#ROW.<field>`: `{row, field}` when the absolute Data path `path` is a direct field of
+     * a row of the collection at the `storepath` of the nearest node that declares one, as `#ROW.<field>`
+     * gives it for that row key and `rowMode`; null for any other path.
+     */
+    rowField(path) {
+        const owner = this.attributeOwnerNode('storepath');
+        if (!owner) throw new Error(`#ROW: no ancestor with storepath for ${path}`);
+        const prefix = `${owner.absDatapath(owner.getAttr('storepath'))}.`;
+        const match = path.startsWith(prefix) ? /^([^.?]+)[.?]([^.?]+)$/.exec(path.slice(prefix.length)) : null;
+        if (!match) return null;
+        const [, row, field] = match;
+        return this.absDatapath(`#ROW.${field}`, {row}) === path ? {row, field} : null;
     }
 
     /** `#ROW[.field][?attr]` for the row `row` of the nearest node with `storepath`, following its `rowMode`. */

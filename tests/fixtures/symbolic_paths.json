@@ -69,5 +69,27 @@
     {"node": "agrid.acell", "path": "#ROW.a.b", "row": "r1", "error": "only attribute fields"},
     {"node": "nogrid.ncell", "path": "#ROW.x", "row": "r1", "error": "rowMode must be"},
     {"node": "page.form.rec.field", "path": "#ROW.x", "row": "r1", "error": "#ROW: no ancestor with storepath"}
+  ],
+  "row_fields_doc": "rowField / row_field, the inverse of #ROW.<field>: `expect` is [row, field] or null.",
+  "row_fields": [
+    {"node": "grid.cell", "path": "gr.rows.r1.price", "expect": ["r1", "price"]},
+    {"node": "grid", "path": "gr.rows.r2.price", "expect": ["r2", "price"]},
+    {"node": "grid.cell", "path": "gr.rows.r1?price", "expect": null},
+    {"node": "grid.cell", "path": "gr.rows.r1.price.amount", "expect": null},
+    {"node": "grid.cell", "path": "gr.rows.r1", "expect": null},
+    {"node": "grid.cell", "path": "gr.rowsx.r1.price", "expect": null},
+    {"node": "agrid.acell", "path": "arows.r1?price", "expect": ["r1", "price"]},
+    {"node": "agrid.acell", "path": "arows.r1.price", "expect": null},
+    {"node": "nogrid.ncell", "path": "x.r1.a", "error": "rowMode must be"},
+    {"node": "page.form.rec.field", "path": "pg.r1.a", "error": "#ROW: no ancestor with storepath"}
+  ],
+  "workspace_datapaths_doc": "workspaceDatapath / workspace_datapath: the private area a node owns, also without _workspace.",
+  "workspace_datapaths": [
+    {"node": "ws1", "expect": "_gramlot.workspace.named"},
+    {"node": "ws2", "expect": "_gramlot.workspace.wsid"},
+    {"node": "ws4", "expect": "ws4data.private"},
+    {"node": "page.ws3", "expect": "_gramlot.workspace.div_1537351128"},
+    {"node": "page", "expect": "_gramlot.workspace.pg"},
+    {"node": "anchor", "expect": "_gramlot.workspace.div_1399846885"}
   ]
 }

@@ -55,11 +55,14 @@ export function validateGridDeclaration(node) {
     new GridStructure(structureData(node.staticValue));
 }
 
-/** DataInstaller consumes this declaration after its one ordinary Data write. */
+/**
+ * DataInstaller consumes this declaration after its one ordinary Data write: the structure goes to
+ * the private area of its grid, `<workspaceDatapath>.struct`, whose name derives from the grid node.
+ */
 export function installGridStruct(node, data) {
     const value = structureData(node.staticValue);
     new GridStructure(value);
-    const path = `_gramlot.grid.${crypto.randomUUID().replaceAll('-', '')}.struct`;
+    const path = `${node.parentNode.workspaceDatapath}.struct`;
     data.setItem(path, value, null, '>', false, true, node);
     node.parentNode.setAttr({structpath: path}, false);
     node.setValue(null, false);

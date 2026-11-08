@@ -91,7 +91,7 @@ test('full invalidation absorbs pending row changes and pulls the final order on
     t.mock.method(store,'value',(node,field)=>{ reads.push(node); return value(node,field); });
     const timer=t.mock.method(f.window,'setTimeout');
     f.rows.getNode('r1').setAttr({code:'Changed'});
-    f.source.gridCollectionView.moveRow(f.rows.getNode('r2'),f.rows.getNode('r1'));
+    f.source.gridCollectionView.moveRow(f.rows.getNode('r2').label,f.rows.getNode('r1').label);
     f.rows.getNode('r2').setAttr({amount:9});
     assert.deepEqual(f.cells(),['A','12.50','B','8.00']);
     assert.equal(timer.mock.callCount(),1);
@@ -245,6 +245,9 @@ test('nested struct is installed as ordinary Data before the component renders',
     const second = f.app.src.source.getNode('main.pane.second').getAttr('structpath');
     f.flush();
     assert.notEqual(path, second);
+    // The structure lives in the private area of its grid, named from the grid node: the same page gets the same path.
+    assert.equal(path, `${f.source.workspaceDatapath}.struct`);
+    assert.match(path, /^_gramlot\.workspace\.grid_\d+\.struct$/);
     const data = f.app.data.getItem(path);
     f.flush();
     assert.equal(data.constructor, Bag);
@@ -254,6 +257,12 @@ test('nested struct is installed as ordinary Data before the component renders',
     f.flush();
     assert.equal(f.host.shadowRoot.querySelector('th[data-field]').textContent, 'Updated');
     assert.equal(f.window.document.getElementById('second').shadowRoot.querySelector('th[data-field]').textContent, 'Code');
+});
+
+test('the nested struct path derives from the grid node: two pages built from the same Source use the same path', async t => {
+    const paths = [];
+    for (const page of [1, 2]) await t.test(`page ${page}`, st => { paths.push(fixture(st, {inline: true}).source.getAttr('structpath')); });
+    assert.equal(paths[0], paths[1]);
 });
 
 test('insert, delete, replace store and retarget path follow the existing binding lifecycle', t => {
@@ -432,7 +441,7 @@ test('resizing writes the existing struct column and preserves both sharing grid
     const row = f.host.shadowRoot.querySelector('tbody tr');
     const cell = row.cells[1];
     const node = bag.getNode('view_0.rows_0.amount');
-    new GridStructure(bag).setColumnWidth('amount', 211);
+    new GridStructure(bag, {data:f.app.data, path:'model.structure'}).setColumnWidth('amount', 211);
     f.flush();
     assert.equal(bag.getNode('view_0.rows_0.amount'), node);
     assert.equal(node.getAttr('width'), '211px');
@@ -457,7 +466,7 @@ test('column movement changes Bag order and projects all sharing grids without r
     const node = group.getNode('amount');
     f.flush();
     const row = f.host.shadowRoot.querySelector('tbody tr');
-    new GridStructure(bag).moveColumn('amount', 'quantity', true);
+    new GridStructure(bag, {data:f.app.data, path:'model.structure'}).moveColumn('amount', 'quantity', true);
     f.flush();
     assert.deepEqual(group.getNodes().map(n => n.label), ['code','quantity','amount']);
     assert.equal(group.getNode('amount'), node);
@@ -477,14 +486,14 @@ test('moving across a columnset preserves membership and splits/joins contiguous
     const bag = f.app.data.getItem('model.structure'), cells = bag.getItem('view_0.rows_0');
     cells.setItem('quantity', null, {tag:'cell',field:'quantity',columnset:'numbers'});
     const amount = cells.getNode('amount'), definitions = bag.getItem('info.columnsets');
-    new GridStructure(bag).moveColumn('code', 'amount', true);
+    new GridStructure(bag, {data:f.app.data, path:'model.structure'}).moveColumn('code', 'amount', true);
     f.flush();
     assert.deepEqual(cells.getNodes().map(node=>node.getAttr('field')), ['amount','code','quantity']);
     assert.equal(cells.getNode('amount'), amount);
     assert.equal(amount.getAttr('columnset'), 'numbers');
     assert.equal(bag.getItem('info.columnsets'), definitions);
     assert.deepEqual([...f.host.shadowRoot.querySelectorAll('th[scope=colgroup]')].map(th=>th.textContent), ['Numbers','Numbers']);
-    new GridStructure(bag).moveColumn('code', 'quantity', true);
+    new GridStructure(bag, {data:f.app.data, path:'model.structure'}).moveColumn('code', 'quantity', true);
     f.flush();
     assert.equal(f.host.shadowRoot.querySelectorAll('th[scope=colgroup]').length, 1);
     assert.equal(f.host.shadowRoot.querySelector('th[scope=colgroup]').colSpan, 2);
@@ -520,7 +529,7 @@ for (const mode of ['values', 'attributes']) test(`${mode}: row headers are gene
     assert.equal(corner.rowSpan, 2);
     assert.equal(corner.querySelector('.column-resize').getAttribute('aria-label'), 'Resize row numbers');
     assert.equal(f.host.shadowRoot.querySelectorAll('col').length, 6);
-    f.source.gridCollectionView.moveRow(f.rows.getNode('r2'), f.rows.getNode('r1'));
+    f.source.gridCollectionView.moveRow(f.rows.getNode('r2').label,f.rows.getNode('r1').label);
     f.flush();
     assert.deepEqual(headings(), ['1','2']);
     assert.deepEqual(f.cells(), ['B','7.00','A','12.50']);
@@ -571,12 +580,12 @@ for (const mode of ['values','attributes']) test(`${mode}: row heights belong to
     g.pointer('pointerdown', 32, g.handle); g.pointer('pointermove', 82);
     f.flush();
     assert.equal(g.row.style.height, '82px');
-    assert.equal(f.source.gridRowLayout.height(node), null, 'preview is not committed');
+    assert.equal(f.source.gridRowLayout.height(node.label), null, 'preview is not committed');
     assert.equal(second.style.height, '');
     g.pointer('pointerup', 82);
     f.flush();
-    assert.equal(f.source.gridRowLayout.height(node), 82);
-    assert.equal(otherSource.gridRowLayout.height(node), null);
+    assert.equal(f.source.gridRowLayout.height(node.label), 82);
+    assert.equal(otherSource.gridRowLayout.height(node.label), null);
     assert.equal(JSON.stringify(f.rows.getNodes().map(node => [node.label, node.attr, node.staticValue instanceof Bag ? node.staticValue.getNodes().map(cell => [cell.label,cell.staticValue]) : node.staticValue])), originalData);
     g.pointer('pointerdown', 82, g.handle); g.pointer('pointermove', 120); g.key('Escape');
     assert.equal(g.row.style.height, '82px');
@@ -596,10 +605,10 @@ for (const mode of ['values','attributes']) test(`${mode}: row heights belong to
     g.pointer('pointerdown', 32, g.handle); g.pointer('pointerup', 10);
     f.flush();
     assert.equal(g.row.getBoundingClientRect().height, 32, 'content is the minimum');
-    assert.equal(f.source.gridRowLayout.height(node), null, 'a gesture with no size change keeps automatic height');
+    assert.equal(f.source.gridRowLayout.height(node.label), null, 'a gesture with no size change keeps automatic height');
     g.handle.dispatchEvent(new f.window.MouseEvent('dblclick', {bubbles:true}));
     f.flush();
-    assert.equal(f.source.gridRowLayout.height(node), null);
+    assert.equal(f.source.gridRowLayout.height(node.label), null);
 });
 
 test('row heights survive updates, DOM moves and a replacement keeping the key; removal clears their state', t => {
@@ -625,19 +634,19 @@ test('row heights survive updates, DOM moves and a replacement keeping the key; 
     f.rows.popNode('r1');
     f.flush();
     assert.equal(g.captured.size, 0);
-    assert.equal(layout.height(node), null);
+    assert.equal(layout.height(node.label), null);
     f.rows.setItem('r1', null, {code:'New',amount:1});
     f.flush();
     assert.equal(f.host.shadowRoot.querySelector('tbody tr').style.height, '');
-    const newNode = f.rows.getNode('r1'); layout.setHeight(newNode, 90);
+    const newNode = f.rows.getNode('r1'); layout.setHeight(newNode.label, 90);
     const replacement = new Bag(); replacement.setItem('r1', null, {code:'Replacement',amount:2});
     f.app.data.setItem('model.rows', replacement);
     f.flush();
-    assert.equal(layout.height(replacement.getNode('r1')), 90, 'the row key keeps its height across a replacement');
+    assert.equal(layout.height(replacement.getNode('r1').label), 90, 'the row key keeps its height across a replacement');
     const other = new Bag(); other.setItem('r2', null, {code:'Other',amount:3});
     f.app.data.setItem('model.rows', other);
     f.flush();
-    assert.equal(layout.height(newNode), null);
+    assert.equal(layout.height(newNode.label), null);
     assert.equal(f.host.shadowRoot.querySelector('tbody tr').style.height, '');
 });
 
@@ -658,7 +667,7 @@ for (const mode of ['values','attributes']) test(`${mode}: selfDragRows changes 
     f.flush();
     const nodes = f.rows.getNodes(), rows = [...f.host.shadowRoot.querySelectorAll('tbody tr')];
     const layout = f.source.gridRowLayout;
-    layout.setHeight(nodes[0], 91);
+    layout.setHeight(nodes[0].label, 91);
     f.source.setAttr({rowHeaders:true});
     const drag = rowDrag(f);
     drag(rows[0], 'dragstart');
@@ -830,7 +839,7 @@ test('resident viewport bounds DOM work, reads offscreen edits on entry and pres
     assert.ok(f.host.shadowRoot.querySelectorAll('tbody tr').length < 40);
     assert.equal(f.host.control.getAttribute('aria-rowcount'),'1002');
     const layout = f.source.gridRowLayout;
-    layout.setHeight(rows.getNode('r500'),96);
+    layout.setHeight(rows.getNode('r500').label,96);
     rows.getNode('r500').setAttr({code:'Offscreen update'}); f.flush();
     body.scrollTop=layout.offset(500); body.dispatchEvent(new f.window.Event('scroll')); f.layout.flush();
     const row=f.host.shadowRoot.querySelector('tr[data-row=r500]');
@@ -1107,6 +1116,14 @@ test('column popup uses a shared grid, isolated literal search and preserved sel
     root.querySelector('.column-filter[data-field="code"]').click();f.flush();
     const panel=root.querySelector('.column-filter-panel'),inner=f.host.querySelector('gramlot-grid');
     assert.equal(f.host,f.window.document.getElementById('first'));
+    // The popup Data and the popup grid structure live in private areas, under the outer grid's.
+    const area=f.source.workspaceDatapath;
+    assert.ok(f.app.data.getItem(`${area}.columnFilter.rows`) instanceof Bag);
+    const innerPath=f.source.staticValue.getNodes().flatMap(function walk(node){
+        return [node,...(node.staticValue?.getNodes?.() ?? []).flatMap(walk)];
+    }).find(node=>node.nodeTag==='grid').getAttr('structpath');
+    assert.match(innerPath,/^_gramlot\.workspace\.grid_\d+\.struct$/);
+    assert.notEqual(innerPath,`${area}.struct`);
     assert.ok(inner,'the popup reuses the grid component');
     const options=()=>[...inner.shadowRoot.querySelectorAll('tr[data-row]')];
     const text=()=>options().map(row=>row.textContent);

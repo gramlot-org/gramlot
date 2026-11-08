@@ -222,6 +222,52 @@ test('under a filter # and += cover the visible rows 1..n, marked with filtered-
     assert.deepEqual(marked(), []);
 });
 
+for (const mode of ['values', 'attributes']) test(`${mode}: a formula parameter =#ROW.<field> reads the field of each row by key, through sorting and filtering`, async t => {
+    const records = [{code:'a', amount:1, factor:10}, {code:'b', amount:2, factor:20}, {code:'c', amount:3, factor:30}];
+    const rows = mode === 'values' ? valueRows(records) : attributeRows(records);
+    const f = await mount(t, {rows, mode, columns:s => {
+        s.column({field:'position', formula:'#'});
+        s.column({field:'code'}); s.column({field:'amount', dtype:'L'});
+        // factor is not a column: the parameter reads it at the row address.
+        s.column({field:'total', dtype:'L', formula:'amount * k', formula_k:'=#ROW.factor', calculated:true});
+        s.column({field:'scaled', dtype:'L', formula:'position * k', formula_k:'=#ROW.factor'});
+    }});
+    await f.settle();
+    const stored = label => mode === 'values' ? rows.getItem(`${label}.total`) : rows.getNode(label).getAttr('total');
+    assert.deepEqual(['r1', 'r2', 'r3'].map(stored), [10, 40, 90], 'a data formula reads the factor of its own row');
+    assert.deepEqual(shown(f, 'first', 'scaled'), [['r1', '10'], ['r2', '40'], ['r3', '90']]);
+    const view = f.source('first').gridCollectionView;
+    view.sort('amount:d');
+    await f.settle();
+    assert.deepEqual(shown(f, 'first', 'scaled'), [['r3', '30'], ['r2', '40'], ['r1', '30']], 'the row key, not the rendered index, selects the row');
+    view.applyColumnFilter('code', ['a', 'c']);
+    await f.settle();
+    assert.deepEqual(shown(f, 'first', 'scaled'), [['r3', '30'], ['r1', '20']]);
+    if (mode === 'values') rows.getItem('r1').setItem('factor', 5);
+    else rows.getNode('r1').setAttr({factor:5});
+    if (mode === 'values') rows.getItem('r1').setItem('amount', 4);
+    else rows.getNode('r1').setAttr({amount:4});
+    await f.settle();
+    assert.equal(stored('r1'), 20, 'a recalculation reads the current field of the row');
+    assert.deepEqual(shown(f, 'first', 'scaled'), [['r1', '5'], ['r3', '60']]);
+});
+
+test('a formula parameter ^#ROW has no registration: the grid reports the error at each projection', async t => {
+    const rows = valueRows([{amount:1, factor:2}]);
+    const struct = dataStruct([{field:'amount', dtype:'L'}]);
+    const f = await mount(t, {rows, struct});
+    const errors = [];
+    t.mock.method(f.app.src.binding, 'reportError', (error, title) => errors.push(`${title}: ${error.message}`));
+    struct.getItem('view_0.rows_0').setItem('cell_total', null, {tag:'cell', field:'total', dtype:'L', formula:'amount * k', formula_k:'^#ROW.factor', calculated:true});
+    await f.settle();
+    assert.equal(errors.length, 1);
+    assert.match(errors[0], /^Grid refresh: #ROW: no row context for \^#ROW\.factor/);
+    assert.equal(rows.getItem('r1.total'), null, 'nothing is calculated');
+    rows.getItem('r1').setItem('amount', 3);
+    await f.settle();
+    assert.equal(errors.length, 2, 'the next projection reports it again');
+});
+
 test('sorting, column-filtering or searching a view value is an explicit error', async t => {
     const rows = valueRows([{amount:1}, {amount:2}]);
     const f = await mount(t, {rows, extra:{columnFilters:true}, columns:s => {
@@ -416,7 +462,7 @@ test('D2/Q3: under a CSP without unsafe-eval an arithmetic formula computes; a n
     assert.match(result.message, /^grid 'g' 'struct\.larger\.formula': inline code blocked by the Content Security Policy of the page \(no 'unsafe-eval'\)/);
 });
 
-test('Python declares the same formulas and totals; JS mounts the resulting TYTX', async t => {
+test('Python declares the same formulas, =#ROW parameters and totals; JS mounts the resulting TYTX', async t => {
     const root = fileURLToPath(new URL('../../', import.meta.url));
     const wire = execFileSync(process.env.GRAMLOT_TEST_PYTHON ?? `${root}/.venv/bin/python`, ['-c', `
 import json
@@ -430,16 +476,18 @@ s.column('label')
 s.column('quantity', dtype='L')
 s.column('total', dtype='L', formula='quantity * rate', formula_rate='^.rate', calculated=True, totalize=True)
 s.column('position', formula='#', calculated=True, hidden=True)
+s.column('scaled', dtype='L', formula='quantity * k', formula_k='=#ROW.factor', calculated=True)
 print(to_tytx(b.source))
 `], {cwd:root, encoding:'utf8'}).trim();
     const {window} = new JSDOM('<main id="gramlot-root"></main>');
     layoutWindow(window);
     const app = new Gramlot({document:window.document, transport:false, collections:[inputs, grid], locale:'en-US'});
     t.after(() => { app.dispose(); window.close(); });
-    const rows = valueRows([{quantity:2}, {quantity:3}]);
+    const rows = valueRows([{quantity:2, factor:3}, {quantity:3, factor:4}]);
     app.data.setItem('model', new Bag({rows, rate:10}));
     app.src.startSource(wire);
     await tick(); await tick();
+    assert.deepEqual(rows.getNodes().map(node => node.value.getItem('scaled')), [6, 12], 'a Python =#ROW parameter reads each row');
     assert.deepEqual(rows.getNodes().map(node => [node.value.getItem('total'), node.value.getNode('position')]), [[20, null], [30, null]],
         '# is a view value, never written');
     app.data.setItem('model.rate', 2);

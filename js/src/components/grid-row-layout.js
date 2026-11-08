@@ -25,31 +25,32 @@ export class GridRowLayout {
     #offsets = [0];
     #dirty = true;
     #estimate = 32;
-    /** Keep the geometry of the resident rows `nodes` only. */
-    retain(nodes) {
-        this.#present = new Set(nodes.map(node => node.label));
+    /** Keep the geometry of the resident row keys `labels` only. */
+    retain(labels) {
+        this.#present = new Set(labels);
         for (const map of [this.#heights, this.#measured]) {
             for (const label of map.keys()) if (!this.#present.has(label)) map.delete(label);
         }
         this.#dirty = true;
     }
-    height(node) { return this.#heights.get(node.label) ?? null; }
-    setHeight(node, height) {
-        if (!this.#present.has(node.label)) return;
-        if (height === null) this.#heights.delete(node.label);
+    height(label) { return this.#heights.get(label) ?? null; }
+    setHeight(label, height) {
+        if (!this.#present.has(label)) return;
+        if (height === null) this.#heights.delete(label);
         else {
             if (!Number.isFinite(height) || height <= 0) throw new TypeError('Grid row height must be positive pixels');
-            this.#heights.set(node.label, Math.round(height));
+            this.#heights.set(label, Math.round(height));
         }
-        this.forget(node);
+        this.forget(label);
     }
-    setRows(nodes) { this.#labels = nodes.map(node => node.label); this.#dirty = true; }
+    /** The row keys of the view, in view order. */
+    setRows(labels) { this.#labels = [...labels]; this.#dirty = true; }
     resetMeasurements() { this.#measured.clear(); this.#dirty = true; }
-    forget(node) { this.#measured.delete(node.label); this.#dirty = true; }
-    measure(node, height) {
+    forget(label) { this.#measured.delete(label); this.#dirty = true; }
+    measure(label, height) {
         // Hidden/unlaid-out rows have no usable measurement yet.
-        if (height <= 0 || this.#measured.get(node.label) === height) return false;
-        this.#measured.set(node.label, height);
+        if (height <= 0 || this.#measured.get(label) === height) return false;
+        this.#measured.set(label, height);
         this.#dirty = true;
         return true;
     }

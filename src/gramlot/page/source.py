@@ -8,6 +8,7 @@ Python's ``__getattr__`` uses ``GramlotBuilder.schema_tag`` for authoring dispat
 JavaScript uses Builder's Source proxy and ``GramlotBuilder.schemaTag``.
 """
 
+import re
 from typing import Any
 
 from genro_builders.builder import SourceBag, SourceBagNode
@@ -122,9 +123,12 @@ class GramlotBuilderBagNode(SourceBagNode):
 
     @property
     def workspace_name(self) -> str:
-        """The name of the private Data area of this node, which declares ``_workspace``: the string value,
-        or for ``True`` the nodeId, else the tag followed by a hash of the node's Source path, as legacy."""
+        """The name of the private Data area of this node: the ``_workspace`` string value, or for ``True``
+        the nodeId, else the tag followed by a hash of the node's Source path, as legacy. A node that
+        declares no ``_workspace`` has the name it would have with ``_workspace=True``."""
         value = self.attr.get("_workspace")
+        if value is None:
+            value = True
         if value is True:
             node_id = self.attr.get("nodeId")
             return node_id if node_id is not None else f"{self.node_tag}_{string_hash(self.fullpath)}"
@@ -132,13 +136,34 @@ class GramlotBuilderBagNode(SourceBagNode):
             return value
         raise TypeError(f"{self.node_tag} '{self.label}': _workspace must be true or a name, not {value!r}")
 
+    @property
+    def workspace_datapath(self) -> str:
+        """The private Data area of this node, as ``#WORKSPACE`` sees it from the node that owns it:
+        ``_workspace_path`` resolved from this node, else ``_gramlot.workspace.<workspace_name>``. A component
+        keeps its private states under the area of its own node, addressed by path."""
+        explicit = self.attr.get("_workspace_path")
+        return f"_gramlot.workspace.{self.workspace_name}" if explicit is None else self.abs_datapath(explicit)
+
     def _workspace_datapath(self, raw: str) -> str:
-        """``#WORKSPACE``: ``_workspace_path`` of the owner resolved from it, else ``_gramlot.workspace.<name>``."""
+        """``#WORKSPACE``: the private Data area of the nearest node with ``_workspace``."""
         owner = self.attribute_owner_node("_workspace")
         if owner is None:
             raise KeyError(f"#WORKSPACE: no ancestor with _workspace for {raw}")
-        explicit = owner.attr.get("_workspace_path")
-        return f"_gramlot.workspace.{owner.workspace_name}" if explicit is None else owner.abs_datapath(explicit)
+        return owner.workspace_datapath
+
+    def row_field(self, path: str) -> tuple[str, str] | None:
+        """The inverse of ``#ROW.<field>``: ``(row, field)`` when the absolute Data path ``path`` is a direct
+        field of a row of the collection at the ``storepath`` of the nearest node that declares one, as
+        ``#ROW.<field>`` gives it for that row key and ``rowMode``; None for any other path."""
+        owner = self.attribute_owner_node("storepath")
+        if owner is None:
+            raise KeyError(f"#ROW: no ancestor with storepath for {path}")
+        prefix = f"{owner.abs_datapath(owner.attr['storepath'])}."
+        match = re.fullmatch(r"([^.?]+)[.?]([^.?]+)", path[len(prefix):]) if path.startswith(prefix) else None
+        if match is None:
+            return None
+        row, field = match.groups()
+        return (row, field) if self.abs_datapath(f"#ROW.{field}", row=row) == path else None
 
     def _row_datapath(self, bare: str, row: str | None, raw: str) -> str:
         """``#ROW[.field][?attr]`` for the row ``row`` of the nearest node with ``storepath``, following its ``rowMode``."""

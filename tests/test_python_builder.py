@@ -217,8 +217,8 @@ class GramlotSourceClassTests(unittest.TestCase):
         # The symbolic resolver (GC-210 §012) overrides Builder's path composition.
         self.assertEqual(own[GramlotBuilderBagNode], {
             "remote", "runtime_to_evaluate", "abs_datapath", "_compose_relative_datapath",
-            "_resolve_symbolic_datapath", "get_child", "workspace_name", "_workspace_datapath",
-            "_row_datapath", "_symbolic_node"})
+            "_resolve_symbolic_datapath", "get_child", "workspace_name", "workspace_datapath",
+            "_workspace_datapath", "row_field", "_row_datapath", "_symbolic_node"})
         self.assertEqual(own[GramlotBuilderBag], {"_node_class", "authorized_copy"})
 
     def test_a_double_equals_value_is_not_a_pointer(self):

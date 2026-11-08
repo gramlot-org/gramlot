@@ -20,7 +20,7 @@ for(const mode of ['values','attributes']) {
         f.first.sort('group:a,value:d');f.second.sort('value:a,group:d');
         assert.deepEqual(f.labels(),['r1','r2','r3','r0']);
         assert.deepEqual(f.labels(f.second),['r0','r2','r3','r1']);
-        f.first.moveRow(nodes[3],nodes[2]);
+        f.first.moveRow(nodes[3].label,nodes[2].label);
         assert.equal(f.first.sortedBy,'');assert.equal(f.second.sortedBy,'value:a,group:d');
         assert.deepEqual(f.labels(f.second),['r0','r2','r3','r1']);
         f.first.sort('group:a,value:a');assert.deepEqual(f.labels(),['r3','r2','r1','r0'],'ties retain this view order');
@@ -44,7 +44,7 @@ for(const mode of ['values','attributes']) {
         f.second.applyFilter({value:'> 2',columns:['qty'],dtype:'L',locale:'en-GB'});
         assert.deepEqual(f.labels(),['r0','r2']);assert.deepEqual(f.first.filtered,[1,2]);
         assert.deepEqual(f.labels(f.second),['r0','r1']);assert.deepEqual(f.second.filtered,[1,2]);
-        f.first.moveRow(f.bag.getNode('r2'),f.bag.getNode('r0'));
+        f.first.moveRow(f.bag.getNode('r2').label,f.bag.getNode('r0').label);
         assert.deepEqual(f.labels(),['r2','r0']);assert.equal(f.first.getRows(false).length,3);
         assert.deepEqual(f.labels(f.second),['r0','r1']);assert.equal(f.second.sortedBy,'qty:a');
         f.first.applyFilter(null);assert.equal(f.first.filtered,null);assert.equal(f.first.isFiltered(),false);
@@ -116,14 +116,14 @@ test('disconnect releases parent subscription; reconnect and a replacement at th
 
 test('a replacement at the store path keeps the manual order of the keys still present',()=>{
     const f=fixture('attributes',[{v:1},{v:2},{v:3}]);
-    const nodes=f.bag.getNodes();f.first.moveRow(nodes[2],nodes[0]);
+    const nodes=f.bag.getNodes();f.first.moveRow(nodes[2].label,nodes[0].label);
     assert.deepEqual(f.labels(),['r2','r0','r1']);
     const replacement=new Bag();for(const [key,v] of [['r1',1],['new',9],['r2',3]])replacement.setItem(key,null,{v});
     f.data.setItem('rows',replacement);f.parent.receiveData({});
     assert.deepEqual(f.labels(),['r2','r1','new'],'present keys keep their order; new keys follow in Bag order');
-    f.first.moveRow(nodes[0],replacement.getNode('r2'));
+    f.first.moveRow(nodes[0].label,replacement.getNode('r2').label);
     assert.deepEqual(f.labels(),['r2','r1','new'],'a key absent from the collection does not move');
-    f.first.moveRow(replacement.getNode('new'),nodes[2]);
+    f.first.moveRow(replacement.getNode('new').label,nodes[2].label);
     assert.deepEqual(f.labels(),['new','r2','r1'],'rows of another Bag identify the same keys');
 });
 

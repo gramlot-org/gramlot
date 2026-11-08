@@ -167,10 +167,10 @@ test('search menu accepts legacy caption/field lists and dtype restriction',t=>{
 test('search timer is cancelled on removal and hidden row heights survive filtering',t=>{
     const f=searchFixture(t);
     const source=f.app.src.binding.renderer.getBaseSourceNode(f.gridElement);
-    source.gridRowLayout.setHeight(f.rows.getNode('r1'),80);
+    source.gridRowLayout.setHeight(f.rows.getNode('r1').label,80);
     f.type('^Al');f.flush();
     f.box.shadowRoot.querySelector('button').click();f.flush();
-    assert.equal(source.gridRowLayout.height(f.rows.getNode('r1')),80);
+    assert.equal(source.gridRowLayout.height(f.rows.getNode('r1').label),80);
     f.type('Beta');f.box.remove();f.flush();
     assert.equal(f.view.filter,null);
 });

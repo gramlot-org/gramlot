@@ -3001,6 +3001,9 @@ The owner approved proceeding with the general system-path migration after the
 DeviceHandler audit ("possiamo procedere"). System-owned root Data now uses
 `_gramlot`: device state is `_gramlot.device` and generated drawing state is
 `_gramlot.drawing`; generated grid structure/filter state uses `_gramlot.grid`. This supersedes the earlier `gramlot.device` Data reservation.
+Superseded for the grid on 2026-11-08 (plan symbolic-references p4): the grid structure and
+column filter state live in the grid's private area `_gramlot.workspace.<name>` (`#WORKSPACE`
+naming rule, name derived from the grid node), at `.struct` and `.columnFilter`.
 Update producers and consumer bindings together; do not introduce aliases.
 The JavaScript runtime object, native bridge protocol/plugin names and persistent
 storage keys are unchanged. The proposed Inspector root-node exclusion remains

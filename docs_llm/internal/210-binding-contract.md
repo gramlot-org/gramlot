@@ -185,6 +185,12 @@ decisions from unified-plan §2.
   via childname (legacy getChild, parent, #symbol). The three attributes are metadata and context
   attributes. JS rebinds NodeBindings whose start moved (node, id:, childname: keys);
   failure = explicit error, no stale registration. Not ported: _fakeform, .*S. S01/S04/p3b.
+  p4 (grid): workspaceDatapath / workspace_datapath = the private area of a node, also without
+  _workspace (name as for _workspace=true); the grid keeps its nested struct at
+  <workspaceDatapath>.struct and the column filter popup Data at <workspaceDatapath>.columnFilter.
+  rowField(path) / row_field(path) = inverse of #ROW.<field>: {row, field} / (row, field) or null.
+  Grid row paths are #ROW.<field> with the row key (cell editor, tools, focus, derived paths);
+  formula_<name>='=#ROW.<field>' reads that field of the evaluated row; ^#ROW is an error.
 - action (legacy _ButtonLogic._clickHandlerDo): inline click code, this = button node,
   receives current button attributes plus event/_counter/modifiers; D7 inline rules.
 - fire='.path': FIRE with modifier string (eventToString, gnrlang.js:1757) or true;

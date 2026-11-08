@@ -29,14 +29,14 @@ export class GridSelection {
     get mode() { return this.#host.mode(); }
     /** The key of the current row, or null. */
     get current() { return this.#current; }
-    isSelected(node) { return this.#selected.has(node.label); }
+    isSelected(label) { return this.#selected.has(label); }
     /** Selected rows in view order. */
     get nodes() { return this.#host.view().getRows().filter(node => this.#selected.has(node.label)); }
 
-    /** Click or keyboard selection of `node`: `toggle` (Ctrl/Cmd) and `range` (Shift) apply in multi mode. */
-    select(node, {toggle = false, range = false} = {}) {
+    /** Click or keyboard selection of the row of key `label`: `toggle` (Ctrl/Cmd) and `range` (Shift) apply in multi mode. */
+    select(label, {toggle = false, range = false} = {}) {
         if (this.mode === 'none') return;
-        const rows = this.#host.view().getRows(), labels = rows.map(row => row.label), label = node.label;
+        const labels = this.#host.view().getRows().map(row => row.label);
         if (this.mode === 'multi' && range && this.#anchor !== null && labels.includes(this.#anchor)) {
             const [from, to] = [labels.indexOf(this.#anchor), labels.indexOf(label)].sort((a, b) => a - b);
             this.#apply(new Set(labels.slice(from, to + 1)), label, this.#anchor);
@@ -47,13 +47,13 @@ export class GridSelection {
         } else this.#apply(new Set([label]), label, label);
     }
 
-    /** Up/Down: move the current row by `step`; `extend` (Shift, multi mode) extends from the anchor. */
+    /** Up/Down: move the current row by `step`; `extend` (Shift, multi mode) extends from the anchor. Gives the key of the new current row. */
     move(step, extend = false) {
         if (this.mode === 'none') return null;
-        const rows = this.#host.view().getRows();
-        if (!rows.length) return null;
-        const index = this.#current === null ? (step > 0 ? -1 : rows.length) : rows.findIndex(row => row.label === this.#current);
-        const next = rows[Math.max(0, Math.min(rows.length - 1, index + step))];
+        const labels = this.#host.view().getRows().map(row => row.label);
+        if (!labels.length) return null;
+        const index = this.#current === null ? (step > 0 ? -1 : labels.length) : labels.indexOf(this.#current);
+        const next = labels[Math.max(0, Math.min(labels.length - 1, index + step))];
         this.select(next, {range:extend});
         return next;
     }
