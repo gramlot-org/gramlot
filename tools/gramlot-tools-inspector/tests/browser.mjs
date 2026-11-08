@@ -108,9 +108,13 @@ try {
             await page.evaluate(() => window.app.src.source.getNode('main.greeting').setAttr({title: 'Live Source'}));
             await page.waitForFunction(() => window.inspector.shadowRoot.querySelector('[aria-label="title value"]')?.value === 'Live Source');
             // Edit the actual Source node and its attributes through the palette.
+            // Each commit travels to the page's agent on a MessageChannel; the editor is disabled until the reply.
             await palette.getByRole('textbox', {name: 'Value', exact: true}).fill('Edited Source');
-            await palette.getByRole('textbox', {name: 'title value', exact: true}).fill('Inspector title');
             await palette.getByLabel('Value', {exact:true}).press('Enter');
+            await page.waitForFunction(() => document.querySelector('#app p').textContent === 'Edited Source');
+            await palette.getByRole('textbox', {name: 'title value', exact: true}).fill('Inspector title');
+            await palette.getByLabel('title value', {exact:true}).press('Enter');
+            await page.waitForFunction(() => document.querySelector('#app p').title === 'Inspector title');
             assert.equal(await page.locator('#app p').textContent(), 'Edited Source');
             assert.equal(await page.locator('#app p').getAttribute('title'), 'Inspector title');
             await palette.getByRole('textbox', {name: 'Value', exact: true}).fill('^name');
@@ -119,7 +123,7 @@ try {
             await palette.locator('gramlot-tree[data-root=data] [data-path=name]').click();
             await palette.getByRole('textbox', {name: 'Value', exact: true}).fill('Edited Data');
             await palette.getByLabel('Value', {exact:true}).press('Enter');
-            assert.equal(await page.evaluate(() => window.app.data.getItem('name')), 'Edited Data');
+            await page.waitForFunction(() => window.app.data.getItem('name') === 'Edited Data');
             assert.equal(await page.locator('#app p').textContent(), 'Edited Data');
             // New attribute names/types are editable; existing rows commit without losing focus.
             await palette.getByRole('button', {name:'Add attribute', exact:true}).click();
@@ -127,12 +131,12 @@ try {
             await palette.getByLabel('New attribute type', {exact:true}).selectOption('integer');
             await palette.getByLabel('New attribute value', {exact:true}).fill('42');
             await palette.getByLabel('New attribute value', {exact:true}).press('Enter');
-            assert.equal(await page.evaluate(() => window.app.data.getNode('name').getAttr('count')), 42);
+            await page.waitForFunction(() => window.app.data.getNode('name').getAttr('count') === 42);
             await palette.getByLabel('count value', {exact:true}).fill('43');
             await palette.getByLabel('description value', {exact:true}).focus();
-            assert.equal(await page.evaluate(() => window.app.data.getNode('name').getAttr('count')), 43);
+            await page.waitForFunction(() => window.app.data.getNode('name').getAttr('count') === 43);
             await palette.getByLabel('Remove count', {exact:true}).click();
-            assert.equal(await page.evaluate(() => window.app.data.getNode('name').getAttr('count')), null);
+            await page.waitForFunction(() => window.app.data.getNode('name').getAttr('count') === null);
             // The shared action bar targets the hovered row.
             const dataTree = palette.locator('gramlot-tree[data-root=data]');
             const selectedRow = dataTree.locator('[data-path=name] > .row');
@@ -142,7 +146,7 @@ try {
             await palette.getByRole('combobox', {name: 'Breakpoint mode', exact: true}).selectOption('console');
             await palette.getByRole('textbox', {name: 'Breakpoint condition', exact: true}).fill('value === "Grace"');
             await palette.getByRole('button', {name: 'Save', exact: true}).click();
-            assert.match(await palette.locator('.breakpoint-dialog .breakpoint-status').textContent(), /Breakpoint not saved/);
+            await palette.locator('.breakpoint-dialog .breakpoint-status').getByText(/Breakpoint not saved/).waitFor();
             await palette.getByRole('textbox', {name: 'Breakpoint condition', exact: true}).fill('');
             await palette.getByRole('button', {name: 'Save', exact: true}).click();
             await page.mouse.move(900, 800);
@@ -158,6 +162,7 @@ try {
             await dot.click();
                 await palette.getByRole('combobox', {name: 'Breakpoint mode', exact: true}).selectOption('debugger');
                 await palette.getByRole('button', {name: 'Save', exact: true}).click();
+                await palette.locator('.breakpoint-line').getByText(/Breakpoint: debugger/).waitFor();
                 let pausedFrames;
                 const paused = new Promise(resolve => session.once('Debugger.paused', async event => {
                     pausedFrames = event.callFrames;
@@ -174,6 +179,7 @@ try {
             await dot.click();
             await palette.getByRole('combobox', {name: 'Breakpoint mode', exact: true}).selectOption('');
             await palette.getByRole('button', {name: 'Save', exact: true}).click();
+            await palette.getByRole('dialog', {name: 'Breakpoint', exact: true}).waitFor({state: 'hidden'});
             await page.evaluate(() => window.app.data.setItem('name', 'Grace'));
             const splitter = palette.getByRole('separator');
             await splitter.focus(); await page.keyboard.press('ArrowDown');
@@ -232,7 +238,7 @@ try {
             assert.equal(Math.round(restored.height),Math.round(resized.height));
             assert.equal(Math.round(restored.width),Math.round(resized.width));
             assert.equal(Math.round(restored.x - resized.x),10);
-            assert.equal(await palette.getByLabel('Value',{exact:true}).inputValue(),'Updated while collapsed');
+            await page.waitForFunction(() => window.inspector.shadowRoot.querySelector('[aria-label=Value]')?.value === 'Updated while collapsed');
             await handle.focus(); await page.keyboard.press('Home');
             const reset = await dialog.boundingBox();
             assert.equal(Math.round(reset.x), 16); assert.equal(Math.round(reset.y), 16);
@@ -249,7 +255,7 @@ try {
             assert.equal(await palette.count(), 0);
             await page.evaluate(() => document.body.append(window.inspector));
             await palette.locator('gramlot-tree[data-root=data] [data-path=name]').click();
-            assert.equal(await palette.getByLabel('Value', {exact:true}).inputValue(), 'Grace');
+            await page.waitForFunction(() => window.inspector.shadowRoot.querySelector('[aria-label=Value]')?.value === 'Grace');
             assert.deepEqual(errors, []);
             if (name === 'chromium') await page.screenshot({path: join(tmpdir(), 'gramlot-tools-inspector.png')});
             await page.goto(`${url}?conditions`);
@@ -262,7 +268,6 @@ try {
             await palette.getByLabel('Breakpoint condition').fill('value === "Grace"');
             await palette.getByRole('button', {name:'Save',exact:true}).click();
             await page.mouse.move(900,800);
-            assert.match(await conditionalRow.locator('.caption').textContent(), /◉/);
             await conditionalRow.locator('.caption').getByText(/◉/).waitFor();
             await conditionalRow.hover();
             await conditionalDot.click();
@@ -275,7 +280,7 @@ try {
             await palette.getByLabel('Breakpoint mode').selectOption('');
             await palette.getByRole('button', {name:'Save',exact:true}).click();
             await page.mouse.move(900,800);
-            assert.doesNotMatch(await conditionalRow.locator('.caption').textContent(), /[●◉]/);
+            await page.waitForFunction(() => !/[●◉]/.test(window.inspector.shadowRoot.querySelector('gramlot-tree[data-root=data]').shadowRoot.querySelector('[data-path=name] > .row .caption').textContent));
             await conditionalRow.hover();
             assert.equal(await conditionalDot.getAttribute('aria-label'), 'Breakpoint');
             assert.deepEqual(errors, []);

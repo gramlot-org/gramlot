@@ -70,6 +70,11 @@ if (process.argv.includes('--serve')) {
                 const tool = page.locator('gramlot-tools-inspector');
                 await tool.getByRole('tab', {name: 'Styles', exact: true}).click();
                 const field = name => tool.getByLabel(`${name} value`, {exact: true});
+                // Style commands travel to the page's agent; the palette changes after each reply.
+                const until = async (read, expected) => {
+                    for (const end = Date.now() + 5000; await read() !== expected && Date.now() < end;) await page.waitForTimeout(20);
+                    assert.equal(await read(), expected);
+                };
                 const exportLink = tool.getByText('Download CSS', {exact: true});
                 await field('--gramlot-action').waitFor();
                 assert.equal(await exportLink.getAttribute('href'), null);
@@ -99,9 +104,10 @@ if (process.argv.includes('--serve')) {
                 await tool.locator('.styles-status').getByText('Enter a valid CSS variable value').waitFor();
                 assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('main button')).backgroundColor), 'rgb(69, 107, 196)');
                 await field('--gramlot-action').press('Escape');
-                assert.equal(await field('--gramlot-action').inputValue(), '#456bc4');
+                await until(() => field('--gramlot-action').inputValue(), '#456bc4');
                 await field('--gramlot-action').fill('var(--missing-color)'); await field('--gramlot-action').press('Enter');
                 await tool.getByLabel('Reset --gramlot-action', {exact: true}).click();
+                await until(() => field('--gramlot-action').inputValue(), '#456bc4');
                 await field('--gramlot-action').fill('var(--gramlot-brand-yellow)'); await field('--gramlot-action').press('Enter');
                 await page.waitForFunction(() => getComputedStyle(document.querySelector('main button')).backgroundColor === 'rgb(255, 196, 0)');
                 assert.equal(await field('--gramlot-action').inputValue(), 'var(--gramlot-brand-yellow)');
@@ -118,40 +124,40 @@ if (process.argv.includes('--serve')) {
                 assert.equal(await restored.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--gramlot-space-4').trim()), '2rem');
                 await restored.close();
                 await tool.getByRole('button', {name: 'Reset all', exact: true}).click();
-                assert.equal(await exportLink.getAttribute('href'), null);
+                await until(() => exportLink.getAttribute('href'), null);
                 await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
                 await tool.getByRole('button', {name: 'Refresh', exact: true}).click();
-                assert.equal(await field('--gramlot-action').inputValue(), '#91adf4');
+                await until(() => field('--gramlot-action').inputValue(), '#91adf4');
                 await field('--gramlot-action').fill('#112233'); await field('--gramlot-action').press('Enter');
                 await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
                 await tool.getByLabel('Reset --gramlot-action', {exact: true}).click();
-                assert.equal(await field('--gramlot-action').inputValue(), '#456bc4');
+                await until(() => field('--gramlot-action').inputValue(), '#456bc4');
                 await page.evaluate(() => new Promise(resolve => {
                     const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = '/compact.css'; link.onload = resolve; document.head.append(link);
                 }));
                 await tool.getByRole('button', {name: 'Refresh', exact: true}).click();
-                assert.equal(await field('--gramlot-space-4').inputValue(), '8px');
+                await until(() => field('--gramlot-space-4').inputValue(), '8px');
                 await field('--gramlot-space-4').fill('3rem'); await field('--gramlot-space-4').press('Enter');
                 await tool.getByRole('tab', {name: 'Data', exact: true}).click();
                 await tool.locator('gramlot-tree[data-root=data] [data-path=name]').click();
-                assert.equal(await tool.getByLabel('Value', {exact: true}).inputValue(), 'Gramlot');
+                await until(() => tool.getByLabel('Value', {exact: true}).inputValue(), 'Gramlot');
                 await tool.getByRole('tab', {name: 'Styles', exact: true}).click();
-                assert.equal(await field('--gramlot-space-4').inputValue(), '3rem');
+                await until(() => field('--gramlot-space-4').inputValue(), '3rem');
                 assert.equal(await page.evaluate(() => app.src.source.toTytx('json') === sourceBefore), true);
                 // Independent sheets remain correct regardless of session-close order.
                 await page.evaluate(() => {
                     const first = new InspectorStyles(document), second = new InspectorStyles(document);
                     first.set('--gramlot-action', '#111111'); second.set('--gramlot-action', '#222222'); first.dispose(); second.dispose();
                 });
-                assert.equal(await field('--gramlot-action').inputValue(), '#235db2');
+                await until(() => field('--gramlot-action').inputValue(), '#235db2');
                 await tool.getByRole('button', {name: 'Close window', exact: true}).click();
                 assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--gramlot-space-4').trim()), '8px');
                 await page.evaluate(() => document.body.append(inspector));
                 await tool.getByRole('tab', {name: 'Styles', exact: true}).click();
-                assert.equal(await field('--gramlot-space-4').inputValue(), '8px');
+                await until(() => field('--gramlot-space-4').inputValue(), '8px');
                 await page.evaluate(() => {document.querySelectorAll('head link').forEach(link => link.remove());});
                 await tool.getByRole('button', {name: 'Refresh', exact: true}).click();
-                assert.equal(await tool.locator('.styles-empty').isVisible(), true);
+                await until(() => tool.locator('.styles-empty').isVisible(), true);
                 assert.equal(await tool.locator('.style-row').count(), 0);
                 assert.deepEqual(errors, []);
                 console.log(`${engine.name()}: PASS — Base/Compact, color/text previews, invalid CSS, variable references, CSS download and reapplication, reset/current cascade, Source preservation, independent sheets, close/reconnect, empty state`);

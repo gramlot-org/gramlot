@@ -46,6 +46,8 @@ test('a named connection receives the snapshot and carries changes both ways', a
     assert.equal(app.data.getNode('copy').getAttr('currency'), 'EUR');
     app.data.setItem('copy.price', 15);
     await wait(() => served.getItem('shared.price') === 15);
+    app.data.getNode('copy.price').setAttr({currency: 'USD'});
+    await wait(() => served.getNode('shared.price').getAttr('currency') === 'USD');
     served.setItem('shared.name', 'Ada', {caption: 'Name'});
     await wait(() => app.data.getItem('copy.name') === 'Ada');
     assert.equal(app.data.getNode('copy.name').getAttr('caption'), 'Name');

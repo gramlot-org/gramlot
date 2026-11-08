@@ -4,7 +4,17 @@
  *
  * @module
  */
+import {Bag} from '@genrojs/bag';
 import {fromTytx, toTytx} from '@genrojs/tytx';
+
+/** One message as the TYTX text of a Bag of its fields, as `MessagePortStore.post` sends it. */
+export function messageText(message) {
+    const wire = new Bag();
+    for (const [name, value] of Object.entries(message)) {
+        if (value !== undefined) wire.setItem(name, value);
+    }
+    return toTytx(wire);
+}
 
 /** The dataBinder connection of one name: its binders and the MessagePort that carries them now. */
 export class MessagePortConnection {
@@ -44,7 +54,7 @@ export class MessagePortConnection {
         for (const binder of this.binders.values()) {
             // Local writes wait for the snapshot of the next port.
             binder.ready = false;
-            if (this.state === 'open') port.postMessage(toTytx({op: 'unsubscribe', binderId: binder.id}));
+            if (this.state === 'open') port.postMessage(messageText({op: 'unsubscribe', binderId: binder.id}));
         }
         this.#port = null;
     }
@@ -55,17 +65,17 @@ export class MessagePortConnection {
     }
 
     #subscribe(binder) {
-        this.#port.postMessage(toTytx({op: 'subscribe', binderId: binder.id, path: binder.serverPath}));
+        this.#port.postMessage(messageText({op: 'subscribe', binderId: binder.id, path: binder.serverPath}));
     }
 
     unregister(binder) {
         if (!this.binders.delete(binder.id)) return;
-        if (this.state === 'open') this.#port.postMessage(toTytx({op: 'unsubscribe', binderId: binder.id}));
+        if (this.state === 'open') this.#port.postMessage(messageText({op: 'unsubscribe', binderId: binder.id}));
     }
 
     send(message) {
         if (this.state !== 'open') throw new Error(`Connection '${this.name}' is not open`);
-        this.#port.postMessage(toTytx(message));
+        this.#port.postMessage(messageText(message));
     }
 
     #receive = event => {

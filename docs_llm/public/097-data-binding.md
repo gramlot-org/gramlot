@@ -498,3 +498,21 @@ and named metadata templates to `nodeId`. Regenerate saved Source: no alias or
 automatic conversion is supplied. Update Builder Python, Builder JavaScript,
 Gramlot and its examples together. System callbacks `_onCalling`, `_onResult`,
 `_onError` and namespaced `node_label`, `node_position`, `target_id` are unchanged.
+
+
+<a id="gc-095-160"></a>
+
+## 160 · Data bound to another store: `dataBinder` and `connection`
+
+`dataBinder` keeps `destination_path` (client Data) and `server_path` (a store branch)
+in step both ways. Without `connection` the store is the page's `PageStore` over its
+WebSocket. `connection` is a literal name of a store reached through a `MessagePort`,
+registered by JavaScript with `gramlot.rpc.registerConnection(name, port)`; binders
+declared earlier wait. A new port under the same name re-subscribes every binder of
+that name; each snapshot replaces its branch. Python:
+`pane.dataBinder(destination_path="target.data", server_path="data", connection="target")`;
+JavaScript: `pane.dataBinder({destination_path: 'target.data', server_path: 'data', connection: 'target'})`.
+The other end answers with the `PageStore` protocol (snapshot, then changes; a writer
+does not receive its own change). TYTX text; resolvers are never run, resolver nodes
+carry their cached value. When the other end closes, binders stop and the copy keeps
+its values; `gramlot.rpc.unregisterConnection(name)` releases the port.

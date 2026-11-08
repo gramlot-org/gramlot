@@ -835,3 +835,35 @@ and named metadata templates to `nodeId`. Regenerate saved Source: no alias or
 automatic conversion is supplied. Update Builder Python, Builder JavaScript,
 Gramlot and its examples together. System callbacks `_onCalling`, `_onResult`,
 `_onError` and namespaced `node_label`, `node_position`, `target_id` are unchanged.
+
+
+<a id="gc-095-160"></a>
+
+## 160 · Data bound to another store: `dataBinder` and `connection`
+
+`dataBinder` keeps a client Data branch (`destination_path`) and a branch of a store
+(`server_path`) in step, in both directions. Without `connection`, the store is the
+page's server `PageStore`, reached through its WebSocket.
+
+`connection` names another store, reached through a browser `MessagePort`. The
+name is a literal; the port is registered under that name by JavaScript code with
+`gramlot.rpc.registerConnection(name, port)`. A binder declared before its name is
+registered waits for the port. Registering a new port under the same name moves
+every binder of that name to it: each binder receives a new snapshot that replaces
+its branch.
+
+```python
+pane.dataBinder(destination_path="target.data", server_path="data", connection="target")
+```
+
+```javascript
+pane.dataBinder({destination_path: 'target.data', server_path: 'data', connection: 'target'});
+```
+
+The other end of the port serves its Bag with the same protocol as the
+`PageStore`: a snapshot at subscription, then the changes of the branch. A change
+written by one binder reaches the other binders of the same branch, not its writer.
+Values travel as TYTX text; resolvers of the served Bag are never run, and a
+resolver node arrives with its cached value. When the other end closes, the binders
+stop and the copy keeps its last values. `gramlot.rpc.unregisterConnection(name)`
+releases the port; the binders wait for the next one.
