@@ -106,55 +106,9 @@ test('tree drop reports before, inside and after relative to the destination row
     assert.deepEqual(placements, ['before', 'inside', 'after']);
 });
 
-test('a Source-linked external tree observes the original Bag and releases it on replacement and removal', async t => {
+test('a burst of store writes batches rendering and detachment cancels pending work', async t => {
     const f = fixture(t); await tick();
-    const owner = new Bag();
-    const first = new Bag({first:'Ada'}), second = new Bag({second:'Grace'});
-    const count = bag => Object.keys(bag._updSubscribers).length + Object.keys(bag._insSubscribers).length + Object.keys(bag._delSubscribers).length;
-    owner.setItem('first', first); owner.setItem('second', second);
-    const parent = first.parentNode;
-    f.source.setTreeStore(first);
-    assert.equal(count(first), 3);
-    await tick();
-    assert.equal(first.parentNode, parent);
-    assert.ok(f.row('first'));
-    first.setItem('added', 'New'); await tick();
-    assert.ok(f.row('added'));
-    f.source.setTreeStore(second); await tick();
-    assert.equal(count(first), 0);
-    assert.equal(count(second), 3);
-    assert.equal(first.parentNode, parent);
-    assert.ok(f.row('second'));
-    first.setItem('stale', 'Old'); await tick();
-    assert.equal(f.row('stale'), undefined);
-    second.setItem('live', 'New'); await tick();
-    assert.ok(f.row('live'));
-    const domParent = f.host.parentNode;
-    f.host.remove();
-    second.setItem('whileDetached', 'Still live');
-    domParent.append(f.host); await tick();
-    assert.ok(f.row('whileDetached'));
-    assert.equal(f.host.storeBag, second);
-    f.source.parentBag.popNode(f.source.label);
-    assert.equal(count(second), 0);
-    second.setItem('afterRemoval', 'Safe'); await tick();
-    assert.equal(f.window.document.getElementById('tree'), null);
-});
-
-test('external SourceBag nodes remain live and update the shared tree without copying', async t => {
-    const f = fixture(t); await tick();
-    const source = f.app.src.source;
-    f.source.setTreeStore(source); await tick();
-    assert.equal(f.host.storeBag, source);
-    assert.ok(f.row('main.pane.tree'));
-    f.app.src.builder.wrapSource(source.getNode('main.pane')).div('New', {node_label:'extra'});
-    await tick();
-    assert.ok(f.row('main.pane.extra'));
-});
-
-test('a burst of external Bag writes batches rendering and detachment cancels pending work', async t => {
-    const f = fixture(t); await tick();
-    const store = new Bag(); f.source.setTreeStore(store); await tick();
+    const store = new Bag(); f.app.data.setItem('model.nodes', store); await tick();
     let changes = 0;
     const observer = new f.window.MutationObserver(records => { changes += records.filter(record => record.type === 'childList').length; });
     observer.observe(f.host.control, {childList:true});

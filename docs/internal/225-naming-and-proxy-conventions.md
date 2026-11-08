@@ -3109,3 +3109,42 @@ convention. `EXPORT_FORMATS` follows the existing upper-case constant
 convention. The XML root `GenRoBag` is the legacy GenroPy root element. The
 license assets `writeExcelFileLicense` and `fflateLicense` follow the charts
 collection `<engine>License` asset names.
+
+### Named dataBinder connections — 2026-11-08
+
+Plan symbolic-references p6 (design `client-databinder-design`, phases 1-3). The
+registry place, the reserved attribute and keeping `server_path` are implementation
+choices open to owner review (plan p6 records them as such).
+
+- `connection` (dataBinder attribute, both `binding.json` copies, same spelling in
+  Python and JavaScript): the literal name of the store; it follows the existing
+  vocabulary of `PageStoreConnection`. `server_path` keeps its name.
+- `gramlot.rpc.connection(name)`, `registerConnection(name, port)`,
+  `unregisterConnection(name)` and the member `connections`: the registry of named
+  connections on the proxy that already holds the PageStore channel as transport.
+  The verbs follow `FrameMessages.registerChannel`/`unregisterChannel` (§010,
+  unified family protocol); `connections` follows `remoteRequests`.
+- `MessagePortConnection` (`message-port-connection.js`) and `MessagePortStore`
+  (`message-port-store.js`): the kind of channel before the word, as
+  `HttpTransport`/`WorkerTransport` (§010, server adapter row); `Connection` and
+  `Store` are the words of `PageStoreConnection` and `PageStore`. The file is
+  named after the class (§010, Files). `messageText` names what it returns.
+  States `waiting`, `open`, `closed` describe the port.
+- Protocol messages keep the PageStore operations (`subscribe`, `unsubscribe`,
+  `change`, `snapshot`) and add `closed` (already the PageStore close operation)
+  and `error` (the existing RPC field name).
+- `_inspector`: the reserved attribute of the inspector's projection nodes. Rule:
+  a reserved name not authored by applications starts with an underscore followed
+  by the name of its owner (`_meta` of genro-builders, `_gramlot` system Data
+  root); the owner is the inspector tool, whose vocabulary is `inspector`
+  (`InspectorConnection`, Logic group `inspector`, §030/§035).
+- `target` (the inspector's connection name and Data path `target.data`,
+  `target.source`): the tool's existing word for the inspected page (`targets`,
+  `selectedTarget`, target records, §035).
+
+External tree store, superseded — 2026-11-08: the 2026-11-04 entry for `treeStore`
+and `setTreeStore` (a Source-node reference to an external Bag) is withdrawn. Owner
+decision d-scope, 2026-11-07: "setTreeStore con un Bag oggetto sparisce". A tree
+reads its store only at `storepath`; the inspector keeps copies in its own Data
+through the named connection above. The runtime's `treeStore(node)` remains the
+reader of `storepath` for the tree context.

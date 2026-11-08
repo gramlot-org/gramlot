@@ -171,6 +171,7 @@ JavaScript authoring uses `pane.webcomponent({code: 'example-gauge'})`.
 component module explicitly before use; this declaration does not import it.
 
 The `example-gauge` tag is illustrative: provide and register its implementation
-before using it. JavaScript object properties are not HTML attributes. For the
-shared Gramlot tree, an external Bag can be attached to its Source node with
-`setTreeStore`, preserving the original Bag and its ownership.
+before using it. JavaScript object properties are not HTML attributes. The shared
+Gramlot tree reads its store only from `storepath`, an address in the page Data;
+a Bag owned by another instance is first copied into the page Data by a
+`dataBinder` with a `connection` (see [Data binding](097-data-binding.md)).

@@ -141,7 +141,7 @@ export class HtmlElement {
                 // The value at the Data `path` relative to the node, read without running resolvers, and its write.
                 readRelativeData: path => this.getStaticData(node, node.absDatapath(path)),
                 setRelativeData: (path, value, attributes = null) => node.setRelativeData(path, value, {attributes}),
-                // The tree's store, read from its storepath (`*S`, `*D` or an external Bag) at each call.
+                // The tree's store, read from its storepath (`*S`, `*D` or a Data path) at each call.
                 treeStore: () => node.rootBuilder.binding.treeStore(node),
                 callLogic: (name, keywords) => this.callLogic(node, name, keywords),
             });

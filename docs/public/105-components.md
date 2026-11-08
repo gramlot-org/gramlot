@@ -1268,10 +1268,10 @@ loading resolver-backed nodes; this is useful for an inspector. The default is
 `True`. Bind `labelState` when label callbacks need reactive presentation state:
 they receive its value as `state` alongside the real node and path.
 
-Browser tools can call `treeSourceNode.setTreeStore(bag)` to observe an existing
-Bag owned elsewhere. The reference stays on the Source node; the Bag is neither
-reparented nor copied. Replacement or Source removal releases the subscription.
-`setTreeStore(null)` returns the tree to its declared `storepath`.
+The tree reads its store only at `storepath`, an address in the page Data. A tool
+that shows a Bag owned by another Gramlot instance, such as the inspector, keeps a
+copy of it in its own Data with a `dataBinder` on a named `connection` and points
+`storepath` at that copy.
 
 `labelCb`, `getLabel`, `getLabelClass` and `getIconClass` name synchronous browser Logic methods. Each receives `(sourceNode, {item, path, opened, selected, state})`; item is the real BagNode and state is `labelState`. Label callbacks return exactly one of `{text: string}` and `{html: string}`. HTML is sanitized with DOMPurify; scripts, event handlers, unsafe URLs, styles and form controls cannot supply application behavior. Use Gramlot commands for actions. There is no `innerHTML:` string sentinel.
 

@@ -1265,9 +1265,8 @@ Caption precedence is `getLabel`, then `labelAttribute`, then `labelCb`, then th
 
 `resolveLazy=False` prevents resolver loading during expansion, search and
 selection; default `True`. Reactive `labelState` reaches label callbacks as `state`.
-`treeSourceNode.setTreeStore(bag)` observes an externally owned Bag without
-reparenting or copying it; replacement or Source removal unsubscribes.
-`setTreeStore(null)` returns to the declared `storepath`.
+The store is read only at `storepath`, a page Data address. A Bag owned by another
+instance is copied into the page Data by a `dataBinder` on a named `connection`.
 
 `labelCb`, `getLabel`, `getLabelClass` and `getIconClass` name synchronous browser Logic methods. Each receives `(sourceNode, {item, path, opened, selected, state})`; item is the real BagNode and state is `labelState`. Label callbacks return exactly one of `{text: string}` and `{html: string}`. HTML is sanitized with DOMPurify; scripts, event handlers, unsafe URLs, styles and form controls cannot supply application behavior. Use Gramlot commands for actions. There is no `innerHTML:` string sentinel.
 

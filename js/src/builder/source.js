@@ -1,5 +1,5 @@
 import {EditingSession} from '../editing-session.js';
-import {Bag, BagCbResolver} from '@genrojs/bag';
+import {BagCbResolver} from '@genrojs/bag';
 import {SourceBag, SourceBagNode, sourceAttributeItems, wrapSource} from '@genrojs/builders';
 import {fromTytx, getSubtypeDict, setSubtypeDict, toTytx} from '@genrojs/tytx';
 import {pointerTransform, pointerDependencies} from '@genrojs/builders';
@@ -219,23 +219,7 @@ function namedChild(bag, name) {
 
 export class GramlotBuilderBagNode extends SourceBagNode {
     #formState = null;
-    #treeStore = null;
 
-    /** An externally owned Bag attached to this tree's Source node. */
-    get treeStore() { return this.#treeStore; }
-
-    setTreeStore(bag) {
-        if (this.nodeTag !== 'tree') throw new TypeError('setTreeStore requires a tree Source node');
-        if (bag !== null && !(bag instanceof Bag)) throw new TypeError('setTreeStore requires a Bag or null');
-        if (bag === this.#treeStore) return;
-        this.#treeStore = bag;
-        const runtime = this.rootBuilder.binding;
-        const binding = runtime?.bindingFor(this);
-        if (binding && !binding.closed) {
-            binding.rebind();
-            if (runtime.renderer.attached(this)) runtime.renderer.project(this);
-        }
-    }
     /** The local form lifecycle owned by the nearest marked Source ancestor. */
     get formState() {
         for (let owner = this; owner; owner = owner.parentNode) {
