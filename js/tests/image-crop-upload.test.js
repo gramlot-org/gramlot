@@ -29,8 +29,10 @@ test('a confirmed crop can use the existing upload engine without putting files 
     const gramlot = {pageId:'page',uploadUrl:'/upload',capabilities:['upload'],rpc:{call:async (type,name,params) => {
         metadata = params.metadata; return {transferId:'transfer',authorization:'private-token'};
     }}};
-    const store = new Bag();
-    const engine = new UploadEngine({gramlot,window,store,operation:'save_image',getContext:() => ({}),onChange() {},onComplete:(item,result) => {completed = result;}});
+    const data = new Bag();
+    data.setItem('uploads.queue', new Bag());
+    const store = data.getItem('uploads.queue');
+    const engine = new UploadEngine({gramlot,window,data,path:'uploads.queue',operation:'save_image',getContext:() => ({}),onChange() {},onComplete:(item,result) => {completed = result;}});
     t.after(() => engine.dispose());
     const id = engine.add(uploadFile);
     await engine.start(id);

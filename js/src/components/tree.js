@@ -43,7 +43,7 @@ export const RowActions = defineComponent({
 });
 
 export const Tree = defineComponent({
-    name: 'tree', tag: 'gramlot-tree', base: Container, subTags: 'rowActions[:1]', sourceContext: true, bagStore: true, dragSource: true,
+    name: 'tree', tag: 'gramlot-tree', base: Container, subTags: 'rowActions[:1]', sourceContext: true, dragSource: true,
     parameters: {
         storepath: {dtype: 'T'},
         draggable: {dtype: 'B', default: false, binding: 'read'},
@@ -71,7 +71,6 @@ export const Tree = defineComponent({
         checkChildren: {dtype: 'B', default: true, binding: 'read'}
     },
     implementation: Base => class extends Base {
-        #store;
         #sanitizer;
         #context;
         #expanded = new Set();
@@ -151,7 +150,8 @@ export const Tree = defineComponent({
             });
         }
         setSourceContext(context) { this.#context = context; }
-        get storeBag() { return this.#store; }
+        /** The store Bag, read from the tree's address at each use; the tree never keeps it. */
+        get storeBag() { return this.#context.treeStore(); }
         /** Read only the rendered row and its BagNode; never request a resolver value. */
         getDragContext(event) {
             for (const element of event.composedPath()) {
@@ -168,22 +168,6 @@ export const Tree = defineComponent({
                 }};
             }
             return null;
-        }
-        setStoreBag(bag) {
-            if (!(bag instanceof Bag)) throw new TypeError('tree storepath must resolve to a Bag');
-            if (bag !== this.#store) {
-                this.#store = bag;
-                this.#resetSearch();
-                this.#searchText = this.#searchInput.toLowerCase();
-                this.#expanded.clear();
-                this.#errors.clear();
-                this.#requestedPath = undefined;
-                this.#selectionVersion++;
-                this.#checkedPaths = undefined;
-                this.#checkedBags = new WeakMap();
-                this.#checkedNodes = new Set();
-            }
-            this.#schedule();
         }
         projectAttributes(attrs, adapt) {
             this.#pathsEnabled = Object.hasOwn(attrs, 'checkedPaths');
@@ -224,8 +208,8 @@ export const Tree = defineComponent({
         }
         #opened(path) { return this.#searchText ? this.#searchOpen.has(path) : this.#expanded.has(path); }
         async #searchBranches() {
-            const version = this.#searchVersion, store = this.#store;
-            const current = () => this.isConnected && version === this.#searchVersion && store === this.#store
+            const version = this.#searchVersion, store = this.storeBag;
+            const current = () => this.isConnected && version === this.#searchVersion
                 && this.parameters.searchEager && this.parameters.resolveLazy;
             this.#searching = true;
             const visit = async (bag, prefix, ancestors = new Set()) => {
@@ -233,7 +217,7 @@ export const Tree = defineComponent({
                 if (ancestors.has(bag)) throw new TypeError('tree requires an acyclic Bag store');
                 const next = new Set(ancestors).add(bag);
                 for (const node of bag.getNodes()) {
-                    if (bag === this.#store && node.label === this.parameters.excludeRoot) continue;
+                    if (!prefix && node.label === this.parameters.excludeRoot) continue;
                     if (!current()) return;
                     if (node.attr.loop === true) continue;
                     if (node.resolver !== null && !this.parameters.resolveLazy) continue;
@@ -270,10 +254,22 @@ export const Tree = defineComponent({
             this.#scheduled = true;
             queueMicrotask(() => {
                 this.#scheduled = false;
-                if (this.isConnected && this.#store) this.#render();
+                if (!this.isConnected) return;
+                // The final read of the address: an address without a Bag is reported, not drawn.
+                let store;
+                try {
+                    store = this.storeBag;
+                    // A store resolver still loading: its value arrives as a Data change that projects the tree again.
+                    if (store instanceof Promise) return;
+                    if (!(store instanceof Bag)) throw new TypeError('tree storepath must resolve to a Bag');
+                } catch (error) {
+                    this.#context.reportError(error, 'Tree');
+                    return;
+                }
+                this.#render(store);
             });
         }
-        #render() {
+        #render(store) {
             const focused = this.shadowRoot.activeElement?.closest('[role=treeitem]')?.dataset.path;
             const focusedFavorite = this.shadowRoot.activeElement?.dataset.favoritePath;
             const focusedFavoritesGroup = this.shadowRoot.activeElement?.dataset.favoritesGroup === 'true';
@@ -282,7 +278,7 @@ export const Tree = defineComponent({
             if (this.#checksEnabled && this.parameters.checkChildren &&
                 !(this.#pathsEnabled && this.parameters.checkedPaths !== this.#checkedPaths)) {
                 const visited = new Set();
-                checksChanged = this.#syncChecked(this.#store, '', new Set(), loaded, visited);
+                checksChanged = this.#syncChecked(store, '', new Set(), loaded, visited);
                 for (const path of this.#checkedNodes) if (!visited.has(path)) this.#checkedNodes.delete(path);
             }
             const items = new Map(), seen = new Set();
@@ -290,7 +286,7 @@ export const Tree = defineComponent({
                 if (seen.has(bag)) throw new TypeError('tree requires an acyclic Bag store');
                 seen.add(bag);
                 for (const node of bag.getNodes()) {
-                    if (bag === this.#store && node.label === this.parameters.excludeRoot) continue;
+                    if (!prefix && node.label === this.parameters.excludeRoot) continue;
                     const path = prefix ? `${prefix}.${node.label}` : node.label;
                     const value = node.resolver !== null && !this.parameters.resolveLazy ? null : node.staticValue;
                     items.set(path, {node, ancestors, children: value instanceof Bag ? value : null});
@@ -298,7 +294,7 @@ export const Tree = defineComponent({
                 }
                 seen.delete(bag);
             };
-            visit(this.#store, '', []);
+            visit(store, '', []);
             if (this.parameters.searchEager && this.parameters.resolveLazy && this.#searchText && this.#searchTimer === null && !this.#searching && [...items.values()].some(({node}) =>
                 node.attr.loop !== true && node.resolver !== null && node.resolver.expired && !this.#searchAttempted.has(node))) {
                 void this.#searchBranches();
@@ -347,7 +343,7 @@ export const Tree = defineComponent({
                 const version = ++this.#selectionVersion;
                 const ancestors = items.get(requested)?.ancestors ?? [];
                 if (requested && !items.has(requested)) {
-                    reveal = {requested, version, store: this.#store};
+                    reveal = {requested, version};
                 }
                 for (let index = 0; index < ancestors.length; index++) {
                     const path = requested.split('.').slice(0, index + 1).join('.');
@@ -366,7 +362,7 @@ export const Tree = defineComponent({
                 list.className = 'group'; list.setAttribute('part', 'group');
                 list.setAttribute('role', 'group');
                 for (const node of bag.getNodes()) {
-                    if (bag === this.#store && node.label === this.parameters.excludeRoot) continue;
+                    if (!prefix && node.label === this.parameters.excludeRoot) continue;
                     const path = prefix ? `${prefix}.${node.label}` : node.label;
                     const {children} = items.get(path);
                     const scalar = children === null && !this.parameters.hideValues && (node.resolver === null || !node.resolver.expired);
@@ -556,7 +552,7 @@ export const Tree = defineComponent({
                 }
                 return list;
             };
-            const root = build(this.#store, '', null);
+            const root = build(store, '', null);
             if (this.parameters.favorites !== null) {
                 if (!(this.parameters.favorites instanceof Bag)) throw new TypeError('tree favorites must be a Bag');
                 if (this.parameters.favorites.length) root.prepend(this.#buildFavorites(this.parameters.favorites, selected));
@@ -669,11 +665,11 @@ export const Tree = defineComponent({
             if (this.parameters.selectedPath === path) this.retrySelection();
             else this.#context.writeParameter('selectedPath', path);
         }
-        async #loadSelection({requested, version, store}) {
+        async #loadSelection({requested, version}) {
             const current = () => this.isConnected && this.#selectionVersion === version &&
-                this.#store === store && this.parameters.selectedPath === requested && this.#selectedPath === requested;
+                this.parameters.selectedPath === requested && this.#selectedPath === requested;
             const parts = requested.split('.');
-            let bag = store;
+            let bag = this.storeBag;
             for (const [index, part] of parts.slice(0, -1).entries()) {
                 const path = parts.slice(0, index + 1).join('.');
                 if (!current()) return;
@@ -711,7 +707,8 @@ export const Tree = defineComponent({
             node.setAttr({checked: this.parameters.checkChildren && children instanceof Bag && children.length
                 ? this.#checkStatus(children) : value});
             if (this.parameters.checkChildren) {
-                for (let parent = node.parentBag.parentNode; parent && parent !== this.#store.parentNode; parent = parent.parentBag.parentNode) {
+                const root = this.storeBag.parentNode;
+                for (let parent = node.parentBag.parentNode; parent && parent !== root; parent = parent.parentBag.parentNode) {
                     parent.setAttr({checked: this.#checkStatus(parent.staticValue)});
                 }
             }
@@ -775,7 +772,7 @@ export const Tree = defineComponent({
                     } else if (child.attr.checked === true) paths.push(path);
                 }
             };
-            visit(this.#store, '');
+            visit(this.storeBag, '');
             if (preservePending && this.#pathsEnabled) {
                 for (const path of (this.parameters.checkedPaths || '').split(this.parameters.checkedPaths_joiner).filter(Boolean)) {
                     if (!paths.includes(path) && this.#pendingCheckedPath(path)) paths.push(path);
@@ -787,7 +784,7 @@ export const Tree = defineComponent({
         }
         #pendingCheckedPath(path) {
             const parts = path.split('.');
-            let bag = this.#store;
+            let bag = this.storeBag;
             for (let index = 0; index < parts.length; index++) {
                 const node = bag.getNode(parts[index]);
                 if (!node) return false;

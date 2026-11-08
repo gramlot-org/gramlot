@@ -1677,7 +1677,7 @@
               "default": 64
             }
           },
-          "bagStore": true
+          "sourceContext": true
         }
       }
     },

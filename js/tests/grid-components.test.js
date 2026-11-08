@@ -170,9 +170,12 @@ test('sort defers subtree projection and row edits never rebuild the struct', t 
     f.app.data.setItem('model.rows', rows);
     const hosts = [f.host, f.window.document.getElementById('second')];
     let structures = 0, projections = 0;
+    // The grid reads its structure at the structpath address, without resolvers, when it rebuilds it.
+    const getItem = f.app.data.getItem.bind(f.app.data);
+    f.app.data.getItem = (path, ...rest) => { if (path === 'model.structure' && rest[1] === true) structures++; return getItem(path, ...rest); };
+    t.after(() => { delete f.app.data.getItem; });
     for (const host of hosts) {
-        const setStruct = host.setStructBag.bind(host), project = host.projectAttributes.bind(host);
-        host.setStructBag = bag => { structures++; setStruct(bag); };
+        const project = host.projectAttributes.bind(host);
         host.projectAttributes = (...args) => { projections++; return project(...args); };
     }
     const store = f.source.gridCollectionView;

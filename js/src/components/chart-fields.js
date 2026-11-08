@@ -34,13 +34,12 @@ export function chartFields(store) {
 }
 
 export const ChartFields = defineComponent({
-    name:'chartFields',tag:'gramlot-chart-fields',base:Container,sourceContext:true,bagStore:true,
+    name:'chartFields',tag:'gramlot-chart-fields',base:Container,sourceContext:true,
     parameters:{timeFieldId:{dtype:'T'},storepath:{dtype:'T'},rowMode:{dtype:'T'},configpath:{dtype:'T'},categoryId:{dtype:'T'},mapMeasureId:{dtype:'T'},mapLabelId:{dtype:'T'},secondCategoryId:{dtype:'T'},geometryId:{dtype:'T'},measureMenuId:{dtype:'T'},measureRoleIds:{dtype:'T'}},
     implementation:Base => class extends Base {
-        #context; #bag; #store; #release; #signature; #active=false;
+        #context; #store; #release; #signature; #active=false;
         constructor() { super(); const style=this.ownerDocument.createElement('style');style.textContent=':host{display:none}';this.shadowRoot.append(style); }
         setSourceContext(context) { this.#context=context; }
-        setStoreBag(bag) { if(!(bag instanceof Bag))throw new TypeError('chartFields requires a Data Bag'); this.#bag=bag; }
         projectAttributes(attrs,adapt) { const rest=super.projectAttributes(attrs,adapt);if(this.#active)this.#connectStore();return rest; }
         connectedCallback() { this.#active=true;this.#connectStore(); }
         #connectStore() {

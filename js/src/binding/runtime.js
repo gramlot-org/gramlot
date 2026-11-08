@@ -528,36 +528,40 @@ export class NodeBinding {
         }
         const remoteDependencies = new Set();
         const component = node._getMeta('gramlot_component');
-        for (const [capability, attribute] of [['bagStore', 'storepath'], ['bagStruct', 'structpath']]) {
-            if (!component?.[capability]) continue;
-            if (capability === 'bagStore' && node.nodeTag === 'tree' && node.treeStore !== null) {
-                const store = node.treeStore;
+        // A component that declares `storepath` or `structpath` reads data or structure at that
+        // address when it draws: a change inside the Bag and a replacement of the Bag at the
+        // address reach the node through one subtree registration.
+        for (const attribute of ['storepath', 'structpath']) {
+            if (!component?.parameters?.[attribute]) continue;
+            const store = attribute === 'storepath';
+            if (store && node.nodeTag === 'tree' && node.treeStore !== null) {
+                const external = node.treeStore;
                 const subscription = `gramlot-tree-${randomId()}`;
-                store.subscribe(subscription, {any: () => {
+                external.subscribe(subscription, {any: () => {
                     if (!this.closed && this.runtime.renderer.attached(node)) this.runtime.renderer.project(node);
                 }});
-                this.#registrations.push({close: () => store.unsubscribe(subscription, {any: true})});
+                this.#registrations.push({close: () => external.unsubscribe(subscription, {any: true})});
                 continue;
             }
             const value = node.getAttr(attribute);
             if (typeof value !== 'string' || !value || /^[\^=]/.test(value) || value.includes('?')) {
                 throw new TypeError(`${attribute} requires a plain Bag data path`);
             }
-            if (capability === 'bagStore' && node.nodeTag === 'tree' && (value === '*S' || value.startsWith('*S.'))) {
+            if (store && node.nodeTag === 'tree' && (value === '*S' || value.startsWith('*S.'))) {
                 this.#registrations.push(this.runtime.registerTreeRoot(this, true));
                 continue;
             }
-            if (capability === 'bagStore' && node.nodeTag === 'tree' && value === '*D') {
+            if (store && node.nodeTag === 'tree' && value === '*D') {
                 this.#registrations.push(this.runtime.registerTreeRoot(this, false));
                 continue;
             }
-            const path = capability === 'bagStore' && node.nodeTag === 'tree' && value.startsWith('*D.')
+            const path = store && node.nodeTag === 'tree' && value.startsWith('*D.')
                 ? value.slice(3) : node.absDatapath(value);
             const registration = this.runtime.router.register({path, recipient: this, subtree: true});
             this.#registrations.push(registration);
             // Grid receives store invalidations separately. Other Bag consumers
             // (such as tree) continue to receive every ordinary Data event.
-            if (capability === 'bagStore' && component.bagStruct) this.#storeRegistration = registration;
+            if (store && component.parameters.structpath) this.#storeRegistration = registration;
         }
         const timingDependencies = this.remote ? pointerDependencies(node, node.getAttr('_timing')) : new Set();
         if (this.remote) for (const [name, raw] of Object.entries(node.getAttr())) {

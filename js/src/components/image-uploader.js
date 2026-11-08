@@ -8,14 +8,14 @@ import {randomId} from '../random-id.js';
 import {captureScreen} from './screen-capture.js';
 
 export const ImageUploader = defineComponent({
-    name:'imageUploader', tag:'gramlot-image-uploader', base:controlElement, sourceContext:true, bagStore:true,
+    name:'imageUploader', tag:'gramlot-image-uploader', base:controlElement, sourceContext:true,
     parameters:{value:{dtype:'T', nullable:true, default:null, binding:'twoWay'},
         storepath:{dtype:'T'}, contextPath:{dtype:'T',nullable:true,default:null}, operation:{dtype:'T', nullable:true, default:null},
         cropWidth:{dtype:'L', default:256}, cropHeight:{dtype:'L', default:256},
         outputWidth:{dtype:'L', default:512}, outputHeight:{dtype:'L', default:512},
         disabled:{dtype:'B', default:false, binding:'read'}, onComplete:{dtype:'T', nullable:true, default:null}},
     implementation: Base => class extends Base {
-        #context; #store; #engine; #original; #dialog; #pending; #generation = 0; #projected; #written;
+        #context; #engine; #original; #dialog; #pending; #generation = 0; #projected; #written;
         #cameraSubscription; #cameraToken = null; #cameraPending = false; #cameraAvailable = false; #cameraStatus; #screenRequest = null;
         constructor() {
             super();
@@ -63,12 +63,11 @@ export const ImageUploader = defineComponent({
         }
         readControlValue() { return this.parameters?.value ?? null; }
         writeControlValue(value) { if (this.parameters) { this.parameters.value = value; this.#render(); } }
-        setStoreBag(store) {
-            if (!(store instanceof Bag)) throw new TypeError('imageUploader storepath must resolve to a Bag');
-            if (this.#store && this.#store !== store) { this.#invalidate(); this.#engine?.dispose(); this.#engine = null; }
-            this.#store = store;
-        }
         projectAttributes(attrs, adapt) {
+            // A new storepath address is a new queue: the engine of the previous one ends.
+            if (this.#engine && this.#engine.path !== this.#context.attrDatapath('storepath')) {
+                this.#invalidate(); this.#engine.dispose(); this.#engine = null;
+            }
             const rest = super.projectAttributes(attrs, adapt);
             const p = this.parameters;
             for (const key of ['cropWidth','cropHeight','outputWidth','outputHeight']) {
@@ -143,9 +142,10 @@ export const ImageUploader = defineComponent({
             } catch (error) { if (token === this.#generation) this.message.textContent = `Image failed: ${error.message}`; }
         }
         #ensureEngine() {
-            if (!this.#engine && this.#context && this.#store && this.parameters) {
+            if (!this.#engine && this.#context && this.parameters) {
                 const {gramlot,window} = this.#context.upload();
-                this.#engine = new UploadEngine({gramlot,window,store:this.#store,operation:this.parameters.operation,
+                this.#engine = new UploadEngine({gramlot,window,data:this.#context.sourceNode.data,
+                    path:this.#context.attrDatapath('storepath'),operation:this.parameters.operation,
                     onChange:() => this.#render(), getContext:() => readUploadContext(this.#context.sourceNode,this.parameters.contextPath), onComplete:(item,result) => this.#complete(item,result)});
             }
         }
@@ -160,7 +160,7 @@ export const ImageUploader = defineComponent({
             if (!this.parameters) return;
             const value = this.parameters.value;
             if (value) { this.preview.src = value; this.preview.hidden = false; } else { this.preview.removeAttribute('src'); this.preview.hidden = true; }
-            const state = this.#pending && this.#store.getItem(this.#pending.id)?.getItem('status');
+            const state = this.#pending && this.#engine.store.getItem(this.#pending.id)?.getItem('status');
             const busy = Boolean(this.#pending || this.#cameraToken !== null || this.#screenRequest);
             this.screenButton.hidden = !this.ownerDocument.defaultView.navigator.mediaDevices?.getDisplayMedia;
             this.screenButton.disabled = Boolean(this.parameters.disabled || busy);
@@ -172,7 +172,7 @@ export const ImageUploader = defineComponent({
             this.clearButton.disabled ||= !value;
             this.cancelButton.hidden = !['preparing','uploading'].includes(state);
             this.checkButton.hidden = state !== 'uncertain';
-            if (state) this.message.textContent = `Upload: ${state}${this.#store.getItem(this.#pending.id).getItem('error') ? ' — ' + this.#store.getItem(this.#pending.id).getItem('error') : ''}`;
+            if (state) this.message.textContent = `Upload: ${state}${this.#engine.store.getItem(this.#pending.id).getItem('error') ? ' — ' + this.#engine.store.getItem(this.#pending.id).getItem('error') : ''}`;
         }
         async #load(source, objectUrl = null) {
             const win = this.ownerDocument.defaultView, image = new win.Image();
@@ -240,7 +240,7 @@ export const ImageUploader = defineComponent({
         }
         #settle(id) {
             if (!this.#pending || this.#pending.id !== id) return;
-            const row = this.#store.getItem(id), state = row.getItem('status');
+            const row = this.#engine.store.getItem(id), state = row.getItem('status');
             if (['failed','cancelled','completed'].includes(state)) {
                 const error = row.getItem('error');
                 if (this.#pending.candidate !== this.#original) this.#release(this.#pending.candidate);

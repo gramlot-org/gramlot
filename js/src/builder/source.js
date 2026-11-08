@@ -216,7 +216,7 @@ export class GramlotBuilderBagNode extends SourceBagNode {
     /** The local form lifecycle owned by the nearest marked Source ancestor. */
     get formState() {
         for (let owner = this; owner; owner = owner.parentNode) {
-            if (owner.#formState && owner._getMeta('gramlot_component')?.bagStore) return owner.#formState;
+            if (owner.#formState && owner._getMeta('gramlot_component')?.parameters?.storepath) return owner.#formState;
             if (owner.getAttr('formId') != null || owner.getAttr('form') === true) {
                 const state = owner.#formState ??= new EditingSession(owner, this.rootBuilder.binding);
                 state.rebind();
@@ -323,7 +323,7 @@ export class GramlotBuilderBagNode extends SourceBagNode {
             }
         }
         if (isExpression(this.staticValue) || this.nodeTag === 'script' && typeof this.staticValue === 'string') items.push(['', this.staticValue]);
-        if (this._getMeta('gramlot_component')?.bagStruct) items.push(...structFormulaCode(this));
+        if (this._getMeta('gramlot_component')?.parameters?.structpath) items.push(...structFormulaCode(this));
         return items;
     }
 

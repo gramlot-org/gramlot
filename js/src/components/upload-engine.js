@@ -17,9 +17,17 @@ export class UploadEngine {
     #transfers = new Map();
     #checking = new Set();
     #closed = false;
-    constructor({gramlot, window, store, operation, onComplete, onChange, getContext}) {
+    /** The queue lives at the absolute Data `path`; the engine keeps the Data root and the path. */
+    constructor({gramlot, window, data, path, operation, onComplete, onChange, getContext}) {
+        if (!(data instanceof Bag)) throw new TypeError('uploader requires the Data root Bag');
+        if (typeof path !== 'string' || !path) throw new TypeError(`uploader requires a Data path: ${path}`);
+        Object.assign(this, {gramlot, window, data, path, operation, onComplete, onChange, getContext});
+    }
+    /** The queue Bag, read at its address without resolvers at each use. */
+    get store() {
+        const store = this.data.getItem(this.path, null, true);
         if (!(store instanceof Bag)) throw new TypeError('uploader storepath must resolve to a Bag');
-        Object.assign(this, {gramlot, window, store, operation, onComplete, onChange, getContext});
+        return store;
     }
     add(file) {
         if (this.#closed) throw new Error('Uploader is closed');

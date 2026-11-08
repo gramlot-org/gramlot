@@ -903,14 +903,29 @@ test('child_count suppresses empty lazy branches without resolving them', async 
     assert.ok(f.row('unknown.child'));
 });
 
-test('bagStore routing uses capability metadata, not the tree tag name', async t => {
+test('store routing follows the declared storepath parameter, not the tree tag name', async t => {
     const collection = defineCollection({name: 'testTree', components: [
         defineComponent({...Tree, name: 'outline', tag: 'test-outline'})
     ]});
     const f = fixture(t, {collection, tag: 'outline'}); await tick();
     f.store.setItem('newNode', 1); await tick(); assert.ok(f.row('newNode'));
-    assert.equal(collection.toDocument().elements.outline._meta.gramlot_component.bagStore, true);
-    assert.throws(() => f.host.setStoreBag({}), /must resolve to a Bag/);
+    const meta = collection.toDocument().elements.outline._meta.gramlot_component;
+    assert.ok(meta.parameters.storepath);
+    assert.equal(Object.hasOwn(meta, 'bagStore'), false);
+    assert.equal(Object.hasOwn(f.host, 'setStoreBag') || 'setStoreBag' in f.host, false);
+});
+
+test('a tree reads its store at the address when it draws and reports an address without a Bag', async t => {
+    const f = fixture(t); await tick();
+    const errors = [];
+    f.app.src.renderer.binding.reportError = (error, title) => errors.push([title, error.message]);
+    const replacement = new Bag({fresh: 'New'});
+    f.app.data.setItem('model.nodes', replacement); await tick();
+    assert.equal(f.host.storeBag, replacement);
+    assert.ok(f.row('fresh')); assert.equal(f.row('folder'), undefined);
+    f.app.data.setItem('model.nodes', 'not a Bag'); await tick();
+    assert.deepEqual(errors, [['Tree', 'tree storepath must resolve to a Bag']]);
+    assert.ok(f.row('fresh'), 'the last drawn rows stay');
 });
 
 test('absolute storepath changes rebind the store and release the previous route', async t => {

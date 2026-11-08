@@ -3,12 +3,11 @@ import {Bag} from '@gramlot/gramlot';
 import {defineComponent} from './registry.js';
 import {Container} from './container.js';
 import {SVG_NS} from '../renderer/attributes.js';
-import {randomId} from '../random-id.js';
 import {corners, overlaps, contactFraction} from './tray-geometry.js';
 import {createTraySettings} from './tray-settings.js';
 
 export const TrayPane = defineComponent({
-    name: 'trayPane', tag: 'gramlot-tray-pane', base: Container, subTags: '*', bagStore: true,
+    name: 'trayPane', tag: 'gramlot-tray-pane', base: Container, subTags: '*', sourceContext: true,
     parameters: {storepath: {dtype: 'T'}, locked: {dtype:'B',default:false,binding:'read'},
         gridStep:{dtype:'L',default:10,binding:'read'},gridVisible:{dtype:'B',default:false,binding:'read'},
         rotationStep:{dtype:'N',default:15,binding:'read'}},
@@ -80,9 +79,10 @@ export const TrayPane = defineComponent({
             return {...rest, box_position: 'absolute',
                 ...(rest.lbl_variant == null ? {lbl_variant: 'card'} : {})};
         }
-        #store;
+        #context;
+        // The router registration on the storepath address: the geometry events reach the tray by path.
+        #geometry = null;
         #settings=new Set();
-        #subscription = `tray-${randomId()}`;
         #events;
         #scheduled = false;
         #drag;
@@ -105,24 +105,19 @@ export const TrayPane = defineComponent({
             this.style.setProperty('--tray-grid-size',`${this.parameters.gridStep}px`);
             this.style.setProperty('--tray-grid-display',this.parameters.gridVisible&&this.parameters.gridStep>0?'block':'none');
             if(this.parameters.locked)this.#finish();
+            if(this.isConnected)this.#observeGeometry();
             this.#schedule();
             return rest;
         }
-        setStoreBag(bag) {
-            if (!(bag instanceof Bag)) throw new TypeError('trayPane storepath must resolve to a Bag');
-            // External geometry changes end an in-progress gesture, without
-            // overwriting the new store. Own writes retain pointer capture.
-            if(this.#store!==bag) {
-                this.#finish();
-
-                this.#store?.unsubscribe(this.#subscription,{any:true});
-                this.#store = bag;
-                if(this.isConnected)this.#observeGeometry();
-            }
-            this.#schedule();
+        setSourceContext(context) { this.#context = context; }
+        /** The geometry Bag, read at the storepath address at each use; the tray never keeps it. */
+        #storeBag() {
+            const store = this.#context.getStaticData(this.#context.attrDatapath('storepath'));
+            if (!(store instanceof Bag)) throw new TypeError('trayPane storepath must resolve to a Bag');
+            return store;
         }
         connectedCallback() {
-            if(this.#store)this.#observeGeometry();
+            this.#observeGeometry();
             this.#events = new this.ownerDocument.defaultView.AbortController();
             const options = {signal:this.#events.signal};
             this.shadowRoot.querySelector('slot').addEventListener('slotchange', () => this.#schedule(), options);
@@ -156,7 +151,7 @@ export const TrayPane = defineComponent({
                     box.labelbox.traySettings.remove();
                     this.#settings.delete(box.labelbox.traySettings);
                     block.remove();
-                    if(this.#store.getNode(block.label))this.#store.popNode(block.label);
+                    const store=this.#storeBag();if(store.getNode(block.label))store.popNode(block.label);
                     return;
                 }
                 const settings=box.labelbox.traySettings;
@@ -168,39 +163,52 @@ export const TrayPane = defineComponent({
         disconnectedCallback() {
             for(const settings of this.#settings)settings.remove();
             this.#finish(); this.#events.abort();
-            this.#store?.unsubscribe(this.#subscription,{any:true});
+            this.#geometry?.close(); this.#geometry=null;
         }
+        /**
+         * Observe the geometry at the storepath address through a router registration. External
+         * geometry changes, a replacement of the Bag at the address and a new address end an
+         * in-progress gesture, without overwriting the new store. Own writes retain pointer capture.
+         */
         #observeGeometry() {
-            this.#store.subscribe(this.#subscription,{any:event=>{
-                if(this.#writing)return;
-                if(event.node.label!=='selected'||this.#drag?.members||this.#drag?.marquee)this.#finish();
-                if(!['layer','rotation','scale'].includes(event.node.label) || !['upd_value','upd_value_attr'].includes(event.evt))return;
-                const box=[...this.children].find(child=>
-                    this.#store.getItem([TrayPane.#blocks.get(child).label])===event.node.parentBag);
-                if(!box)return;
-                const key=event.node.label,value=event.node.value;
-                let accepted=value;
-                if(key==='layer') {
-                    if(!Number.isInteger(value) || this.#obstacles(box,value).some(other=>overlaps(this.#rectangle(box),other)))accepted=event.oldvalue;
-                } else if(typeof value!=='number'||!Number.isFinite(value)||(key==='scale'&&value<=0))accepted=event.oldvalue;
-                else {
-                    const to=this.#rectangle(box),from={...to,[key]:event.oldvalue};
-                    const fraction=contactFraction(from,to,this.#obstacles(box,event.node.parentBag.getItem('layer')),this.#bounds());
-                    accepted=event.oldvalue+(value-event.oldvalue)*fraction;
-                }
-                if(accepted!==value) {
-                    this.#writing=true;
-                    try { event.node.setValue(accepted); } finally { this.#writing=false; }
-                }
-                this.#schedule();
-            }});
+            const path=this.#context.attrDatapath('storepath');
+            if(this.#geometry?.path===path)return;
+            if(this.#geometry){this.#finish();this.#geometry.close();}
+            this.#geometry=this.#context.sourceNode.rootBuilder.binding.router.register({path,subtree:true,
+                recipient:{receive:change=>this.#geometryChange(change)}});
+        }
+        #geometryChange(event) {
+            if(this.#writing)return;
+            if(event.node.label!=='selected'||this.#drag?.members||this.#drag?.marquee)this.#finish();
+            if(!['layer','rotation','scale'].includes(event.node.label) || !['upd_value','upd_value_attr'].includes(event.evt))return;
+            // The row of the event, by address: <storepath>.<row label>.<key>.
+            const prefix=`${this.#geometry.path}.`,suffix=`.${event.node.label}`;
+            if(!event.path.startsWith(prefix)||!event.path.endsWith(suffix))return;
+            const label=event.path.slice(prefix.length,-suffix.length);
+            const box=[...this.children].find(child=>TrayPane.#blocks.get(child).label===label);
+            if(!box)return;
+            const key=event.node.label,value=event.node.value;
+            let accepted=value;
+            if(key==='layer') {
+                if(!Number.isInteger(value) || this.#obstacles(box,value).some(other=>overlaps(this.#rectangle(box),other)))accepted=event.oldvalue;
+            } else if(typeof value!=='number'||!Number.isFinite(value)||(key==='scale'&&value<=0))accepted=event.oldvalue;
+            else {
+                const to=this.#rectangle(box),from={...to,[key]:event.oldvalue};
+                const fraction=contactFraction(from,to,this.#obstacles(box,event.node.parentBag.getItem('layer')),this.#bounds());
+                accepted=event.oldvalue+(value-event.oldvalue)*fraction;
+            }
+            if(accepted!==value) {
+                this.#writing=true;
+                try { event.node.setValue(accepted); } finally { this.#writing=false; }
+            }
+            this.#schedule();
         }
         #schedule() {
             if (this.#scheduled) return;
             this.#scheduled = true;
             queueMicrotask(() => {
                 this.#scheduled = false;
-                if (!this.isConnected || !this.#store) return;
+                if (!this.isConnected) return;
                 for(const settings of this.#settings)if(![...this.children].some(box=>box.labelbox.traySettings===settings)) {
                     settings.remove();this.#settings.delete(settings);
                 }
@@ -238,11 +246,11 @@ export const TrayPane = defineComponent({
             });
         }
         #row(label) {
-            const node = this.#store.getNode([label]);
+            const store = this.#storeBag(), node = store.getNode([label]);
             let row = node?.value;
             if (!node) {
                 row = new Bag({left:0, top:0, layer:0, selected:false});
-                this.#store.setItem([label], row);
+                store.setItem([label], row);
             }
             if (!(row instanceof Bag)) throw new TypeError(`trayPane position '${label}' must be a Bag`);
             if(!row.getNode('selected'))row.setItem('selected',false);

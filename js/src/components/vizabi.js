@@ -5,10 +5,10 @@ import {BagCollectionView} from '../stores/bag-collection-view.js';
 import {VizabiSession} from './vizabi-session.js';
 
 const VizabiBubble=defineComponent({
-    name:'vizabiBubble',tag:'gramlot-vizabi-bubble',base:Container,sourceContext:true,bagStore:true,
+    name:'vizabiBubble',tag:'gramlot-vizabi-bubble',base:Container,sourceContext:true,
     parameters:{storepath:{dtype:'T'},rowMode:{dtype:'T',default:'attributes'},configuration:{dtype:'X',binding:'read'},libraryUrl:{dtype:'T'}},
     implementation:Base=>class extends Base {
-        #context;#bag;#signature;#libraryUrl;#configuration;#view;#release;#session;#resize;#revision=0;#active=false;#subscription=Symbol('vizabi-config');#style;#message;#host;
+        #context;#signature;#libraryUrl;#configuration;#view;#release;#session;#resize;#revision=0;#active=false;#subscription=Symbol('vizabi-config');#style;#message;#host;
         constructor(){
             super();this.control.replaceChildren();
             this.#style=this.ownerDocument.createElement('style');this.shadowRoot.append(this.#style);
@@ -18,7 +18,6 @@ const VizabiBubble=defineComponent({
             this.#resize=new this.ownerDocument.defaultView.ResizeObserver(()=>this.#session?.resize());
         }
         setSourceContext(context){this.#context=context;}
-        setStoreBag(bag){this.#bag=bag;}
         projectAttributes(attrs,adapt){const result=super.projectAttributes(attrs,adapt);if(this.#active)this.#connect();return result;}
         connectedCallback(){this.#active=true;this.#connect();this.#resize.observe(this.#host);}
         #connect(){

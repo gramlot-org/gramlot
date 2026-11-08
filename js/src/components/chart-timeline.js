@@ -21,13 +21,12 @@ export function chartTimeLogic(binding){
     return scripts.get(binding);
 }
 export const ChartTimeline=defineComponent({
-    name:'chartTimeline',tag:'gramlot-chart-timeline',base:Container,sourceContext:true,bagStore:true,
+    name:'chartTimeline',tag:'gramlot-chart-timeline',base:Container,sourceContext:true,
     parameters:{storepath:{dtype:'T'},rowMode:{dtype:'T'},configpath:{dtype:'T'},timeField:{dtype:'T',binding:'read'},timeStep:{dtype:'T',binding:'read'},timeIndex:{dtype:'R',binding:'read'}},
     implementation:Base=>class extends Base{
-        #context;#bag;#store;#release;#active=false;#syncing=false;#selection;#minimum;#profile;#field;
+        #context;#store;#release;#active=false;#syncing=false;#selection;#minimum;#profile;#field;
         constructor(){super();const style=this.ownerDocument.createElement('style');style.textContent=':host{display:none}';this.shadowRoot.append(style);}
         setSourceContext(context){this.#context=context;}
-        setStoreBag(bag){this.#bag=bag;}
         projectAttributes(attrs,adapt){const result=super.projectAttributes(attrs,adapt);if(this.#active)this.#connect();return result;}
         connectedCallback(){this.#active=true;this.#connect();}
         #connect(){

@@ -16,11 +16,11 @@ import {ChartSyntaxError} from './chart-syntax.js';
 import {chartTypes} from './chart-types/index.js';
 
 const ChartView = defineComponent({
-    name:'chartView', tag:'gramlot-chart-view', base:Container, sourceContext:true, bagStore:true,
+    name:'chartView', tag:'gramlot-chart-view', base:Container, sourceContext:true,
     parameters:{sampleMin:{dtype:'R',nullable:true,binding:'read'},sampleMax:{dtype:'R',nullable:true,binding:'read'},sampleStep:{dtype:'R',default:1,binding:'read'},sampleStart:{dtype:'R',default:0,binding:'read'},mapLabelMode:{dtype:'T',default:'value',binding:'read'},mapBarScale:{dtype:'T',default:'zero',binding:'read'},selectedTerritory:{dtype:'T',default:'',binding:'twoWay'},configpath:{dtype:'T'},timeEmpty:{dtype:'T',default:'previous',binding:'read'},timeField:{dtype:'T',default:'',binding:'read'},timeValue:{dtype:'X',nullable:true,binding:'read'},timeStep:{dtype:'T',default:'month',binding:'read'},engine:{dtype:'T',default:'echarts',binding:'read'},mapValueField:{dtype:'T',binding:'read'},mapLabelField:{dtype:'T',binding:'read'},geoJSON:{dtype:'X',nullable:true,binding:'read'},geometryField:{dtype:'T',binding:'read'},secondCaptionField:{dtype:'T',binding:'read'},seriesOptions:{dtype:'X',binding:'read'},storepath:{dtype:'T'}, rowMode:{dtype:'T'}, gridId:{dtype:'T'},
         chartType:{dtype:'T',binding:'read'}, captionField:{dtype:'T',binding:'read'}, valueFields:{dtype:'T',nullable:true,binding:'read'}},
     implementation:Base => class extends Base {
-        #sampleView; #timeView; #revision=0; #active=false; #notice; #context; #store; #grid; #releaseGrid; #view; #releaseView; #renderer; #resize; #options; #optionsSubscription = Symbol('chart-options');
+        #sampleView; #timeView; #revision=0; #active=false; #notice; #context; #grid; #releaseGrid; #view; #releaseView; #renderer; #resize; #options; #optionsSubscription = Symbol('chart-options');
         constructor() {
             super();
             this.control.replaceChildren();
@@ -35,10 +35,6 @@ const ChartView = defineComponent({
             this.#resize = new this.ownerDocument.defaultView.ResizeObserver(() => this.#renderer?.resize());
         }
         setSourceContext(context) { this.#context = context; }
-        setStoreBag(bag) {
-            if (bag != null && !(bag instanceof Bag) && !Array.isArray(bag)) throw new TypeError('Chart requires a Data Bag or sample array');
-            this.#store = bag;
-        }
         projectAttributes(attrs, adapt) {
             const rest = super.projectAttributes(attrs,adapt);
             this.#bindOptions();
@@ -79,8 +75,6 @@ const ChartView = defineComponent({
                     this.#renderer?.dispose(); this.#renderer = null;
                     this.#sampleView = new ChartSampleView();
                 }
-                this.#sampleView.bind(this.#store ?? [], this.parameters.sampleStep, this.parameters.sampleStart,
-                    this.parameters.captionField, this.parameters.valueFields);
                 if (!this.#renderer) {
                     this.#timeView = new ChartTimeView(this.#sampleView);
                     this.#renderer = new ChartRenderer(this.control, this.#timeView, {renderer:'svg', domains:context=>this.#sampleView.domains(context,this.parameters.sampleMin,this.parameters.sampleMax)});
@@ -98,7 +92,10 @@ const ChartView = defineComponent({
                 this.#renderer?.dispose(); this.#renderer = null;
             }
             if (!this.#view) {
-                this.#view = new ChartDataView(store);
+                // The view reads the rows at the address when it is created: an address without rows
+                // shows in the notice, and the Data change that brings them projects the chart again.
+                try { this.#view = new ChartDataView(store); }
+                catch (error) { this.#showError(error); return; }
                 this.#timeView = new ChartTimeView(this.#view.view);
                 this.#renderer = new ChartRenderer(this.control,this.#timeView,{renderer:'svg',domains:context=>this.#timeView.domains(context),onTerritorySelect:name=>this.#context.writeParameter('selectedTerritory',name)});
                 this.#releaseView = this.#view.view.subscribe(() => {this.#timeView.invalidateDomains();this.#render();});
@@ -120,6 +117,10 @@ const ChartView = defineComponent({
             const revision=++this.#revision;
             this.#renderer.invalidate();
             try {
+                // The samples are read at the store address when the chart draws: a value that is not
+                // an array of numbers shows in the notice, as a store address without rows.
+                if (this.#sampleView) this.#sampleView.bind(this.#context.getStaticData(this.#context.attrDatapath('storepath')) ?? [],
+                    this.parameters.sampleStep, this.parameters.sampleStart, this.parameters.captionField, this.parameters.valueFields);
                 this.#timeView.setPeriod(this.parameters.timeField,this.parameters.timeValue,this.parameters.timeStep,this.parameters.timeEmpty);
                 const rows=this.#timeView.getRows(),snapshot=this.#timeView.snapshotDate;
                 if(this.parameters.configpath){
@@ -144,11 +145,14 @@ const ChartView = defineComponent({
             }
             catch (error) {
                 if(revision!==this.#revision || !this.#renderer)return;
-                this.control.hidden = true;
-                const type=chartTypes.find(item=>item.id===typeId) ?? null;
-                const title=error instanceof ChartSyntaxError ? `${type.label}: the configuration does not match the chart type` : `${type?.label ?? 'Chart'}: the chart cannot be drawn`;
-                this.#notice.error(error.message,title,chartErrorSections(error,type));
+                this.#showError(error);
             }
+        }
+        #showError(error) {
+            this.control.hidden = true;
+            const type=chartTypes.find(item=>item.id===this.parameters.chartType) ?? null;
+            const title=error instanceof ChartSyntaxError ? `${type.label}: the configuration does not match the chart type` : `${type?.label ?? 'Chart'}: the chart cannot be drawn`;
+            this.#notice.error(error.message,title,chartErrorSections(error,type));
         }
         /** Why a chart has no rows to draw, from its own parameters. */
         #emptySections(typeId) {
@@ -189,7 +193,7 @@ function chartTypeElement(type) {
         if(role.required)spec.required=true;
         parameters[role.parameter==='valueFields'?role.name:role.parameter]=spec;
     }
-    return defineComponent({name,tag,base:ChartView.base,sourceContext:true,bagStore:true,parameters,
+    return defineComponent({name,tag,base:ChartView.base,sourceContext:true,parameters,
         doc:`${type.doc} chartView with chartType '${type.id}'.`,
         implementation:Base=>ChartView.implementation(class extends Base {
             projectAttributes(attrs,adapt) {

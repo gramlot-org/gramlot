@@ -325,9 +325,11 @@ try {
                         await new Promise(resolve => requestAnimationFrame(()=>requestAnimationFrame(resolve)));
                         const host = document.getElementById('grid-attributes');
                         const original = [...host.shadowRoot.querySelectorAll('tbody tr')];
-                        const setStruct = host.setStructBag, project = host.projectAttributes;
+                        const project = host.projectAttributes, getItem = app.data.getItem;
+                        const gridNode = app.src.binding.renderer.getBaseSourceNode(host), structpath = gridNode.absDatapath(gridNode.getAttr('structpath'));
                         let structures=0, projections=0, indexEvents=0;
-                        host.setStructBag = function(...args) { structures++; return setStruct.apply(this,args); };
+                        // The grid reads its structure at the structpath address, without resolvers, when it rebuilds it.
+                        app.data.getItem = function(path,...rest) { if (path === structpath && rest[1] === true) structures++; return getItem.call(this,path,...rest); };
                         host.projectAttributes = function(...args) { projections++; return project.apply(this,args); };
                         rows.subscribe('ordering-probe',{any:event => { if (event.attrs_diff?.rowidx) indexEvents++; }});
                         const start = performance.now();
@@ -336,7 +338,7 @@ try {
                         await new Promise(resolve => requestAnimationFrame(()=>requestAnimationFrame(resolve)));
                         const settledMs = performance.now()-start;
                         rows.unsubscribe('ordering-probe');
-                        host.setStructBag=setStruct; host.projectAttributes=project;
+                        delete app.data.getItem; host.projectAttributes=project;
                         const projected = [...host.shadowRoot.querySelectorAll('tbody tr')];
                         return {size,structures,projections,indexEvents,sortMs:Math.round(sortMs),settledMs:Math.round(settledMs),
                             identity:projected.every((row,i)=>row===original[size-i-1]),

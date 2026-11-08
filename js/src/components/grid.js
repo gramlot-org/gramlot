@@ -23,7 +23,7 @@ import structureGrammar from './grid-grammar.json' with {type: 'json'};
 
 /** First grid: explicit Bag row representation and a separately observable Data struct. */
 export const Grid = defineComponent({
-    name: 'grid', tag: 'gramlot-grid', base: Container, bagStore: true, bagStruct: true, sourceContext: true, subTags: 'struct,div',
+    name: 'grid', tag: 'gramlot-grid', base: Container, sourceContext: true, subTags: 'struct,div',
     parameters: {columnFilters: {dtype:'B', default:false, binding:'read'}, setFilter: {dtype:'T', default:'', binding:'read'}, windowInfo: {dtype:'X', nullable:true, default:null, binding:'read'},
         loading: {dtype:'B', default:false, binding:'read'},
         viewport: {dtype:'X', nullable:true, default:null, binding:'write'},
@@ -44,7 +44,6 @@ export const Grid = defineComponent({
         sortedBy: {dtype:'T', default:'', binding:'read'},
         filter: {annotation:{kind:'type',module:'builtins',name:'dict'}, nullable:true, default:null, binding:'read'}},
     implementation: Base => class extends Base {
-        #store;
         #checkSets;
         #columnFilters;
         #cellEditor;
@@ -97,7 +96,6 @@ export const Grid = defineComponent({
         #windowRequest;
         #context;
         #structure;
-        #structBag;
         #structureDirty = true;
         #signature;
         #rows = new Map();
@@ -391,7 +389,7 @@ export const Grid = defineComponent({
             const relative = path.slice(prefix.length), separator = this.parameters.rowMode === 'attributes' ? '?' : '.';
             const split = relative.indexOf(separator);
             if (split < 0) return false;
-            const row = this.#store.getNode(relative.slice(0,split));
+            const row = this.#storeBag().getNode(relative.slice(0,split));
             const column = this.#structure.columns.find(column => column.field === relative.slice(split+1) && column.edit);
             const index = this.#collectionView.getRows().indexOf(row);
             if (!column || index < 0) return false;
@@ -410,7 +408,7 @@ export const Grid = defineComponent({
                 mode:() => this.#selectionMode(), rowData:node => this.#rowData(node)});
             this.#tools = new GridTools(context, {columns:() => this.#structure.columns, rows:() => this.#collectionView.getRows(),
                 selected:() => this.#selection.nodes, selectionMode:() => this.#selectionMode(),
-                reader:() => this.#formulas, store:() => ({bag:this.#store, mode:this.parameters.rowMode}),
+                reader:() => this.#formulas, store:() => ({bag:this.#storeBag(), mode:this.parameters.rowMode}),
                 parameters:() => this.parameters, document:this.ownerDocument});
             if (this.isConnected) this.#tools.connect();
             this.#columnFilters.setSourceContext(context);
@@ -427,13 +425,18 @@ export const Grid = defineComponent({
             }
             this.#rowLayout = node.gridRowLayout;
         }
-        setStoreBag(bag) {
+        /** The rows Bag, read at its address at each use; the grid never keeps it. */
+        #storeBag() {
+            const bag = this.#context.getStaticData(this.#context.attrDatapath('storepath'));
             if (!(bag instanceof Bag)) throw new TypeError('grid storepath must resolve to a Bag');
-            this.#store = bag;
+            return bag;
         }
-        setStructBag(bag) { this.#structBag = bag; this.#structureDirty = true; }
-        projectAttributes(attrs, adapt) {
+        projectAttributes(attrs, adapt, changedPath = null) {
             const rest = super.projectAttributes(attrs, adapt);
+            // The structure is read again at its address when a change reaches it, or on a full projection.
+            const structpath = this.#context.attrDatapath('structpath');
+            if (changedPath === null || changedPath === structpath || changedPath.startsWith(`${structpath}.`)
+                || structpath.startsWith(`${changedPath}.`)) this.#structureDirty = true;
             if (this.#windowInfo() && (this.parameters.columnFilters || this.#collectionView?.filterContributions.some(([name]) => name.startsWith('column:')))) throw new TypeError('grid columnFilters requires a complete resident store');
             if (this.#windowInfo() && this.parameters.setFilter !== '') throw new TypeError('grid setFilter requires a complete resident store');
             const store = this.#context.collectionView(this.#context.attrDatapath('storepath'), this.parameters.rowMode);
@@ -499,7 +502,8 @@ export const Grid = defineComponent({
             this.#scheduleLayout();
         }
         #project() {
-            const model = this.#structureDirty ? new GridStructure(this.#structBag) : this.#structure;
+            const model = this.#structureDirty
+                ? new GridStructure(this.#context.getStaticData(this.#context.attrDatapath('structpath'))) : this.#structure;
             const store = this.#collectionStore();
             this.#formulas.configure(model, this.#collectionView, store);
             this.#requireStoredCriteria();

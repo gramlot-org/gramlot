@@ -119,8 +119,7 @@
           "presentationDefaults": [],
           "dataScope": false,
           "command": false,
-          "sourceContext": true,
-          "bagStore": true
+          "sourceContext": true
         }
       }
     }

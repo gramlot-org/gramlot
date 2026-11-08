@@ -60,6 +60,8 @@ test('application Source binds its form to the selected file metadata', async t 
     assert.equal(app.data.getItem('form.queue').getNodes().length, 1);
     select('second.txt');
     assert.equal(app.data.getItem('form.selected'), rows[1].label);
-    host.setStoreBag(new Bag());
+    // A new storepath address is a new queue: the selection of the previous one ends.
+    app.data.setItem('form.otherQueue', new Bag());
+    app.src.renderer.getBaseSourceNode(host).setAttr({storepath:'.otherQueue'});
     assert.equal(app.data.getItem('form.selected'), null);
 });

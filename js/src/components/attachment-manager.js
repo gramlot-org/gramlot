@@ -7,13 +7,13 @@ import {readUploadContext} from './upload-engine.js';
 import {randomId} from '../random-id.js';
 
 export const AttachmentManager = defineComponent({
-    name:'attachmentManager', tag:'gramlot-attachment-manager', base:Container, sourceContext:true, bagStore:true,
+    name:'attachmentManager', tag:'gramlot-attachment-manager', base:Container, sourceContext:true,
     parameters:{operation:{dtype:'T'},storepath:{dtype:'T'},contextPath:{dtype:'T'},
         ready:{dtype:'B',default:false,binding:'read'},listMethod:{dtype:'T'},readMethod:{dtype:'T'},removeMethod:{dtype:'T'},
         accept:{dtype:'T',default:'',binding:'read'},disabled:{dtype:'B',default:false,binding:'read'},
         selectedPath:{dtype:'T',nullable:true,default:null,binding:'twoWay'}},
     implementation: Base => class extends Base {
-        #context; #store; #subscription; #generation=0; #listSequence=0; #previewSequence=0; #disposed=false; #removeToken=null;
+        #context; #subscription; #generation=0; #listSequence=0; #previewSequence=0; #disposed=false; #removeToken=null;
         get #state() { return this.#context.sourceNode.attachmentState; }
         get #contextKey() { return this.#state.getItem('contextKey'); }
         set #contextKey(value) { this.#state.setItem('contextKey', value); }
@@ -45,10 +45,6 @@ export const AttachmentManager = defineComponent({
             this.#message(this.#state.getItem('message'));
             this.#renderPreview();
             this.uploader.setSourceContext({...context,callLogic:()=>this.#refresh()});
-        }
-        setStoreBag(store) {
-            if (!(store instanceof Bag)) throw new TypeError('attachmentManager storepath must resolve to a Bag');
-            this.#store=store; this.uploader.setStoreBag(store);
         }
         projectAttributes(attrs,adapt) {
             const rest=super.projectAttributes(attrs,adapt), p=this.parameters;

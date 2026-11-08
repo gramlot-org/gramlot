@@ -17,7 +17,7 @@ function annotation(parameter) {
 }
 
 /** Compose effective metadata without invoking a DOM class factory. */
-export function defineComponent({name, tag, base, doc = null, mixins = [], parameters = {}, subTags = '', presentationDefaults = [], dataScope = false, command = false, childParameters = {}, sourceContext = false, bagStore = false, bagStruct = false, dragSource = false, implementation}) {
+export function defineComponent({name, tag, base, doc = null, mixins = [], parameters = {}, subTags = '', presentationDefaults = [], dataScope = false, command = false, childParameters = {}, sourceContext = false, dragSource = false, implementation}) {
     webcomponentCode({code: tag});
     if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(name)) throw new TypeError('Invalid component authoring name');
     const effective = {...base.parameters};
@@ -32,7 +32,7 @@ export function defineComponent({name, tag, base, doc = null, mixins = [], param
         annotation(spec);
         if (spec.required !== undefined && (spec.required !== true || Object.hasOwn(spec, 'default'))) throw new TypeError('A required component parameter is true and has no default');
     }
-    return Object.freeze({name, tag, base, doc, subTags, presentationDefaults: Object.freeze([...presentationDefaults]), dataScope, command, bagStore, bagStruct, mixins: Object.freeze([...mixins]),
+    return Object.freeze({name, tag, base, doc, subTags, presentationDefaults: Object.freeze([...presentationDefaults]), dataScope, command, mixins: Object.freeze([...mixins]),
         labelbox: mixins.some(mixin => mixin.labelbox === true),
         parameters: freeze(structuredClone(effective)), childParameters: freeze(structuredClone(childParameters)), sourceContext, dragSource, implementation});
 }
@@ -84,9 +84,7 @@ export class ComponentCollection {
                     ...(Object.keys(component.childParameters).length ? {childParameters: structuredClone(component.childParameters)} : {}),
                     ...(component.sourceContext ? {sourceContext: true} : {}),
                     ...(component.labelbox ? {labelbox: true} : {}),
-                    ...(component.dragSource ? {dragSource: true} : {}),
-                    ...(component.bagStore ? {bagStore: true} : {}),
-                    ...(component.bagStruct ? {bagStruct: true} : {})}}
+                    ...(component.dragSource ? {dragSource: true} : {})}}
             }]))};
     }
     /** Register once per document realm, only when the collection is activated. */

@@ -138,6 +138,8 @@ export class HtmlElement {
                 writeParameter: (name, value) => this.writeParameter(node, name, value),
                 attrDatapath: name => this.attrDatapath(node, name),
                 getStaticData: path => this.getStaticData(node, path),
+                // The tree's store, read from its storepath (`*S`, `*D` or an external Bag) at each call.
+                treeStore: () => node.rootBuilder.binding.treeStore(node),
                 callLogic: (name, keywords) => this.callLogic(node, name, keywords),
             });
         }
@@ -263,22 +265,9 @@ export class HtmlElement {
             projectLabelbox(record.labelbox, {...defaults, ...attrs}, adapt);
         }
         if (this.definition(node).meta.gramlot_component) {
-            if (this.definition(node).meta.gramlot_component.bagStore) {
-                if (node.nodeTag === 'tree') element.setStoreBag(node.rootBuilder.binding.treeStore(node));
-                else {
-                    const path = node.absDatapath(node.getAttr('storepath'));
-                    if (!change || change.path === path || change.path.startsWith(`${path}.`) || path.startsWith(`${change.path}.`)) {
-                        element.setStoreBag(node.getRelativeData(node.getAttr('storepath')));
-                    }
-                }
-            }
-            if (this.definition(node).meta.gramlot_component.bagStruct) {
-                const path = node.absDatapath(node.getAttr('structpath'));
-                if (!change || change.path === path || change.path.startsWith(`${path}.`) || path.startsWith(`${change.path}.`)) {
-                    element.setStructBag(node.getRelativeData(node.getAttr('structpath')));
-                }
-            }
-            attrs = element.projectAttributes(attrs, adapt);
+            // A component reads its data and structure by address when it draws; the path of the
+            // Data change that asked for the projection (null otherwise) tells it what changed.
+            attrs = element.projectAttributes(attrs, adapt, change?.path ?? null);
         }
         if (record.labelbox) {
             attrs = Object.fromEntries(Object.entries(attrs).filter(([name]) =>

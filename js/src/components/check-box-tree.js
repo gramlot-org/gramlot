@@ -8,7 +8,8 @@ export class CheckBoxTree {
     constructor(owner, context) {
         this.owner = owner;
         this.element = owner.ownerDocument.createElement('gramlot-tree');
-        this.element.setSourceContext({...context, writeParameter:(name, paths) => {
+        // The inner tree has no Source node: it reads the host's `values` address at each use.
+        this.element.setSourceContext({...context, treeStore:() => context.getStaticData(context.attrDatapath('values')), writeParameter:(name, paths) => {
             if (name !== 'checkedPaths' || !owner.pageContext?.isActive()) return;
             const rows = this.options(), byPath = new Map(rows.map(row => [row.path,row.id]));
             const known = this.#knownCodes;
@@ -53,7 +54,6 @@ export class CheckBoxTree {
             .map(code => p.identifier ? byCode.get(code) : code).filter(Boolean).join(',');
         this.element.inert = Boolean(p.disabled || p.readonly);
         this.element.setAttribute('aria-disabled', String(this.element.inert));
-        this.element.setStoreBag(p.values);
         this.element.projectAttributes({checkedPaths:paths, checkChildren:p.checkChildren,
             labelAttribute:p.labelAttribute ?? null, hideValues:true});
     }

@@ -213,7 +213,7 @@ test('layer change refuses overlap using the Bag old value; the bound editor and
 test('ordinary tray reprojection keeps the gesture; actual external geometry changes stop it',async t=>{
     const f=await fixture(t),row=f.store.getItem('card');
     f.send(f.box.labelbox.fieldLabel,'pointerdown',20,30);
-    f.host.setStoreBag(f.store);
+    f.app.src.renderer.project(f.app.src.renderer.getBaseSourceNode(f.host));
     f.send(f.host,'pointermove',40,50);assert.equal(row.getItem('left'),30);
     row.setItem('top',75);
     f.send(f.host,'pointermove',80,80);assert.equal(row.getItem('left'),30);assert.equal(row.getItem('top'),75);
