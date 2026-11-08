@@ -3,15 +3,15 @@ import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-import {readFile} from 'node:fs/promises';
+import {readFile, readdir} from 'node:fs/promises';
 import {chromium, webkit} from 'playwright';
 const repo=fileURLToPath(new URL('../../../',import.meta.url));
 const wire=execFileSync(process.env.GRAMLOT_TEST_PYTHON ?? `${repo}/.venv/bin/python`,['tests/fixtures/components/grid_editing.py'],{cwd:repo,encoding:'utf8'}).trim();
 const assets=new Map([['/core.js',await readFile(`${repo}/src/gramlot/resources/gramlot.js`)]]);
-for (const name of ['inputs','grid']) for (const file of ['index.js','collection.js']) assets.set(`/collections/${name}/${file}`,await readFile(`${repo}/src/gramlot/collections/${name}/assets/${file}`));
+for (const name of ['inputs','grid','tree']) for (const file of await readdir(`${repo}/src/gramlot/collections/${name}/assets`,{recursive:true})) if (file.endsWith('.js')) assets.set(`/collections/${name}/${file}`,await readFile(`${repo}/src/gramlot/collections/${name}/assets/${file}`));
 assets.set('/runtime.js',`import {Gramlot} from '@gramlot/gramlot';import inputs from '/collections/inputs/index.js';import grid from '/collections/grid/index.js';window.app=new Gramlot({element:document.getElementById('app'),transport:false,collections:[inputs,grid],locale:'en-GB'});app.src.startSource(${JSON.stringify(wire)});`);
 const css=await readFile(`${repo}/themes/gramlot-base/theme.css`,'utf8');
-const server=createServer((req,res)=>{if(assets.has(req.url)){res.writeHead(200,{'Content-Type':'text/javascript'});res.end(assets.get(req.url));}else{res.writeHead(200,{'Content-Type':'text/html'});res.end(`<!doctype html><html><head><style>${css}</style><script type="importmap">{"imports":{"@gramlot/gramlot":"/core.js","@gramlot/gramlot/components":"/core.js","@gramlot/collections/inputs":"/collections/inputs/index.js"}}</script></head><body><div id="app"></div><script type="module" src="/runtime.js"></script></body></html>`);}});
+const server=createServer((req,res)=>{if(assets.has(req.url)){res.writeHead(200,{'Content-Type':'text/javascript'});res.end(assets.get(req.url));}else{res.writeHead(200,{'Content-Type':'text/html'});res.end(`<!doctype html><html><head><style>${css}</style><script type="importmap">{"imports":{"@gramlot/gramlot":"/core.js","@gramlot/gramlot/components":"/core.js","@gramlot/collections/inputs":"/collections/inputs/index.js","@gramlot/collections/tree":"/collections/tree/index.js"}}</script></head><body><div id="app"></div><script type="module" src="/runtime.js"></script></body></html>`);}});
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 try {
  for(const [name,engine] of Object.entries({chromium,webkit})) {

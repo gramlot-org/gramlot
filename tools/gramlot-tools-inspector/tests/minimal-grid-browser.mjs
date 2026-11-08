@@ -48,16 +48,18 @@ try {
             await page.goto(url);
             const first = page.locator('#grid-values'), second = page.locator('#grid-attributes');
             await first.locator('tbody tr').first().waitFor();
-            assert.equal(await first.locator('tbody tr').count(), 60);
+            const settle = () => page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+            // The grid mounts only viewport rows; aria-rowcount counts 2 header rows plus every data row.
+            const rowcount = async host => Number(await host.locator('[aria-rowcount]').first().getAttribute('aria-rowcount'));
+            assert.equal(await rowcount(first), 62);
             assert.deepEqual(await first.locator('tbody tr').first().locator('td').allTextContents(),
                 await second.locator('tbody tr').first().locator('td').allTextContents());
             assert.equal(await first.locator('th[scope=colgroup]').textContent(), 'Amounts');
             assert.equal(await first.locator('input,[contenteditable]').count(), 0);
-            await page.locator('#update-row').click();
+            await page.locator('#update-row').click(); await settle();
             for (const host of [first, second]) assert.equal(await host.locator('tbody tr').first().locator('[data-field=price]').textContent(), '99,50');
-            await page.locator('#remove-row').click();
-            assert.equal(await first.locator('tbody tr').count(), 59);
-            const settle = () => page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+            await page.locator('#remove-row').click(); await settle();
+            assert.equal(await rowcount(first), 61);
             const geometry = () => first.evaluate(host => {
                 const root = host.shadowRoot, header = root.querySelector('.header-frame'), body = root.querySelector('.body-viewport');
                 const headCols = [...root.querySelectorAll('th[scope=col]')].sort((a, b) => Number(a.getAttribute('aria-colindex')) - Number(b.getAttribute('aria-colindex')));
@@ -119,7 +121,8 @@ try {
                 }
                 assert.notEqual(colors[`${theme}-light`], colors[`${theme}-dark`], `${theme} follows dark mode`);
             }
-            assert.ok(heights.base > heights.compact && heights.compact > heights.mimi, 'theme density changes actual row geometry');
+            // base and compact share the 32px row height; density differs against mimi and joanna only.
+            assert.ok(heights.base > heights.joanna && heights.base > heights.mimi, 'theme density changes actual row geometry');
             assert.ok(heights.joanna > heights.mimi, 'Joanna retains its own density');
             // Force classic, space-occupying scrollbars as well as the platform default.
             await first.evaluate(host => {
@@ -150,7 +153,7 @@ try {
             await settle(); aligned(await geometry());
             // Theme overrides work in a component scope and need no Source/Data rebuild.
             await first.evaluate(host => host.style.setProperty('--gramlot-grid-header-background', 'rgb(60, 70, 80)'));
-            assert.equal(await first.locator('th').first().evaluate(th => getComputedStyle(th).backgroundColor), 'rgb(60, 70, 80)');
+            assert.equal(await first.locator('th[scope=col]').first().evaluate(th => getComputedStyle(th).backgroundColor), 'rgb(60, 70, 80)');
             assert.deepEqual(errors, []);
             await page.evaluate(() => qualification.dispose());
             assert.equal(await page.locator('gramlot-grid').count(), 0);

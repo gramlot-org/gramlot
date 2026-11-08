@@ -278,7 +278,7 @@ try {
    assert.equal(await page.locator('#sales-pane-chartType').inputValue(),'bar');
    assert.equal(await originalControl.evaluate(node=>node.isConnected),true);
    const search=page.getByRole('searchbox',{name:'Filter rows'});
-   await page.getByLabel('Search column').selectOption('region');
+   await page.locator('#sales-frame button.label-menu-trigger').first().click();await page.getByRole('menuitemcheckbox',{name:'Region',exact:true}).click();
    await search.fill('^North');await search.press('Enter');
    await page.waitForFunction(()=>{const s=document.querySelector('#sales-pane-view')?.shadowRoot?.querySelector('svg')?.textContent; return s?.includes('ORD-001')&&!s.includes('ORD-002');}).catch(async error=>{await page.screenshot({path:`${base}/${name}-failure.png`,fullPage:false});console.error({errors,svg:await chart.locator('svg').textContent(),filter:await search.inputValue(),box:await chart.boundingBox()});throw error;});
    const detached=await page.evaluate(()=>{const node=window.qualification.src.binding.nodeIds.get('salesGrid');node.parentBag.popNode('grid');return node.gridSearch.view===null;});
