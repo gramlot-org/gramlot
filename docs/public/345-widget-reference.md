@@ -351,7 +351,7 @@ Collection: **drawing**. Browser element: `gramlot-drawing-pane`.
 [Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-drawingpane).
 
 
-**Data contract.** annotations reads and mutates the original Data Bag; image reads an optional background URL.
+**Data contract.** annotations reads and mutates the Data Bag at its pointer address; image reads an optional background URL.
 
 
 **Interaction and events.** Shared toolbar actions select, draw, edit text and delete shapes. Bag changes redraw the surface.
@@ -360,7 +360,7 @@ Collection: **drawing**. Browser element: `gramlot-drawing-pane`.
 **Composition.** Composes a shared Source menu and an SVG drawing surface.
 
 
-**Limits and lifecycle.** Requires an initialized annotation Bag. Coordinates follow image dimensions or a 1000 by 1000 empty surface. Disposal releases subscriptions; persistence belongs to the application.
+**Limits and lifecycle.** Requires an initialized annotation Bag. Coordinates follow image dimensions or a 1000 by 1000 empty surface. Disposal releases Data registrations; persistence belongs to the application.
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |

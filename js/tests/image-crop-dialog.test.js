@@ -15,7 +15,7 @@ function fixture(t) {
     let encode;
     window.HTMLCanvasElement.prototype.toBlob = callback => {encode = callback;};
     const image = window.document.createElement('img'); image.src = 'data:image/png;base64,AA==';
-    const editor = new ImageCropDialog({state:new Bag(),document:window.document,original:new window.Blob(['original']),image,
+    const editor = new ImageCropDialog({data:new Bag(),path:'crop',document:window.document,original:new window.Blob(['original']),image,
         sourceWidth:4,sourceHeight:2,width:2,height:2,outputWidth:4,outputHeight:4,type:'image/png'});
     const button = name => [...window.document.querySelectorAll('dialog button')].find(item => item.textContent === name);
     return {window,editor,button,complete:value => encode(value)};

@@ -191,6 +191,9 @@ decisions from unified-plan §2.
   rowField(path) / row_field(path) = inverse of #ROW.<field>: {row, field} / (row, field) or null.
   Grid row paths are #ROW.<field> with the row key (cell editor, tools, focus, derived paths);
   formula_<name>='=#ROW.<field>' reads that field of the evaluated row; ^#ROW is an error.
+  p7 (components): drawingPane tool/color/size, attachmentManager contextKey/selected/items/
+  preview/message and imageUploader crop initial/transform live at the node's workspaceDatapath,
+  read and observed by path (router registration), never as a held Bag.
 - action (legacy _ButtonLogic._clickHandlerDo): inline click code, this = button node,
   receives current button attributes plus event/_counter/modifiers; D7 inline rules.
 - fire='.path': FIRE with modifier string (eventToString, gnrlang.js:1757) or true;

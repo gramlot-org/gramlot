@@ -85,6 +85,9 @@ uses the existing permanent `menu`/`menuline` presentation and shared input
 components; no slotBar alias is introduced. `drawingController` follows the
 existing `gridColumnFilters` Source-owned controller pattern; `drawingState`
 and `drawingStatePath` identify its private state Bag under `gramlot.drawing`.
+Superseded on 2026-11-08 (plan symbolic-references p7): `drawingState` and `drawingStatePath`
+are removed; tool, color and pen size are Data values at the drawingPane node's
+`workspaceDatapath` (`_gramlot.workspace.<name>`), read and observed by path.
 Text uses 12 + 2 × pen width, at least 14 image units. Committing text selects
 the cursor tool. These are implementation details of the existing component.
 
@@ -2521,6 +2524,7 @@ Browser screen image — 2026-11-01: the image uploader’s visible action is �
 
 
 **Uploader consolidation — 2026-11-01.** Internal Source-owned `attachmentState` and `imageCropState` follow `formState` and `ideContext`: component state belongs to its Source node, never Logic. The attachment Bag holds `items`, `selected`, `preview`, `message` and the current `contextKey`. The image Bag holds `initial` and `transform` framing values. These are internal ownership names, not new public bindings or alternate upload stores. Native files, decoded images, requests and object URLs remain browser resources.
+Superseded on 2026-11-08 (plan symbolic-references p7): `attachmentState` and `imageCropState` are removed. The same values live in Data at the node's `workspaceDatapath` (`_gramlot.workspace.<name>`): `contextKey`, `selected`, `items`, `preview`, `message` for attachmentManager; `initial`, `transform` for imageUploader. `ImageCropSession` and `ImageCropDialog` take `data` (the Data root) and `path` instead of a state Bag, as `UploadEngine`.
 
 <a id="gc-225-visual-editor-consolidation"></a>
 ## Visual Editor names — consolidated 2026-11-01
@@ -3006,6 +3010,8 @@ DeviceHandler audit ("possiamo procedere"). System-owned root Data now uses
 Superseded for the grid on 2026-11-08 (plan symbolic-references p4): the grid structure and
 column filter state live in the grid's private area `_gramlot.workspace.<name>` (`#WORKSPACE`
 naming rule, name derived from the grid node), at `.struct` and `.columnFilter`.
+Superseded for the drawing on 2026-11-08 (plan symbolic-references p7): the drawingPane tool state
+lives in the drawingPane node's private area `_gramlot.workspace.<name>`; `_gramlot.drawing` is no longer written.
 Update producers and consumer bindings together; do not introduce aliases.
 The JavaScript runtime object, native bridge protocol/plugin names and persistent
 storage keys are unchanged. The proposed Inspector root-node exclusion remains

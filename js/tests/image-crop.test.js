@@ -37,10 +37,10 @@ import {ImageCropSession} from '../src/components/image-crop.js';
 test('editing retains the original, resets framing and produces a new Blob only on confirmation', async () => {
     const f = fixture();
     const original = new Blob(['original'], {type:'image/png'});
-    const state = new Bag();
-    const session = new ImageCropSession({state,...f.params, original});
+    const data = new Bag();
+    const session = new ImageCropSession({data,path:'crop',...f.params, original});
     session.setTransform({x:2,y:3,zoom:2,rotate:0});
-    assert.deepEqual(state.getItem('transform'), {x:2,y:3,zoom:2,rotate:0});
+    assert.deepEqual(data.getItem('crop.transform'), {x:2,y:3,zoom:2,rotate:0});
     const copy = session.transform; copy.x = 100;
     assert.equal(session.transform.x, 2);
     session.reset();
@@ -56,7 +56,7 @@ test('cancelling or changing an edit prevents a late canvas result from being co
         const f = fixture();
         let complete;
         f.canvas.toBlob = callback => { complete = callback; };
-        const session = new ImageCropSession({state:new Bag(),...f.params, original:new Blob(['original'])});
+        const session = new ImageCropSession({data:new Bag(),path:'crop',...f.params, original:new Blob(['original'])});
         const result = session.confirm({outputWidth:800,outputHeight:400,type:'image/png'});
         if (cancel) session.cancel();
         else session.setTransform({x:0,y:0,zoom:1,rotate:0});

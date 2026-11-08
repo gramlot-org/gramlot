@@ -13,7 +13,7 @@ test('a confirmed crop can use the existing upload engine without putting files 
     const cropBlob = new window.Blob(['cropped'], {type:'image/png'});
     const context = {scale() {}, translate() {}, rotate() {}, drawImage() {}};
     const document = {createElement() { return {getContext:() => context, toBlob:callback => callback(cropBlob)}; }};
-    const session = new ImageCropSession({state:new Bag(),document, original, image:{}, sourceWidth:2, sourceHeight:2,
+    const session = new ImageCropSession({data:new Bag(),path:'crop',document, original, image:{}, sourceWidth:2, sourceHeight:2,
         width:2, height:2, x:0, y:0, zoom:1, rotate:0});
     const edited = await session.confirm({outputWidth:2, outputHeight:2, type:'image/png'});
     const uploadFile = new window.File([edited], original.name, {type:edited.type});

@@ -4,8 +4,9 @@ import {Bag} from '@gramlot/gramlot';
 export class CheckBoxTree {
     // Paths of the loaded options at the last projection: a path the tree cannot reach is kept.
     #knownPaths = new Set();
+    #context;
     constructor(owner, context) {
-        this.owner = owner;
+        this.owner = owner; this.#context = context;
         this.element = owner.ownerDocument.createElement('gramlot-tree');
         // The inner tree has no Source node: it reads the host's `values` address at each use. Its check
         // list is the control value: the `checkedPaths` of the tree, or with an identifier its
@@ -26,7 +27,9 @@ export class CheckBoxTree {
         owner.control.append(this.element);
     }
     options() {
-        const {values, identifier, labelAttribute} = this.owner.parameters;
+        const {identifier, labelAttribute} = this.owner.parameters;
+        // The options are read at the host's `values` address at each projection.
+        const values = this.#context.getStaticData(this.#context.attrDatapath('values'));
         if (!(values instanceof Bag)) throw new TypeError('hierarchical checkBoxText requires a Bag in values');
         const rows = [], ids = new Set(), ancestors = new Set();
         const visit = (bag, prefix) => {

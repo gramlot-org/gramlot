@@ -1,10 +1,8 @@
 /** Editable image value backed by the shared upload engine when an operation is supplied. */
-import {Bag} from '@gramlot/gramlot';
 import {defineComponent} from './registry.js';
 import {controlElement} from './bases.js';
 import {UploadEngine, readUploadContext} from './upload-engine.js';
 import {ImageCropDialog} from './image-crop-dialog.js';
-import {randomId} from '../random-id.js';
 import {captureScreen} from './screen-capture.js';
 
 export const ImageUploader = defineComponent({
@@ -16,7 +14,8 @@ export const ImageUploader = defineComponent({
         disabled:{dtype:'B', default:false, binding:'read'}, onComplete:{dtype:'T', nullable:true, default:null}},
     implementation: Base => class extends Base {
         #context; #engine; #original; #dialog; #pending; #generation = 0; #projected; #written;
-        #cameraSubscription; #cameraToken = null; #cameraPending = false; #cameraAvailable = false; #cameraStatus; #screenRequest = null;
+        // The router registration on `_gramlot.device.camera`: the camera state reaches the uploader by path.
+        #cameraRegistration = null; #cameraToken = null; #cameraPending = false; #cameraAvailable = false; #cameraStatus; #screenRequest = null;
         constructor() {
             super();
             const doc = this.ownerDocument;
@@ -56,11 +55,7 @@ export const ImageUploader = defineComponent({
             this.cancelButton.addEventListener('click', () => { if (this.#pending) this.#engine.cancel(this.#pending.id); });
             this.checkButton.addEventListener('click', () => void this.#check());
         }
-        setSourceContext(context) {
-            this.#context = context;
-            if (!context.sourceNode.imageCropState) Object.defineProperty(context.sourceNode,
-                'imageCropState', {value:new Bag(), configurable:true});
-        }
+        setSourceContext(context) { this.#context = context; }
         readControlValue() { return this.parameters?.value ?? null; }
         writeControlValue(value) { if (this.parameters) { this.parameters.value = value; this.#render(); } }
         projectAttributes(attrs, adapt) {
@@ -84,17 +79,15 @@ export const ImageUploader = defineComponent({
             // DOM relocation into a floating keeps the same Source owner and resources.
             this.ownerDocument.defaultView.queueMicrotask(() => {
                 if (this.isConnected) return;
-                if (this.#cameraSubscription) {
-                    this.#context.upload().gramlot.data.unsubscribe(this.#cameraSubscription,{any:true}); this.#cameraSubscription = null;
-                }
+                this.#cameraRegistration?.close(); this.#cameraRegistration = null;
                 this.#invalidate(); this.#engine?.dispose(); this.#engine = null;
             });
         }
         #observeCamera() {
-            if (this.#cameraSubscription || !this.#context) return;
-            const {gramlot} = this.#context.upload();
-            this.#cameraSubscription = `image-uploader-camera-${randomId()}`;
-            gramlot.data.subscribe(this.#cameraSubscription,{any:event => this.#syncCamera(event)});
+            if (this.#cameraRegistration || !this.#context) return;
+            // Attaching a device provider writes `_gramlot.device.camera` again, so availability follows too.
+            this.#cameraRegistration = this.#context.sourceNode.rootBuilder.binding.router.register({
+                path:'_gramlot.device.camera', subtree:true, recipient:{receive:event => this.#syncCamera(event)}});
             this.#syncCamera();
         }
         #syncCamera(event = null) {
@@ -205,7 +198,7 @@ export const ImageUploader = defineComponent({
         }
         async #crop(candidate,token) {
             const p = this.parameters;
-            const dialog = this.#dialog = new ImageCropDialog({state:this.#context.sourceNode.imageCropState,document:this.ownerDocument, original:candidate.original, image:candidate.image,
+            const dialog = this.#dialog = new ImageCropDialog({data:this.#context.sourceNode.data,path:this.#context.sourceNode.workspaceDatapath,document:this.ownerDocument, original:candidate.original, image:candidate.image,
                 sourceWidth:candidate.image.naturalWidth, sourceHeight:candidate.image.naturalHeight,
                 width:p.cropWidth,height:p.cropHeight,outputWidth:p.outputWidth,outputHeight:p.outputHeight,type:'image/png',...candidate.transform});
             let result;

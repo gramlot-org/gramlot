@@ -97,3 +97,37 @@ test('toolbar SVG icons retain their namespace when bound color and size change'
         verify();
     } finally {f.app.dispose();f.window.close();}
 });
+
+test('annotations are read at the pointer address: no subscription on the Bag, a replacement redraws',()=>{
+    const f=fixture();
+    try {
+        const first=f.app.data.getItem('annotations');
+        assert.deepEqual(Object.keys(first._updSubscribers),[],'the pane does not subscribe to the annotations Bag');
+        f.click('circle');f.pointer('pointerdown',5,6);f.pointer('pointermove',20,30);f.pointer('pointerup',20,30);
+        assert.equal(first.getNodes().length,1);
+        const replacement=new Bag();
+        f.app.data.setItem('annotations',replacement);
+        assert.equal(f.svg.querySelectorAll('circle').length,0,'the replacement at the address redraws the surface');
+        f.click('arrow');f.pointer('pointerdown',10,20);f.pointer('pointermove',50,70);f.pointer('pointerup',50,70);
+        assert.equal(replacement.getNodes().length,1,'new shapes are written at the address');
+        assert.equal(first.getNodes().length,1,'the previous Bag is left untouched');
+        replacement.setItem('extra',new Bag({type:'circle',x:1,y:1,radius:4,color:'#000000',width:1}));
+        assert.equal(f.svg.querySelectorAll('circle').length,1,'a change inside the Bag at the address redraws');
+    } finally {f.app.dispose();f.window.close();}
+});
+
+test('the tool state lives in the private Data area of the drawingPane node',()=>{
+    const f=fixture();
+    try {
+        const node=f.app.src.renderer.elements.get(f.pane).node, path=node.workspaceDatapath;
+        assert.match(path,/^_gramlot\.workspace\.drawingPane_/);
+        assert.equal(node.drawingState,undefined);
+        assert.deepEqual(['tool','color','size'].map(key=>f.app.data.getItem(`${path}.${key}`)),['select','#dd2222',3]);
+        f.click('circle');
+        assert.equal(f.app.data.getItem(`${path}.tool`),'circle');
+        f.app.data.setItem(`${path}.tool`,'arrow');
+        f.pointer('pointerdown',10,20);f.pointer('pointermove',50,70);f.pointer('pointerup',50,70);
+        assert.equal(f.app.data.getItem('annotations').getNodes()[0].getValue().getItem('type'),'arrow','a Data write of the tool reaches the pane');
+        assert.equal(f.pane.querySelectorAll('gramlot-menu-line')[2].getAttribute('aria-checked'),'true');
+    } finally {f.app.dispose();f.window.close();}
+});

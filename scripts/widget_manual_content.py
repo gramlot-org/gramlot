@@ -605,11 +605,13 @@ This is not an audio recorder, and no persistence is implied.
 """,
     'drawing': """### Original annotation Bag
 
-annotations must resolve to a Bag. The component subscribes to that original Bag and writes
-shape records there. image changes the background without replacing the annotation store.
+annotations must point to a Bag in Data. The component reads the Bag at that address when it
+draws and writes shape records there; a change inside the Bag or a new Bag at the address
+redraws the surface. image changes the background without replacing the annotation store.
 Without an image, coordinates use a 1000 by 1000 surface; an image uses its natural dimensions.
-The toolbar is a shared menu, with tool state under _gramlot.drawing. Removing the component
-releases event handlers and Bag subscriptions. Save annotations through the application's own
-persistence contract; the drawing component does not perform a server save.
+The toolbar is a shared menu. Its tool, color and pen size are Data values in the private area of
+the drawingPane node (`_gramlot.workspace.<name>`, the `#WORKSPACE` naming rule). Removing the
+component releases event handlers and Data registrations. Save annotations through the
+application's own persistence contract; the drawing component does not perform a server save.
 """,
 })

@@ -607,3 +607,17 @@ test('tray close is opt-in and obeys layout lock and dynamic closable changes',a
     assert.equal(f.box.labelbox.closeButton,button);
     assert.equal(button.hidden,false);
 });
+
+test('the tray observes its geometry at the storepath address and follows a new address',async t=>{
+    const f=await fixture(t), router=f.app.src.renderer.binding.router, row=f.store.getItem('card');
+    assert.deepEqual(Object.keys(f.store._updSubscribers),[],'the tray keeps no subscription on the geometry Bag');
+    const other=new Bag({card:new Bag({layer:0,left:70,top:40})});
+    f.app.data.setItem('scope.other',other);
+    const size=router.size;
+    sourceTarget(f.card).parentNode.setAttr({storepath:'.other'});await settle();
+    assert.equal(router.size,size,'the registration moves to the new address');
+    assert.equal(f.box.style.left,'70px');
+    row.setItem('left',5);await settle();assert.equal(f.box.style.left,'70px','the old address no longer reaches the tray');
+    other.getItem('card').setItem('left',90);await settle();assert.equal(f.box.style.left,'90px');
+    f.host.remove();assert.equal(router.size,size-1,'disconnection closes the geometry registration');
+});

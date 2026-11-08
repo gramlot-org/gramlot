@@ -193,10 +193,10 @@ COVERAGE['audioAnalyser'] = _record(
     'js/tests/audio-component.test.mjs js/tests/audio-analysis-session.test.mjs', '',
     'Microphone analysis is an optional live gallery example.')
 COVERAGE['drawingPane'] = _record(
-    'annotations reads and mutates the original Data Bag; image reads an optional background URL.',
+    'annotations reads and mutates the Data Bag at its pointer address; image reads an optional background URL.',
     'Shared toolbar actions select, draw, edit text and delete shapes. Bag changes redraw the surface.',
     'Composes a shared Source menu and an SVG drawing surface.',
-    'Requires an initialized annotation Bag. Coordinates follow image dimensions or a 1000 by 1000 empty surface. Disposal releases subscriptions; persistence belongs to the application.',
+    'Requires an initialized annotation Bag. Coordinates follow image dimensions or a 1000 by 1000 empty surface. Disposal releases Data registrations; persistence belongs to the application.',
     'js/src/components/drawing.js', 'js/tests/drawing.test.js tests/test_drawing_pane.py',
     'pages/06-editors/06-drawing.md', 'Drawing annotations retained in Data.')
 

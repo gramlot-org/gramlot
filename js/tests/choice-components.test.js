@@ -368,3 +368,20 @@ test('opening the choice popup focuses its field without scrolling the containin
     assert.deepEqual(focus.mock.calls[0].arguments, [{preventScroll:true}]);
     assert.equal(host.choices.hidden, false);
 });
+
+test('checkBoxText reads Bag values at the pointer address and keeps no subscription on the Bag', async t => {
+    for (const hierarchical of [false, true]) {
+        const options=new Bag();options.setItem('a',null,{caption:'Alpha'});
+        const f=fixture(t,(r,a)=>{a.data.setItem('choices.options',options);a.data.setItem('selection','a');
+            r.div({datapath:'choices'}).checkBoxText({id:'multi',value:'^selection',values:'^.options',labelAttribute:'caption',hierarchical,popup:true});});
+        await settle();const host=f.host('multi');
+        assert.deepEqual(Object.keys(options._updSubscribers),[],'no subscription on the options Bag');
+        assert.equal(host.summary.value,'Alpha');
+        options.setItem('a',null,{caption:'Changed'});await settle();
+        assert.equal(host.summary.value,'Changed','a change inside the Bag at the address reaches the control');
+        const replacement=new Bag();replacement.setItem('a',null,{caption:'Replaced'});
+        f.app.data.setItem('choices.options',replacement);await settle();
+        assert.equal(host.summary.value,'Replaced','the options are read at the address');
+        assert.deepEqual(Object.keys(replacement._updSubscribers),[]);
+    }
+});

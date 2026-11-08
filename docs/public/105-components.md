@@ -493,11 +493,12 @@ the popup stays open for further choices. Escape closes it and returns focus to
 the button; outside click or focus closes it. Readonly/disabled lock both views.
 Changing presentation does not recreate the group or retained checkbox controls.
 
-`values` accepts `code:Caption` text or a Bag. For a Bag the node label is the
-code and default caption; `identifier` and `labelAttribute` select fields from a
-child Bag or attributes from a scalar row. Codes must be unique, nonempty,
-comma-free strings. The component observes the original Bag, including in-place
-changes, and releases subscriptions on replacement or disposal. Selected captions
+`values` accepts `code:Caption` text or a `^` pointer to a Bag in Data. For a Bag
+the node label is the code and default caption; `identifier` and `labelAttribute`
+select fields from a child Bag or attributes from a scalar row. Codes must be
+unique, nonempty, comma-free strings. The component reads the Bag at the pointer
+address at each projection: an in-place change and a new Bag at the address
+update the options; it keeps no subscription on the Bag. Selected captions
 are written to `_displayedValue` on the bound value node (not an attribute binding).
 
 For database options use `dbtable` with the configured DatabaseSelectors service,
