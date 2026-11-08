@@ -48,12 +48,29 @@ export class RpcError extends Error {
     constructor(outcome: RpcErrorOutcome);
 }
 
+/** The dataBinder connection of one name: its binders and the MessagePort that carries them now. */
+export interface MessagePortConnection {
+    readonly name: string;
+    /** `waiting` without a port, `open` with one, `closed` after the other end closed it. */
+    readonly state: 'waiting' | 'open' | 'closed';
+    readonly error: Error | null;
+    readonly port: MessagePort | null;
+}
+
 /** The exchange with the server. */
 export class RpcHandler extends Handler {
     /** The server transport, or null. */
     transport: RpcTransport | null;
     /** The calls in flight, by envelope id, with the AbortController of each; written only by `call`. */
     remoteRequests: Map<string, AbortController>;
+    /** The dataBinder connections over a MessagePort, by name. */
+    connections: Map<string, MessagePortConnection>;
+    /** The dataBinder connection of `name`; created waiting for a port when the name is new. */
+    connection(name: string): MessagePortConnection;
+    /** Carry the binders of the connection `name` on `port`; a new port replaces the previous one. */
+    registerConnection(name: string, port: MessagePort): void;
+    /** Release the port of the connection `name`: its binders wait for the next port. */
+    unregisterConnection(name: string): void;
     /** Create the transport of `gramlot`: the given one, none for `false`, else the one of `gramlot.serverAdapter`. */
     constructor(gramlot: Gramlot, options: {rpcUrl: string; closeUrl: string; document: DomDocument;
         transport?: RpcTransport | false | null});
