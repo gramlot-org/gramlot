@@ -13,6 +13,7 @@ import {AskDialog} from './ask-dialog.js';
 import {ErrorNotifications} from './error-notifications.js';
 import {randomId} from '../random-id.js';
 import {DATA_ROOT, pointerDependencies} from '@genrojs/builders';
+import {SYMBOLIC_ATTRIBUTES, declaredAliases} from '../builder/source.js';
 
 
 // The Provider class of each provider data-element (§4.8).
@@ -22,7 +23,20 @@ const PROVIDERS = {
 };
 
 // Attributes whose change moves the Data context of a whole branch (§4.4, upd_attrs row).
-const CONTEXT_ATTRIBUTES = ['datapath', '_anchor', 'nodeId', 'form', 'formId'];
+const CONTEXT_ATTRIBUTES = ['datapath', '_anchor', 'nodeId', 'form', 'formId', ...SYMBOLIC_ATTRIBUTES];
+
+/**
+ * The names a node gives to the symbolic resolution, besides the node itself: its nodeId, its
+ * aliases and its childname. A NodeBinding whose resolution read one of them is rebound when it
+ * changes.
+ */
+function startKeys(node) {
+    const keys = [node];
+    if (node.getAttr('nodeId') != null) keys.push(`id:${node.getAttr('nodeId')}`);
+    if (node.getAttr('childname') != null) keys.push(`childname:${node.getAttr('childname')}`);
+    for (const name of declaredAliases(node)) keys.push(`alias:${name}`);
+    return keys;
+}
 
 /**
  * Semantic lifetime of one Gramlot page (source plan §4.4).
@@ -37,6 +51,14 @@ export class BindingRuntime {
     #gramlot;
     #bindings = new Map();
     #nodeIds = new Map();
+    #aliases = new Map();
+    // The NodeBindings whose registrations read a start of the symbolic resolution, by key: a Source
+    // node, or `id:<nodeId>`, `alias:<name>`, `childname:<name>`.
+    #dependents = new Map();
+    // The NodeBinding whose registrations are being resolved, or null.
+    #resolving = null;
+    // The keys moved by the Source event being handled and the nodes already resolved again, or null outside one.
+    #moved = null;
     #router;
     #installer;
     #inlineCompiler;
@@ -105,6 +127,35 @@ export class BindingRuntime {
     get askDialog() { return this.#askDialog; }
     /** `nodeId → node` of the Source nodes with an open NodeBinding (R06). */
     get nodeIds() { return this.#nodeIds; }
+    /** `alias → node` of the aliases declared with `_aliasDatapaths` by Source nodes with an open NodeBinding. */
+    get aliases() { return this.#aliases; }
+
+    /** Run `run` resolving the registrations of `binding`: the starts it reads are recorded for it. */
+    resolveFor(binding, run) {
+        const previous = this.#resolving;
+        this.#resolving = binding;
+        try { return run(); } finally { this.#resolving = previous; }
+    }
+
+    /** Record that the registrations being resolved read the start `key` (a Source node or a name key). */
+    dependOn(key) {
+        const binding = this.#resolving;
+        if (!binding) return;
+        let dependents = this.#dependents.get(key);
+        if (!dependents) this.#dependents.set(key, dependents = new Set());
+        dependents.add(binding);
+        binding.dependencies.add(key);
+    }
+
+    /** Forget the starts read by `binding`; called when its registrations close. */
+    releaseDependencies(binding) {
+        for (const key of binding.dependencies) {
+            const dependents = this.#dependents.get(key);
+            dependents?.delete(binding);
+            if (dependents && !dependents.size) this.#dependents.delete(key);
+        }
+        binding.dependencies.clear();
+    }
 
     /**
      * One shared resident data resource per absolute Data `path` and `rowMode`; presentation state
@@ -214,7 +265,9 @@ export class BindingRuntime {
             this.#bindings.delete(node);
             const nodeId = node.getAttr('nodeId');
             if (this.nodeIds.get(nodeId) === node) this.nodeIds.delete(nodeId);
+            for (const [name, owner] of [...this.aliases]) if (owner === node) this.aliases.delete(name);
             try { binding.close(); } catch (error) { errors.push(error); }
+            try { this.#moving(startKeys(node)); } catch (error) { errors.push(error); }
         }
         if (errors.length) throw new AggregateError(errors, 'Source branch close failed');
     }
@@ -230,6 +283,47 @@ export class BindingRuntime {
         for (const each of nodes) this.bindingFor(each)?.rebind();
         for (const each of nodes) this.renderer.project(each);
         for (const each of nodes) this.bindingFor(each)?.remote?.trigger();
+        this.#moving(nodes, nodes);
+    }
+
+    /**
+     * Rebind and project the open NodeBindings whose registrations read one of `keys`, except those of
+     * the nodes in `skip`; their errors are returned. A NodeBinding whose resolution fails keeps no
+     * registration on the old paths and keeps its dependencies: it is rebound again when the start returns.
+     */
+    #rebindDependents(keys, skip = new Set()) {
+        const bindings = new Set();
+        for (const key of keys) {
+            for (const binding of this.#dependents.get(key) ?? []) if (!skip.has(binding.node)) bindings.add(binding);
+        }
+        const errors = [];
+        const failed = new Set();
+        for (const binding of bindings) {
+            if (binding.closed) continue;
+            try { binding.rebind(); } catch (error) { errors.push(error); failed.add(binding); }
+        }
+        for (const binding of bindings) {
+            if (binding.closed || failed.has(binding)) continue;
+            try {
+                this.renderer.project(binding.node);
+                binding.remote?.trigger();
+            } catch (error) { errors.push(error); }
+        }
+        return errors;
+    }
+
+    /**
+     * Keys moved by a Source change, with the nodes whose NodeBindings resolved again already: collected
+     * until the end of the Source event, rebound at once outside one.
+     */
+    #moving(keys, done = []) {
+        if (this.#moved) {
+            for (const key of keys) this.#moved.keys.add(key);
+            for (const node of done) this.#moved.done.add(node);
+            return;
+        }
+        const errors = this.#rebindDependents(keys, new Set(done));
+        if (errors.length) throw errors.length === 1 ? errors[0] : new AggregateError(errors, 'Symbolic start rebinding failed');
     }
 
     /**
@@ -250,6 +344,7 @@ export class BindingRuntime {
         const close = removed => {
             try { this.closeBranch(removed); } catch (error) { errors.push(error); }
         };
+        const moved = this.#moved = {keys: new Set(), done: new Set()};
         try {
             if (evt === 'ins') {
                 this.#openBranch(node);
@@ -271,7 +366,11 @@ export class BindingRuntime {
         } catch (error) {
             if (!errors.length) throw error;
             throw new AggregateError([...errors, error], 'Source event failed');
+        } finally {
+            this.#moved = null;
         }
+        // The NodeBindings that read a start this event moved resolve again; their errors follow the closings'.
+        errors.push(...this.#rebindDependents(moved.keys, moved.done));
         return errors;
     }
 
@@ -311,6 +410,8 @@ export class BindingRuntime {
         this.#disposed = true;
         this.root.unsubscribe(this.#subscription, {any: true});
         this.nodeIds.clear();
+        this.aliases.clear();
+        this.#dependents.clear();
         this.#collectionStores.clear();
         const errors = [];
         for (const [node, binding] of [...this.#bindings.entries()].reverse()) {
@@ -344,7 +445,18 @@ export class BindingRuntime {
             }
             entering.set(nodeId, node);
         }
+        const aliases = new Map();
+        for (const node of nodes) {
+            if (known.has(node)) continue;
+            for (const name of declaredAliases(node)) {
+                if (aliases.has(name) || (this.aliases.has(name) && this.aliases.get(name) !== node)) {
+                    throw new Error(`Duplicate alias '${name}'`);
+                }
+                aliases.set(name, node);
+            }
+        }
         for (const [nodeId, node] of entering) this.nodeIds.set(nodeId, node);
+        for (const [name, node] of aliases) this.aliases.set(name, node);
         try {
             for (const node of nodes) this.openBinding(node);
             this.installer.install(branch);
@@ -356,6 +468,7 @@ export class BindingRuntime {
             for (const node of nodes.filter(node => !known.has(node)).reverse()) {
                 const nodeId = node.getAttr('nodeId');
                 if (entering.get(nodeId) === node && this.nodeIds.get(nodeId) === node) this.nodeIds.delete(nodeId);
+                for (const [name, owner] of aliases) if (owner === node && this.aliases.get(name) === node) this.aliases.delete(name);
                 const binding = this.bindingFor(node);
                 if (!binding) continue;
                 this.#bindings.delete(node);
@@ -364,6 +477,10 @@ export class BindingRuntime {
             if (errors.length > 1) throw new AggregateError(errors, 'Source branch installation failed');
             throw error;
         }
+        // The nodeIds, aliases and childnames that entered can be the start a NodeBinding waits for; the
+        // NodeBindings installed here resolved them already.
+        const installed = nodes.filter(node => !known.has(node));
+        this.#moving(installed.flatMap(node => startKeys(node).slice(1)), installed);
         // An `_init` may remove a later node of the branch: each node is checked when its turn comes.
         for (const node of nodes) {
             const binding = this.bindingFor(node);
@@ -416,6 +533,17 @@ export class BindingRuntime {
             }
             if (this.nodeIds.get(previous) === node) this.nodeIds.delete(previous);
             if (current != null) this.nodeIds.set(current, node);
+            this.#moving([`id:${previous}`, `id:${current}`]);
+        }
+        if (Object.hasOwn(diff, 'childname')) this.#moving([`childname:${diff.childname.old}`, `childname:${diff.childname.new}`]);
+        if (Object.hasOwn(diff, '_aliasDatapaths')) {
+            const current = declaredAliases(node);
+            const taken = current.find(name => this.aliases.has(name) && this.aliases.get(name) !== node);
+            if (taken !== undefined) throw new Error(`Duplicate alias '${taken}'`);
+            const previous = [...this.aliases].filter(([, owner]) => owner === node).map(([name]) => name);
+            for (const name of previous) this.aliases.delete(name);
+            for (const name of current) this.aliases.set(name, node);
+            this.#moving([...previous, ...current].map(name => `alias:${name}`));
         }
         if (CONTEXT_ATTRIBUTES.some(name => Object.hasOwn(diff, name))) this.rebindBranch(node);
         else binding.rebind();
@@ -469,6 +597,8 @@ export class NodeBinding {
     // The registration of the node's own variable datapath, read in the parent's context.
     #datapathRegistrations = new Set();
     #storeRegistration = null;
+    // The starts of the symbolic resolution read by the registrations (BindingRuntime.dependOn).
+    #dependencies = new Set();
     editingSession = null;
 
     constructor(runtime, node) {
@@ -481,6 +611,8 @@ export class NodeBinding {
     get closed() { return this.#closed; }
     /** The active DataRegistrations of the node. */
     get registrations() { return [...this.#registrations]; }
+    /** The starts of the symbolic resolution read by the active registrations: Source nodes and name keys. */
+    get dependencies() { return this.#dependencies; }
     /** The Provider of a `dataFormula`, `dataController`, `dataRpc` or `dataRemote`, as a list of zero or one. */
     get providers() { return this.#provider ? [this.#provider] : []; }
     /** The RemoteBinding of a node whose `remote` attribute is a string, or null. */
@@ -513,6 +645,10 @@ export class NodeBinding {
      * again from its current value.
      */
     registerPointers() {
+        this.runtime.resolveFor(this, () => this.#registerPointers());
+    }
+
+    #registerPointers() {
         // Data elements have semantic lifetime but no rendered item to register their reference.
         if (this.node._getMeta('data_element')) {
             this.runtime.renderer.references.remove(this.node);
@@ -696,6 +832,7 @@ export class NodeBinding {
     }
 
     #closeRegistrations() {
+        this.runtime.releaseDependencies(this);
         this.#binder?.unregister();
         for (const registration of this.#registrations.splice(0)) registration.close();
         this.#storeRegistration = null;

@@ -14,7 +14,7 @@ import {GroupletCardActions} from '../view/grouplet-card.js';
 import {NativeEventBinding} from '../view/events.js';
 import {References} from '../references.js';
 import {randomId} from '../random-id.js';
-import {GramlotBuilderBag, GramlotBuilderBagNode} from '../builder/source.js';
+import {GramlotBuilderBag, GramlotBuilderBagNode, SYMBOLIC_ATTRIBUTES} from '../builder/source.js';
 import {BindingRuntime} from '../binding/runtime.js';
 import {requireInstallable} from '../binding/installation.js';
 import {GramlotHtmlRenderer} from './gramlot-html-renderer.js';
@@ -50,7 +50,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         this._binding = binding;
         this.source = source;
         this.destination = destination;
-        this.html = new HtmlElement({uploadContext: () => ({gramlot: binding.gramlot, window: destination.ownerDocument.defaultView}), metadataAttributes: ['__ref'],
+        this.html = new HtmlElement({uploadContext: () => ({gramlot: binding.gramlot, window: destination.ownerDocument.defaultView}), metadataAttributes: ['__ref', ...SYMBOLIC_ATTRIBUTES],
             format: (value, options) => binding.gramlot.format(value, options),
             reportError: (node, error, title) => { if (this.records.has(node)) binding.reportError(error, title); },
             callLogic: (node, name, keywords) => {

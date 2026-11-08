@@ -214,7 +214,11 @@ class GramlotSourceClassTests(unittest.TestCase):
         self.assertIs(GramlotBuilderBag._node_class, GramlotBuilderBagNode)
         own = {cls: {name for name in vars(cls) if not name.startswith("__")}
                for cls in (GramlotBuilderBag, GramlotBuilderBagNode)}
-        self.assertEqual(own[GramlotBuilderBagNode], {"remote", "runtime_to_evaluate"})
+        # The symbolic resolver (GC-210 §012) overrides Builder's path composition.
+        self.assertEqual(own[GramlotBuilderBagNode], {
+            "remote", "runtime_to_evaluate", "abs_datapath", "_compose_relative_datapath",
+            "_resolve_symbolic_datapath", "get_child", "workspace_name", "_workspace_datapath",
+            "_row_datapath", "_alias_datapath", "_symbolic_node"})
         self.assertEqual(own[GramlotBuilderBag], {"_node_class", "authorized_copy"})
 
     def test_a_double_equals_value_is_not_a_pointer(self):

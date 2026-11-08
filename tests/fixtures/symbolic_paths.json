@@ -1,0 +1,78 @@
+{
+  "doc": "Symbolic datapaths: one Source tree and one table of resolutions, run by tests/test_symbolic_paths.py and js/tests/symbolic-paths.test.js. Every node is a div; `node` is the label path of the resolving node; `row` is the #ROW context; a case has `expect` or `error` (a message fragment).",
+  "tree": [
+    {"label": "page", "attrs": {"datapath": "pg", "nodeId": "pg"}, "children": [
+      {"label": "form", "attrs": {"datapath": ".f1", "formId": "outer"}, "children": [
+        {"label": "rec", "attrs": {"datapath": ".record"}, "children": [{"label": "field"}]},
+        {"label": "inner", "attrs": {"datapath": ".sub", "formId": "inner"}, "children": [{"label": "leaf"}]}
+      ]},
+      {"label": "ws3", "attrs": {"_workspace": true}, "children": [{"label": "w3leaf"}]}
+    ]},
+    {"label": "anchor", "attrs": {"datapath": "anc", "_anchor": true}, "children": [
+      {"label": "a1", "attrs": {"datapath": ".x"}, "children": [{"label": "aleaf"}]}
+    ]},
+    {"label": "ws1", "attrs": {"_workspace": "named"}, "children": [{"label": "wleaf"}]},
+    {"label": "ws2", "attrs": {"_workspace": true, "nodeId": "wsid"}, "children": [{"label": "w2leaf"}]},
+    {"label": "ws4", "attrs": {"datapath": "ws4data", "_workspace": true, "_workspace_path": ".private"}, "children": [{"label": "w4leaf"}]},
+    {"label": "box", "attrs": {"nodeId": "panel", "datapath": "boxdata"}, "children": [
+      {"label": "region", "attrs": {"childname": "top", "datapath": ".topdata"}, "children": [
+        {"label": "named", "attrs": {"childname": "inner", "datapath": ".innerdata"}, "children": [
+          {"label": "deep", "attrs": {"childname": "hidden", "datapath": ".hiddendata"}}
+        ]},
+        {"label": "bleaf"}
+      ]},
+      {"label": "unnamed", "children": [
+        {"label": "found", "attrs": {"childname": "nested", "datapath": ".nesteddata"}}
+      ]}
+    ]},
+    {"label": "aliases", "attrs": {"datapath": "cfg", "_aliasDatapaths": {"CHART": "gnr.chart", "LOCAL": ".local", "panel": "shadow"}}},
+    {"label": "grid", "attrs": {"datapath": "gr", "storepath": ".rows", "rowMode": "values"}, "children": [{"label": "cell"}]},
+    {"label": "agrid", "attrs": {"storepath": "arows", "rowMode": "attributes"}, "children": [{"label": "acell"}]},
+    {"label": "nogrid", "attrs": {"storepath": "x"}, "children": [{"label": "ncell"}]}
+  ],
+  "cases": [
+    {"node": "page.form.rec.field", "path": "#FORM.n", "expect": "pg.f1.n"},
+    {"node": "page.form.rec.field", "path": "^#FORM.n?caption", "expect": "pg.f1.n?caption"},
+    {"node": "page.form.inner.leaf", "path": "#FORM.n", "expect": "pg.f1.sub.n"},
+    {"node": "page.form.inner.leaf", "path": "#FORM/parent/#FORM.pkey", "expect": "pg.f1.pkey"},
+    {"node": "anchor.a1.aleaf", "path": "#ANCHOR.sel", "expect": "anc.sel"},
+    {"node": "anchor.a1.aleaf", "path": "=#ANCHOR.sel?label", "expect": "anc.sel?label"},
+    {"node": "anchor.a1.aleaf", "path": ".#parent.y", "expect": "anc.y"},
+    {"node": "page.form.rec.field", "path": "#pg.n", "expect": "pg.n"},
+    {"node": "page.form.rec.field", "path": "#missing.n", "error": "#<id>: cannot resolve"},
+    {"node": "ws1.wleaf", "path": "#WORKSPACE.a", "expect": "_gramlot.workspace.named.a"},
+    {"node": "ws1.wleaf", "path": "^#WORKSPACE", "expect": "_gramlot.workspace.named"},
+    {"node": "ws2.w2leaf", "path": "#WORKSPACE.a", "expect": "_gramlot.workspace.wsid.a"},
+    {"node": "page.ws3.w3leaf", "path": "#WORKSPACE.a", "expect": "_gramlot.workspace.div_1537351128.a"},
+    {"node": "ws4.w4leaf", "path": "#WORKSPACE.a", "expect": "ws4data.private.a"},
+    {"node": "ws1.wleaf", "path": "#WORKSPACE.a?caption", "expect": "_gramlot.workspace.named.a?caption"},
+    {"node": "page.form.rec.field", "path": "#WORKSPACE.a", "error": "#WORKSPACE: no ancestor with _workspace"},
+    {"node": "box.region.bleaf", "path": "#panel/top.v", "expect": "boxdata.topdata.v"},
+    {"node": "box.region.bleaf", "path": "#panel/top/inner.v", "expect": "boxdata.topdata.innerdata.v"},
+    {"node": "box.region.bleaf", "path": "#panel/nested.v", "expect": "boxdata.nesteddata.v"},
+    {"node": "box.region.bleaf", "path": "#panel/top/parent.v", "expect": "boxdata.v"},
+    {"node": "box.region.bleaf", "path": "#panel/hidden.v", "error": "no child 'hidden'"},
+    {"node": "box.region.bleaf", "path": "#/inner.v", "expect": "boxdata.topdata.innerdata.v"},
+    {"node": "box.region.bleaf", "path": "#/inner.v?x", "expect": "boxdata.topdata.innerdata.v?x"},
+    {"node": "anchor.a1.aleaf", "path": "#/top.v", "error": "#/: no ancestor with a nodeId"},
+    {"node": "box.region.bleaf", "path": "#panel.v", "expect": "shadow.v"},
+    {"node": "page.form.rec.field", "path": "#CHART.type", "expect": "gnr.chart.type"},
+    {"node": "page.form.rec.field", "path": "#CHART", "expect": "gnr.chart"},
+    {"node": "page.form.rec.field", "path": "#LOCAL.k", "expect": "cfg.local.k"},
+    {"node": "page.form.rec.field", "path": "#DATA.a.b", "expect": "a.b"},
+    {"node": "page.form.rec.field", "path": "^#DATA.a.b?x", "expect": "a.b?x"},
+    {"node": "page.form.rec.field", "path": "#DATA", "error": "#DATA requires a path"},
+    {"node": "grid.cell", "path": "#ROW.price", "row": "r1", "expect": "gr.rows.r1.price"},
+    {"node": "grid.cell", "path": "=#ROW", "row": "r1", "expect": "gr.rows.r1"},
+    {"node": "grid.cell", "path": "=#ROW.price?fmt", "row": "r1", "expect": "gr.rows.r1.price?fmt"},
+    {"node": "grid", "path": "#ROW.price", "row": "r2", "expect": "gr.rows.r2.price"},
+    {"node": "grid.cell", "path": "#ROW.price", "error": "#ROW: no row context"},
+    {"node": "grid.cell", "path": ".total", "row": "r1", "expect": "gr.total"},
+    {"node": "agrid.acell", "path": "#ROW.price", "row": "r1", "expect": "arows.r1?price"},
+    {"node": "agrid.acell", "path": "#ROW?price", "row": "r1", "expect": "arows.r1?price"},
+    {"node": "agrid.acell", "path": "#ROW", "row": "r1", "expect": "arows.r1"},
+    {"node": "agrid.acell", "path": "#ROW.a.b", "row": "r1", "error": "only attribute fields"},
+    {"node": "nogrid.ncell", "path": "#ROW.x", "row": "r1", "error": "rowMode must be"},
+    {"node": "page.form.rec.field", "path": "#ROW.x", "row": "r1", "error": "#ROW: no ancestor with storepath"}
+  ]
+}

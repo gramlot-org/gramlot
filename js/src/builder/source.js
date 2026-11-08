@@ -194,6 +194,62 @@ function structFormulaCode(grid) {
     return items;
 }
 
+/** Source attributes of the symbolic resolution, which never reach the DOM: the metadata of a node like `_anchor`. */
+export const SYMBOLIC_ATTRIBUTES = ['_workspace', '_workspace_path', 'childname', '_aliasDatapaths'];
+
+// Heads that are symbols of the resolver and cannot be declared as aliases.
+const RESERVED_ALIASES = new Set(['ROW', 'WORKSPACE', 'DATA', 'FORM', 'ANCHOR']);
+
+/** The aliases declared by `node` in `_aliasDatapaths` (`{alias: path}`), checked; an empty list when none. */
+export function declaredAliases(node) {
+    const declared = node.getAttr('_aliasDatapaths');
+    if (declared == null) return [];
+    if (typeof declared !== 'object' || Array.isArray(declared)) {
+        throw new TypeError(`${node.nodeTag} '${node.label}': _aliasDatapaths must map alias names to paths`);
+    }
+    for (const [name, path] of Object.entries(declared)) {
+        if (!/^[^.?/#]+$/.test(name) || RESERVED_ALIASES.has(name)) throw new TypeError(`${node.nodeTag} '${node.label}': '${name}' is not an alias name`);
+        if (typeof path !== 'string' || !path) throw new TypeError(`${node.nodeTag} '${node.label}': alias '${name}' requires a path`);
+    }
+    return Object.keys(declared);
+}
+
+/** The legacy `stringHash` of a text: 32-bit `h * 31 + code` over its UTF-16 units, as a positive number. */
+export function stringHash(text) {
+    let hash = 0;
+    for (let index = 0; index < text.length; index++) hash = (((hash << 5) - hash) + text.charCodeAt(index)) | 0;
+    return Math.abs(hash);
+}
+
+/** The nearest node of `bag` whose `childname` is `name`: direct children first, then unnamed children's descendants. */
+function namedChild(bag, name) {
+    const nodes = bag.getNodes();
+    const direct = nodes.find(node => node.getAttr('childname') === name);
+    if (direct) return direct;
+    for (const node of nodes) {
+        if (node.getAttr('childname') != null || !(node.staticValue instanceof SourceBag)) continue;
+        const found = namedChild(node.staticValue, name);
+        if (found) return found;
+    }
+    return null;
+}
+
+/** The nodes of `bag` and their descendants, depth first. */
+function* sourceNodes(bag) {
+    for (const node of bag.getNodes()) {
+        yield node;
+        if (node.staticValue instanceof SourceBag) yield* sourceNodes(node.staticValue);
+    }
+}
+
+/** The node of the Source `source` that declares the alias `name` in `_aliasDatapaths`, or null; two declarations are an error. */
+function aliasOwner(source, name) {
+    if (source === null) return null;
+    const owners = [...sourceNodes(source)].filter(node => declaredAliases(node).includes(name));
+    if (owners.length > 1) throw new Error(`Duplicate alias '${name}'`);
+    return owners[0] ?? null;
+}
+
 export class GramlotBuilderBagNode extends SourceBagNode {
     #formState = null;
     #treeStore = null;
@@ -517,10 +573,15 @@ export class GramlotBuilderBagNode extends SourceBagNode {
         };
     }
 
-    /** Builder's absDatapath, keeping `?attr` on symbolic paths. */
-    absDatapath(path) {
+    /**
+     * Builder's absDatapath, keeping `?attr` on symbolic paths. `row` is the row context of `#ROW`:
+     * the key (label) of the row inside the collection at the `storepath` of the nearest node that
+     * declares one; it is ignored by any other path. `#ROW` without a row context is an error.
+     */
+    absDatapath(path, {row = null} = {}) {
         path = pointerTransform(path)?.pointer ?? path;
         const bare = this.pointerType(path) ? path.slice(1) : path;
+        if (bare === '#ROW' || bare.startsWith('#ROW.') || bare.startsWith('#ROW?')) return this.#rowDatapath(bare, row, path);
         if (bare.startsWith('#') && bare.includes('?')) {
             const [target, attr] = bare.split('?', 2);
             const resolved = super.absDatapath(target);
@@ -559,16 +620,138 @@ export class GramlotBuilderBagNode extends SourceBagNode {
         return path === null ? null : super._finalizeAbsPath(path, attr);
     }
 
-    /** Builder's symbolic resolution; `#<nodeId>` reads the nodeId map of the page runtime when there is one (R06). */
+    /**
+     * Symbolic resolution of `#<head>[.relpath]`, in the legacy order: alias, `#ROW`, `#WORKSPACE`,
+     * `#DATA`, then a start node (`#FORM`, `#ANCHOR`, `#<nodeId>`, `#/<childpath>`, each with an
+     * optional `/<childpath>`), from which `relpath` is resolved relatively.
+     */
     _resolveSymbolicDatapath(path, raw) {
-        const symbol = path.slice(1).split('.', 1)[0];
-        if (symbol === 'FORM' || symbol === 'ANCHOR') return super._resolveSymbolicDatapath(path, raw);
+        const symbolic = path.slice(1);
+        const dot = symbolic.indexOf('.');
+        const head = dot === -1 ? symbolic : symbolic.slice(0, dot);
+        const relpath = dot === -1 ? '' : symbolic.slice(dot + 1);
+        const alias = head.includes('/') ? null : this.#aliasDatapath(head);
+        if (alias !== null) return relpath ? `${alias}.${relpath}` : alias;
+        if (head === 'ROW') throw new Error(`#ROW: no row context for ${raw}`);
+        if (head === 'WORKSPACE') {
+            const base = this.#workspaceDatapath(raw);
+            return relpath ? `${base}.${relpath}` : base;
+        }
+        if (head === 'DATA') {
+            if (!relpath) throw new Error(`#DATA requires a path: ${raw}`);
+            return relpath;
+        }
+        return this.#symbolicNode(head, raw).absDatapath(relpath ? `.${relpath}` : '.');
+    }
+
+    /**
+     * The node reached by a child path from this node, as legacy `getChild`: the segments are
+     * separated by `/`; `parent` moves to the parent node, `#<nodeId>` (also `#FORM`, `#ANCHOR`) to the
+     * node of that symbol seen from the current node, any other segment to the nearest descendant whose
+     * `childname` is the segment (direct children first; a named node hides its descendants). Null when
+     * a step finds no node.
+     */
+    getChild(childpath) {
+        let node = this;
+        for (const segment of childpath.split('/')) {
+            if (segment === 'parent') node = node.parentNode;
+            else if (segment.startsWith('#')) node = node.#symbolicNode(segment.slice(1), childpath);
+            else {
+                this.#dependOn(`childname:${segment}`);
+                node = node.staticValue instanceof SourceBag ? namedChild(node.staticValue, segment) : null;
+            }
+            if (!node) return null;
+            this.#dependOn(node);
+        }
+        return node;
+    }
+
+    /**
+     * The name of the private Data area of this node, which declares `_workspace`: the string value,
+     * or for `true` the nodeId, else the tag followed by a hash of the node's Source path, as legacy.
+     */
+    get workspaceName() {
+        const value = this.getAttr('_workspace');
+        if (value === true) return this.getAttr('nodeId') ?? `${this.nodeTag}_${stringHash(this.fullpath)}`;
+        if (typeof value === 'string' && value) return value;
+        throw new TypeError(`${this.nodeTag} '${this.label}': _workspace must be true or a name, not ${value}`);
+    }
+
+    /** `#WORKSPACE`: `_workspace_path` of the owner resolved from it, else `_gramlot.workspace.<name>`. */
+    #workspaceDatapath(raw) {
+        const owner = this.attributeOwnerNode('_workspace');
+        if (!owner) throw new Error(`#WORKSPACE: no ancestor with _workspace for ${raw}`);
+        const explicit = owner.getAttr('_workspace_path');
+        return explicit == null ? `_gramlot.workspace.${owner.workspaceName}` : owner.absDatapath(explicit);
+    }
+
+    /** `#ROW[.field][?attr]` for the row `row` of the nearest node with `storepath`, following its `rowMode`. */
+    #rowDatapath(bare, row, raw) {
+        if (row === null) throw new Error(`#ROW: no row context for ${raw}`);
+        const owner = this.attributeOwnerNode('storepath');
+        if (!owner) throw new Error(`#ROW: no ancestor with storepath for ${raw}`);
+        const mode = owner.getAttr('rowMode');
+        if (mode !== 'values' && mode !== 'attributes') throw new Error(`#ROW: rowMode must be 'values' or 'attributes' for ${raw}`);
+        const rowpath = `${owner.absDatapath(owner.getAttr('storepath'))}.${row}`;
+        let [rest, attr = null] = bare.slice('#ROW'.length).split('?', 2);
+        if (mode === 'attributes' && rest) {
+            const field = rest.slice(1);
+            if (field.includes('.') || attr !== null) throw new Error(`#ROW: a row in rowMode 'attributes' has only attribute fields: ${raw}`);
+            return `${rowpath}?${field}`;
+        }
+        return `${rowpath}${rest}${attr === null ? '' : `?${attr}`}`;
+    }
+
+    /** The path of the alias `name` resolved from the node that declares it in `_aliasDatapaths`, or null. */
+    #aliasDatapath(name) {
+        if (RESERVED_ALIASES.has(name)) return null;
+        this.#dependOn(`alias:${name}`);
         const runtime = this.rootBuilder?.binding;
-        if (!runtime) return super._resolveSymbolicDatapath(path, raw);
-        const anchor = runtime.nodeIds.get(symbol);
-        if (!anchor) throw new Error(`#<id>: cannot resolve ${raw}`);
-        const relpath = path.slice(symbol.length + 2);
-        return anchor.absDatapath(relpath ? `.${relpath}` : '.');
+        const owner = runtime ? runtime.aliases.get(name) ?? null : aliasOwner(this.rootBuilder?.source ?? null, name);
+        if (owner === null) return null;
+        this.#dependOn(owner);
+        return owner.absDatapath(owner.getAttr('_aliasDatapaths')[name]);
+    }
+
+    /**
+     * The start node of a symbolic head, as legacy `nodeById`: `/<childpath>` from the nearest ancestor
+     * with a nodeId, through the `childname`s of the nodes in between; otherwise `<symbol>[/<childpath>]`
+     * where the symbol is `FORM`, `ANCHOR` or a nodeId of the page (R06: the nodeId map of the runtime).
+     */
+    #symbolicNode(head, raw) {
+        let node, childpath;
+        if (head.startsWith('/')) {
+            childpath = head.slice(1);
+            node = this;
+            while (node && node.getAttr('nodeId') == null) {
+                if (node.getAttr('childname') != null) childpath = `${node.getAttr('childname')}/${childpath}`;
+                node = node.parentNode;
+            }
+            if (!node) throw new Error(`#/: no ancestor with a nodeId for ${raw}`);
+        } else {
+            const slash = head.indexOf('/');
+            const symbol = slash === -1 ? head : head.slice(0, slash);
+            childpath = slash === -1 ? '' : head.slice(slash + 1);
+            if (symbol === 'FORM') node = this._findMarkedDatapathAncestor(true, false, raw);
+            else if (symbol === 'ANCHOR') node = this._findMarkedDatapathAncestor(false, true, raw);
+            else {
+                this.#dependOn(`id:${symbol}`);
+                const runtime = this.rootBuilder?.binding;
+                if (!runtime && !this.rootBuilder) throw new Error(`#<id>: cannot resolve ${raw} on a node without builder`);
+                node = runtime ? runtime.nodeIds.get(symbol) : this.rootBuilder.source.getNodeByAttr('nodeId', symbol);
+                if (!node) throw new Error(`#<id>: cannot resolve ${raw}`);
+                this.#dependOn(node);
+            }
+        }
+        if (!childpath) return node;
+        const child = node.getChild(childpath);
+        if (!child) throw new Error(`#<id>: no child '${childpath}' for ${raw}`);
+        return child;
+    }
+
+    /** Record, for the NodeBinding whose registrations are being resolved, that the resolution read `key`. */
+    #dependOn(key) {
+        this.rootBuilder?.binding?.dependOn(key);
     }
 
     /**
