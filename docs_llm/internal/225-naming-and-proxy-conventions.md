@@ -3125,3 +3125,25 @@ of the adapter option it serves; `library_origins`/`libraryOrigins` is a read-on
 property. No proxy is added: components read the source from their document. Chosen
 in implementation; the exports and the server option are public API and wait for
 owner confirmation.
+
+<a id="gc-225-runtime-size-20261108"></a>
+### Runtime size, issue #84 — 2026-11-08
+
+Owner decisions of 2026-11-08 on gramlot-org/gramlot#84 (decimal.js stays, no
+xmldom in the browser runtime, typst out of the standard set). Names applied:
+
+- The JS descriptor of the core collection `typst` is the default export of the
+  package export `@gramlot/gramlot/collections/typst` (file
+  `js/dist/collections/typst.js`). The path mirrors the Python module
+  `gramlot.collections.typst`, by the Python/JS spelling row of §010; the default
+  export takes the place of the Python attribute `mygramlot`, as the generated
+  `descriptor.js` files of gramlot-examples do.
+- The build list `declaredNames` (`js/scripts/build-runtime.mjs`) and the tuple
+  `DECLARED` (`scripts/generate_widget_reference.py`) name the core collections
+  that a page declares, after the Page attribute `gramlots`.
+- The esbuild namespace `absent-package` and the table `absentPackages`
+  (`js/scripts/runtime-options.mjs`) follow the `shared-module` namespace and the
+  `sharedModules` table: named after what they hold.
+
+Chosen in implementation; the package export is public API and waits for owner
+confirmation.
