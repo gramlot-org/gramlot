@@ -135,12 +135,12 @@ export class HtmlElement {
                 upload: () => this.uploadContext(),
                 reportError: (error, title) => this.reportError(node, error, title),
                 publish: (topic, payload) => node.publish(topic, payload),
-                writeParameter: (name, value) => this.writeParameter(node, name, value),
+                writeParameter: (name, value, attributes = null) => this.writeParameter(node, name, value, attributes),
                 attrDatapath: name => this.attrDatapath(node, name),
                 getStaticData: path => this.getStaticData(node, path),
                 // The value at the Data `path` relative to the node, read without running resolvers, and its write.
                 readRelativeData: path => this.getStaticData(node, node.absDatapath(path)),
-                setRelativeData: (path, value) => node.setRelativeData(path, value),
+                setRelativeData: (path, value, attributes = null) => node.setRelativeData(path, value, {attributes}),
                 // The tree's store, read from its storepath (`*S`, `*D` or an external Bag) at each call.
                 treeStore: () => node.rootBuilder.binding.treeStore(node),
                 callLogic: (name, keywords) => this.callLogic(node, name, keywords),
@@ -180,12 +180,13 @@ export class HtmlElement {
      * pointer writes; a literal, a `=` pointer and a pointer with a suffix write nothing (no inverse
      * conversion, 11.81). A value equal (`Object.is`) to the Data value is not written, as the legacy
      * `setAttributeInDatasource` with `lazySet`: a null value on a missing path creates no Data node.
+     * `attributes` (legacy `setRelativeData` attributes, such as `_valuelabel`) go on the written Data node.
      */
-    writeParameter(node, name, value) {
+    writeParameter(node, name, value, attributes = null) {
         const pointer = node.getAttr(name);
         if (node.pointerType(pointer) === '^' && !pointerTransform(pointer)
             && !Object.is(node.getRelativeData(pointer.slice(1)), value)) {
-            node.setRelativeData(pointer.slice(1), value);
+            node.setRelativeData(pointer.slice(1), value, {attributes});
         }
     }
 

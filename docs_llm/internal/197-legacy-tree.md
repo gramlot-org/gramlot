@@ -724,3 +724,22 @@ Verification: build passes; 35 Python component/renderer tests complete with one
 **Integration follow-up — 2026-11-01.** Owner approves aligning the relation tree and checkbox work with the current core, and chooses “Fermarsi sull’anello (consigliato)” for search. The shared tree now stops search at marked loops; selecting or checking a loop asks before resolving. Cancellation keeps a clicked checkbox unchanged, or restores the previous bound `checkedPaths` for a canceled external update. Already-started asynchronous loads may finish; stale requests do not apply their check. Static checkbox propagation and its previously documented lazy-selection debt remain; this is not acceptance of additional checkbox features.
 
 **Lazy checkbox propagation — 2026-11-01.** The owner directs “procedi anche con la propagazione delle checkbox ai discendenti non ancora caricati, mantenendo la conferma sugli anelli” and confirms “Sì, usa il percorso del ramo (consigliato)” for `checkedPaths`. With `checkChildren`, a selected unresolved descendant retains `checked` in the Data Bag, without loading it just for propagation; later loaded or inserted descendants inherit the current state. While unresolved, its own path is included in `checkedPaths`; after loading, checked descendant paths replace it. Canceling a loop confirmation stops loading and keeps its pending path. Disabled nodes retain their state; `checkChildren=false` leaves descendants independent. Explicit bound paths below an unresolved ancestor are applied when they become available. The latest selection wins if a pending load finishes after a change; a failed load retains the branch path for retry. This supersedes the previously documented lazy-propagation debt, but does not add `checked_*`, `eagerCheck` or legacy publication.
+
+<a id="gc-197-110"></a>
+
+## 110. Checks computed from the lists — 2026-11-08
+
+Owner, 2026-11-08 (symbolic-references plan, phase p6): the text list at the address of `checkedPaths` is the only source of the checks, as in `checkBoxText`; `checked_<attribute>` follows the legacy (“mi piacerebbe esser molto simile al legacy senza creare copie di bag”). Owner on departures: “se sono migliorativi usiamoli e annotiamo le differenze”. This supersedes the stored `checked` attributes and the lazy rules of §105.
+
+At every draw a node is checked when a list names its path or its value of a `checked_<attribute>`, or, with `checkChildren`, an ancestor's. Store-authored `checked='disabled:on'|'disabled:off'` is read, never written, and stops the propagation. A branch with mixed loaded children is -1. `checked_<attribute>` takes a plain Data path with the joiner after `:` (`checked_id='.ids:;'`). A click toggles as `clickOnCheckbox`, publishes `<nodeId>_checked` and writes every list with the `updateCheckedAttr` walk (leaves only with `checkChildren`), with the tree's `_valuelabel` on each list's Data node. A list changed outside the tree is the source of that draw; the other lists are rewritten from it. The tree also keeps a derived list of the checked loaded branches: a child added or reloaded under one of them is checked, as the legacy inherited `checked` attribute did.
+
+Differences from legacy:
+
+- No `eagerCheck`: a listed unloaded branch already checks its future children, so loading branches only to list their leaves is not needed.
+- Checking an unloaded branch does not load it: the list carries the branch path until the next click after it loads.
+- A node without the attribute adds nothing to `checked_<attribute>`: the legacy pushed `undefined`, which produced empty entries.
+- With `onChecked` and no list, the tree keeps the path list itself, like the expansion: no attribute is written on the store nodes.
+- `checked_<attribute>` is also a source: changing its list changes the checks (legacy wrote it only).
+- No `checked` attribute is written on store nodes: the store Data is not modified by checking.
+- The `<nodeId>_checked` payload is `{item, path, checked}`: no `checked` attribute is written, so the state travels in the payload.
+- A changed list rewrites the other lists only from the nodes loaded at that moment: entries for nodes below unloaded branches appear in them at the next click.

@@ -1537,6 +1537,71 @@ test('checkedPaths and checked_<attribute> stay consistent', async t => {
     assert.equal(checkState(f, 'folder'), false);
 });
 
+test('a child added under a fully checked branch is checked, as the legacy inherited check', async t => {
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked', checked_id: '.ids'}, prepare: withIds}); await tick();
+    checkBox(f, 'folder').click(); await tick();
+    f.store.getItem('folder').setItem('late', 1, {id: 'l'}); await settle();
+    assert.equal(checkState(f, 'folder.late'), true);
+    assert.equal(checkState(f, 'folder'), true);
+    assert.equal(f.store.getNode('folder.late').attr.checked, undefined);
+    assert.equal(f.app.data.getItem('model.checked'), 'folder.alpha,folder.beta');
+    assert.equal(f.app.data.getItem('model.ids'), 'a,b');
+    checkBox(f, 'folder').click(); await tick();
+    assert.deepEqual(['folder', 'folder.alpha', 'folder.late'].map(path => checkState(f, path)), [false, false, false]);
+    f.store.getItem('folder').setItem('later', 2); await settle();
+    assert.equal(checkState(f, 'folder.later'), false);
+    f.app.data.setItem('model.checked', 'folder.alpha,folder.beta,folder.late,folder.later'); await settle();
+    f.store.getItem('folder').setItem('latest', 3); await settle();
+    assert.equal(checkState(f, 'folder.latest'), true);
+    f.app.data.setItem('model.checked', ''); await settle();
+    assert.equal(checkState(f, 'folder.latest'), false);
+});
+
+test('a child added under a partially checked branch stays unchecked', async t => {
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    checkBox(f, 'folder.alpha').click(); await tick();
+    f.store.getItem('folder').setItem('late', 1); await settle();
+    assert.equal(checkState(f, 'folder.late'), false);
+    assert.equal(checkState(f, 'folder'), -1);
+});
+
+test('children reloaded under a fully checked branch are checked', async t => {
+    let loads = 0;
+    class Lazy extends BagResolver { load() { loads++; return new Bag({[`child${loads}`]: 1}); } }
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    f.store.setItem('lazy', new Lazy()); await tick();
+    const expand = async () => { f.row('lazy').querySelector('button').click(); await settle(); await settle(); };
+    await expand();
+    checkBox(f, 'lazy').click(); await tick();
+    assert.equal(f.app.data.getItem('model.checked'), 'lazy.child1');
+    await expand(); await expand();
+    assert.equal(checkState(f, 'lazy.child2'), true);
+});
+
+test('a check publishes the legacy <nodeId>_checked topic before the lists are written', async t => {
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked', nodeId: 'places'}}); await tick();
+    const events = [];
+    f.app.subscribe('places_checked', payload => events.push({...payload, list: f.app.data.getItem('model.checked')}));
+    checkBox(f, 'folder').click(); await tick();
+    assert.equal(events.length, 1);
+    assert.equal(events[0].item, f.store.getNode('folder'));
+    assert.equal(events[0].path, 'folder');
+    assert.equal(events[0].checked, true);
+    assert.equal(events[0].list, null);
+    checkBox(f, 'folder').click(); await tick();
+    assert.equal(events[1].checked, false);
+    f.app.data.setItem('model.checked', 'other,folder.alpha'); await settle();
+    assert.deepEqual(events.slice(2).map(({path, checked}) => [path, checked]), [['other', true], ['folder.alpha', true]]);
+});
+
+test('_valuelabel goes on the Data node of every written list, as in the legacy', async t => {
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked', checked_id: '.ids', _valuelabel: 'Places'}, prepare: withIds}); await tick();
+    checkBox(f, 'other').click(); await tick();
+    assert.equal(f.app.data.getItem('model.checked'), 'other');
+    assert.equal(f.app.data.getNode('model.checked').attr._valuelabel, 'Places');
+    assert.equal(f.app.data.getNode('model.ids').attr._valuelabel, 'Places');
+});
+
 test('checked_<attribute> requires a Data path', async t => {
     assert.throws(() => fixture(t, {attrs: {checked_id: '^.ids'}}), /tree checked_id requires a Data path/);
 });

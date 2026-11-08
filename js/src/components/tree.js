@@ -97,6 +97,9 @@ export const Tree = defineComponent({
         #seenLists = null;
         // The path list of a tree without checkedPaths, kept like the expansion.
         #ownCheckedPaths = null;
+        // The loaded branches whose loaded children are all checked (with checkChildren), derived like
+        // the other lists: a child added or reloaded under one of them is checked, as in the legacy.
+        #checkedBranches = null;
         // Expansion, loading, errors and resolutions are kept by tree path (row keys from
         // the store root), never by BagNode.
         #loading = new Set();
@@ -673,16 +676,21 @@ export const Tree = defineComponent({
          * `checked_<attribute>`. Each carries its text, read at its address now, and its writer.
          */
         #checkLists() {
+            // Legacy updateCheckedAttr: the tree's `_valuelabel` goes on the Data node of each written list.
+            const label = this.#context.sourceNode.getAttr('_valuelabel');
+            const attributes = label == null ? null : {_valuelabel: label};
             const lists = [{name: 'checkedPaths', attribute: null, joiner: this.parameters.checkedPaths_joiner,
                 value: this.#pathsEnabled ? this.parameters.checkedPaths : this.#ownCheckedPaths,
                 write: text => {
-                    if (this.#pathsEnabled) this.#context.writeParameter('checkedPaths', text);
+                    if (this.#pathsEnabled) this.#context.writeParameter('checkedPaths', text, attributes);
                     else this.#ownCheckedPaths = text;
-                }}];
+                }},
+                {name: 'checkedBranches', attribute: null, branches: true, joiner: ',', value: this.#checkedBranches,
+                    write: text => { this.#checkedBranches = text; }}];
             for (const [name, {attribute, path, joiner}] of this.#checkedAttributes) {
                 const value = this.#context.readRelativeData(path);
                 if (value != null && typeof value !== 'string') throw new TypeError(`tree ${name} must address text`);
-                lists.push({name, attribute, joiner, value, write: text => this.#context.setRelativeData(path, text)});
+                lists.push({name, attribute, joiner, value, write: text => this.#context.setRelativeData(path, text, attributes)});
             }
             return lists;
         }
@@ -748,7 +756,7 @@ export const Tree = defineComponent({
         /**
          * The text of `list` for `states`, as the legacy updateCheckedAttr walk: with checkChildren only
          * the nodes without loaded children (an unloaded branch included), otherwise every checked node;
-         * attribute values once each. `previous` keeps the entries the walk cannot reach: paths below an
+         * attribute values once each. The checkedBranches list takes the checked loaded branches instead. `previous` keeps the entries the walk cannot reach: paths below an
          * unloaded branch (except, with checkChildren, below `clicked`) and values no reachable node carries.
          */
         #listText(store, states, list, previous = null, clicked = null) {
@@ -761,13 +769,13 @@ export const Tree = defineComponent({
                     const entry = list.attribute === null ? path
                         : node.attr[list.attribute] == null ? null : String(node.attr[list.attribute]);
                     if (entry !== null) known.add(entry);
-                    if (entry !== null && !(propagate && children?.length) && states.get(path) === true
-                        && !entries.includes(entry)) entries.push(entry);
+                    const listed = list.branches ? propagate && children?.length > 0 : !(propagate && children?.length);
+                    if (entry !== null && listed && states.get(path) === true && !entries.includes(entry)) entries.push(entry);
                     if (children) visit(children, path);
                 }
             };
             visit(store, '');
-            if (previous !== null) for (const entry of this.#entries(previous)) {
+            if (previous !== null && !list.branches) for (const entry of this.#entries(previous)) {
                 if (entries.includes(entry)) continue;
                 if (list.attribute !== null ? !known.has(entry) : this.#pendingCheckedPath(entry) &&
                     !(propagate && clicked !== null && (entry === clicked || entry.startsWith(`${clicked}.`)))) entries.push(entry);
@@ -785,6 +793,11 @@ export const Tree = defineComponent({
                 : (this.#seenLists.get(list.name) ?? '') !== (list.value ?? ''));
             const states = this.#checkStates(store, this.#checkSources(changed.length || first ? changed : lists));
             this.#seenLists = new Map(lists.map(list => [list.name, list.value ?? '']));
+            // Legacy setCheckedPaths checks each path of a changed checkedPaths, and each check publishes.
+            const paths = changed.find(list => list.name === 'checkedPaths');
+            if (paths && !first) for (const path of this.#entries(paths)) {
+                if (states.has(path) && typeof states.get(path) !== 'string') this.#publishChecked(path, true);
+            }
             if (changed.length) for (const list of lists) {
                 if (changed.includes(list)) continue;
                 const text = this.#listText(store, states, list);
@@ -813,12 +826,20 @@ export const Tree = defineComponent({
                 if (leaves.length) checked = leaves.some(([, value]) => value === true);
             }
             const states = this.#checkStates(store, this.#checkSources(lists), {path, value: !checked});
+            this.#publishChecked(path, !checked);
             for (const list of lists) {
                 const text = this.#listText(store, states, list, list, path);
                 this.#seenLists.set(list.name, text);
                 if (text !== (list.value ?? '')) list.write(text);
             }
             this.#schedule();
+        }
+        /**
+         * Publish the legacy `<nodeId>_checked` topic of the tree for the check of `path` set to `checked`,
+         * before the lists are written; the payload is the store node (`item`), its tree path and the value.
+         */
+        #publishChecked(path, checked) {
+            this.#context.publish('checked', {item: this.#rowNode(path), path, checked});
         }
         #pendingCheckedPath(path) {
             const parts = path.split('.');
