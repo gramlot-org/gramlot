@@ -741,5 +741,5 @@ Differences from legacy:
 - With `onChecked` and no list, the tree keeps the path list itself, like the expansion: no attribute is written on the store nodes.
 - `checked_<attribute>` is also a source: changing its list changes the checks (legacy wrote it only).
 - No `checked` attribute is written on store nodes: the store Data is not modified by checking.
-- The `<nodeId>_checked` payload is `{item, path, checked}`: no `checked` attribute is written, so the state travels in the payload.
+- The `<nodeId>_checked` payload is `{path, checked}`: no `checked` attribute is written, so the state travels in the payload; the node is not passed, as data is reached only by address (legacy passed the node, and its only subscriber, `htablehandler.py:1008`, ignored it).
 - A changed list rewrites the other lists only from the nodes loaded at that moment: entries for nodes below unloaded branches appear in them at the next click.

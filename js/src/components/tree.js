@@ -839,7 +839,7 @@ export const Tree = defineComponent({
          * before the lists are written; the payload is the store node (`item`), its tree path and the value.
          */
         #publishChecked(path, checked) {
-            this.#context.publish('checked', {item: this.#rowNode(path), path, checked});
+            this.#context.publish('checked', {path, checked});
         }
         #pendingCheckedPath(path) {
             const parts = path.split('.');

@@ -1584,7 +1584,7 @@ test('a check publishes the legacy <nodeId>_checked topic before the lists are w
     f.app.subscribe('places_checked', payload => events.push({...payload, list: f.app.data.getItem('model.checked')}));
     checkBox(f, 'folder').click(); await tick();
     assert.equal(events.length, 1);
-    assert.equal(events[0].item, f.store.getNode('folder'));
+    assert.deepEqual(Object.keys(events[0]).sort(), ['checked', 'list', 'path']);
     assert.equal(events[0].path, 'folder');
     assert.equal(events[0].checked, true);
     assert.equal(events[0].list, null);
