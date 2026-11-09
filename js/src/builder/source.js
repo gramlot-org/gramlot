@@ -219,6 +219,14 @@ function namedChild(bag, name) {
 
 export class GramlotBuilderBagNode extends SourceBagNode {
     #formState = null;
+    #internal = null;
+
+    /**
+     * Internal state of this node for its component or runtime (GC-225): a plain object, created on first read.
+     * It is not reactive, not an attribute, not Data and not serialized. It holds plain values only, never a
+     * Bag, BagNode or DOM node; state an author may read or bind goes to `#WORKSPACE` in Data.
+     */
+    get _internal() { return this.#internal ??= {}; }
 
     /** The local form lifecycle owned by the nearest marked Source ancestor. */
     get formState() {

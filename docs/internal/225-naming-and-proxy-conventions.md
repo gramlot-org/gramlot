@@ -2769,6 +2769,8 @@ Owner: “completiamo anche la variante gerarchica riusando il tree con checkbox
 
 Owner: “completa checkBoxText anche con testo editabile e selezione per descrizione, mantenendo i codici nei Data”. `CheckBoxTextEditor` follows the component editor naming; `sourceNode.checkBoxTextState.draft` owns incomplete text and its code baseline, following existing Source-owned component state. Popup text accepts a comma-separated description list with case-insensitive exact resolution; native datalist suggestions complete the last description. Enter/change commits through existing field validation; unknown/ambiguous text is not committed and blocks form acceptance. Escape and form restore discard the draft. Checkbox selection remains authoritative, and remote/hierarchical choices reuse the existing option index without extra queries. Legacy evidence: `Genropy/genropy/gnrjs/gnr_d11/js/genro_components.js`, CheckBoxText lines 5699–6114, uses caption/value dictionaries but declares the popup textbox `readOnly:true`; no typed-description resolver was found there. The edited-description behavior is explicitly owner-requested, not claimed as verified legacy parity. No new authoring parameter.
 
+Superseded on 2026-11-09 (owner, `_internal`): the draft lives in `sourceNode._internal.draft`, same shape; `checkBoxTextState` no longer exists.
+
 
 Search capsule refinement — 2026-11-04: owner requests a fully rounded, lower and more compact shared searchBox, darker column-selector background and no information icon unless explicitly requested. The shared defaults become 26 px input height, 240 px width and 12 px type (touch minimum retained). `searchHelp=False` is the Boolean opt-in on frameGrid/searchBox; it forwards unchanged to the search control and is reactive there. This supersedes the preceding rectangular 32 px default and always-visible help button. No example-local styling.
 
@@ -3154,3 +3156,22 @@ decision d-scope, 2026-11-07: "setTreeStore con un Bag oggetto sparisce". A tree
 reads its store only at `storepath`; the inspector keeps copies in its own Data
 through the named connection above. The runtime's `treeStore(node)` remains the
 reader of `storepath` for the tree context.
+
+### Node internal state `_internal` — owner, 2026-11-09
+
+Owner: "mettere nei source node di gramlot un ._internal che è un object che tiene lo
+stato interno al nodo e che non è reattivo e non deve essere visto dall'utente";
+confirmed "ok". The name `_internal` is the owner's.
+
+- Component state an author may read or bind goes to the node's private area
+  `#WORKSPACE` in Data.
+- Internal, non-reactive state of a Source node goes to `node._internal`, a plain
+  object defined on `GramlotBuilderBagNode` (`js/src/builder/source.js`) and created
+  on first read. Writing it fires no Source event and no rebind. It is not an
+  attribute, not Data and not serialized with Source; authors do not use it.
+- `_internal` holds plain values only: strings, numbers, booleans, null, and plain
+  objects/arrays of those. Never a Bag, BagNode or DOM node: data and structure are
+  reached by address.
+- Python Source nodes have no `_internal`: it is browser runtime state.
+- First user: the checkBoxText typed-description draft, `node._internal.draft`
+  (`{text, value}`).

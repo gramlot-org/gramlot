@@ -334,18 +334,18 @@ test('checkBoxText edits descriptions, suggests additions and keeps only codes i
     assert.equal(f.app.data.getItem('cities'),null);
 });
 
-test('description drafts stay in Source, reject unknown/ambiguous text and yield to external Data', async t => {
+test('description drafts stay in the Source node _internal, reject unknown/ambiguous text and yield to external Data', async t => {
     const f=fixture(t,(r,a)=>{a.data.setItem('cities','MI');r.checkBoxText({id:'cities',node_label:'cities',value:'^cities',popup:true,values:'MI:Milano,PV:Pavia,XX:Pavia'});});
     await settle();const host=f.host('cities');const source=f.app.src.source.getNode('main.cities');
     host.summary.value='Pavia';f.event(host.summary,'input');f.event(host.summary,'change');
-    assert.equal(f.app.data.getItem('cities'),'MI');assert.equal(source.checkBoxTextState.draft.text,'Pavia');
+    assert.equal(f.app.data.getItem('cities'),'MI');assert.equal(source._internal.draft.text,'Pavia');
     assert.match(host.message.textContent,/Ambiguous/);
     host.summary.value='Unknown';f.event(host.summary,'input');f.event(host.summary,'change');
     assert.equal(host.summary.getAttribute('aria-invalid'),'true');assert.equal(f.app.data.getItem('cities'),'MI');
     host.summary.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
-    assert.equal(host.summary.value,'Milano');assert.equal(source.checkBoxTextState.draft,null);
+    assert.equal(host.summary.value,'Milano');assert.equal(source._internal.draft,null);
     host.summary.value='partial';f.event(host.summary,'input');f.app.data.setItem('cities','PV');
-    assert.equal(host.summary.value,'Pavia');assert.equal(source.checkBoxTextState.draft,null);
+    assert.equal(host.summary.value,'Pavia');assert.equal(source._internal.draft,null);
 });
 
 test('hierarchical descriptions select paths and cannot select disabled nodes', async t => {
