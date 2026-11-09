@@ -1,6 +1,7 @@
 """Terminal sessions: frames, flow control and the life of a @terminal PageStore method (#87)."""
 import asyncio
 import json
+import threading
 import unittest
 
 from genro_tytx import from_tytx, to_tytx
@@ -155,6 +156,55 @@ class TerminalSessionTests(unittest.TestCase):
             with self.subTest(limit=limit), self.assertRaises(ValueError):
                 TerminalSession(Sent(), limit=limit)
 
+    def test_a_large_write_goes_in_frames_of_the_limit(self):
+        async def run():
+            sent = Sent()
+            session = TerminalSession(sent, limit=4)
+            writing = asyncio.ensure_future(session.write(b"0123456789"))
+            await settle()
+            self.assertEqual(sent.frames, [bytes([OUTPUT]) + b"0123"])
+            session.receive(ack(4))
+            await settle()
+            session.receive(ack(4))
+            await asyncio.wait_for(writing, 1)
+            self.assertEqual([frame[1:] for frame in sent.frames], [b"0123", b"4567", b"89"])
+        asyncio.run(run())
+
+    def test_close_ends_every_waiting_reader(self):
+        async def run():
+            session = TerminalSession(Sent())
+            readers = [asyncio.ensure_future(session.read()) for _ in range(3)]
+            await settle()
+            session.close()
+            self.assertEqual(await asyncio.wait_for(asyncio.gather(*readers), 1), [b"", b"", b""])
+        asyncio.run(run())
+
+    def test_sizes_above_65535_and_unread_input_above_the_limit_are_refused(self):
+        async def run():
+            session = TerminalSession(Sent(), limit=4)
+            session.receive(resize(65535, 65535))
+            with self.assertRaises(ValueError):
+                session.receive(resize(65536, 80))
+            session.receive(bytes([INPUT]) + b"abc")
+            with self.assertRaises(ValueError):
+                session.receive(bytes([INPUT]) + b"de")
+            self.assertEqual(await session.read(), b"abc")
+            session.receive(bytes([INPUT]) + b"defg")
+        asyncio.run(run())
+
+    def test_close_from_another_thread_runs_on_the_session_loop(self):
+        async def run():
+            session = TerminalSession(Sent(), host="127.0.0.1:8000")
+            self.assertEqual(session.host, "127.0.0.1:8000")
+            reader = asyncio.ensure_future(session.read())
+            await settle()
+            thread = threading.Thread(target=session.close)
+            thread.start()
+            await asyncio.to_thread(thread.join)
+            self.assertEqual(await asyncio.wait_for(reader, 1), b"")
+            self.assertTrue(session.closed)
+        asyncio.run(run())
+
 
 class ServerTerminalTests(unittest.TestCase):
     def server(self):
@@ -193,8 +243,10 @@ class ServerTerminalTests(unittest.TestCase):
             server = self.server()
             page_id = (await server.open_page("/", owner="alice")).page_id
             session = await server.open_terminal(page_id, "echo", send=Sent(), owner="alice")
-            with self.assertRaises(ValueError):
-                await server.open_terminal(page_id, "echo", send=Sent(), owner="alice")
+            replacing = await server.open_terminal(page_id, "echo", send=Sent(), owner="alice")
+            self.assertTrue(session.closed)
+            self.assertFalse(replacing.closed)
+            session = replacing
             session.close()
             await asyncio.wait_for(session.wait_closed(), 1)
             await settle()
@@ -205,6 +257,22 @@ class ServerTerminalTests(unittest.TestCase):
             server.close_terminal(again)
             self.assertTrue(again.closed)
         asyncio.run(run())
+
+    def test_a_page_closed_from_a_worker_thread_closes_its_sessions_on_their_loop(self):
+        async def run():
+            server = self.server()
+            page_id = (await server.open_page("/", owner="alice")).page_id
+            session = await server.open_terminal(page_id, "echo", send=Sent(), owner="alice")
+            await asyncio.to_thread(server.close_page, page_id, owner="alice")
+            await asyncio.wait_for(session.wait_closed(), 1)
+            await settle()
+            self.assertEqual(server._terminals, {})
+        loop = asyncio.new_event_loop()
+        loop.set_debug(True)
+        try:
+            loop.run_until_complete(run())
+        finally:
+            loop.close()
 
     def test_unknown_unowned_guarded_and_synchronous_sessions_are_refused(self):
         async def run():

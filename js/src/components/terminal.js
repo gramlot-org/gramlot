@@ -5,7 +5,7 @@ import {projectParameters} from './parameters.js';
 /**
  * The frames of a terminal session (#87), the same as `gramlot.server.terminal`: one binary WebSocket message,
  * first byte the channel. `INPUT` (0) carries the keys, `OUTPUT` (1) the bytes to write, `RESIZE` (4) the JSON
- * `{"Width": columns, "Height": rows}` of the Kubernetes exec protocol, `ACK` (5) a 32-bit big-endian count of
+ * `{"Width": columns, "Height": rows}` of the Kubernetes exec protocol (1 to 65535), `ACK` (5) a 32-bit big-endian count of
  * output bytes the terminal has written. The server stops sending output while 1 MB is unacknowledged.
  */
 export const INPUT = 0, OUTPUT = 1, RESIZE = 4, ACK = 5;
@@ -18,7 +18,9 @@ function frame(channel, payload) {
 
 export function inputFrame(text) { return frame(INPUT, new TextEncoder().encode(text)); }
 export function binaryInputFrame(text) { return frame(INPUT, Uint8Array.from(text, character => character.charCodeAt(0) & 255)); }
-export function resizeFrame(rows, columns) { return frame(RESIZE, new TextEncoder().encode(JSON.stringify({Width: columns, Height: rows}))); }
+export function resizeFrame(rows, columns) {
+    for (const value of [rows, columns]) if (!Number.isInteger(value) || value < 1 || value > 65535) throw new RangeError('A terminal size is 1 to 65535');
+    return frame(RESIZE, new TextEncoder().encode(JSON.stringify({Width: columns, Height: rows}))); }
 export function ackFrame(count) {
     if (!Number.isInteger(count) || count < 0 || count > 0xffffffff) throw new RangeError('An acknowledgement counts 0 to 2^32-1 bytes');
     const payload = new Uint8Array(4); new DataView(payload.buffer).setUint32(0, count);
@@ -120,7 +122,14 @@ export const Terminal = defineComponent({name: 'terminal', tag: 'gramlot-termina
                 });
                 socket.addEventListener('message', event => {
                     if (generation !== this.#generation) return;
-                    const payload = outputPayload(event.data);
+                    let payload;
+                    try { payload = outputPayload(event.data); }
+                    catch (error) {
+                        // A frame the terminal cannot read ends the session, as on the server side.
+                        socket.close();
+                        this.#context ? this.#context.reportError(error, 'Terminal') : console.error(error);
+                        return;
+                    }
                     // The acknowledgement follows xterm's parsing: a slow screen slows the server.
                     terminal.write(payload, () => this.#send(ackFrame(payload.length)));
                 });

@@ -2698,7 +2698,7 @@ Collection: **editors**. Browser element: `gramlot-terminal`.
 **Composition.** Leaf control. It fills its box and resizes the server terminal with it.
 
 
-**Limits and lifecycle.** Requires a server with a PageStore channel (websocket). One page opens a session name once. The server stops sending output while 1 MB is unacknowledged by the screen.
+**Limits and lifecycle.** Requires a server with a PageStore channel (websocket). A page has one open session per name: opening it again closes the open one. The server stops sending output while 1 MB is unacknowledged by the screen.
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |

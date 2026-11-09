@@ -273,12 +273,14 @@ class GramlotServer:
             raise ValueError("Page already has a channel")
         self._page_channels[page_id] = send
 
-    async def open_terminal(self, page_id, session, *, send, owner, identity=None):
+    async def open_terminal(self, page_id, session, *, send, owner, identity=None, host=None):
         """Open the terminal session ``session`` of the page's store and run its ``@terminal`` method.
 
-        ``send`` is the adapter's async callable for output frames. The returned ``TerminalSession``
-        takes the browser frames with ``receive``; it closes when the method returns, when the page
-        closes, or when the adapter calls ``close_terminal``. One page opens a session name once.
+        ``send`` is the adapter's async callable for output frames; ``host`` is the ``Host`` header of
+        the socket request. The returned ``TerminalSession`` takes the browser frames with ``receive``;
+        it closes when the method returns, when the page closes, or when the adapter calls
+        ``close_terminal``. A page has one open session per name: opening the name again closes the
+        open one first.
         """
         store = self.page_store(page_id, owner=owner)
         declared = resolve_declared(store, session, "__gramlot_terminal__") if self.name_syntax.matches(session) else None
@@ -293,8 +295,8 @@ class GramlotServer:
                 f"Access refused: {session}")
         key = (page_id, session)
         if key in self._terminals:
-            raise ValueError(f"Terminal session {session} is already open")
-        terminal = TerminalSession(send)
+            self.close_terminal(self._terminals[key][0])
+        terminal = TerminalSession(send, host=host)
         task = asyncio.ensure_future(self._run_terminal(key, method.__get__(instance, type(instance)), terminal))
         self._terminals[key] = (terminal, task)
         return terminal
@@ -313,11 +315,13 @@ class GramlotServer:
 
     def close_terminal(self, terminal):
         """Close ``terminal``, a session ``open_terminal`` returned, and cancel its method. A session
-        already closed is left as it is: its name may belong to a newer session of the page."""
+        already closed is left as it is: its name may belong to a newer session of the page. It may be
+        called from another thread (``close_page`` from a worker): the close and the cancellation
+        then run on the session's loop."""
         for key, record in list(self._terminals.items()):
             if record[0] is terminal:
                 del self._terminals[key]
-                record[1].cancel()
+                terminal._on_loop(record[1].cancel)
         terminal.close()
 
     def _close_terminals(self, page_id=None):

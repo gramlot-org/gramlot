@@ -24,7 +24,7 @@ COVERAGE = {
         "Reads session, the name of an @terminal method of the page store. Writes connected, rows and columns when the socket opens, closes or the screen is resized. Terminal bytes never pass through Data.",
         "Keys go to the session as typed, including arrows, Tab and Ctrl-C. Output is written to the screen as it arrives. input(text) sends text as if typed.",
         "Leaf control. It fills its box and resizes the server terminal with it.",
-        "Requires a server with a PageStore channel (websocket). One page opens a session name once. The server stops sending output while 1 MB is unacknowledged by the screen.",
+        "Requires a server with a PageStore channel (websocket). A page has one open session per name: opening it again closes the open one. The server stops sending output while 1 MB is unacknowledged by the screen.",
         "js/src/components/terminal.js src/gramlot/server/terminal.py",
         "js/tests/terminal.test.js tests/test_terminal_session.py",
         "",

@@ -337,11 +337,13 @@ No current adapter offers it; the base runtime has no WebSocket transport.
 Block ID: **GC-101-325**.
 
 Python hosts with WebSocket: `<prefix>/gramlot/terminal?pageId=…&session=…`, PageStore channel origin/owner checks;
-opens `@terminal` method `session`; unknown session, foreign owner, refused auth, missing parameter → close 1008.
+opens `@terminal` method `session`, closing an open one of the same name; unknown session, foreign owner,
+refused auth, missing parameter → close 1008.
 Binary messages, first byte = channel: 0 keys (browser→server), 1 output (server→browser),
-4 JSON `{"Width","Height"}` (browser→server), 5 32-bit big-endian count of output bytes written (browser→server).
-0/1/4 follow Kubernetes exec. No output while 1 MB unacknowledged. Close 1000 when the session ends,
-1008 on an unreadable frame. JavaScript hosts do not offer the route.
+4 JSON `{"Width","Height"}` each 1–65535 (browser→server), 5 32-bit big-endian count of output bytes written
+(browser→server). 0/1/4 follow Kubernetes exec. Output frames ≤ 1 MB; no output while 1 MB unacknowledged;
+more than 1 MB of unread input refused; a frame renews the page at most once a minute. Close 1000 when the
+session ends, 1008 on an unreadable frame. JavaScript hosts do not offer the route.
 
 ## Part E · Application metadata
 

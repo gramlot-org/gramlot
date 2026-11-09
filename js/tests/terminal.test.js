@@ -20,6 +20,8 @@ test('resize frames carry the Kubernetes JSON and acknowledgements a 32-bit big-
     assert.deepEqual([...ackFrame(65536)], [ACK, 0, 1, 0, 0]);
     assert.deepEqual([...ackFrame(0xffffffff)], [ACK, 255, 255, 255, 255]);
     for (const count of [-1, 1.5, 2 ** 32]) assert.throws(() => ackFrame(count), RangeError);
+    assert.equal(resizeFrame(65535, 65535)[0], RESIZE);
+    for (const [rows, columns] of [[0, 80], [24, 65536], [1.5, 80]]) assert.throws(() => resizeFrame(rows, columns), RangeError);
 });
 
 test('output payload is the frame without its channel; another channel is an error', () => {
