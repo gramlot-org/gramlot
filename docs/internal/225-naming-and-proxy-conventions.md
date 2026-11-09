@@ -3175,3 +3175,5 @@ confirmed "ok". The name `_internal` is the owner's.
 - Python Source nodes have no `_internal`: it is browser runtime state.
 - First user: the checkBoxText typed-description draft, `node._internal.draft`
   (`{text, value}`).
+- Second user (owner, 2026-11-09: "Sì, spostalo"): the form field draft text,
+  `node._internal.formDraft`, formerly the node property `formDraft`.

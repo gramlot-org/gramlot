@@ -160,7 +160,7 @@ export class EditingSession {
         this.schedule(() => {
             if (this.fields.get(node) !== adapter) return;
             const draft = this.registers.getItem('drafts').getNode(key(node));
-            if (draft) { node.formDraft = draft.value; adapter.element.restoreFormDraft(draft.value); }
+            if (draft) { node._internal.formDraft = draft.value; adapter.element.restoreFormDraft(draft.value); }
             if (field.result) adapter.element.presentValidation(field.result);
             const errors = this.registers.getItem('errors').getItem(key(node));
             if (errors) adapter.element.error(errors.getNodes().map(n => n.value).join('\n'));
@@ -206,7 +206,7 @@ export class EditingSession {
     validate() {
         if (this.disposed) return Promise.resolve(false);
         if (this.fullValidation) return this.fullValidation.promise;
-        for (const adapter of this.fields.values()) if (Object.hasOwn(adapter.node,'formDraft')) adapter.commit();
+        for (const adapter of this.fields.values()) if (Object.hasOwn(adapter.node._internal,'formDraft')) adapter.commit();
         this.clearValidationDependencies();
         const pass = {revision:this.validationRevision,promise:null,active:new Set(),failed:false,complete:true};
         this.fullValidation = pass;
@@ -275,7 +275,7 @@ export class EditingSession {
             const drafts = this.registers.getItem('drafts');
             if (drafts.getNode(encoded(field.path))) drafts.popNode(encoded(field.path));
         }
-        delete node.formDraft;
+        delete node._internal.formDraft;
         this.notify();
     }
     refreshField(node, schedule = true) {
@@ -383,11 +383,11 @@ export class EditingSession {
     draft(node, text) {
         this.invalidateValidation();
         this.cancelValidation(node);
-        node.formDraft = text;
+        node._internal.formDraft = text;
         this.set('drafts',node,text);
     }
     clearDraft(node) {
-        delete node.formDraft;
+        delete node._internal.formDraft;
         this.set('drafts',node,null);
         this.issue(node,'parse',null);
     }
@@ -474,14 +474,14 @@ export class EditingSession {
     }
     commitField(path) {
         for (const adapter of this.fields.values()) {
-            if (fieldPath(adapter.node) === path && Object.hasOwn(adapter.node,'formDraft')) adapter.commit();
+            if (fieldPath(adapter.node) === path && Object.hasOwn(adapter.node._internal,'formDraft')) adapter.commit();
         }
     }
     /** Flush active drafts. Refuse errors/pending checks; accept only a valid local snapshot. */
     accept() {
         if (this.disposed) return false;
         for (const adapter of this.fields.values()) {
-            if (Object.hasOwn(adapter.node,'formDraft')) adapter.commit();
+            if (Object.hasOwn(adapter.node._internal,'formDraft')) adapter.commit();
         }
         if (!this.status.valid || this.status.pending) return false;
         if (this.validationSources.size && this.validatedRevision !== this.validationRevision) return false;

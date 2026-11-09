@@ -41,12 +41,12 @@ test('form baseline, previous values, invalid current Data and return to clean',
 test('unparseable number/date drafts live on Source; typed invalid numbers live in Data',async t => {
     const f=fixture(t); await tick();
     const input=f.host('amount');
-    f.edit('amount','-'); assert.equal(f.owner.value.getNode('amount').formDraft,'-');
+    f.edit('amount','-'); assert.equal(f.owner.value.getNode('amount')._internal.formDraft,'-');
     assert.equal(f.app.data.getItem('record.amount'),12); assert.equal(f.state.accept(),false);
     f.edit('amount','-3'); assert.equal(f.app.data.getItem('record.amount'),-3);
-    assert.equal(f.state.status.valid,false); assert.equal(Object.hasOwn(f.owner.value.getNode('amount'),'formDraft'),false);
+    assert.equal(f.state.status.valid,false); assert.equal(Object.hasOwn(f.owner.value.getNode('amount')._internal,'formDraft'),false);
     f.edit('amount','15'); f.edit('date','not a date');
-    assert.equal(f.owner.value.getNode('date').formDraft,'not a date'); assert.equal(f.state.accept(),false);
+    assert.equal(f.owner.value.getNode('date')._internal.formDraft,'not a date'); assert.equal(f.state.accept(),false);
     f.state.restore(); await tick();
     assert.equal(f.app.data.getItem('record.amount'),12); assert.equal(f.state.status.status,'ok');
     assert.equal(f.host('amount'),input); assert.equal(f.host('amount').control.value,'12');
