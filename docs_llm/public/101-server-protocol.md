@@ -35,7 +35,8 @@ Block ID: **GC-101-010**.
 
 `open_page(path, *, owner=None, prefix="")`/`openPage(path, {owner, prefix})` registers the page (`pageId`,
 owner §135) and returns page ID, HTML, nonce. HTML: `<title>` from `Page.title`, import map
-`@gramlot/gramlot/page` → runtime URL, root `div` (`gramlot-root`), module script running `PageBootstrap` with
+`@gramlot/gramlot/page` → runtime URL (+ `@gramlot/gramlot/collections/<name>` → collection module for each
+declared core collection of the page, e.g. `typst`), root `div` (`gramlot-root`), module script running `PageBootstrap` with
 `{config, resources}`; import map and script share the nonce. `config` = `{pageId, rpcUrl, closeUrl, rootId,
 capabilities, nameSyntax}` (+ `devices`, `locale`, `timeZone` when declared); `nameSyntax` =
 `{kind: "regex", pattern, flags}`. `resources` = `{css: [url], js: [{url, group}]}` (+ `collections`,

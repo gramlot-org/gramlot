@@ -82,6 +82,7 @@
     "./components/tree": "./src/components/tree.js",
     "./components/editors": "./src/components/editors.js",
     "./components/typst": "./src/components/typst.js",
+    "./collections/typst": "./dist/collections/typst.js",
     "./components/grouplets": "./src/components/grouplets.js",
     "./components/uploads": "./src/components/uploads.js",
     "./device-frames": "./src/device-frames.js",

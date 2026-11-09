@@ -8,7 +8,8 @@
  *
  * A key is the import specifier: the package name for a library, the path relative to this
  * directory for a runtime module. The generator refuses a collection that would bundle a module of
- * the runtime missing from this table.
+ * the runtime missing from this table. big.js and @xmldom/xmldom are not shared: the browser runtime
+ * does not ship them (see `scripts/runtime-options.mjs`).
  *
  * @module
  */
@@ -16,9 +17,7 @@ import * as genrojsBag from '@genrojs/bag';
 import * as genrojsBuilders from '@genrojs/builders';
 import * as genrojsToolbox from '@genrojs/toolbox';
 import * as genrojsTytx from '@genrojs/tytx';
-import * as xmldom from '@xmldom/xmldom';
 import * as decimal from 'decimal.js';
-import * as big from 'big.js';
 import * as msgpack from '@msgpack/msgpack';
 import * as dompurify from 'dompurify';
 import * as randomId from './random-id.js';
@@ -49,9 +48,7 @@ export const sharedModules = Object.freeze({
     '@genrojs/builders': genrojsBuilders,
     '@genrojs/toolbox': genrojsToolbox,
     '@genrojs/tytx': genrojsTytx,
-    '@xmldom/xmldom': xmldom,
     'decimal.js': decimal,
-    'big.js': big,
     '@msgpack/msgpack': msgpack,
     'dompurify': dompurify,
     './random-id.js': randomId,

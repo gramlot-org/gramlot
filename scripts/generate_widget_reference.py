@@ -5,6 +5,8 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+# Core collections outside the standard set: a page declares them in Page.gramlots (GC-340 §050).
+DECLARED = tuple(json.loads((ROOT / 'src/gramlot/collections/declared.json').read_text()))
 COLLECTIONS = ('inputs', 'buttons', 'layout', 'tree', 'editors', 'typst', 'uploads', 'grid', 'chat', 'grouplets', 'charts', 'vizabi', 'audio', 'drawing')
 from widget_reference_content import COLLECTION_GUIDES
 from widget_manual_content import COLLECTION_EXPLANATIONS
@@ -400,8 +402,11 @@ connects these controls to runnable lessons and screenshots.
                               notes, flags=re.S)
         header = (f'# {title}\n\nDocument ID: **GC-{document_id}**.\n\n'
                   f'<a id="gc-{document_id}-start"></a>\n## Start here\n\n{introduction}\n\n'
-                  'The environment Page base supplies the collections used below. '
-                  '[Configure them once](340-components-and-collections-guide.md#gc-340-050). '
+                  + (f'`{name}` is outside the standard set: a page that uses it declares it in `Page.gramlots` '
+                     f'([declaring {name}](340-components-and-collections-guide.md#gc-340-050-{name})). '
+                     if name in DECLARED else
+                     'The environment Page base supplies the collections used below. '
+                     '[Configure them once](340-components-and-collections-guide.md#gc-340-050). ') +
                   f'[Setup examples are in the appendix](465-widget-examples.md#gc-465-setup-{name}).\n\n'
                   f'{manual_notes}\n\n'
                   '[All collections](345-widget-reference.md) · '
