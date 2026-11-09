@@ -123,9 +123,12 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
         if (!context.disposed && entries.get(url) === entry && context.requested === url) activate(entry);
     }
     // Source structure: a panel removed from the tabs, by the user or by the application, closes its entry.
+    // The subscription is on the Source root; the tabs are recognised by their path below the coordinator.
     const sourceSubscription = `${root.getAttr('id')}-page-close`;
-    root.value.subscribe(sourceSubscription, {any: event => {
-        if (event.evt !== 'del' || (event.pathlist ?? []).join('.') !== 'frame.center.tabs') return;
+    const source = builder.source;
+    const tabsPath = [...root.fullpath.split('.').slice(1), 'frame', 'center', 'tabs'].join('.');
+    source.subscribe(sourceSubscription, {any: event => {
+        if (event.evt !== 'del' || (event.pathlist ?? []).join('.') !== tabsPath) return;
         const entry = [...entries.values()].find(candidate => candidate.paneLabel === event.node.label);
         if (!entry) return;
         const {url, paneLabel} = entry;
@@ -162,7 +165,7 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
         if (context.disposed) return;
         context.disposed = true;
         for (const registration of registrations) registration.close();
-        root.value.unsubscribe(sourceSubscription, {any: true});
+        source.unsubscribe(sourceSubscription, {any: true});
         for (const entry of entries.values()) if (entry.loading) {
             if (entry.pane) tabs().value.popNode(entry.paneLabel);
             finishLoad(entry, 'cancelled');
