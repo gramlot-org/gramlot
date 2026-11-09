@@ -19,7 +19,7 @@ export function messageText(message) {
 /** The dataBinder connection of one name: its binders and the MessagePort that carries them now. */
 export class MessagePortConnection {
     #port = null;
-    // A protocol error is reported once per connection; `closed` is a state and reports nothing.
+    // A protocol error is reported once per port; `closed` is a state and reports nothing.
     #reported = false;
 
     constructor(gramlot, name) {
@@ -42,6 +42,7 @@ export class MessagePortConnection {
         this.#release();
         this.#port = port;
         this.error = null;
+        this.#reported = false;
         this.state = port ? 'open' : 'waiting';
         if (!port) return;
         port.addEventListener('message', this.#receive);

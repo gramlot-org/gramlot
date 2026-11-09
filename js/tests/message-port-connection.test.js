@@ -145,7 +145,7 @@ test('a connection name must be literal', t => {
         /literal name/);
 });
 
-test('closed is a state without a notification; protocol errors are reported once per connection', async t => {
+test('closed is a state without a notification; protocol errors are reported once per port', async t => {
     const served = new Bag();
     served.setItem('shared', new Bag({name: 'Ada'}));
     const app = page(t, root => root.dataBinder({destination_path: 'copy', server_path: 'shared', connection: 'peer'}));
@@ -169,4 +169,14 @@ test('closed is a state without a notification; protocol errors are reported onc
     await settle();
     assert.deepEqual(reported.map(({error, title}) => [error.message, title]), [["Connection 'peer': first", 'dataBinder']]);
     assert.equal(connection.state, 'open');
+
+    // A new port is a new peer: its first protocol error is reported again.
+    const next = new MessageChannel();
+    t.after(() => { next.port1.close(); next.port2.close(); });
+    app.rpc.registerConnection('peer', next.port2);
+    next.port1.postMessage(messageText({op: 'error', error: 'third'}));
+    next.port1.postMessage(messageText({op: 'error', error: 'fourth'}));
+    await wait(() => reported.length > 1);
+    await settle();
+    assert.deepEqual(reported.map(({error}) => error.message), ["Connection 'peer': first", "Connection 'peer': third"]);
 });
