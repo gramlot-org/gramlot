@@ -897,7 +897,9 @@ editable grid owns its scope. load(Bag) establishes local working data and its
 baseline; accept() accepts a validated local snapshot; restore() restores that
 snapshot. These are local operations, not database load/save or server replies.
 
-Cell editors are ordinary Source controls. Enter confirms, Tab/Shift+Tab moves
+Cell editors are ordinary Source controls. An `edit` option with a `=#ROW` or
+`^#ROW` pointer, such as `placeholder='^#ROW.name'`, resolves to the edited row,
+as legacy `condition_*='=#ROW.x'` did. Enter confirms, Tab/Shift+Tab moves
 between editable cells, and Escape discards unfinished text. Double-click or
 Enter/F2 opens an editable cell. Scrolling releases editor DOM while preserving
 incomplete drafts and errors in the session. Reopening restores the draft.

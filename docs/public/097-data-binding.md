@@ -61,7 +61,9 @@ from the node.
 `#ROW` has a meaning only where a component supplies a row: the row key (the
 label of the row node). It gives `<storepath>.<key>.field`, or
 `<storepath>.<key>?field` with `rowMode='attributes'`. A grid formula parameter
-`formula_k='=#ROW.factor'` reads the `factor` field of each evaluated row. Without
+`formula_k='=#ROW.factor'` reads the `factor` field of each evaluated row. In a
+grid column `edit` option, `=#ROW.field` and `^#ROW.field` resolve to the edited
+row, e.g. `edit=dict(placeholder='^#ROW.name')`. Without
 a row, for example as `^#ROW` on a Source node, it is an error.
 
 **Named children.** `#<origin>/<childpath>` walks Source nodes by their

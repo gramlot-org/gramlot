@@ -27,6 +27,7 @@ Symbolic origins, same rules in Python and JS, legacy order: `#FORM` (first ance
 `_workspace_path` replaces the area; name it when Python Source and browser share it),
 `#ROW.field` (only where a component supplies a row key: `<storepath>.<key>.field`, or
 `<storepath>.<key>?field` with `rowMode='attributes'`; e.g. grid `formula_k='=#ROW.factor'`;
+grid column `edit` options resolve `=#ROW`/`^#ROW` to the edited row;
 `^#ROW` on a Source node is an error). `?attr` is kept on every symbolic path; e.g.
 `value='^#FORM.customer.name'`. Named children: `#<origin>/<childpath>` walks the `childname`
 attributes as legacy `getChild` (a name finds the nearest named descendant, a named node hides

@@ -1,4 +1,5 @@
 import {Bag, sourceTarget, toTytx} from '@gramlot/gramlot';
+import {pointerTransform} from '@genrojs/builders';
 
 /**
  * Grid navigation and temporary Source controls; all editing registers belong to the shared session.
@@ -107,7 +108,7 @@ export class GridCellEditor {
                     if (this.active?.path === path) this.close();
                     this.releaseField(path);
                 } else {
-                    this.control(declaration).setAttr({...Object.fromEntries(Object.keys(declaration.options).map(key => [key,null])),...options});
+                    this.control(declaration).setAttr({...Object.fromEntries(Object.keys(declaration.options).map(key => [key,null])),...this.rowOptions(options,this.retained.get(path))});
                     declaration.options = options;
                 }
             }
@@ -127,6 +128,21 @@ export class GridCellEditor {
         if (column.dtype === 'DHZ' && !options.tag) throw new Error('A datetime column requires an explicitly declared supported editor.');
         delete options.tag;
         return {tag,options:{...options,dtype:column.dtype ?? 'T'}};
+    }
+    /**
+     * The control options of `options` for the row of key `row`: an option holding a `=#ROW` or `^#ROW`
+     * pointer (`#ROW`, `#ROW.<field>`, `#ROW?<attr>`, `#ROW.<field>?<attr>`, with any `:` template or
+     * expression after it) keeps its prefix and tail, its path becomes the Data path of that row, as legacy
+     * GenroPy evaluated `#ROW` edit attributes against the edited row. The control has no row context.
+     */
+    rowOptions(options, row) {
+        const owner = this.context.sourceNode;
+        return Object.fromEntries(Object.entries(options).map(([key,value]) => {
+            const pointer = pointerTransform(value)?.pointer ?? value, type = owner.pointerType(pointer);
+            const bare = type ? pointer.slice(1) : null;
+            if (bare !== '#ROW' && !bare?.startsWith('#ROW.') && !bare?.startsWith('#ROW?')) return [key,value];
+            return [key,`${type}${owner.absDatapath(pointer,{row})}${value.slice(pointer.length)}`];
+        }));
     }
     *validationFields() {
         const owner = this.context.sourceNode;
@@ -169,7 +185,7 @@ export class GridCellEditor {
             // Unmount the branch before declaring a control: no editor element is constructed.
             if (!mount) builder.binding.renderer.unmountView(sourceTarget(container));
             try {
-                const control = sourceTarget(container[tag]({...options, value:'^'+path, id, width:'100%', margin:'0'}));
+                const control = sourceTarget(container[tag]({...this.rowOptions(options,row), value:'^'+path, id, width:'100%', margin:'0'}));
                 declaration = {id,tag,options,field:column.field};
                 const component = this.grid.ownerDocument.defaultView.customElements.get(control._getMeta('render_tag'));
                 this.session.registerField(control,component,mount);

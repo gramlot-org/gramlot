@@ -10,7 +10,7 @@ import {layoutWindow} from './helpers/layout-window.js';
 import {assertFieldMapsByAddress} from './helpers/editing-session-addresses.js';
 
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
-async function fixture(t, {mode='values', form=false, nameColumn={}, nameValue=i=>`Item ${i}`,count=1000} = {}) {
+async function fixture(t, {mode='values', form=false, nameColumn={}, nameValue=i=>`Item ${i}`,amountEdit={validate_min:0},count=1000} = {}) {
     const {window} = new JSDOM('<main id="gramlot-root"></main>');
     const layout = layoutWindow(window);
     for (const name of ['showPopover','hidePopover','scrollIntoView']) window.HTMLElement.prototype[name] = function() {};
@@ -26,7 +26,7 @@ async function fixture(t, {mode='values', form=false, nameColumn={}, nameValue=i
     const g = pane.grid({node_label:'grid',id:'grid',storepath:'.rows',rowMode:mode,rowHeaders:true});
     const s = g.struct();
     s.column({field:'name',edit:{validate_notnull:true},...nameColumn});
-    s.column({field:'amount',dtype:'L',edit:{validate_min:0}});
+    s.column({field:'amount',dtype:'L',edit:amountEdit});
     app.src.startSource(builder.toTytx()); await tick(); layout.flush();
     const host=window.document.getElementById('grid'), body=host.shadowRoot.querySelector('.body-viewport');
     Object.defineProperty(body,'clientHeight',{value:320});layout.flush();
@@ -136,6 +136,32 @@ test('editor declarations keep plain values and find the container and control b
     assert.equal(f.rows.getItem('r1.amount'),2);
     assert.equal(f.source.formState.registers.getItem('drafts').length,0);
 });
+for (const mode of ['values','attributes']) {
+    test(`${mode}: =#ROW in column edit options reads the edited row, as legacy condition_*='=#ROW.x'`,async t=>{
+        const f=await fixture(t,{mode,count:2,amountEdit:{validate_min:0,placeholder:'=#ROW.name'}});
+        let editor=await f.open('r0');
+        assert.equal(editor.control.placeholder,'Item 0');
+        const control=f.source.value.getNode(editor.id).value.getNodes()[0];
+        assert.equal(control.getAttr('placeholder'),mode==='values'?'=record.rows.r0.name':'=record.rows.r0?name','the option stays an address');
+        editor.control.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true,composed:true}));await tick();
+        editor=await f.open('r1');
+        assert.equal(editor.control.placeholder,'Item 1');
+        const struct=f.source.getRelativeData(f.source.getAttr('structpath'));
+        struct.getNode('view_0.rows_0.cell_amount').setAttr({edit:{validate_min:0,placeholder:'=#ROW.name:Row {}'}});
+        await tick();await tick();f.layout.flush();
+        assert.equal(editor.control.placeholder,'Row Item 1','a changed struct applies the options to the edited row');
+    });
+    test(`${mode}: ^#ROW in column edit options follows the edited row, as legacy condition_*='^#ROW.x'`,async t=>{
+        const f=await fixture(t,{mode,count:2,amountEdit:{validate_min:0,placeholder:'^#ROW.name'}});
+        const editor=await f.open('r0');
+        assert.equal(editor.control.placeholder,'Item 0');
+        if (mode==='values') f.rows.getItem('r0').setItem('name','Renamed');
+        else f.rows.getNode('r0').setAttr({name:'Renamed'});
+        await tick();await tick();
+        assert.equal(editor.control.placeholder,'Renamed');
+        assert.equal(f.rows.getItem(mode==='values'?'r1.name':'r1?name'),'Item 1');
+    });
+}
 test('local load establishes one baseline for both form fields and grid rows',async t=>{
     const f=await fixture(t,{form:true});const session=f.source.formState;
     const rows=new Bag();rows.setItem('fresh',new Bag({name:'Loaded',amount:27}));
