@@ -1129,6 +1129,19 @@ test('column popup uses a shared grid, isolated literal search and preserved sel
     assert.match(innerPath,/^_gramlot\.workspace\.grid_\d+\.struct$/);
     assert.notEqual(innerPath,`${area}.struct`);
     assert.ok(inner,'the popup reuses the grid component');
+    // The popup Source nodes are reached by childname from the grid Source node; the controller lives in
+    // `_internal` of its action bar and keeps no child Source node.
+    const pane=f.source.getChild('columnFilter');
+    assert.equal(pane.getChild('frame').nodeTag,'framePane');
+    assert.equal(f.source.getChild('columnFilter/frame/search').nodeTag,'searchBox');
+    assert.equal(f.source.getChild('search'),null,'the named pane hides its descendants');
+    assert.equal(pane.getChild('frame').getAttr('height'),`${76+28*3}px`,'the frame height follows the entries');
+    const bar=pane.staticValue.getNodes().find(node=>node.nodeTag==='menu');
+    const controller=bar._internal.gridColumnFilters;
+    assert.equal(typeof controller.reset,'function');
+    assert.equal(Object.hasOwn(bar,'gridColumnFilters'),false);
+    assert.equal('gridColumnFilters' in bar,false);
+    for(const value of Object.values(controller))assert.equal(value instanceof Bag || value?.constructor?.name?.includes('BagNode'),false);
     const options=()=>[...inner.shadowRoot.querySelectorAll('tr[data-row]')];
     const text=()=>options().map(row=>row.textContent);
     assert.equal(f.source._internal.gridCollectionView.sortedBy,'');
@@ -1159,7 +1172,10 @@ test('column popup uses a shared grid, isolated literal search and preserved sel
     search.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true,composed:true}));
     assert.equal(panel.hasAttribute('data-open'),false);
     assert.equal(root.activeElement,root.querySelector('.column-filter[data-field="code"]'));
+    search.value='B';
     root.querySelector('.column-filter[data-field="code"]').click();f.flush();assert.equal(f.host.querySelector('gramlot-grid'),inner);
+    assert.equal(search.value,'','reopening clears the search box reached by childname');
+    assert.equal(searchHost.shadowRoot.activeElement,search,'reopening focuses the search box');
     assert.throws(()=>f.source.setAttr({windowInfo:new Bag({start:0,count:3,total:30,revision:1,sortedBy:''})}),/complete resident store/);
 });
 
@@ -1173,6 +1189,10 @@ test('date popup applies periods atomically, preserves invalid drafts and resets
     f.source.setAttr({columnFilters:true});f.flush();
     f.host.shadowRoot.querySelector('.column-filter[data-field="day"]').click();f.flush();
     const [from,to]=f.host.querySelectorAll('gramlot-date-text-box'),inner=f.host.querySelector('gramlot-grid');
+    // The date fields restored on open and on Reset are the nodes named `from` and `to`.
+    const renderer=f.source.rootBuilder.binding.renderer;
+    assert.equal(renderer.getDomNode(f.source.getChild('columnFilter/from')),from);
+    assert.equal(renderer.getDomNode(f.source.getChild('columnFilter/to')),to);
     const view=f.source._internal.gridCollectionView;
     const edit=async(host,text)=>{host.control.focus();host.control.value=text;
         for(const type of ['input','change'])host.control.dispatchEvent(new f.window.Event(type,{bubbles:true}));

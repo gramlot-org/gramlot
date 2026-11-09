@@ -3193,3 +3193,11 @@ confirmed "ok". The name `_internal` is the owner's.
   `drawingController` moved to `node._internal.drawingController` on the toolbar
   Source node; its menu actions read `this.parentBag.parentNode._internal.drawingController`.
   `gridColumnFilters` stays a node property: it keeps child Source nodes.
+- Addition (owner, 2026-11-09, "Sì, converti"): GridColumnFilters reaches the
+  Source nodes of its popup by childname at the moment of use, through
+  `getChild` on the grid Source node (`context.sourceNode`): the pane it builds
+  is `columnFilter`, below it `frame` (the frame grid), `frame/search` (the search
+  box inside the named frame) and `from`/`to` (the two date fields). It holds no
+  child Source node in its fields. `gridColumnFilters` moved to
+  `node._internal.gridColumnFilters` on the action bar Source node; its menu
+  actions read `this.parentBag.parentNode._internal.gridColumnFilters`.

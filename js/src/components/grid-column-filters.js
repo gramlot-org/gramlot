@@ -6,12 +6,14 @@ import {randomId} from '../random-id.js';
 
 /**
  * Source composition over derived Data in the grid's private area (`<workspaceDatapath>.columnFilter`),
- * read and written by path; accepted filters remain in the outer view.
+ * read and written by path; accepted filters remain in the outer view. The popup Source nodes are reached
+ * by childname from the grid Source node when used (`columnFilter`, then `frame`, `frame/search`, `from`, `to`);
+ * the instance lives in `_internal.gridColumnFilters` of its action bar and holds no child Source node.
  */
 export class GridColumnFilters {
     #host; #head; #view; #columns = []; #format; #context;
-    #panel; #anchor = null; #field = null; #pane; #frame; #search; #path = null;
-    #rangeQueued = false; #rangeFields = [];
+    #panel; #anchor = null; #field = null; #path = null;
+    #rangeQueued = false;
     #release; #registrations = []; #connected = false; #syncing = false;
     constructor(host, head) {
         this.#host=host;this.#head=head;
@@ -37,22 +39,20 @@ export class GridColumnFilters {
         const owner=this.#context.sourceNode,builder=owner.rootBuilder;
         this.#path=`${owner.workspaceDatapath}.columnFilter`;
         owner.setRelativeData(this.#path,new Bag({rows:new Bag(),checked:'',title:'',summary:'',from:null,to:null,hideRange:true,rangeError:''}));
-        const container=builder.wrapSource(owner).div({node_label:`column_filter_${randomId()}`,slot:'column-filter',
+        const container=builder.wrapSource(owner).div({node_label:`column_filter_${randomId()}`,childname:'columnFilter',slot:'column-filter',
             display:'flex',flex_direction:'column',gap:'8px',padding:'10px',
             style:'font-size:12px;--gramlot-grid-row-height:28px;--gramlot-grid-font-size:12px;--gramlot-grid-cell-padding:4px 7px;--gramlot-menu-item-padding:4px 7px'});
-        this.#pane=sourceTarget(container);
-        this.#pane.setAttr({datapath:this.#path});
+        sourceTarget(container).setAttr({datapath:this.#path});
         const fragment=new builder.source.constructor(null,builder);
         const pane=builder.wrapSource(fragment);
         pane.div('^.title',{font_weight:'600',padding:'0 2px'});
         const dates=pane.div({display:'flex',gap:'8px',hidden:'^.hideRange'});
-        this.#rangeFields=[sourceTarget(dates.dateTextBox({value:'^.from',period_to:'.to',lbl:'From',width:'136px'})),
-            sourceTarget(dates.dateTextBox({value:'^.to',lbl:'To',width:'136px'}))];
+        dates.dateTextBox({value:'^.from',period_to:'.to',lbl:'From',width:'136px',childname:'from'});
+        dates.dateTextBox({value:'^.to',lbl:'To',width:'136px',childname:'to'});
         pane.div('^.rangeError',{role:'alert',color:'var(--gramlot-error)'});
-        const frame=pane.frameGrid({storepath:'.rows',rowMode:'attributes',height:'270px',width:'100%'});
-        this.#frame=sourceTarget(frame);
-        this.#search=sourceTarget(frame.toolbar.menuline({group:true,class:'gramlot-grid-search'})
-            .searchBox({searchOn:'Value:caption',searchLiteral:true}));
+        const frame=pane.frameGrid({storepath:'.rows',rowMode:'attributes',height:'270px',width:'100%',childname:'frame'});
+        frame.toolbar.menuline({group:true,class:'gramlot-grid-search'})
+            .searchBox({searchOn:'Value:caption',searchLiteral:true,childname:'search'});
         const grid=frame.grid;
         grid.setAttr({sortedBy:'caption:a'});
         const struct=grid.struct();
@@ -60,16 +60,20 @@ export class GridColumnFilters {
         struct.column({field:'caption',name:'Value',width:'170px'});
         struct.column({field:'count',name:'Rows',dtype:'L',width:'64px',align:'end'});
         const bar=pane.menu({presentation:'bar',aria_label:'Column filter actions'});
-        Object.defineProperty(sourceTarget(bar),'gridColumnFilters',{value:this,configurable:true});
+        sourceTarget(bar)._internal.gridColumnFilters=this;
         for(const [caption,method] of [['All','selectAll'],['None','selectNone'],['Reset','reset']]) {
-            bar.menuline({caption,action:`this.parentBag.parentNode.gridColumnFilters.${method}()`});
+            bar.menuline({caption,action:`this.parentBag.parentNode._internal.gridColumnFilters.${method}()`});
         }
         pane.div('^.summary',{color:'var(--gramlot-text-secondary)',font_size:'11px',padding:'0 2px'});
         const prepared=builder.binding.gramlot.src.prepareSource(fragment);
         builder.binding.renderer.validateCandidate(prepared);
-        this.#pane.setValue(prepared);
+        sourceTarget(container).setValue(prepared);
         this.#subscribeData();
     }
+    /** The popup Source node at `childpath` below the column filter pane, reached by childname from the grid Source node. */
+    #child(childpath) { return this.#context.sourceNode.getChild(`columnFilter/${childpath}`); }
+    /** The DOM node of the popup Source node at `childpath`. */
+    #childDom(childpath) { return this.#context.sourceNode.rootBuilder.binding.renderer.getDomNode(this.#child(childpath)); }
     /** The value of `key` in the column filter Data, read at its path. */
     #get(key) { return this.#context.sourceNode.data.getItem(`${this.#path}.${key}`); }
     #set(key,value) { this.#context.sourceNode.data.setItem(`${this.#path}.${key}`,value); }
@@ -110,8 +114,7 @@ export class GridColumnFilters {
         this.#syncing=true;
         try {
             this.#set('from',null);this.#set('to',null);this.#set('rangeError','');
-            const renderer=this.#context.sourceNode.rootBuilder.binding.renderer;
-            for(const node of this.#rangeFields)renderer.getDomNode(node).restoreFormValue(null);
+            for(const key of ['from','to'])this.#childDom(key).restoreFormValue(null);
         } finally {this.#syncing=false;}
         this.#view.applyColumnFilter(this.#field,null,null);
     }
@@ -142,12 +145,11 @@ export class GridColumnFilters {
         this.#set('from',range?.from ?? null);this.#set('to',range?.to ?? null);this.#set('rangeError','');
         const column=this.#columns.find(item=>item.field===this.#field);
         this.#set('hideRange',!['D','DH','DHZ'].includes(column.dtype));
-        const renderer=this.#context.sourceNode.rootBuilder.binding.renderer;
-        for(const [index,key] of ['from','to'].entries())renderer.getDomNode(this.#rangeFields[index]).restoreFormValue(this.#get(key));
-        this.#get('rows').clear();this.#set('checked','');renderer.getDomNode(this.#search).clear();
+        for(const key of ['from','to'])this.#childDom(key).restoreFormValue(this.#get(key));
+        this.#get('rows').clear();this.#set('checked','');this.#childDom('frame/search').clear();
         this.#syncing=false;
         this.refresh();this.#panel.showPopover();anchor.setAttribute('aria-expanded','true');this.#position();
-        this.#context.sourceNode.rootBuilder.binding.renderer.getDomNode(this.#search).focus();
+        this.#childDom('frame/search').focus();
     };
     refresh = () => {
         if(!this.#view)return;
@@ -162,7 +164,7 @@ export class GridColumnFilters {
         const title=column.title??column.name;
         this.#panel.setAttribute('aria-label',`Filter ${title}`);
         const entries=this.#view.columnFacets(this.#field),rows=this.#get('rows');
-        this.#frame.setAttr({height:`${76+28*Math.max(1,Math.min(entries.length,8))}px`});
+        this.#child('frame').setAttr({height:`${76+28*Math.max(1,Math.min(entries.length,8))}px`});
         const existing=new Map(rows.getNodes().map(node=>[node.getAttr('key'),node]));
         const selected=[];
         this.#syncing=true;
