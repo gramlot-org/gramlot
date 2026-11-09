@@ -402,3 +402,21 @@ so the user must confirm again. Edited cells still validate immediately.
 Remote rules run for each applicable cell, with bounded concurrency; validation
 cost therefore depends on row count and endpoint latency. No remote batch protocol
 or cross-cell result cache is introduced.
+
+
+<a id="gc-340-130"></a>
+## 130 · Components that read a store: addresses, not objects
+
+A component never receives or keeps a Data Bag: store, structure and `^` parameters
+pointing to a Bag stay Data addresses; it reads values only where it writes the DOM or
+hands them to an engine, again at each draw. A replacement at the address and a change
+inside it are the same event. With `sourceContext: true` the context offers `sourceNode`
+(its own node), `attrDatapath(name)` (absolute path of the attribute as written, resolved
+now; null when absent), `getStaticData(path)` (value without running resolvers),
+`readRelativeData`/`setRelativeData`, `writeParameter(name, value)` (two-way `^`) and
+`collectionView(path, rowMode)` (stores shared by path and `rowMode`). Example:
+`const options = this.context.getStaticData(this.context.attrDatapath('seriesOptions'))`
+inside the draw. A row is its key (row node label); row paths use `#ROW`
+([Data binding](097-data-binding.md#gc-095-040)); per-instance state an author may read
+goes under `#WORKSPACE`. A node may be passed to a synchronous call (drag, row action),
+never kept.

@@ -1297,13 +1297,19 @@ pane.tree(storepath=".items", hideValues=True, searchText="^.search",
 ```
 
 `checkedPaths` enables checkboxes and binds the comma-separated checked paths
-(`checkedPaths_joiner` changes the separator). State lives in each Bag node's
-`checked` attribute: true, false, -1 (mixed), `disabled:on`, or `disabled:off`.
-An empty initial or updated `checkedPaths` clears editable checks only. Disabled
-checks retain their state, including when their paths appear in a new value.
-`checkChildren=True` propagates to loaded descendants; unresolved descendants
-inherit when loaded. A checked unresolved branch is represented by its own path
-until its checked descendants replace it. A synchronous named `onChecked` callback
+(`checkedPaths_joiner` changes the separator). The list is the only source of the
+checks: each draw computes them from the text at the address, so editing the text
+changes the checks and emptying it clears every editable check. A node is checked
+when the list names its path or, with `checkChildren=True` (the default), the path
+of an ancestor; a branch with checked and unchecked loaded children is mixed.
+Children loaded later by a resolver follow the list. With `checkChildren` the list
+holds the checked nodes without loaded children, so an unresolved branch stands for
+itself until its loaded descendants replace it. Only a node attribute
+`checked='disabled:on'` or `'disabled:off'` fixes a check that clicks and the list
+do not change. `checked_<attribute>='.ids'` (a bare Data path; the separator after `:`, as
+`'.ids:;'`) binds, with the same rule, the list of the values of that attribute
+of the checked nodes, as the legacy tree.
+A synchronous named `onChecked` callback
 receives `{item, path}` and can return false to veto a click; `onChecked=True`
 enables ordinary checks without a callback.
 
@@ -1312,7 +1318,7 @@ The experimental `tree.rowActions(position="start"|"end")` holds one shared
 Source action bar. Its buttons/controllers receive `{item, path, event}` for the
 hovered or focused row. Optional `actionState` is a named synchronous callback
 returning `{hidden, icon, title}` for each identified `rowAction`, with reactive
-`state` supplied by a binding. `favorites` is a Bag rendered as a collapsible
+`state` supplied by a binding. `favorites` points to a Bag in Data, rendered as a collapsible
 group; entries retain `originalPath` and selection loads that original path.
 Tree drop callbacks receive `placement`: `before`, `inside` or `after`.
 

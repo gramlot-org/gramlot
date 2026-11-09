@@ -36,18 +36,46 @@ An HTML attribute or a node value can hold a pointer to a Data path:
 A path starting with `.` is relative to the `datapath` of the enclosing branch.
 A change of the Source or of the context registers the affected pointers again.
 
-**Symbolic paths.** A path can start from a symbolic origin resolved by Builder:
+**Symbolic paths.** A path can start from a symbolic origin. Gramlot resolves it
+in Python and JavaScript with the same rules, in the legacy GenroPy order:
 
-- `#FORM` is the first ancestor with `formId` or `form=True`;
-- `#ANCHOR` is the first ancestor with `_anchor`;
-- `#<nodeId>` is the node with that `nodeId`.
+| Origin | Resolves to |
+| --- | --- |
+| `#FORM` | the datapath of the first ancestor with `formId` or `form=True` |
+| `#ANCHOR` | the datapath of the first ancestor with `_anchor` |
+| `#<nodeId>` | the datapath of the node with that `nodeId`; an unknown `#name` is a `nodeId` |
+| `#DATA.a.b` | the absolute Data path `a.b`; `#DATA` alone is an error |
+| `#WORKSPACE` | the private area of the nearest ancestor with `_workspace`, at `_gramlot.workspace.<name>` |
+| `#ROW.field` | the field of one row of the nearest ancestor with `storepath` (below) |
 
-Example: `value='^#FORM.customer.name'`. The legacy origins `#WORKSPACE`, `#ROW`
-and `#DATA` and their aliases are not available.
+Example: `value='^#FORM.customer.name'`. `?attr` is kept on every symbolic path:
+`'^#FORM.customer.name?color'`.
 
-`#parent` is instead a path segment cancelling the previous Data-path segment.
-For a node in `contexts.child`, `^.#parent.name` resolves to `contexts.name`; a
-bare leading `^#parent.name` is not a symbolic node origin.
+`#WORKSPACE` keeps state that belongs to one component instance and that the
+author may read or bind. The name of the area is the `_workspace` string, or the
+`nodeId` for `_workspace=True`, or a name derived from the tag and the Source path
+of the node. Name the workspace when a Python Source and the browser must share
+it. `_workspace_path` on the same node replaces the area with that path, resolved
+from the node.
+
+`#ROW` has a meaning only where a component supplies a row: the row key (the
+label of the row node). It gives `<storepath>.<key>.field`, or
+`<storepath>.<key>?field` with `rowMode='attributes'`. A grid formula parameter
+`formula_k='=#ROW.factor'` reads the `factor` field of each evaluated row. Without
+a row, for example as `^#ROW` on a Source node, it is an error.
+
+**Named children.** `#<origin>/<childpath>` walks Source nodes by their
+`childname` attribute, as legacy `getChild`: a name finds the nearest descendant
+with that `childname` (a named node hides its own descendants), `parent` goes up
+one node and `#<symbol>` is resolved from the current node. `#/<childpath>`
+starts from the nearest ancestor with a `nodeId`. Example:
+`'^#FORM/parent/#FORM.pkey'`. Datapath aliases of the legacy are not available.
+
+A change of the node that a symbolic origin names, such as its `datapath` or its
+`childname`, registers the affected pointers again. When a change leaves a
+pointer without its origin (the `nodeId` removed or renamed, the `childname` changed), the
+change raises an error and the pointer keeps no registration; the return of the
+origin restores it.
 
 Gallery lessons: *Pointers* (with `#ANCHOR` and parent paths) and *Variable datapath*.
 
@@ -716,7 +744,7 @@ Intended differences:
 - Combining a nested controller, `action` and the `fire` family on one button is
   an error. Legacy chained them (`action`, then `fire`, then `fire_*`) and also
   ran the nested controller.
-- `#WORKSPACE`, `#ROW` and `#DATA` are not available.
+- Datapath aliases (legacy `#<alias>` names declared on the page) are not available.
 - No `sourceNode.domNode` or `element.sourceNode` properties: use
   `getBaseSourceNode` and `getDomNode`.
 - `script` in the Source is the HTML5 element, without `dojo.eval`.
@@ -867,3 +895,5 @@ Values travel as TYTX text; resolvers of the served Bag are never run, and a
 resolver node arrives with its cached value. When the other end closes, the binders
 stop and the copy keeps its last values. `gramlot.rpc.unregisterConnection(name)`
 releases the port; the binders wait for the next one.
+`gramlot.rpc.connection(name).state` reads the state of a connection: `waiting`
+without a port, `open`, or `closed` after the other end closed it.

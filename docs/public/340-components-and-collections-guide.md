@@ -135,7 +135,7 @@ The definition is a descriptor, **not a constructor**. Do not write
 return value of `defineComponent`. Class composition happens through the factories.
 
 Other descriptor fields, such as `dataScope`, `command`, `sourceContext`,
-`bagStore`, `dragSource`, `childParameters` and `presentationDefaults`, connect
+`dragSource`, `childParameters` and `presentationDefaults`, connect
 specific component families to existing runtime capabilities. They are not
 switches that implement a feature automatically. A simple input needs none of
 them; a container, editor or command surface must satisfy its owning runtime
@@ -991,3 +991,40 @@ so the user must confirm again. Edited cells still validate immediately.
 Remote rules run for each applicable cell, with bounded concurrency; validation
 cost therefore depends on row count and endpoint latency. No remote batch protocol
 or cross-cell result cache is introduced.
+
+
+<a id="gc-340-130"></a>
+## 130 · Components that read a store: addresses, not objects
+
+A component never receives a Data Bag as an object and never keeps one. Its
+store, its structure and every `^` parameter that points to a Bag stay
+addresses in the page Data; the component reads the values only where it writes
+the DOM or hands them to an engine that does, and reads them again at the next
+draw. A replacement of the Bag at the address and a change inside it reach the
+component as the same event.
+
+A component with `sourceContext: true` receives a context with the functions
+for this rule:
+
+| Context member | Use |
+| --- | --- |
+| `sourceNode` | the component's own Source node; reach other nodes by path or `childname` when they are needed |
+| `attrDatapath(name)` | the absolute Data path of the attribute `name` as the author wrote it (`storepath='.rows'`, `seriesOptions='^.options'`), resolved now in the node's context; null when absent |
+| `getStaticData(path)` | the value at an absolute Data path, read without running resolvers |
+| `readRelativeData(path)`, `setRelativeData(path, value)` | read and write relative to the node |
+| `writeParameter(name, value)` | write through a two-way `^` parameter |
+| `collectionView(path, rowMode)` | the view of the rows at `path`; stores are shared by path and `rowMode` |
+
+```javascript
+async draw() {
+    const path = this.context.attrDatapath('seriesOptions');
+    const options = this.context.getStaticData(path);   // read for this draw only
+    this.engine.update(options);
+}
+```
+
+A row of a collection is its key, the label of the row node: selection, editing
+and row tools keep keys and build row paths with `#ROW` ([Data
+binding](097-data-binding.md#gc-095-040)). State that belongs to one instance and
+that an author may read goes under `#WORKSPACE`. A component may pass a node to a
+synchronous call, such as a drag or a row action, but does not keep it.

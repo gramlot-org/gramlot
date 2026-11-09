@@ -19,10 +19,22 @@ Pointers in attributes or node values: `^path` reads and reacts; `=path` reads a
 call time without triggering; `==expr` is an inline JS expression compiled only in
 the page runtime and evaluated at each projection; `^path?attr` points to a Data node attribute. `.path` is relative
 to the branch `datapath`; Source or context changes register pointers again.
-Symbolic origins (Builder): `#FORM` (first ancestor with
-`formId`/`form=True`), `#ANCHOR` (first ancestor with `_anchor`), `#<nodeId>`;
-e.g. `value='^#FORM.customer.name'`. `#WORKSPACE`, `#ROW`, `#DATA` and aliases are
-not available. `#parent` is a Data-path cancellation segment: in `contexts.child`,
+Symbolic origins, same rules in Python and JS, legacy order: `#FORM` (first ancestor with
+`formId`/`form=True`), `#ANCHOR` (first ancestor with `_anchor`), `#<nodeId>` (an unknown
+`#name` is a nodeId), `#DATA.a.b` (absolute `a.b`; bare `#DATA` is an error), `#WORKSPACE`
+(private area of the nearest ancestor with `_workspace`: `_gramlot.workspace.<name>`, name =
+`_workspace` string, else the `nodeId` for `True`, else derived from tag and Source path;
+`_workspace_path` replaces the area; name it when Python Source and browser share it),
+`#ROW.field` (only where a component supplies a row key: `<storepath>.<key>.field`, or
+`<storepath>.<key>?field` with `rowMode='attributes'`; e.g. grid `formula_k='=#ROW.factor'`;
+`^#ROW` on a Source node is an error). `?attr` is kept on every symbolic path; e.g.
+`value='^#FORM.customer.name'`. Named children: `#<origin>/<childpath>` walks the `childname`
+attributes as legacy `getChild` (a name finds the nearest named descendant, a named node hides
+its descendants; `parent` goes up; `#<symbol>` resolves from the current node); `#/<childpath>`
+starts from the nearest ancestor with a `nodeId`; e.g. `'^#FORM/parent/#FORM.pkey'`. Datapath
+aliases are not available. A change of the origin (`datapath`, `childname`) registers the
+pointers again; a change that leaves a pointer without origin raises an error and leaves no
+registration (a removed or renamed `nodeId`, a changed `childname`); the return of the origin restores it. `#parent` is a Data-path cancellation segment: in `contexts.child`,
 `^.#parent.name` resolves to `contexts.name`; bare `^#parent.name` is not a symbolic
 node origin. Example: `panel = root.div(datapath=".customer")`; `panel.h2("^.name")`;
 `panel.input(value="^.name", live=True)`. Gallery lessons: *Pointers* (with `#ANCHOR`
@@ -389,7 +401,7 @@ DOM (legacy: node and direct children); no `?attr` in `destination_path`/`result
 R3: `stopPropagation` without `preventDefault` plus `type="button"` (legacy: both calls, no type; section 075);
 `css_requires`/`js_requires` need a `GramlotServer` with a resource system (genro-kajenn, part of Genro, the GenroPy successor built on Kajenn, Gramlot and Asqueel), `GramlotFileServer` and current adapters error on any name, last registration of a method name wins; `name:media`
 error; `data(...)` is no declaration (`root.data` raises, on other nodes `data` is the Data Bag property), `html_data(...)` is the HTML5 element; controller/`action`/`fire` combinations are errors (legacy chained them and
-also ran the nested controller); no `#WORKSPACE`/`#ROW`/`#DATA`; methods instead of `domNode`/`sourceNode` properties; Source `script` is the HTML5
+also ran the nested controller); no datapath aliases; methods instead of `domNode`/`sourceNode` properties; Source `script` is the HTML5
 element, without `dojo.eval`; macros only via the deprecated preprocessor.
 Migration from legacy pages: `data(...)` → `dataSetter(...)`; `Page.css` URL list
 stays, a page-only stylesheet can move to same-name `foo.css`; inline controllers →
@@ -516,3 +528,4 @@ The other end answers with the `PageStore` protocol (snapshot, then changes; a w
 does not receive its own change). TYTX text; resolvers are never run, resolver nodes
 carry their cached value. When the other end closes, binders stop and the copy keeps
 its values; `gramlot.rpc.unregisterConnection(name)` releases the port.
+`gramlot.rpc.connection(name).state`: `waiting` (no port), `open`, `closed` (closed by the other end).
