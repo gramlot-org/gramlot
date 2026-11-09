@@ -607,6 +607,29 @@ capability). The close message is `{pageId}` without `id`; closing the socket al
 closes the page. No current adapter offers this capability, and the base runtime has
 no WebSocket transport.
 
+<a id="gc-101-325"></a>
+
+### 325 · Terminal socket
+
+Block ID: **GC-101-325**.
+
+A Python host with WebSocket enabled accepts `<prefix>/gramlot/terminal?pageId=…&session=…`,
+with the origin and owner checks of the PageStore channel. It opens the `@terminal`
+method `session` of the page's store and refuses an unknown session, a foreign owner,
+a refused auth rule or a missing parameter with close code 1008. Every message is
+binary; the first byte is the channel:
+
+| Channel | Direction | Payload |
+| --- | --- | --- |
+| 0 | browser → server | the bytes of the keys |
+| 1 | server → browser | the bytes to write |
+| 4 | browser → server | JSON `{"Width": columns, "Height": rows}` |
+| 5 | browser → server | 32-bit big-endian count of output bytes written |
+
+Channels 0, 1 and 4 follow the Kubernetes exec protocol. The server sends no output
+while 1 MB is unacknowledged. The socket closes with 1000 when the session ends and
+with 1008 on a frame it cannot read. The JavaScript hosts do not offer this route.
+
 ## Part E · Application metadata
 
 <a id="gc-101-310"></a>

@@ -62,6 +62,38 @@ True sanitizes rendered HTML before insertion, without rewriting original Markdo
 External image requests remain blocked by preview policy. See
 [Markdown behavior](105-components.md#gc-105-140).
 
+## Connect a terminal to a session of the PageStore
+
+`terminal` is an interactive terminal for programs that work key by key: a shell,
+`exec` into a container, a REPL, `top` or `vim`. Every key goes to the server at once.
+The server output is written to the screen as it arrives. The component knows no
+backend: the page's PageStore connects it to a process or a remote session.
+
+[Code for this composition is in the appendix](465-widget-examples.md#gc-465-setup-editors).
+
+`session` names an async PageStore method declared with `@terminal`
+(`from gramlot.page import terminal`). The method receives a `TerminalSession`:
+
+- `await session.read()` returns the next bytes of the keys, `b""` once the session is closed;
+- `await session.write(data)` sends output bytes; it waits while 1 MB is not yet written
+  by the screen, so a method that reads its process only after `write` returns reads it
+  no faster than the browser draws;
+- `await session.resized()` returns the next `(rows, columns)`; `session.size` holds the last one.
+
+The session closes when the method returns, when the page closes or when the
+socket closes. `@terminal(auth="rule")` applies the same auth rules as `@endpoint`.
+A page opens a session name once. `connected`, `rows` and `columns` are written to
+Data; the terminal bytes never pass through Data. `input(text)` sends text as if typed.
+
+The bytes travel on a WebSocket of their own, `/gramlot/terminal`, beside the PageStore
+channel: enable it with `websocket=True` on the Python host. A large output never
+reaches the PageStore channel. xterm.js loads on first use; a page without a terminal
+downloads none of it. The frames are in the
+[server protocol](101-server-protocol.md#gc-101-325).
+
+A local shell runs with the rights of the server process. The gramlot-examples
+terminal trial offers it only when `GRAMLOT_DEV` is set.
+
 ## Choose a component
 
 - [`codeMirror`](#gc-430-codemirror): Code/text editor with composed language and editor options.
