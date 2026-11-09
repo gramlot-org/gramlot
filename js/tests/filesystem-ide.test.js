@@ -176,7 +176,7 @@ print(b.to_tytx())
     app.src.startSource(source);await new Promise(resolve=>setTimeout(resolve,20));
     t.after(()=>{app.dispose();window.close();});
     const ideSource = app.src.source.getItem('main').getNodes()[0];
-    const ideDocuments = ideSource.ideContext.documents;
+    const ideDocuments = ideSource._internal.ideContext.documents;
     assert.equal(window.document.getElementById('ide-open'),null);
     const workspace=window.document.getElementById('gramlot-ide-workspace');
     workspace.control.value='/workspace';

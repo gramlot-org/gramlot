@@ -20,8 +20,8 @@ test('an upload only refreshes and opens its own still-active workspace', async 
     const state = new Bag({browser:new Bag({root:'/first'}),upload:new Bag({open:true})});
     const calls=[];
     const controller={open:async root=>{calls.push(['refresh',root]);return root;}};
-    const scope={getRelativeData:()=>state,value:{getNode:()=>({fileSystemController:controller})}};
-    scope.ideContext={scope,documents:{disposed:false}};
+    const scope={getRelativeData:()=>state,_internal:{},value:{getNode:()=>({_internal:{fileSystemController:controller}})}};
+    scope._internal.ideContext={scope,documents:{disposed:false}};
     const logic={ideOpenDocument:async(node,root,path)=>calls.push(['open',root,path])};
     await IdeLogic.prototype.ideUploadCompleted.call(logic,scope,{result:{root:'/second',path:'image.png'}});
     assert.deepEqual(calls,[]);assert.equal(state.getItem('upload.open'),true);
@@ -76,7 +76,12 @@ print(b.to_tytx())
     const first = one.getRelativeData('.'), second = two.getRelativeData('.');
     assert.equal(first, app.data.getItem('workbench.one'));
     assert.equal(second, app.data.getItem('workbench.two'));
-    assert.notEqual(one.ideContext, two.ideContext);
+    assert.notEqual(one._internal.ideContext, two._internal.ideContext);
+    for (const [name, node] of [['ideContext', one], ['fileSystemController', one.value.getNode('frame.left.browser')]]) {
+        assert.equal(Object.hasOwn(node, name), false, ` is not a property of the node`);
+        assert.ok(node._internal[name], ` is under _internal`);
+        assert.equal(node.getAttr(name), null, ` is not an attribute`);
+    }
     for (const name of ['ideState','ideRoot','ideDocuments','idePanels','ideRequested','fileSystems']) assert.equal(app.logic[name], undefined, name);
     const ids = [...window.document.querySelectorAll('[id]')].map(node => node.id);
     assert.equal(new Set(ids).size, ids.length, 'two composed IDEs do not duplicate DOM IDs');
@@ -146,7 +151,7 @@ print(b.to_tytx())
     await Promise.all([lateOne,lateTwo]);
     assert.equal(first.getItem(`documents.${documentKey('/shared','late.py')}`),null);
     assert.equal(second.getItem(`documents.${documentKey('/shared','later.py')}.content`),'retained');
-    assert.equal(two.ideContext.documents.disposed,false);
+    assert.equal(two._internal.ideContext.documents.disposed,false);
     assert.deepEqual(errors,[]);
 });
 

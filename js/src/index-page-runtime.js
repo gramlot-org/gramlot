@@ -19,7 +19,7 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
     const builder = root.builder;
     const entries = new Map();
     const context = {entries, disposed: false, selecting: false, sequence: 0, requested: null};
-    Object.defineProperty(root, 'indexContext', {value: context, configurable: true});
+    root._internal.indexContext = context;
     // `pane` and `node` resolve the tab panel and the navigation node by label and path on each access.
     const createRecord = ({url, path, title, paneLabel, loading}) => ({url, path, title, paneLabel, loading,
         get pane() { return tabs().value?.getNode(this.paneLabel) ?? null; },
@@ -168,7 +168,7 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
             finishLoad(entry, 'cancelled');
         }
         entries.clear();
-        if (root.indexContext === context) delete root.indexContext;
+        if (root._internal.indexContext === context) delete root._internal.indexContext;
     };
     context.dispose = dispose;
     renderer.onDispose(root, dispose);

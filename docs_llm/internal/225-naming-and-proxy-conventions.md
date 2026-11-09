@@ -3196,6 +3196,10 @@ confirmed "ok". The name `_internal` is the owner's.
   child Source node in its fields. `gridColumnFilters` moved to
   `node._internal.gridColumnFilters` on the action bar Source node; its menu
   actions read `this.parentBag.parentNode._internal.gridColumnFilters`.
+- Addition (owner, 2026-11-09, "ok"): the ad-hoc non-enumerable Source-node
+  properties `indexContext`, `ideContext` and `fileSystemController` moved to
+  `node._internal.indexContext`, `node._internal.ideContext` and
+  `node._internal.fileSystemController`.
 
 ### Non-component runtimes by address — 2026-11-09
 

@@ -347,7 +347,7 @@ paths such as `.leftIndex` inherit the containing Source's datapath. The tree an
 tabs use `.navigation`, `^.navigationSelection` and `^.active` in their own scope.
 There is no tab-count or eviction policy.
 
-The owning Source node retains the coordinator through its internal `indexContext`
+The owning Source node retains the coordinator through its internal `_internal.indexContext`
 attachment; Logic only supplies behavior. `IndexLogic.indexMount(node)` receives
 the startup controller's Source node and mounts its parent shell, without a DOM
 ID lookup or a Logic field. Its Data registrations, its Source subscription and
