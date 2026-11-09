@@ -36,8 +36,9 @@ The page base of your environment already enables this collection; if it does no
 | Show an HTML page | [htmlPreview](#gc-430-htmlpreview) |
 | Edit Markdown with a rich toolbar | [markdownEditor](#gc-430-markdowneditor) |
 | Show Markdown rendered | [markdownPreview](#gc-430-markdownpreview) |
+| Give the user a terminal on the server | [terminal](#gc-430-terminal) |
 
-Every one of them stores and reads a plain string. To edit a Typst document, use
+The editors and previews store and read a plain string. To edit a Typst document, use
 codeMirror with the [Typst preview](435-typst.md).
 
 <a id="gc-430-220"></a>
@@ -129,3 +130,24 @@ their insides in a code editor.
 Embedded HTML appears as plain text unless `allowHtml=True`, which renders it after
 removing scripts, frames and form controls
 ([Markdown editor and preview](105-components.md#gc-105-140)).
+
+<a id="gc-430-270"></a>
+<a id="gc-430-terminal"></a>
+
+## A terminal on the server
+
+```python
+form.terminal(session="shell", connected="^.online", fontSize=13)
+```
+
+[terminal](345-widget-reference.md#gc-345-terminal) opens an interactive terminal
+connected to a method of your page's PageStore marked `@terminal`; `session` names
+that method. What the user types goes to the server as typed, Ctrl-C and arrows
+included, and the output appears as it arrives. It never passes through the Data.
+
+- `connected`, `rows` and `columns` are written by the terminal: whether the session
+  is open and the size of the screen, which follows the size of its box.
+- A page has one open session per name: opening it again closes the previous one.
+- It needs a host that runs PageStore over WebSocket
+  ([terminal socket](101-server-protocol.md#gc-101-325)). What the session may run
+  on the server is your application's decision.
