@@ -5,6 +5,8 @@ from copy import deepcopy
 from ..collection import collection_graph, declared_collections, page_collections, standard_collections
 
 import asyncio
+import contextvars
+import functools
 import inspect
 import logging
 import json
@@ -273,13 +275,14 @@ class GramlotServer:
             raise ValueError("Page already has a channel")
         self._page_channels[page_id] = send
 
-    async def open_terminal(self, page_id, session, *, send, owner, identity=None, host=None):
+    async def open_terminal(self, page_id, session, *, send, owner, identity=None, host=None, client=None):
         """Open the terminal session ``session`` of the page's store and run its ``@terminal`` method.
 
         ``send`` is the adapter's async callable for output frames; ``host`` is the ``Host`` header of
-        the socket request. The returned ``TerminalSession`` takes the browser frames with ``receive``;
+        the socket request and ``client`` the address of its peer. The returned ``TerminalSession`` takes the browser frames with ``receive``;
         it closes when the method returns, when the page closes, or when the adapter calls
-        ``close_terminal``. A page has one open session per name: opening the name again closes the
+        ``close_terminal``. The method runs in an empty context: the context variables of the caller
+        do not reach it. A page has one open session per name: opening the name again closes the
         open one first.
         """
         store = self.page_store(page_id, owner=owner)
@@ -296,8 +299,11 @@ class GramlotServer:
         key = (page_id, session)
         if key in self._terminals:
             self.close_terminal(self._terminals[key][0])
-        terminal = TerminalSession(send, host=host)
-        task = asyncio.ensure_future(self._run_terminal(key, method.__get__(instance, type(instance)), terminal))
+        terminal = TerminalSession(send, host=host, client=client)
+        # The method outlives the request that opens it: it runs in a context of its own, so context
+        # variables of the adapter's operation (a held lock, the current request) do not reach it.
+        task = asyncio.get_running_loop().create_task(
+            self._run_terminal(key, method.__get__(instance, type(instance)), terminal), context=contextvars.Context())
         self._terminals[key] = (terminal, task)
         return terminal
 
@@ -316,12 +322,16 @@ class GramlotServer:
     def close_terminal(self, terminal):
         """Close ``terminal``, a session ``open_terminal`` returned, and cancel its method. A session
         already closed is left as it is: its name may belong to a newer session of the page. It may be
-        called from another thread (``close_page`` from a worker): the close and the cancellation
-        then run on the session's loop."""
+        called from another thread (``close_page`` from a worker): the close, the cancellation and
+        the removal of the name then run on the session's loop, the only thread that changes the
+        open sessions."""
+        terminal._on_loop(functools.partial(self._close_terminal, terminal))
+
+    def _close_terminal(self, terminal):
         for key, record in list(self._terminals.items()):
             if record[0] is terminal:
                 del self._terminals[key]
-                terminal._on_loop(record[1].cancel)
+                record[1].cancel()
         terminal.close()
 
     def _close_terminals(self, page_id=None):

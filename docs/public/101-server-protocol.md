@@ -626,8 +626,8 @@ with close code 1008. Every message is binary; the first byte is the channel:
 | 4 | browser → server | JSON `{"Width": columns, "Height": rows}`, each 1 to 65535 |
 | 5 | browser → server | 32-bit big-endian count of output bytes written |
 
-Channels 0, 1 and 4 follow the Kubernetes exec protocol. An output frame carries at most
-1 MB, and the server sends no output while 1 MB is unacknowledged. More than 1 MB of
+Channels 0, 1 and 4 follow the Kubernetes exec protocol. Output sent and not yet
+acknowledged never exceeds 1 MB: the server sizes each output frame to fit. More than 1 MB of
 input not yet read by the method is refused. A frame renews the page at most once a
 minute. The socket closes with 1000 when the session ends and with 1008 on a frame it
 cannot read. The JavaScript hosts do not offer this route.

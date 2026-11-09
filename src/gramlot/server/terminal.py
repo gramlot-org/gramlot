@@ -9,7 +9,8 @@ A frame is one binary WebSocket message. Its first byte is the channel, the rest
 
 Channels 0, 1 and 4 and the resize JSON follow the Kubernetes exec protocol; a size is 1 to 65535, as
 there. ``ACK`` is Gramlot's: the session stops sending output while the bytes sent and not yet
-acknowledged reach ``limit``. Input not yet read may not exceed ``limit`` either.
+acknowledged reach ``limit``, and output sent and not yet acknowledged never exceeds ``limit``. Input
+not yet read may not exceed ``limit`` either.
 """
 import asyncio
 import json
@@ -27,12 +28,13 @@ class TerminalClosed(ConnectionError):
 class TerminalSession:
     """One open terminal. The PageStore method reads it and writes it; the adapter feeds it the frames
     of the browser with ``receive`` and sends the frames it produces with ``send``, an async callable
-    that takes ``bytes``. ``host`` is the ``Host`` header of the socket request, or ``None``.
+    that takes ``bytes``. ``host`` is the ``Host`` header of the socket request and ``client`` the
+    address of its peer, each ``None`` when the adapter does not know it.
 
     The session belongs to the event loop running when it is created. ``close`` may be called from
     another thread: it then runs on that loop."""
 
-    def __init__(self, send, *, limit=LIMIT, host=None):
+    def __init__(self, send, *, limit=LIMIT, host=None, client=None):
         if not callable(send):
             raise TypeError("A terminal session requires a send callable")
         if type(limit) is not int or limit < 1:
@@ -41,6 +43,7 @@ class TerminalSession:
         self._send = send
         self.limit = limit
         self._host = host
+        self._client = client
         self.size = None
         self._unacknowledged = 0
         self._input = deque()
@@ -61,6 +64,11 @@ class TerminalSession:
         return self._host
 
     @property
+    def client(self):
+        """The address of the socket's peer (``"127.0.0.1"``, ``"::1"``, …), or ``None``."""
+        return self._client
+
+    @property
     def unacknowledged(self):
         """Output bytes sent and not yet acknowledged by the browser."""
         return self._unacknowledged
@@ -78,22 +86,24 @@ class TerminalSession:
             await self._input_ready.wait()
 
     async def write(self, data):
-        """Send ``data`` as output, in frames of at most ``limit`` bytes. Waits while ``limit`` bytes are
-        unacknowledged; a caller that reads its process only after ``write`` returns stops reading it
+        """Send ``data`` as output, in frames that keep the unacknowledged bytes within ``limit``. Waits
+        while ``limit`` bytes are unacknowledged; a caller that reads its process only after ``write`` returns stops reading it
         for that time."""
         if not isinstance(data, (bytes, bytearray, memoryview)):
             raise TypeError("Terminal output must be bytes")
         data = bytes(data)
         if self.closed:
             raise TerminalClosed("The terminal session is closed")
-        for offset in range(0, len(data), self.limit):
+        offset = 0
+        while offset < len(data):
             while True:
                 if self.closed:
                     raise TerminalClosed("The terminal session is closed")
                 if self._unacknowledged < self.limit:
                     break
                 await self._window.wait()
-            chunk = data[offset:offset + self.limit]
+            chunk = data[offset:offset + self.limit - self._unacknowledged]
+            offset += len(chunk)
             self._unacknowledged += len(chunk)
             if self._unacknowledged >= self.limit:
                 self._window.clear()

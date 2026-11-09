@@ -1,5 +1,6 @@
 """Terminal sessions: frames, flow control and the life of a @terminal PageStore method (#87)."""
 import asyncio
+import contextvars
 import json
 import threading
 import unittest
@@ -170,6 +171,21 @@ class TerminalSessionTests(unittest.TestCase):
             self.assertEqual([frame[1:] for frame in sent.frames], [b"0123", b"4567", b"89"])
         asyncio.run(run())
 
+    def test_output_in_flight_never_exceeds_the_limit(self):
+        async def run():
+            sent = Sent()
+            session = TerminalSession(sent, limit=4)
+            await session.write(b"ab")
+            writing = asyncio.ensure_future(session.write(b"cdef"))
+            await settle()
+            self.assertEqual([frame[1:] for frame in sent.frames], [b"ab", b"cd"])
+            self.assertEqual(session.unacknowledged, 4)
+            session.receive(ack(2))
+            await asyncio.wait_for(writing, 1)
+            self.assertEqual(sent.frames[-1], bytes([OUTPUT]) + b"ef")
+            self.assertEqual(session.unacknowledged, 4)
+        asyncio.run(run())
+
     def test_close_ends_every_waiting_reader(self):
         async def run():
             session = TerminalSession(Sent())
@@ -226,6 +242,35 @@ class ServerTerminalTests(unittest.TestCase):
             await settle()
             self.assertEqual(sent.frames[-1], bytes([OUTPUT]) + b"24x80")
         asyncio.run(run())
+
+    def test_the_session_knows_the_host_and_the_peer_of_its_socket(self):
+        async def run():
+            server = self.server()
+            page_id = (await server.open_page("/", owner="alice")).page_id
+            session = await server.open_terminal(page_id, "echo", send=Sent(), owner="alice",
+                                                 host="localhost:8000", client="127.0.0.1")
+            self.assertEqual((session.host, session.client), ("localhost:8000", "127.0.0.1"))
+        asyncio.run(run())
+
+    def test_the_method_does_not_see_the_context_variables_of_its_opener(self):
+        operation = contextvars.ContextVar("operation", default=None)
+        seen = []
+
+        class ContextStore(PageStore):
+            @terminal
+            async def probe(self, session):
+                seen.append(operation.get())
+
+        server = self.server()
+        server.resolve_page_store = lambda page_class: ContextStore
+
+        async def run():
+            page_id = (await server.open_page("/", owner="alice")).page_id
+            operation.set("held")
+            session = await server.open_terminal(page_id, "probe", send=Sent(), owner="alice")
+            await asyncio.wait_for(session.wait_closed(), 1)
+        asyncio.run(run())
+        self.assertEqual(seen, [None])
 
     def test_closing_the_page_closes_its_sessions(self):
         async def run():

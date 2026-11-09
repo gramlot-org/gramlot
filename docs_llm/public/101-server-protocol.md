@@ -341,7 +341,7 @@ opens `@terminal` method `session`, closing an open one of the same name; unknow
 refused auth, missing parameter → close 1008.
 Binary messages, first byte = channel: 0 keys (browser→server), 1 output (server→browser),
 4 JSON `{"Width","Height"}` each 1–65535 (browser→server), 5 32-bit big-endian count of output bytes written
-(browser→server). 0/1/4 follow Kubernetes exec. Output frames ≤ 1 MB; no output while 1 MB unacknowledged;
+(browser→server). 0/1/4 follow Kubernetes exec. Unacknowledged output never exceeds 1 MB (frames sized to fit);
 more than 1 MB of unread input refused; a frame renews the page at most once a minute. Close 1000 when the
 session ends, 1008 on an unreadable frame. JavaScript hosts do not offer the route.
 
