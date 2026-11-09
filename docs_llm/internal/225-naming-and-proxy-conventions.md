@@ -3196,3 +3196,27 @@ confirmed "ok". The name `_internal` is the owner's.
   child Source node in its fields. `gridColumnFilters` moved to
   `node._internal.gridColumnFilters` on the action bar Source node; its menu
   actions read `this.parentBag.parentNode._internal.gridColumnFilters`.
+
+### Non-component runtimes by address — 2026-11-09
+
+Plan symbolic-references, phase "Runtime che non sono componenti"; owner decision
+d-scope, 2026-11-07: "Sì, senza eccezioni: index page, IDE, DeviceHandler inclusi".
+The names below are implementation choices, open to owner review.
+
+- `mountIndexPage` option `state`: the name stays; its value becomes the absolute
+  Data path of the index state (default `root.absDatapath('.')`), as a `^` pointer
+  keeps its name and travels as an address (decision d-pointer). It supersedes the
+  2026-10-18 entry where the gallery passed the `galleryIndex` Bag through this option.
+- Index entry `paneLabel`: the label of the entry's contentPane in the tabs, from the
+  existing words *pane* (contentPane) and *label* (node label). `entry.pane` and
+  `entry.node` keep their names and become getters that read the panel by
+  `paneLabel` and the navigation node by `path` on each access.
+- DeviceHandler: `#deviceNode(name)` reads `_gramlot.device.<name>` at each use;
+  `#receive(change)` is the recipient of one Data router registration with
+  `subtree:true` on `_gramlot.device`, replacing the root subscription
+  `gramlot.device`. The public `resolvers` Map is removed; `resolver(name)` reads
+  `node.resolver` at the device path.
+- IdeDocuments: `#observeAnnotations(key)` registers the annotations path of an image
+  document; `#registrations` holds the registrations by document key.
+- `windowSelection` keeps no inbox Bag: a reply is the frame read at the `inbox`
+  address whose `request_id` equals the pending request.
