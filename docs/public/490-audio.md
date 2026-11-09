@@ -2,81 +2,65 @@
 
 Document ID: **GC-490**.
 
+The audio collection listens to the microphone and writes what it hears into Data,
+many times per second. This page answers **how do I get live sound levels from the
+microphone, to draw a waveform or a spectrum?** The parameters are in the
+[widget reference](345-widget-reference.md).
+
 <a id="gc-490-start"></a>
-## Start here
 
-Capture microphone samples through audioAnalyser and bind its outputs to Data. This component analyses live audio; it does not record or save an audio file.
+## Listening to the microphone
 
-The environment Page base supplies the collections used below. [Configure them once](340-components-and-collections-guide.md#gc-340-050). [Setup examples are in the appendix](465-widget-examples.md#gc-465-setup-audio).
+```python
+def main(self, root):
+    pane = root.div(datapath="audio")
+    pane.checkbox(value="^.running", lbl="Microphone")
+    pane.audioAnalyser(running="^.running", waveform="^.waveform",
+                       spectrum="^.spectrum", sampleRate="^.sampleRate",
+                       status="^.status", error="^.error")
+    pane.div("^.status")
+```
 
-Microphone access requires permission and a secure browser context. Waveform and spectrum are arrays stored as Bag values, not a node per sample. Bind status and error to display feedback. Stopping, pagehide and disposal release the microphone and audio context.
-
-[All collections](345-widget-reference.md) · [Shared labels and validation](105-components.md#gc-105-020) · [Bindings](097-data-binding.md)
-
-### Sample values and lifecycle
-
-waveform contains fftSize numeric samples; spectrum contains fftSize / 2 decibel values,
-clamped to minimumDb. Each output is one array value in Data. sampleRate is measured in Hz.
-fftSize must be a power of two from 256 to 8192; frameRate must be between 1 and 30. minimumDb must be finite,
-at least -160 and strictly below 0.
-The analyser is invisible; compose controls and charts around its bindings. Starting requests
-microphone permission. Stopping releases browser resources; errors clear running and write error.
-This is not an audio recorder, and no persistence is implied.
-
-## Choose a component
-
-- [`audioAnalyser`](#gc-490-audioanalyser): Live microphone waveform and spectrum arrays written into Data.
-
+Ticking the box asks the browser for the microphone; once the user allows it,
+`audio.waveform` and `audio.spectrum` change continuously. Draw them with a chart or
+your own component. The page base of your environment already enables this
+collection; if it does not,
+[enable it once](340-components-and-collections-guide.md#gc-340-050).
 
 <a id="gc-490-005"></a>
 <a id="gc-490-010"></a>
-Types: T text, B Boolean, L integer, R real, X structured value; other codes are TYTX. Binding: read = Data to widget; write = widget to Data; twoWay = both. A dash means no declared default/binding. None is a declared value. Constraints include enum, qualification, target and annotations. Tables describe component contracts; ordinary Source/CSS attributes are shared.
-
-
-## Shared parameter contracts
-
-Each widget below links only the shared contracts it supports. A shared name can have different types, defaults or bindings; separate rows preserve those differences.
-
-
 <a id="gc-490-490"></a>
-## Audio and drawing
-
-
 <a id="gc-490-480"></a>
 <a id="gc-490-audioanalyser"></a>
-### `audioAnalyser`
 
-Live microphone waveform and spectrum arrays written into Data.
+## What the analyser writes
 
-Collection: **audio**. Browser element: `gramlot-audio-analyser`.
+[audioAnalyser](345-widget-reference.md#gc-345-audioanalyser) is the only component
+of the collection. It is invisible: it has no screen of its own, only bindings.
 
-[Microphone samples and lifecycle](490-audio.md#gc-490-start).
+- **`running`** starts and stops listening. The analyser sets it back to false when
+  something goes wrong or the page is left.
+- **`waveform`** is a list of `fftSize` numbers, the shape of the sound.
+- **`spectrum`** is a list of `fftSize / 2` decibel values, one per frequency band,
+  never below `minimumDb`.
+- **`sampleRate`** is the microphone's rate in Hz.
+- **`status`** is `stopped`, `requesting`, `running` or `error`; **`error`** holds
+  the message of the last failure.
 
+Each list is a single value in Data, not one node per sample.
 
-[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-audioanalyser).
+## Tuning
 
+```python
+root.audioAnalyser(running="^audio.running", spectrum="^audio.spectrum",
+                   fftSize=2048, frameRate="^audio.rate", minimumDb="^audio.floor")
+```
 
-**Data contract.** running controls capture; waveform and spectrum write numeric arrays as individual Data values. sampleRate, status and error report the session.
+`fftSize` is a power of two from 256 to 8192 (default 1024): larger gives finer
+frequency bands. `frameRate` is how many times per second the lists are written,
+from 1 to 30 (default 20). `minimumDb` is the floor of the spectrum, from -160 up to,
+but not including, 0 (default -100).
 
-
-**Interaction and events.** Changes to supported configuration update the analyser. Capture failure clears running and reports error.
-
-
-**Composition.** Invisible leaf component; compose ordinary controls and charts around its bindings.
-
-
-**Limits and lifecycle.** Requires microphone permission and a secure context. Stop, pagehide and disposal release resources. No recording or persistence.
-
-| Specific parameter | Type | Default | Binding | Constraints |
-| --- | --- | --- | --- | --- |
-| `running` | B | False | twoWay | — |
-| `fftSize` | L | 1024 | read | — |
-| `frameRate` | N | 20 | read | — |
-| `minimumDb` | N | -100 | read | — |
-| `spectrum` | X or None | — | twoWay | — |
-| `waveform` | X or None | — | twoWay | — |
-| `sampleRate` | N | 0 | twoWay | — |
-| `status` | T | 'stopped' | twoWay | — |
-| `error` | T | '' | twoWay | — |
-
-Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+The microphone works only on HTTPS or localhost, and only after the user allows it.
+Stopping, leaving the page or removing the analyser releases the microphone. The
+sound is never recorded, played or sent anywhere.
