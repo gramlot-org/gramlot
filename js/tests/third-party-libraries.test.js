@@ -93,7 +93,8 @@ test('the bootstrap carries the library source, the import map the integrity of 
     assert.match(cdn.html, /<html data-gramlot-library-source="cdn">/);
     const map = JSON.parse(/<script type="importmap"[^>]*>(.*?)<\/script>/.exec(cdn.html)[1]);
     assert.deepEqual(map.integrity, {[libraries.echarts.url]: libraries.echarts.integrity,
-        [libraries.uplot.url]: libraries.uplot.integrity});
+        [libraries.uplot.url]: libraries.uplot.integrity, [libraries.xterm.url]: libraries.xterm.integrity,
+        [libraries.xtermFit.url]: libraries.xtermFit.integrity});
     const local = await new Server({librarySource: 'local'}).openPage('/');
     assert.match(local.html, /<html data-gramlot-library-source="local">/);
     assert.ok(!local.html.includes('integrity') && !local.html.includes('jsdelivr'));

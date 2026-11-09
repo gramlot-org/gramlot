@@ -43,7 +43,7 @@ class LibrarySourceTests(unittest.TestCase):
         modules = {entry["url"]: entry["integrity"] for entry in cdn.libraries.values()
                    if entry["url"] is not None and entry["format"] == "module"}
         self.assertEqual(imports["integrity"], modules)
-        self.assertEqual(set(modules), {cdn.libraries["echarts"]["url"], cdn.libraries["uplot"]["url"]})
+        self.assertEqual(set(modules), {cdn.libraries[name]["url"] for name in ("echarts", "uplot", "xterm", "xtermFit")})
 
     def test_local_bootstrap_names_no_cdn(self):
         html = asyncio.run(server(library_source="local").open_page("/")).html
