@@ -19,6 +19,8 @@ export function messageText(message) {
 /** The dataBinder connection of one name: its binders and the MessagePort that carries them now. */
 export class MessagePortConnection {
     #port = null;
+    // A protocol error is reported once per connection; `closed` is a state and reports nothing.
+    #reported = false;
 
     constructor(gramlot, name) {
         this.gramlot = gramlot;
@@ -82,7 +84,8 @@ export class MessagePortConnection {
         const message = fromTytx(event.data).asDict();
         if (message.op === 'snapshot' || message.op === 'change') this.binders.get(message.binderId)?.apply(message);
         else if (message.op === 'closed') this.#closed();
-        else if (message.op === 'error') {
+        else if (message.op === 'error' && !this.#reported) {
+            this.#reported = true;
             this.gramlot.src.binding.reportError(new Error(`Connection '${this.name}': ${message.error}`), 'dataBinder');
         }
     };

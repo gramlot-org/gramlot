@@ -5,6 +5,7 @@ import {JSDOM} from 'jsdom';
 import {Bag, BagResolver} from '@genrojs/bag';
 import {Gramlot} from '../src/index.js';
 import {MessagePortStore} from '../src/message-port-store.js';
+import {messageText} from '../src/message-port-connection.js';
 import {mount} from './fixtures/mount.js';
 
 const wait = async (predicate, message = 'MessagePort delivery timeout') => {
@@ -142,4 +143,30 @@ test('the store never runs resolvers: a resolver node travels with its cached va
 test('a connection name must be literal', t => {
     assert.throws(() => page(t, root => root.dataBinder({destination_path: 'copy', server_path: 'shared', connection: '^name'})),
         /literal name/);
+});
+
+test('closed is a state without a notification; protocol errors are reported once per connection', async t => {
+    const served = new Bag();
+    served.setItem('shared', new Bag({name: 'Ada'}));
+    const app = page(t, root => root.dataBinder({destination_path: 'copy', server_path: 'shared', connection: 'peer'}));
+    const reported = [];
+    app.src.binding.reportError = (error, title) => reported.push({error, title});
+    const first = store(t, served);
+    app.rpc.registerConnection('peer', first.port);
+    await wait(() => app.data.getItem('copy.name') === 'Ada');
+    first.side.close();
+    const connection = app.rpc.connection('peer');
+    await wait(() => connection.state === 'closed');
+    await settle();
+    assert.deepEqual(reported, []);
+
+    const channel = new MessageChannel();
+    t.after(() => { channel.port1.close(); channel.port2.close(); });
+    app.rpc.registerConnection('peer', channel.port2);
+    channel.port1.postMessage(messageText({op: 'error', error: 'first'}));
+    channel.port1.postMessage(messageText({op: 'error', error: 'second'}));
+    await wait(() => reported.length > 0);
+    await settle();
+    assert.deepEqual(reported.map(({error, title}) => [error.message, title]), [["Connection 'peer': first", 'dataBinder']]);
+    assert.equal(connection.state, 'open');
 });
