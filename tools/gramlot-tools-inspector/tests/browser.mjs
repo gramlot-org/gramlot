@@ -125,6 +125,11 @@ try {
             await palette.getByLabel('Value', {exact:true}).press('Enter');
             await page.waitForFunction(() => window.app.data.getItem('name') === 'Edited Data');
             assert.equal(await page.locator('#app p').textContent(), 'Edited Data');
+            // Escape in a cell reloads the cell; the floating window does not close the palette.
+            await palette.getByRole('textbox', {name: 'Value', exact: true}).fill('Draft');
+            await palette.getByLabel('Value', {exact:true}).press('Escape');
+            await page.waitForFunction(() => window.inspector.shadowRoot.querySelector('[aria-label=Value]')?.value === 'Edited Data');
+            assert.equal(await palette.getByLabel('Value', {exact:true}).isVisible(), true);
             // New attribute names/types are editable; existing rows commit without losing focus.
             await palette.getByRole('button', {name:'Add attribute', exact:true}).click();
             await palette.getByLabel('New attribute name', {exact:true}).fill('count');

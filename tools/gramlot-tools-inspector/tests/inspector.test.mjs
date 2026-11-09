@@ -55,8 +55,10 @@ function tree(element) { return element.shadowRoot.querySelector('gramlot-tree:n
 function row(element, path) { return tree(element).shadowRoot.querySelector(`[role="treeitem"][data-path="${path}"]`); }
 async function select(element, path) { await tick(); const node = row(element, path); assert.ok(node, path); node.querySelector('.row').click(); await tick(); }
 function field(element, label = 'Value') { return element.shadowRoot.querySelector(`[aria-label="${label}"]`); }
-function save(element, label = 'Value') { field(element, label).dispatchEvent(new window.KeyboardEvent('keydown', {key: 'Enter', bubbles: true})); }
-function revert(element) { field(element).dispatchEvent(new window.KeyboardEvent('keydown', {key: 'Escape', bubbles: true})); }
+// A keyboard keydown bubbles and is cancelable, as the browser dispatches it.
+function press(element, key, label = 'Value') { field(element, label).dispatchEvent(new window.KeyboardEvent('keydown', {key, bubbles: true, cancelable: true})); }
+function save(element, label = 'Value') { press(element, 'Enter', label); }
+function revert(element) { press(element, 'Escape'); }
 async function openBreakpoint(element, path) { await tick(); row(element, path).querySelector('.row').dispatchEvent(new window.Event('pointerenter')); tree(element).querySelector('[rowaction=breakpoint]').control.click(); await tick(); }
 function subscriberCount(bag) {
     return Object.keys(bag._updSubscribers).length + Object.keys(bag._insSubscribers).length + Object.keys(bag._delSubscribers).length;
@@ -232,9 +234,8 @@ test('invalid typed cells and conflicts never overwrite the target', async () =>
     await wait(() => /Escape/.test(status(element)));
     assert.equal(app.data.getItem('nested.count'), 99);
     await idle(element);
-    // A bubbling Escape also reaches the floating window, which then closes the palette
-    // (pre-existing, outside the inspector): the cell receives it alone here.
-    field(element).dispatchEvent(new window.KeyboardEvent('keydown', {key: 'Escape'}));
+    // The cell handles Escape and prevents its default: the floating window keeps the palette open.
+    revert(element);
     edit(element, 'Value', '6'); save(element);
     await wait(() => app.data.getItem('nested.count') === 6);
     app.data.popNode('nested.count'); await tick();
