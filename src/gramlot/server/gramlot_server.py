@@ -4,7 +4,9 @@ from urllib.parse import quote
 from copy import deepcopy
 from ..collection import collection_graph, declared_collections, page_collections, standard_collections
 
+import asyncio
 import inspect
+import logging
 import json
 import math
 import secrets
@@ -23,6 +25,7 @@ from .assets import gramlot_dev
 from .files import LIBRARIES, THEMES, file_below
 from .resources import SEGMENT, InvalidResourceName, load_order
 from .upload import _UploadRegistry, _invoke
+from .terminal import TerminalSession
 
 
 class PageExpired(LookupError):
@@ -156,6 +159,7 @@ class GramlotServer:
         self._page_stores = {}
         self._database_access = None
         self._page_channels = {}
+        self._terminals = {}
         self.websocket_url = websocket_url
         self._uploads = None
         self.collections = collection_graph((*standard_collections(), *collections))
@@ -268,6 +272,55 @@ class GramlotServer:
         if page_id in self._page_channels:
             raise ValueError("Page already has a channel")
         self._page_channels[page_id] = send
+
+    async def open_terminal(self, page_id, session, *, send, owner, identity=None):
+        """Open the terminal session ``session`` of the page's store and run its ``@terminal`` method.
+
+        ``send`` is the adapter's async callable for output frames. The returned ``TerminalSession``
+        takes the browser frames with ``receive``; it closes when the method returns, when the page
+        closes, or when the adapter calls ``close_terminal``. One page opens a session name once.
+        """
+        store = self.page_store(page_id, owner=owner)
+        declared = resolve_declared(store, session, "__gramlot_terminal__") if self.name_syntax.matches(session) else None
+        if declared is None:
+            raise EndpointNotFound(f"Unknown terminal session: {session}")
+        instance, method = declared
+        if not inspect.iscoroutinefunction(method):
+            raise TypeError(f"Terminal session {session} must be an async method")
+        refused = self._auth_outcome(getattr(method, "__gramlot_terminal__")["auth"], owner, identity)
+        if refused is not None:
+            raise {OUTCOME_CODES[cls]: cls for cls in (NotAuthenticated, NotAuthorized)}[refused](
+                f"Access refused: {session}")
+        key = (page_id, session)
+        if key in self._terminals:
+            raise ValueError(f"Terminal session {session} is already open")
+        terminal = TerminalSession(send)
+        task = asyncio.ensure_future(self._run_terminal(key, method.__get__(instance, type(instance)), terminal))
+        self._terminals[key] = (terminal, task)
+        return terminal
+
+    async def _run_terminal(self, key, function, terminal):
+        try:
+            await function(terminal)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logging.getLogger(__name__).exception("Terminal session %s failed", key[1])
+        finally:
+            terminal.close()
+            if self._terminals.get(key, (None,))[0] is terminal:
+                del self._terminals[key]
+
+    def close_terminal(self, page_id, session):
+        """Close an open terminal session and cancel its method; an unknown session is left as it is."""
+        record = self._terminals.pop((page_id, session), None)
+        if record is not None:
+            record[0].close()
+            record[1].cancel()
+
+    def _close_terminals(self, page_id=None):
+        for key in [key for key in self._terminals if page_id is None or key[0] == page_id]:
+            self.close_terminal(*key)
 
     def publish_to_page(self, topic, payload, *, source_page_id, page_id, owner):
         """Enqueue an event for a connected browser page of the source's owner."""
@@ -679,6 +732,7 @@ class GramlotServer:
         record = self._pages.get(page_id)
         if record is not None and record[2] == owner:
             del self._pages[page_id]
+            self._close_terminals(page_id)
             self._page_channels.pop(page_id, None)
             store = self._page_stores.pop(page_id, None)
             if store is not None:
@@ -687,6 +741,7 @@ class GramlotServer:
     def close_all(self):
         """Forget every registered page; adapters call it on shutdown."""
         self._pages = {}
+        self._close_terminals()
         self._page_channels.clear()
         for store in self._page_stores.values():
             store.close()
