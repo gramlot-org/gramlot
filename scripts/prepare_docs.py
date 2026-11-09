@@ -5,6 +5,9 @@ import re
 import shutil
 
 PUBLIC_PAGES = (
+    "docs/public/505-how-gramlot-works.md",
+    "docs/public/510-data-and-binding.md",
+    "docs/public/515-data-and-logic-reference.md",
     "docs/public/018-quickstart.md",
     "docs/public/llm/index.md",
     "docs/public/055-family.md",
@@ -127,6 +130,7 @@ def main():
     for relative in PUBLIC_PAGES:
         home = home.replace(f"]({Path(relative).relative_to('docs/public')}", f"]({relative}")
     groups = (
+        ("Guide", ("505-how-gramlot-works", "510-data-and-binding", "515-data-and-logic-reference")),
         ("Start here", ("055-family", "018-quickstart", "020-evaluate")),
         ("Build applications", ("095-writing-pages", "105-components", "097-data-binding", "098-server-calls", "099-remote-content", "350-menus-toolbars-and-windows")),
         ("Library reference", ("llm/index", "345-widget-reference", "460-widget-coverage", "096-themes-and-css", "090-classes-and-hosts", "030-quality")),
@@ -144,6 +148,8 @@ def main():
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content)
     shutil.copy2(root / "docs/conf.py", destination / "conf.py")
+    # Translations of the guide pages (sphinx-intl catalogs, one folder per language).
+    shutil.copytree(root / "docs/locale", destination / "locale")
     for relative in (*PUBLIC_PAGES, *PUBLIC_ASSETS):
         target = destination / relative
         target.parent.mkdir(parents=True, exist_ok=True)

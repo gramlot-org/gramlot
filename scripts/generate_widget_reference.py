@@ -419,7 +419,7 @@ connects these controls to runnable lessons and screenshots.
                              COLLECTION_EXPLANATIONS[name].strip(), flags=re.S)
         detailed_header = (header + f'{explanation}\n\n'
                            f'## Choose a component\n\n{selection}\n\n')
-        # The component/parameter bodies remain generated, never maintained separately.
+        # Generated layout, used when scripts/collection_guides has no page for the collection.
         out = [detailed_header, '<a id="gc-345-005"></a>\n<a id="gc-345-010"></a>\n'
                'Types: T text, B Boolean, L integer, R real, X structured value; other codes are TYTX. '
                'Binding: read = Data to widget; write = widget to Data; twoWay = both. '
@@ -475,13 +475,36 @@ def structural_reference(grammar, *, compact=False):
     return result
 
 
+# Hand-written collection pages: a teaching page per collection, with examples and links.
+# The full parameter contracts stay generated in 345 and in the compact docs_llm view.
+GUIDES = ROOT / 'scripts/collection_guides'
+
+
+def authored_guide(collection, number, compact):
+    """Return the hand-written page of a collection, checked against its compact view."""
+    path = GUIDES / f'{number}-{collection}.md'
+    if not path.exists():
+        return None
+    text = path.read_text()
+    anchors = re.findall(r'<a id="([^"]+)"', text)
+    if len(anchors) != len(set(anchors)):
+        raise ValueError(f'Duplicate anchors in {path}')
+    expected = set(re.findall(r'<a id="([^"]+)"', compact))
+    if set(anchors) != expected:
+        raise ValueError(f'{path} must carry the stable anchors of its compact view: '
+                         f'missing {sorted(expected - set(anchors))}, extra {sorted(set(anchors) - expected)}')
+    return text
+
+
 def generated_documents():
     for view, text in zip(('docs', 'docs_llm'), render()):
         yield ROOT / view / 'public/345-widget-reference.md', text
     yield from coverage_documents(ROOT, COLLECTIONS, COLLECTION_IDS, COLLECTION_GUIDES)
     for collection in COLLECTIONS:
         number = COLLECTION_IDS[collection]
-        for view, text in zip(('docs', 'docs_llm'), render((collection,), number)):
+        human, compact = render((collection,), number)
+        human = authored_guide(collection, number, compact) or human
+        for view, text in (('docs', human), ('docs_llm', compact)):
             yield ROOT / view / f'public/{number}-{collection}.md', text
 
 def main():

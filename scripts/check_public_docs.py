@@ -33,10 +33,13 @@ def main():
     site = root / "build/docs-site"
     downloads = llm_downloads(root)
     expected = {"index.md", "conf.py", *PUBLIC_PAGES, *PUBLIC_ASSETS,
-                *("downloads/" + name for name in downloads)}
+                *("downloads/" + name for name in downloads),
+                *(str(p.relative_to(root / "docs")) for p in (root / "docs/locale").rglob("*.po"))}
     staged = {str(p.relative_to(source)) for p in source.rglob("*") if p.is_file()}
     # Import caches are Sphinx execution artifacts, not staged content.
     staged = {p for p in staged if "__pycache__" not in Path(p).parts}
+    # Sphinx compiles .po catalogs to .mo in place while building a translation.
+    staged = {p for p in staged if not p.endswith(".mo")}
     assert staged == expected, f"Staging mismatch: {staged ^ expected}"
     docnames = {"index", *(str(Path(p).with_suffix("")) for p in PUBLIC_PAGES)}
     expected_html = {f"{p}.html" for p in docnames} | {"search.html", "genindex.html"}

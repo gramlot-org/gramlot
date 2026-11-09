@@ -141,3 +141,36 @@ def test_reviewed_behavior_covers_the_packaged_inventory_and_stays_out_of_exampl
                 assert f'**{label}.**' in section
         for evidence in (*record['sources'], *record['tests']):
             assert (ROOT / evidence).is_file(), (widget, evidence)
+
+
+@pytest.mark.parametrize('path', sorted(reference.GUIDES.glob('*.md')), ids=lambda path: path.stem)
+def test_authored_collection_pages_link_every_component_and_build_their_examples(path):
+    number, collection = path.stem.split('-', 1)
+    assert collection in reference.COLLECTIONS
+    text = path.read_text()
+    grammar = packaged_collections()[collection]
+    for name, element in grammar['elements'].items():
+        if (element.get('_meta') or {}).get('gramlot_component') is None:
+            continue
+        assert f'id="gc-{number}-{name.lower()}"' in text, name
+        assert f'345-widget-reference.md#gc-345-{name.lower()}' in text, name
+    grammars = [grammar for name, grammar in packaged_collections().items() if name != 'buttons']
+    for code in re.findall(r'```python\n(.*?)```', text, re.S):
+        builder = GramlotBuilder(collections=grammars)
+        scope = {'root': builder.root, 'form': builder.root.div(datapath='form')}
+        exec(compile(code, f'<{path.name}>', 'exec'), scope)
+        if 'main' in scope:
+            scope['main'](None, builder.root)
+        assert builder.to_tytx()
+        # The builder accepts any keyword: check each example against the component metadata.
+        for _, node in builder.root._iter_nodes_with_paths():
+            meta = (node.attr.get('_meta') or {}).get('gramlot_component')
+            if meta is None:
+                continue
+            for attribute, value in node.attr.items():
+                if attribute == '_meta' or attribute.startswith(('box_', 'lbl_')):
+                    continue
+                spec = meta['parameters'].get(attribute)
+                assert spec is not None, (path.name, node.label, attribute)
+                if 'enum' in spec and not str(value).startswith('^'):
+                    assert value in spec['enum'], (path.name, node.label, attribute, value)
