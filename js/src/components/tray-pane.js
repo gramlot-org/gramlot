@@ -306,7 +306,7 @@ export const TrayPane = defineComponent({
             if (!block) {
                 const rect=this.getBoundingClientRect(),overlay=this.ownerDocument.createElement('div');
                 overlay.className='tray-marquee';overlay.hidden=true;overlay.setAttribute('aria-hidden','true');
-                const marquee=[...this.children].map(child=>({box:child,row:this.#row(TrayPane.#blocks.get(child).label),
+                const marquee=[...this.children].map(child=>({box:child,label:TrayPane.#blocks.get(child).label,
                     selected:this.#row(TrayPane.#blocks.get(child).label).getItem('selected')}));
                 this.#drag={id:event.pointerId,marquee,overlay,extend:event.shiftKey,
                     x:event.clientX-rect.left-this.clientLeft,y:event.clientY-rect.top-this.clientTop};
@@ -324,8 +324,8 @@ export const TrayPane = defineComponent({
             if(!rotate&&!resize&&!move)return;
             const row = this.#row(block.label), rect = this.getBoundingClientRect();
             const members=!rotate&&!resize ? [...this.children].filter(child=>child===box||this.#row(TrayPane.#blocks.get(child).label).getItem('selected'))
-                .map(child=>({box:child,row:this.#row(TrayPane.#blocks.get(child).label),...this.#rectangle(child)})) : null;
-            this.#drag = {box, row, members, pendingSelection, extend:event.shiftKey, moved:false, id:event.pointerId, left:row.getItem('left'), top:row.getItem('top'),
+                .map(child=>({box:child,label:TrayPane.#blocks.get(child).label,...this.#rectangle(child)})) : null;
+            this.#drag = {box, label:block.label, members, pendingSelection, extend:event.shiftKey, moved:false, id:event.pointerId, left:row.getItem('left'), top:row.getItem('top'),
                 resize, rotate, angle:row.getItem('rotation'), ...this.#rectangle(box),
                 x:event.clientX-rect.left, y:event.clientY-rect.top};
             if(rotate)this.#drag.pointerAngle=Math.atan2(event.clientY-rect.top-this.clientTop-this.#drag.top-this.#drag.height/2,
@@ -343,6 +343,15 @@ export const TrayPane = defineComponent({
                 this.#write(row,{selected});
             }
         }
+        /**
+         * The rows of an in-progress gesture, read at their addresses in the store. Null when a
+         * row has left the store: the gesture ends instead of recreating it.
+         */
+        #gestureRows(labels) {
+            const store=this.#storeBag();
+            if(!labels.every(label=>store.getNode([label])))return null;
+            return labels.map(label=>this.#row(label));
+        }
         #write(row, values) {
             this.#writing = true;
             try {
@@ -356,6 +365,9 @@ export const TrayPane = defineComponent({
             if (!drag || event.pointerId !== drag.id) return;
             if(drag.marquee){this.#marqueeMove(event);return;}
             if (drag.box.parentElement !== this||drag.members?.some(member=>member.box.parentElement!==this)) { this.#finish(); return; }
+            const rows=this.#gestureRows([drag.label,...(drag.members ?? []).map(member=>member.label)]);
+            if(!rows){this.#finish();return;}
+            const [row,...memberRows]=rows;
             const rect = this.getBoundingClientRect();
             const dx=event.clientX-rect.left-drag.x,dy=event.clientY-rect.top-drag.y;
             if(drag.rotate){
@@ -366,12 +378,12 @@ export const TrayPane = defineComponent({
                 drag.pointerAngle=angle;
                 drag.angle+=delta;
                 const rotation=this.#snap(drag.angle,this.parameters.rotationStep,event.shiftKey);
-                this.#write(drag.row,this.#constrain(drag.box,drag.row,{rotation}));
+                this.#write(row,this.#constrain(drag.box,row,{rotation}));
                 this.#suppressClick=true;event.preventDefault();return;
             }
             if(drag.resize){
                 const angle=drag.rotation*Math.PI/180,c=Math.cos(angle),s=Math.sin(angle);
-                this.#resize(drag.box,drag.row,
+                this.#resize(drag.box,row,
                     this.#snap(drag.width+(c*dx+s*dy)/drag.scale,this.parameters.gridStep,event.shiftKey),
                     this.#snap(drag.height+(-s*dx+c*dy)/drag.scale,this.parameters.gridStep,event.shiftKey),drag);
                 this.#suppressClick=true;event.preventDefault();return;
@@ -381,18 +393,18 @@ export const TrayPane = defineComponent({
             const left=this.#snap(Math.round(drag.left+dx),this.parameters.gridStep,event.shiftKey),
                 top=this.#snap(Math.round(drag.top+dy),this.parameters.gridStep,event.shiftKey);
             if (left !== drag.left || top !== drag.top) this.#suppressClick = true;
-            const delta={left:left-drag.row.getItem('left'),top:top-drag.row.getItem('top')};
+            const delta={left:left-row.getItem('left'),top:top-row.getItem('top')};
             const moving=new Set(drag.members.map(member=>member.box));
             let fraction=1;
-            for(const member of drag.members) {
+            for(const [index,member] of drag.members.entries()) {
                 const from=this.#rectangle(member.box),to={...from,left:from.left+delta.left,top:from.top+delta.top};
                 const obstacles=[...this.children].filter(other=>!moving.has(other)
-                    &&this.#row(TrayPane.#blocks.get(other).label).getItem('layer')===member.row.getItem('layer'))
+                    &&this.#row(TrayPane.#blocks.get(other).label).getItem('layer')===memberRows[index].getItem('layer'))
                     .map(other=>this.#rectangle(other));
                 fraction=Math.min(fraction,contactFraction(from,to,obstacles,this.#bounds()));
             }
-            for(const member of drag.members)this.#write(member.row,{
-                left:member.row.getItem('left')+delta.left*fraction,top:member.row.getItem('top')+delta.top*fraction});
+            for(const memberRow of memberRows)this.#write(memberRow,{
+                left:memberRow.getItem('left')+delta.left*fraction,top:memberRow.getItem('top')+delta.top*fraction});
             event.preventDefault();
         }
         #marqueeMove(event) {
@@ -403,10 +415,12 @@ export const TrayPane = defineComponent({
             const moved=right>left&&bottom>top;
             Object.assign(drag.overlay.style,{left:`${left}px`,top:`${top}px`,width:`${right-left}px`,height:`${bottom-top}px`});
             drag.overlay.hidden=!moved;
-            for(const member of drag.marquee) {
-                if(member.box.parentElement!==this)continue;
+            const members=drag.marquee.filter(member=>member.box.parentElement===this);
+            const rows=this.#gestureRows(members.map(member=>member.label));
+            if(!rows){this.#finish();return;}
+            for(const [index,member] of members.entries()) {
                 const inside=moved&&corners(this.#rectangle(member.box)).every(p=>p.x>=left&&p.x<=right&&p.y>=top&&p.y<=bottom);
-                this.#write(member.row,{selected:inside||(drag.extend&&member.selected)});
+                this.#write(rows[index],{selected:inside||(drag.extend&&member.selected)});
             }
             this.#suppressClick ||= moved;event.preventDefault();
         }
@@ -414,12 +428,14 @@ export const TrayPane = defineComponent({
         #cancel() {
             const drag = this.#drag;
             if(drag.marquee) {
-                for(const member of drag.marquee)if(member.box.parentElement===this)this.#write(member.row,{selected:member.selected});
+                for(const member of drag.marquee)if(member.box.parentElement===this&&this.#gestureRows([member.label]))
+                    this.#write(this.#row(member.label),{selected:member.selected});
             }
             else if(drag.members)for(const member of drag.members) {
-                if(member.box.parentElement===this)this.#write(member.row,{left:member.left,top:member.top});
+                if(member.box.parentElement===this&&this.#gestureRows([member.label]))
+                    this.#write(this.#row(member.label),{left:member.left,top:member.top});
             }
-            else if (drag.box.parentElement === this) this.#write(drag.row,drag.rotate ? {rotation:drag.rotation} : drag.resize
+            else if (drag.box.parentElement === this&&this.#gestureRows([drag.label])) this.#write(this.#row(drag.label),drag.rotate ? {rotation:drag.rotation} : drag.resize
                 ? {left:drag.left,top:drag.top,width:drag.width,height:drag.height} : {left:drag.left,top:drag.top});
             this.#suppressClick = false;
             this.#finish();

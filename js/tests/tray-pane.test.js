@@ -101,6 +101,27 @@ test('replacement store restores the same DOM and ends the old drag; removal rel
     assert.equal(f.box.hasAttribute('data-moving'),false);
 });
 
+test('drag reads its rows at their addresses; a row missing mid-gesture ends it without recreation',async t => {
+    const f = await fixture(t), original = f.store.getItem('card');
+    // Untriggered replacements: the tray receives no event and reads the address on the next move.
+    const quietly = (path,value) => f.app.data.setItem(path,value,null,'>',false,true,null,false,false);
+    f.send(f.box.labelbox.fieldLabel,'pointerdown',20,30);
+    f.send(f.host,'pointermove',40,50);
+    assert.equal(original.getItem('left'),30);assert.equal(original.getItem('top'),40);
+    const replacement=new Bag({layer:0,left:30,top:40,selected:true,rotation:0,scale:1});
+    quietly('scope.layout.card',replacement);
+    f.send(f.host,'pointermove',60,70);
+    assert.equal(replacement.getItem('left'),50);assert.equal(replacement.getItem('top'),60);
+    assert.equal(original.getItem('left'),30);assert.equal(original.getItem('top'),40);
+    assert.equal(f.box.hasAttribute('data-moving'),true);
+    const empty=new Bag();
+    quietly('scope.layout',empty);
+    f.send(f.host,'pointermove',80,90);
+    assert.equal(empty.getNode('card'),null);
+    assert.equal(f.box.hasAttribute('data-moving'),false);
+    assert.equal(f.host.hasPointerCapture(1),false);
+});
+
 test('same labels in two trays are isolated; new block positions initialize in Data',async t => {
     const f = await fixture(t,(root,app) => {
         app.data.setItem('scope.other',new Bag());
