@@ -180,20 +180,21 @@ export class EditingSession {
     }
     /** A real Source declaration can validate without an element or ControlAdapter. */
     registerField(node, component, schedule = true) {
-        const fullpath = node.fullpath, binding = this.runtime.bindingFor(node);
+        const fullpath = node.fullpath;
         let field = this.validations.get(fullpath);
-        if (field) {
-            if (field.binding !== binding) throw new Error(`Editing field ${fullpath} is registered for another Source node.`);
-            return field;
-        }
+        if (field) return field;
         if (!component.validationExecutor) throw new TypeError('Grid editors require shared input validation.');
-        const context = validationContext(binding);
-        field = {binding,context,component,run:new ValidationRun(),
-            execute:component.validationExecutor,checkValue:component.validationValueCheck(context),
+        const binding = this.runtime.bindingFor(node);
+        if (!binding) throw new Error(`Editing field ${fullpath} has no open binding.`);
+        // A draft left by a previous registration of this node (a node moved back into the Source) is stale:
+        // register() restores the current one from the drafts register.
+        delete node._internal.formDraft;
+        // The record holds plain values and the component class; binding, context and checks are derived at each use.
+        field = {component,run:new ValidationRun(),
             path:fieldPath(node),rules:null,value:undefined,target:null,result:null,selection:null};
         this.validations.set(fullpath,field);
         binding.editingSession = this;
-        field.release = binding.track(() => this.forgetField(fullpath));
+        binding.track(() => this.forgetField(fullpath));
         this.refreshField(node,schedule);
         return field;
     }
@@ -276,12 +277,14 @@ export class EditingSession {
         for (const fields of this.validationSources) yield* fields();
         for (const fullpath of existing) if (this.validations.has(fullpath)) yield {node:this.fieldNode(fullpath),release:() => {}};
     }
-    /** Called when the field's binding closes, after its node left the Source: the node is reached through that binding. */
+    /**
+     * Called when the field's binding closes, after its node left the Source, or when the session is disposed.
+     * The closing binding keeps no further use of the session; after dispose its disposer finds no record.
+     */
     forgetField(fullpath) {
         const field = this.validations.get(fullpath);
         if (!field) return;
-        field.run.cancel(); field.release();
-        if (field.binding.editingSession === this) field.binding.editingSession = null;
+        field.run.cancel();
         this.validations.delete(fullpath); this.validationQueue.delete(fullpath);
         for (const name of ['errors','pending']) {
             const parts = this.registers.getItem(name).getItem(encoded(field.path));
@@ -294,14 +297,17 @@ export class EditingSession {
             const drafts = this.registers.getItem('drafts');
             if (drafts.getNode(encoded(field.path))) drafts.popNode(encoded(field.path));
         }
-        delete field.binding.node._internal.formDraft;
         this.notify();
+    }
+    /** The validation parameters of the field `node`, its `^`, `=` and `==` resolved. */
+    validationParameters(node, component) {
+        const [, attrs] = node.rootBuilder.runtimeValues(node);
+        return component.validationParameters(this.runtime.renderer.evaluateExpressions(node,attrs));
     }
     refreshField(node, schedule = true) {
         const field = this.validations.get(node.fullpath);
         if (!field || this.disposed || this.writing) return;
-        const [, attrs] = node.rootBuilder.runtimeValues(node);
-        const resolved = field.component.validationParameters(this.runtime.renderer.evaluateExpressions(node,attrs));
+        const resolved = this.validationParameters(node,field.component);
         const rules = Object.fromEntries(Object.entries(resolved).filter(([name]) => name.startsWith('validate_')));
         const configuration = toTytx(Object.fromEntries(Object.entries(resolved).filter(([name]) => name !== 'value')));
         const path = fieldPath(node), target = this.runtime.gramlot.data.getNode(path.split('?')[0]);
@@ -316,8 +322,8 @@ export class EditingSession {
                 if (bag.getNode(encoded(field.path))) bag.popNode(encoded(field.path));
             }
         }
-        Object.assign(field,{path,target,value,rules,configuration,result:null,
-            selection:field.component.validationSelection(resolved,field.context)});
+        // A null selection is derived from the current parameters at validation time.
+        Object.assign(field,{path,target,value,rules,configuration,result:null,selection:null});
         if (dataChanged) this.clearDraft(node);
         if (schedule) this.scheduleField(node);
     }
@@ -362,24 +368,28 @@ export class EditingSession {
     }
     validateField(node, refreshSelection = true) {
         const fullpath = node.fullpath, field = this.validations.get(fullpath);
-        if (!field || this.disposed || field.binding.closed) return;
+        // A closed binding has left the runtime map: bindingFor never opens one.
+        const binding = this.runtime.bindingFor(node);
+        if (!field || this.disposed || !binding || binding.closed) return;
         this.validationQueue.delete(fullpath);
         if (this.registers.getItem('drafts').getNode(key(node))) return;
         if (this.registers.getItem('pending').getItem(key(node))?.getItem(contribution(node,'selection'))) return;
         const value = node.getRelativeData(node.getAttr('value'));
         const adapter = this.fields.get(fullpath);
         if (refreshSelection && adapter) field.selection = adapter.element.validationSelection();
-        const selection = field.selection;
+        const component = field.component, context = validationContext(binding);
+        const selection = field.selection ?? component.validationSelection(this.validationParameters(node,component),context);
+        const checkValue = component.validationValueCheck(context);
         const target = field.target;
-        const current = field.context.validationCurrent();
-        return field.run.start(value,field.rules,{...field.context,
+        const current = context.validationCurrent();
+        return field.run.start(value,field.rules,{...context,
             validationCurrent:() => () => !this.disposed && current() && this.validations.get(fullpath) === field
                 && this.runtime.gramlot.data.getNode(field.path.split('?')[0]) === target,
             selection
-        },field.execute,outcome => {
+        },component.validationExecutor,outcome => {
             const node = this.fieldNode(fullpath);
             if (outcome.ok) {
-                try { field.checkValue(outcome.value,value); }
+                try { checkValue(outcome.value,value); }
                 catch (error) { outcome.ok = false; outcome.result.error = error.message; }
             }
             this.result(node,outcome.result);
@@ -387,7 +397,7 @@ export class EditingSession {
             if (outcome.ok) this.writeCandidate(node,outcome.value);
             const mounted = this.fields.get(fullpath);
             if (mounted) mounted.element.presentValidation(outcome.result);
-            field.context.finishValidation(outcome);
+            context.finishValidation(outcome);
         },() => {
             this.pendingPart(this.fieldNode(fullpath),'validation','active');
             this.fields.get(fullpath)?.element.setFieldState({pending:true});
