@@ -159,7 +159,7 @@ for (const mode of ['values', 'attributes']) test(`${mode}: # and += are view va
     rows.subscribe('share-writes', {any:event => {
         if (event.node?.label === 'share' || Object.hasOwn(event.attrs_diff ?? {}, 'share')) shareWrites++;
     }});
-    f.source('second').gridCollectionView.sort('amount:d');
+    f.source('second')._internal.gridCollectionView.sort('amount:d');
     await f.settle();
     assert.deepEqual(shown(f, 'first', 'position'), [['r1', '1'], ['r2', '2'], ['r3', '3']]);
     assert.deepEqual(shown(f, 'first', 'running'), [['r1', '0.1'], ['r2', '0.3'], ['r3', '1']]);
@@ -209,14 +209,14 @@ test('under a filter # and += cover the visible rows 1..n, marked with filtered-
     const marked = () => [...f.host('first').shadowRoot.querySelectorAll('tbody .filtered-numbering')]
         .map(cell => cell.localName === 'th' ? 'header' : cell.dataset.field);
     assert.deepEqual(marked(), []);
-    f.source('first').gridCollectionView.applyColumnFilter('kind', ['a']);
+    f.source('first')._internal.gridCollectionView.applyColumnFilter('kind', ['a']);
     await f.settle();
     assert.deepEqual(shown(f, 'first', 'position'), [['r1', '1'], ['r3', '2'], ['r5', '3']]);
     assert.deepEqual(shown(f, 'first', 'running'), [['r1', '1'], ['r3', '4'], ['r5', '9']]);
     assert.deepEqual(marked(), ['header', 'position', 'running', 'header', 'position', 'running', 'header', 'position', 'running']);
     assert.equal(f.app.data.getItem('model.totalize.running'), 14, 'totals read the view values of the visible rows');
     assert.equal(f.app.data.getItem('model.totalize.amount'), 15, 'stored totals keep every resident row');
-    f.source('first').gridCollectionView.applyColumnFilter('kind', null);
+    f.source('first')._internal.gridCollectionView.applyColumnFilter('kind', null);
     await f.settle();
     assert.deepEqual(shown(f, 'first', 'position'), [['r1', '1'], ['r2', '2'], ['r3', '3'], ['r4', '4'], ['r5', '5']]);
     assert.deepEqual(marked(), []);
@@ -236,7 +236,7 @@ for (const mode of ['values', 'attributes']) test(`${mode}: a formula parameter 
     const stored = label => mode === 'values' ? rows.getItem(`${label}.total`) : rows.getNode(label).getAttr('total');
     assert.deepEqual(['r1', 'r2', 'r3'].map(stored), [10, 40, 90], 'a data formula reads the factor of its own row');
     assert.deepEqual(shown(f, 'first', 'scaled'), [['r1', '10'], ['r2', '40'], ['r3', '90']]);
-    const view = f.source('first').gridCollectionView;
+    const view = f.source('first')._internal.gridCollectionView;
     view.sort('amount:d');
     await f.settle();
     assert.deepEqual(shown(f, 'first', 'scaled'), [['r3', '30'], ['r2', '40'], ['r1', '30']], 'the row key, not the rendered index, selects the row');
@@ -277,11 +277,12 @@ test('sorting, column-filtering or searching a view value is an explicit error',
     }});
     const errors = [];
     t.mock.method(f.app.src.binding, 'reportError', error => errors.push(error.message));
-    const host = f.host('first'), view = f.source('first').gridCollectionView;
+    const host = f.host('first'), view = f.source('first')._internal.gridCollectionView;
     assert.equal(host.shadowRoot.querySelector('th[data-field="position"] .column-filter-button, th[data-field="position"] button'), null,
         'no column filter button on a view value');
     assert.ok(host.shadowRoot.querySelector('th[data-field="amount"] button'));
-    assert.deepEqual(f.source('first').gridSearch.columns.map(column => column.field), ['amount']);
+    assert.deepEqual(f.source('first')._internal.gridSearch.columns.map(column => column.field), ['amount']);
+    assert.equal(Object.hasOwn(f.source('first'), 'gridSearch'), false, 'the search resource is not an own property of the node');
     host.shadowRoot.querySelector('th[data-field="position"]').click();
     assert.match(errors.at(-1), /grid cannot sort by the view value 'position'/);
     view.sort('running:d');

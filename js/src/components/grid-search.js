@@ -18,10 +18,7 @@ export class GridSearch {
 }
 
 export function gridSearch(node) {
-    if (!Object.hasOwn(node, 'gridSearch')) {
-        Object.defineProperty(node, 'gridSearch', {value:new GridSearch(), configurable:true});
-    }
-    return node.gridSearch;
+    return node._internal.gridSearch ??= new GridSearch();
 }
 
 export function searchColumns(searchOn, columns) {

@@ -91,7 +91,7 @@ test('full invalidation absorbs pending row changes and pulls the final order on
     t.mock.method(store,'value',(node,field)=>{ reads.push(node); return value(node,field); });
     const timer=t.mock.method(f.window,'setTimeout');
     f.rows.getNode('r1').setAttr({code:'Changed'});
-    f.source.gridCollectionView.moveRow(f.rows.getNode('r2').label,f.rows.getNode('r1').label);
+    f.source._internal.gridCollectionView.moveRow(f.rows.getNode('r2').label,f.rows.getNode('r1').label);
     f.rows.getNode('r2').setAttr({amount:9});
     assert.deepEqual(f.cells(),['A','12.50','B','8.00']);
     assert.equal(timer.mock.callCount(),1);
@@ -178,7 +178,7 @@ test('sort defers subtree projection and row edits never rebuild the struct', t 
         const project = host.projectAttributes.bind(host);
         host.projectAttributes = (...args) => { projections++; return project(...args); };
     }
-    const store = f.source.gridCollectionView;
+    const store = f.source._internal.gridCollectionView;
     store.sort('amount:a');
     f.flush();
     assert.equal(structures, 0);
@@ -211,7 +211,7 @@ test('ancestor replacement, emptying and disposal preserve binding ownership', t
     const store = f.app.src.binding.collectionStore('model.rows','attributes');
     f.source.parentBag.popNode(f.source.label);
     rows.setItem('later',null,{code:'Later',amount:8});
-    f.app.src.source.getNode('main.pane.second').gridCollectionView.sort('amount:d');
+    f.app.src.source.getNode('main.pane.second')._internal.gridCollectionView.sort('amount:d');
     f.flush();
     assert.deepEqual(f.cells(), ['No rows'], 'detached grid no longer receives store completion');
     assert.equal(second.shadowRoot.querySelector('tbody td').textContent,'Later');
@@ -220,9 +220,11 @@ test('ancestor replacement, emptying and disposal preserve binding ownership', t
 test('views are Source-owned and share only the parent collection resource',t=>{
     const f=fixture(t,{two:true});
     const second=f.app.src.source.getNode('main.pane.second');
-    assert.notEqual(f.source.gridCollectionView,second.gridCollectionView);
-    assert.equal(f.source.gridCollectionView.path,second.gridCollectionView.path);
-    assert.equal(f.app.src.binding.collectionView(f.source,'model.rows','attributes'),f.source.gridCollectionView);
+    assert.notEqual(f.source._internal.gridCollectionView,second._internal.gridCollectionView);
+    assert.ok(f.source._internal.gridCollectionView, 'the view is in the node _internal object');
+    assert.equal(Object.hasOwn(f.source,'gridCollectionView'), false, 'the view is not an own property of the node');
+    assert.equal(f.source._internal.gridCollectionView.path,second._internal.gridCollectionView.path);
+    assert.equal(f.app.src.binding.collectionView(f.source,'model.rows','attributes'),f.source._internal.gridCollectionView);
     assert.equal(f.rows.getNode('r1').getAttr('rowidx'),null);
 });
 
@@ -529,7 +531,7 @@ for (const mode of ['values', 'attributes']) test(`${mode}: row headers are gene
     assert.equal(corner.rowSpan, 2);
     assert.equal(corner.querySelector('.column-resize').getAttribute('aria-label'), 'Resize row numbers');
     assert.equal(f.host.shadowRoot.querySelectorAll('col').length, 6);
-    f.source.gridCollectionView.moveRow(f.rows.getNode('r2').label,f.rows.getNode('r1').label);
+    f.source._internal.gridCollectionView.moveRow(f.rows.getNode('r2').label,f.rows.getNode('r1').label);
     f.flush();
     assert.deepEqual(headings(), ['1','2']);
     assert.deepEqual(f.cells(), ['B','7.00','A','12.50']);
@@ -575,17 +577,19 @@ for (const mode of ['values','attributes']) test(`${mode}: row heights belong to
     f.flush();
     const second = f.window.document.getElementById('second').shadowRoot.querySelector('tbody tr');
     f.flush();
-    assert.notEqual(f.source.gridRowLayout, otherSource.gridRowLayout);
+    assert.notEqual(f.source._internal.gridRowLayout, otherSource._internal.gridRowLayout);
+    assert.ok(f.source._internal.gridRowLayout, 'the row layout is in the node _internal object');
+    assert.equal(Object.hasOwn(f.source, 'gridRowLayout'), false, 'the row layout is not an own property of the node');
     const originalData = JSON.stringify(f.rows.getNodes().map(node => [node.label, node.attr, node.staticValue instanceof Bag ? node.staticValue.getNodes().map(cell => [cell.label,cell.staticValue]) : node.staticValue]));
     g.pointer('pointerdown', 32, g.handle); g.pointer('pointermove', 82);
     f.flush();
     assert.equal(g.row.style.height, '82px');
-    assert.equal(f.source.gridRowLayout.height(node.label), null, 'preview is not committed');
+    assert.equal(f.source._internal.gridRowLayout.height(node.label), null, 'preview is not committed');
     assert.equal(second.style.height, '');
     g.pointer('pointerup', 82);
     f.flush();
-    assert.equal(f.source.gridRowLayout.height(node.label), 82);
-    assert.equal(otherSource.gridRowLayout.height(node.label), null);
+    assert.equal(f.source._internal.gridRowLayout.height(node.label), 82);
+    assert.equal(otherSource._internal.gridRowLayout.height(node.label), null);
     assert.equal(JSON.stringify(f.rows.getNodes().map(node => [node.label, node.attr, node.staticValue instanceof Bag ? node.staticValue.getNodes().map(cell => [cell.label,cell.staticValue]) : node.staticValue])), originalData);
     g.pointer('pointerdown', 82, g.handle); g.pointer('pointermove', 120); g.key('Escape');
     assert.equal(g.row.style.height, '82px');
@@ -605,15 +609,15 @@ for (const mode of ['values','attributes']) test(`${mode}: row heights belong to
     g.pointer('pointerdown', 32, g.handle); g.pointer('pointerup', 10);
     f.flush();
     assert.equal(g.row.getBoundingClientRect().height, 32, 'content is the minimum');
-    assert.equal(f.source.gridRowLayout.height(node.label), null, 'a gesture with no size change keeps automatic height');
+    assert.equal(f.source._internal.gridRowLayout.height(node.label), null, 'a gesture with no size change keeps automatic height');
     g.handle.dispatchEvent(new f.window.MouseEvent('dblclick', {bubbles:true}));
     f.flush();
-    assert.equal(f.source.gridRowLayout.height(node.label), null);
+    assert.equal(f.source._internal.gridRowLayout.height(node.label), null);
 });
 
 test('row heights survive updates, DOM moves and a replacement keeping the key; removal clears their state', t => {
     const f = fixture(t, {rowResize:true});
-    const g = rowGesture(f), node = f.rows.getNode('r1'), layout = f.source.gridRowLayout;
+    const g = rowGesture(f), node = f.rows.getNode('r1'), layout = f.source._internal.gridRowLayout;
     g.pointer('pointerdown', 32, g.handle); g.pointer('pointerup', 80);
     f.rows.getNode('r1').setAttr({amount:17});
     f.flush();
@@ -628,7 +632,7 @@ test('row heights survive updates, DOM moves and a replacement keeping the key; 
     assert.equal(g.row.style.height, '80px');
     parent.append(f.host);
     f.flush();
-    assert.equal(f.source.gridRowLayout, layout);
+    assert.equal(f.source._internal.gridRowLayout, layout);
     assert.equal(g.row.style.height, '80px');
     g.pointer('pointerdown', 80, g.handle); g.pointer('pointermove', 100);
     f.rows.popNode('r1');
@@ -666,7 +670,7 @@ for (const mode of ['values','attributes']) test(`${mode}: selfDragRows changes 
         mode === 'values' ? new Bag({code,amount:2}) : null, mode === 'attributes' ? {code,amount:2} : {});
     f.flush();
     const nodes = f.rows.getNodes(), rows = [...f.host.shadowRoot.querySelectorAll('tbody tr')];
-    const layout = f.source.gridRowLayout;
+    const layout = f.source._internal.gridRowLayout;
     layout.setHeight(nodes[0].label, 91);
     f.source.setAttr({rowHeaders:true});
     const drag = rowDrag(f);
@@ -749,7 +753,7 @@ for (const mode of ['values', 'attributes']) test(`${mode}: multicolumn headers 
     const click = (field, shiftKey = false) => header(field).dispatchEvent(new f.window.MouseEvent('click', {bubbles:true,shiftKey}));
     click('code'); click('amount', true);
     f.flush();
-    assert.equal(f.source.gridCollectionView.sortedBy, 'code:a,amount:a');
+    assert.equal(f.source._internal.gridCollectionView.sortedBy, 'code:a,amount:a');
     assert.deepEqual(labels(f.host), ['r4','r1','r3','r2']);
     assert.deepEqual(labels(f.window.document.getElementById('second')), ['r1','r2','r3','r4']);
     assert.equal(header('code').getAttribute('aria-sort'), 'ascending');
@@ -758,7 +762,7 @@ for (const mode of ['values', 'attributes']) test(`${mode}: multicolumn headers 
     click('amount', true);
     f.flush();
     assert.deepEqual(labels(f.host), ['r3','r1','r4','r2']);
-    assert.equal(f.source.gridCollectionView.sortedBy, 'code:a,amount:d');
+    assert.equal(f.source._internal.gridCollectionView.sortedBy, 'code:a,amount:d');
     // Values are live; numbers are compared before their displayed 0.00 formatting.
     if (mode === 'values') f.rows.getItem('r1').setItem('amount', 200);
     else f.rows.getNode('r1').setAttr({amount:200});
@@ -768,7 +772,7 @@ for (const mode of ['values', 'attributes']) test(`${mode}: multicolumn headers 
     drag(original[0], 'dragstart'); drag(original[1], 'drop', 1);
     f.flush();
     assert.deepEqual(labels(f.host), ['r3','r4','r2','r1']);
-    assert.equal(f.source.gridCollectionView.sortedBy, '');
+    assert.equal(f.source._internal.gridCollectionView.sortedBy, '');
     assert.equal(f.host.shadowRoot.querySelector('[data-sort-priority]'), null);
     assert.equal(f.window.document.getElementById('second').shadowRoot.querySelector('[data-sort-priority]'), null);
     assert.deepEqual(f.rows.getNodes(), physical);
@@ -789,7 +793,7 @@ test('view sort survives detach, struct changes and store replacement; resize do
     header.click();
     const parent = f.host.parentElement;
     f.host.remove();
-    f.source.gridCollectionView.sort('code:d');
+    f.source._internal.gridCollectionView.sort('code:d');
     parent.append(f.host);
     f.flush();
     assert.equal(f.host.shadowRoot.querySelector('th[data-field=code]').getAttribute('aria-sort'), 'descending');
@@ -798,14 +802,14 @@ test('view sort survives detach, struct changes and store replacement; resize do
     assert.equal(f.host.shadowRoot.querySelector('th[data-field=code]').getAttribute('aria-sort'), 'descending');
     f.host.shadowRoot.querySelector('.column-resize').click();
     f.flush();
-    assert.equal(f.source.gridCollectionView.sortedBy, 'code:d');
+    assert.equal(f.source._internal.gridCollectionView.sortedBy, 'code:d');
     const replacement = new Bag(); replacement.setItem('x', null, {code:'X',amount:1});
     f.app.data.setItem('model.fresh', replacement);
     f.source.setAttr({storepath:'.fresh'});
     f.flush();
     assert.equal(f.host.shadowRoot.querySelector('th[data-field=code]').dataset.sortDirection,'descending');
     assert.equal(f.host.shadowRoot.querySelector('tbody tr').dataset.row, 'x');
-    f.source.gridCollectionView.sort('code:a');
+    f.source._internal.gridCollectionView.sort('code:a');
     f.flush();
     assert.equal(f.host.shadowRoot.querySelector('tbody tr').dataset.row, 'x');
 });
@@ -814,8 +818,8 @@ test('view sort survives detach, struct changes and store replacement; resize do
 test('two grids keep independent filters and both react to shared values',t=>{
     const f=fixture(t,{two:true});f.rows.setItem('r2',null,{code:'B',amount:2});f.flush();
     const second=f.window.document.getElementById('second');
-    const other=f.app.src.source.getNode('main.pane.second').gridCollectionView;
-    f.source.gridCollectionView.applyFilter({value:'A',columns:['code'],dtype:'T',locale:'en-GB'});
+    const other=f.app.src.source.getNode('main.pane.second')._internal.gridCollectionView;
+    f.source._internal.gridCollectionView.applyFilter({value:'A',columns:['code'],dtype:'T',locale:'en-GB'});
     other.applyFilter({value:'^B$',columns:['code'],dtype:'T',locale:'en-GB'});
     f.flush();assert.deepEqual(f.cells(),['A','12.50']);
     assert.equal(second.shadowRoot.querySelector('tbody td').textContent,'B');
@@ -834,11 +838,11 @@ test('resident viewport bounds DOM work, reads offscreen edits on entry and pres
     f.app.data.setItem('model.rows',rows); f.flush();
     const body = f.host.shadowRoot.querySelector('.body-viewport');
     Object.defineProperty(body,'clientHeight',{value:320});
-    Object.defineProperty(body,'scrollHeight',{get:()=>f.source.gridRowLayout.totalHeight});
+    Object.defineProperty(body,'scrollHeight',{get:()=>f.source._internal.gridRowLayout.totalHeight});
     f.layout.flush();
     assert.ok(f.host.shadowRoot.querySelectorAll('tbody tr').length < 40);
     assert.equal(f.host.control.getAttribute('aria-rowcount'),'1002');
-    const layout = f.source.gridRowLayout;
+    const layout = f.source._internal.gridRowLayout;
     layout.setHeight(rows.getNode('r500').label,96);
     rows.getNode('r500').setAttr({code:'Offscreen update'}); f.flush();
     body.scrollTop=layout.offset(500); body.dispatchEvent(new f.window.Event('scroll')); f.layout.flush();
@@ -850,13 +854,13 @@ test('resident viewport bounds DOM work, reads offscreen edits on entry and pres
     assert.equal(f.host.shadowRoot.querySelector('tr[data-row=r0]'),null);
     const second=f.window.document.getElementById('second');
     assert.equal(second.shadowRoot.querySelector('tbody tr').dataset.row,'r0');
-    f.source.gridCollectionView.applyFilter({value:'= 500',columns:['amount'],dtype:'N',locale:'en-US'}); f.flush();
+    f.source._internal.gridCollectionView.applyFilter({value:'= 500',columns:['amount'],dtype:'N',locale:'en-US'}); f.flush();
     assert.equal(f.host.shadowRoot.querySelectorAll('tbody tr').length,1);
     assert.equal(body.scrollTop,0);
     assert.equal(f.host.shadowRoot.querySelector('tbody tr').dataset.row,'r500');
     assert.equal(f.host.shadowRoot.querySelector('tbody tr').style.height,'96px');
     assert.equal(second.control.getAttribute('aria-rowcount'),'1002');
-    f.source.gridCollectionView.applyFilter(null); f.source.gridCollectionView.sort('amount:d'); f.flush();
+    f.source._internal.gridCollectionView.applyFilter(null); f.source._internal.gridCollectionView.sort('amount:d'); f.flush();
     assert.equal(f.host.shadowRoot.querySelector('tbody tr').dataset.row,'r999');
     assert.equal(rows.getNodes()[0].label,'r0');
     body.scrollTop=layout.totalHeight; body.dispatchEvent(new f.window.Event('scroll')); f.layout.flush();
@@ -875,10 +879,10 @@ test('row number width is local geometry, survives view changes and shares resiz
     header.getBoundingClientRect = () => ({width:60});
     header.querySelector('.row-number-measure').getBoundingClientRect = () => ({width:58});
     handle.dispatchEvent(new f.window.KeyboardEvent('keydown', {key:'ArrowRight',bubbles:true}));
-    assert.equal(f.source.gridRowLayout.headerWidth, 70);
-    assert.equal(f.app.src.source.getNode('main.pane.second').gridRowLayout.headerWidth, null);
+    assert.equal(f.source._internal.gridRowLayout.headerWidth, 70);
+    assert.equal(f.app.src.source.getNode('main.pane.second')._internal.gridRowLayout.headerWidth, null);
     handle.dispatchEvent(new f.window.KeyboardEvent('keydown', {key:'ArrowLeft',bubbles:true}));
-    assert.equal(f.source.gridRowLayout.headerWidth, 58, 'cannot clip the measured ordinal');
+    assert.equal(f.source._internal.gridRowLayout.headerWidth, 58, 'cannot clip the measured ordinal');
     const captured = new Set();
     head.setPointerCapture = id => captured.add(id);
     head.hasPointerCapture = id => captured.has(id);
@@ -888,13 +892,13 @@ test('row number width is local geometry, survives view changes and shares resiz
         Object.defineProperty(event,'pointerId',{value:1}); target.dispatchEvent(event);
     };
     pointer('pointerdown',60,handle); pointer('pointermove',100);
-    assert.equal(f.source.gridRowLayout.headerWidth,58,'preview does not commit');
+    assert.equal(f.source._internal.gridRowLayout.headerWidth,58,'preview does not commit');
     pointer('pointercancel',100);
-    assert.equal(f.source.gridRowLayout.headerWidth,58);
+    assert.equal(f.source._internal.gridRowLayout.headerWidth,58);
     pointer('pointerdown',60,handle); pointer('pointerup',100);
-    assert.equal(f.source.gridRowLayout.headerWidth,100);
+    assert.equal(f.source._internal.gridRowLayout.headerWidth,100);
     f.source.setAttr({sortedBy:'code:d'}); f.flush();
-    assert.equal(f.source.gridRowLayout.headerWidth,100);
+    assert.equal(f.source._internal.gridRowLayout.headerWidth,100);
     assert.equal(f.app.data.getItem('model.structure').getItem('view_0.rows_0').getNodes().length,2);
 });
 
@@ -912,7 +916,7 @@ test('server windows request missing ranges, render global ordinals and delegate
     f.flush();
     const body = f.host.shadowRoot.querySelector('.body-viewport');
     Object.defineProperty(body, 'clientHeight', {value:320});
-    Object.defineProperty(body, 'scrollHeight', {get:()=>f.source.gridRowLayout.totalHeight});
+    Object.defineProperty(body, 'scrollHeight', {get:()=>f.source._internal.gridRowLayout.totalHeight});
     f.layout.flush();
     body.dispatchEvent(new f.window.KeyboardEvent('keydown', {key:'End', bubbles:true}));
     f.layout.flush();
@@ -935,7 +939,7 @@ test('server windows request missing ranges, render global ordinals and delegate
     const header = field => f.host.shadowRoot.querySelector(`th[data-field=${field}]`);
     header('amount').dispatchEvent(new f.window.MouseEvent('click', {bubbles:true}));
     assert.equal(f.app.data.getItem('model.sortRequest'), 'amount:a');
-    assert.equal(f.source.gridCollectionView.sortedBy, '', 'loaded rows are never locally sorted');
+    assert.equal(f.source._internal.gridCollectionView.sortedBy, '', 'loaded rows are never locally sorted');
     f.app.data.setItem('model.window', new Bag({start:0,total:500000,revision:2,sortedBy:'amount:a'}));
     f.app.data.setItem('model.rows', rows(0)); f.flush(); f.layout.flush();
     assert.equal(body.scrollTop, 0);
@@ -1127,11 +1131,11 @@ test('column popup uses a shared grid, isolated literal search and preserved sel
     assert.ok(inner,'the popup reuses the grid component');
     const options=()=>[...inner.shadowRoot.querySelectorAll('tr[data-row]')];
     const text=()=>options().map(row=>row.textContent);
-    assert.equal(f.source.gridCollectionView.sortedBy,'');
+    assert.equal(f.source._internal.gridCollectionView.sortedBy,'');
     assert.deepEqual(text(),['A1','B1','C1']);
     const input=options()[0].querySelector('input');input.focus();input.click();f.flush();
     assert.equal(inner.shadowRoot.activeElement,input);
-    assert.deepEqual(f.source.gridCollectionView.columnFilter('code'),['B','C']);
+    assert.deepEqual(f.source._internal.gridCollectionView.columnFilter('code'),['B','C']);
     assert.equal(text()[0],'A1');
     const searchHost=f.host.querySelector('gramlot-search-box');
     const search=searchHost.shadowRoot.querySelector('input');
@@ -1139,19 +1143,19 @@ test('column popup uses a shared grid, isolated literal search and preserved sel
     const searchEvent=()=>{search.dispatchEvent(new f.window.Event('input',{bubbles:true}));t.mock.timers.tick(100);};
     search.value='B';searchEvent();f.flush();
     assert.deepEqual(text(),['B1']);
-    assert.deepEqual(f.source.gridCollectionView.columnFilter('code'),['B','C']);
+    assert.deepEqual(f.source._internal.gridCollectionView.columnFilter('code'),['B','C']);
     options()[0].querySelector('input').click();f.flush();
-    assert.deepEqual(f.source.gridCollectionView.columnFilter('code'),['C']);
+    assert.deepEqual(f.source._internal.gridCollectionView.columnFilter('code'),['C']);
     search.value='[';searchEvent();f.flush();assert.equal(options().length,0);
     search.value='';searchEvent();f.flush();assert.equal(options()[2].querySelector('input').checked,true);
-    f.source.gridCollectionView.applyColumnFilter('amount',[12.5]);f.flush();assert.deepEqual(text(),['A1','B1','C0']);
+    f.source._internal.gridCollectionView.applyColumnFilter('amount',[12.5]);f.flush();assert.deepEqual(text(),['A1','B1','C0']);
     f.rows.getNode('r1').setAttr({amount:20});f.flush();assert.equal(text()[0],'A0');
     const toolbar=f.host.querySelector('[aria-label="Column filter actions"]');
     const command=text=>[...toolbar.querySelectorAll('[role="menuitem"]')].find(item=>item.control.getAttribute('aria-label')===text).control.click();
-    command('None');f.flush();assert.equal(f.source.gridCollectionView.getRows().length,0);
-    command('Reset');f.flush();assert.deepEqual(f.source.gridCollectionView.getRows(),[f.rows.getNode('r2')]);
-    assert.equal(f.source.gridCollectionView.columnFilter('code'),null);
-    assert.deepEqual(f.source.gridCollectionView.columnFilter('amount'),[12.5]);
+    command('None');f.flush();assert.equal(f.source._internal.gridCollectionView.getRows().length,0);
+    command('Reset');f.flush();assert.deepEqual(f.source._internal.gridCollectionView.getRows(),[f.rows.getNode('r2')]);
+    assert.equal(f.source._internal.gridCollectionView.columnFilter('code'),null);
+    assert.deepEqual(f.source._internal.gridCollectionView.columnFilter('amount'),[12.5]);
     search.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true,composed:true}));
     assert.equal(panel.hasAttribute('data-open'),false);
     assert.equal(root.activeElement,root.querySelector('.column-filter[data-field="code"]'));
@@ -1169,7 +1173,7 @@ test('date popup applies periods atomically, preserves invalid drafts and resets
     f.source.setAttr({columnFilters:true});f.flush();
     f.host.shadowRoot.querySelector('.column-filter[data-field="day"]').click();f.flush();
     const [from,to]=f.host.querySelectorAll('gramlot-date-text-box'),inner=f.host.querySelector('gramlot-grid');
-    const view=f.source.gridCollectionView;
+    const view=f.source._internal.gridCollectionView;
     const edit=async(host,text)=>{host.control.focus();host.control.value=text;
         for(const type of ['input','change'])host.control.dispatchEvent(new f.window.Event(type,{bubbles:true}));
         await Promise.resolve();f.flush();};
@@ -1210,10 +1214,10 @@ for (const mode of ['values','attributes']) test(`${mode}: external radio writes
  assert.deepEqual(radios(f.window.document.getElementById('second')).map(r=>r.checked),[false,true]);
  radios(f.host)[1].click();assert.equal(f.app.data.getItem('product.primary_supplier_id'),'B');
  assert.equal(f.rows.toTytx(),before);assert.equal(f.host.shadowRoot.querySelector('tr[data-row=r1]'),row);
- f.source.gridCollectionView.applyFilter({value:'^A$',columns:['code'],dtype:'T'});f.flush();
+ f.source._internal.gridCollectionView.applyFilter({value:'^A$',columns:['code'],dtype:'T'});f.flush();
  assert.equal(radios(f.host).length,1);assert.equal(radios(f.host)[0].checked,false);
  assert.equal(f.app.data.getItem('product.primary_supplier_id'),'B');
- f.source.gridCollectionView.applyFilter(null);f.flush();assert.equal(radios(f.host)[1].checked,true);
+ f.source._internal.gridCollectionView.applyFilter(null);f.flush();assert.equal(radios(f.host)[1].checked,true);
  f.app.data.setItem('product.primary_supplier_id',null);f.flush();assert.ok(radios(f.host).every(r=>!r.checked));
  f.source.setAttr({windowInfo:new Bag({start:0,count:2,total:20,revision:1,sortedBy:''})});f.flush();
  f.app.data.setItem('product.primary_supplier_id','OFFSCREEN');f.flush();assert.ok(radios(f.host).every(r=>!r.checked));

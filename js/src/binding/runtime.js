@@ -173,7 +173,7 @@ export class BindingRuntime {
      */
     collectionView(node, path, rowMode) {
         const store = this.collectionStore(path,rowMode);
-        const previous = Object.hasOwn(node,'gridCollectionView') ? node.gridCollectionView : null;
+        const previous = node._internal.gridCollectionView ?? null;
         if (previous?.path === path && previous.rowMode === rowMode) return previous;
         const view = new BagCollectionView(store);
         if (previous) {
@@ -181,7 +181,7 @@ export class BindingRuntime {
             view.sort(previous.sortedBy);
             view.copyFiltersFrom(previous);
         }
-        Object.defineProperty(node,'gridCollectionView',{value:view,configurable:true});
+        node._internal.gridCollectionView = view;
         return view;
     }
 

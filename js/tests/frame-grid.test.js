@@ -126,7 +126,7 @@ function searchFixture(t, {mode='attributes',searchOn=true}={}) {
     const labels=()=>[...gridElement.shadowRoot.querySelectorAll('tbody tr[data-row]')].map(row=>row.dataset.row);
     const type=value=>{input.value=value;input.dispatchEvent(new window.Event('input'));};
     const flush=()=>t.mock.timers.tick(100);
-    const view=app.src.binding.renderer.getBaseSourceNode(gridElement).gridCollectionView;
+    const view=app.src.binding.renderer.getBaseSourceNode(gridElement)._internal.gridCollectionView;
     return {app,window,rows,input,select,box,gridElement,labels,type,flush,view};
 }
 
@@ -167,10 +167,10 @@ test('search menu accepts legacy caption/field lists and dtype restriction',t=>{
 test('search timer is cancelled on removal and hidden row heights survive filtering',t=>{
     const f=searchFixture(t);
     const source=f.app.src.binding.renderer.getBaseSourceNode(f.gridElement);
-    source.gridRowLayout.setHeight(f.rows.getNode('r1').label,80);
+    source._internal.gridRowLayout.setHeight(f.rows.getNode('r1').label,80);
     f.type('^Al');f.flush();
     f.box.shadowRoot.querySelector('button').click();f.flush();
-    assert.equal(source.gridRowLayout.height(f.rows.getNode('r1').label),80);
+    assert.equal(source._internal.gridRowLayout.height(f.rows.getNode('r1').label),80);
     f.type('Beta');f.box.remove();f.flush();
     assert.equal(f.view.filter,null);
 });
@@ -191,7 +191,7 @@ test('a store replacement keeps the search; pending work filters the Bag now at 
     const next=new Bag();next.setItem('new',null,{name:'New',qty:7});next.setItem('alpha',null,{name:'Alpha two',qty:2});
     f.app.data.setItem('demo.rows',next);t.mock.timers.tick(0);f.flush();
     assert.deepEqual(f.labels(),['alpha']);assert.equal(f.input.value,'Alpha');
-    assert.equal(f.app.src.binding.renderer.getBaseSourceNode(f.gridElement).gridCollectionView,f.view,'the view follows the address');
+    assert.equal(f.app.src.binding.renderer.getBaseSourceNode(f.gridElement)._internal.gridCollectionView,f.view,'the view follows the address');
     f.type('New');f.flush();assert.deepEqual(f.view.filter.columns,['name','qty']);
     assert.deepEqual(f.labels(),['new']);
     assert.equal(f.rows.getNodes().length,3,'the previous Bag is not changed');
@@ -236,7 +236,7 @@ test('two search bars and declarative requests remain independent on one Bag', t
     assert.equal(boxes[1].shadowRoot.querySelector('input').value,'');
     hosts[0].shadowRoot.querySelector('th[data-field=name]').click();t.mock.timers.tick(0);
     sources[0].setAttr({rowHeaders:true});t.mock.timers.tick(0);
-    assert.equal(sources[0].gridCollectionView.sortedBy,'name:d');
+    assert.equal(sources[0]._internal.gridCollectionView.sortedBy,'name:d');
     assert.deepEqual(labels(0),['c','a']);assert.deepEqual(labels(1),['b','a']);
     const input=boxes[0].shadowRoot.querySelector('input');
     input.value='Beta';input.dispatchEvent(new window.Event('input'));t.mock.timers.tick(100);

@@ -32,7 +32,7 @@ async function fixture(t, {mode='values', form=false, nameColumn={}, nameValue=i
     const cell=(row,field)=>host.shadowRoot.querySelector(`tr[data-row="${row}"] td[data-field="${field}"]`);
     const open=async(row='r0',field='amount')=>{cell(row,field).dispatchEvent(new window.MouseEvent('dblclick',{bubbles:true}));await tick();if(failures.length)throw failures[0];return host.querySelector('[slot=cell-editor] gramlot-number-text-box');};
     const edit=(element,text,commit=false)=>{element.control.value=text;element.control.dispatchEvent(new window.Event('input',{bubbles:true}));if(commit)element.control.dispatchEvent(new window.Event('change',{bubbles:true}));};
-    const scroll=async(index)=>{body.scrollTop=source.gridRowLayout.offset(index);body.dispatchEvent(new window.Event('scroll'));layout.flush();await tick();layout.flush();};
+    const scroll=async(index)=>{body.scrollTop=source._internal.gridRowLayout.offset(index);body.dispatchEvent(new window.Event('scroll'));layout.flush();await tick();layout.flush();};
     return {window,app,host,source,rows,cell,open,edit,scroll,layout,mode};
 }
 for (const mode of ['values','attributes']) {

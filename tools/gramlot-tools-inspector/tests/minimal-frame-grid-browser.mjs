@@ -118,7 +118,7 @@ try {
             await settle();
             await first.locator('th[data-field=price]').click({modifiers:['Shift']});
             await settle();
-            assert.equal(await page.evaluate(() => window.qualification.src.binding.renderer.getBaseSourceNode(document.getElementById('grid-values')).gridCollectionView.sortedBy), 'code:a,price:a');
+            assert.equal(await page.evaluate(() => window.qualification.src.binding.renderer.getBaseSourceNode(document.getElementById('grid-values'))._internal.gridCollectionView.sortedBy), 'code:a,price:a');
             assert.equal(await first.locator('th[data-field=price]').getAttribute('data-sort-priority'), '2');
             for (const field of ['code','price']) {
                 const headerBox = await first.locator(`th[data-field=${field}]`).boundingBox();
@@ -140,7 +140,7 @@ try {
             assert.deepEqual(await first.locator('tbody tr').evaluateAll(rows=>rows.slice(0,3).map(row=>row.dataset.row)), ['r1','r2','r0']);
             assert.deepEqual(await page.evaluate(() => window.qualification.data.getItem('values.rows').getNodes().map(node=>node.label)), physicalLabels);
             assert.deepEqual(await page.evaluate(() => window.qualification.data.getItem('values.rows').getNodes().slice(0,3).map(node=>node.getAttr('rowidx'))), [null,null,null]);
-            assert.equal(await page.evaluate(() => window.qualification.src.binding.renderer.getBaseSourceNode(document.getElementById('grid-values')).gridCollectionView.sortedBy), '');
+            assert.equal(await page.evaluate(() => window.qualification.src.binding.renderer.getBaseSourceNode(document.getElementById('grid-values'))._internal.gridCollectionView.sortedBy), '');
             assert.equal(await first.locator('[data-sort-priority]').count(), 0);
 
             assert.ok(Math.abs((await movingRow.boundingBox()).height-movingHeight)<1, 'height follows the moved presentation row');
@@ -339,7 +339,7 @@ try {
                         host.projectAttributes = function(...args) { projections++; return project.apply(this,args); };
                         rows.subscribe('ordering-probe',{any:event => { if (event.attrs_diff?.rowidx) indexEvents++; }});
                         const start = performance.now();
-                        app.src.binding.renderer.getBaseSourceNode(host).gridCollectionView.sort('quantity:a,price:d');
+                        app.src.binding.renderer.getBaseSourceNode(host)._internal.gridCollectionView.sort('quantity:a,price:d');
                         const sortMs = performance.now()-start;
                         await new Promise(resolve => requestAnimationFrame(()=>requestAnimationFrame(resolve)));
                         const settledMs = performance.now()-start;

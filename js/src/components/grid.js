@@ -416,10 +416,7 @@ export const Grid = defineComponent({
                 () => ({labels:() => this.#collectionStore().getRows().map(row => row.label), window:this.parameters.windowInfo}),
                 () => this.#rows, (row,field,step) => this.#nextEditor(row,field,step), path => this.#focusField(path));
             const node = context.sourceNode;
-            if (!Object.hasOwn(node, 'gridRowLayout')) {
-                Object.defineProperty(node, 'gridRowLayout', {value:new GridRowLayout(), configurable:true});
-            }
-            this.#rowLayout = node.gridRowLayout;
+            this.#rowLayout = node._internal.gridRowLayout ??= new GridRowLayout();
         }
         /** The rows Bag, read at its address at each use; the grid never keeps it. */
         #storeBag() {

@@ -168,7 +168,7 @@ for(const [name,engine] of Object.entries({chromium,webkit})) {
    await page.waitForTimeout(250); // Allow the asynchronous engine switch and initial layout to settle.
    const before=await drawing();
    await page.locator('#sales-frame gramlot-search-box input').fill('Notebook');
-   await page.waitForFunction(()=>window.qualification.src.binding.nodeIds.get('salesGrid').gridCollectionView.getRows().length===5);
+   await page.waitForFunction(()=>window.qualification.src.binding.nodeIds.get('salesGrid')._internal.gridCollectionView.getRows().length===5);
    await page.waitForFunction(before=>{
     const root=document.querySelector('#sales-pane-view').shadowRoot;
     return [...root.querySelectorAll('svg,canvas')].map(n=>n.tagName.toLowerCase()==='canvas'?n.toDataURL():n.innerHTML).join('')!==before;
@@ -176,7 +176,7 @@ for(const [name,engine] of Object.entries({chromium,webkit})) {
    assert.equal(await view.getByRole('alert').isVisible(),false,engine);
    const filteredDrawing=await drawing();
    await page.locator('#sales-frame gramlot-search-box input').fill('');
-   await page.waitForFunction(()=>window.qualification.src.binding.nodeIds.get('salesGrid').gridCollectionView.getRows().length===12);
+   await page.waitForFunction(()=>window.qualification.src.binding.nodeIds.get('salesGrid')._internal.gridCollectionView.getRows().length===12);
    await page.waitForFunction(previous=>{const root=document.querySelector('#sales-pane-view').shadowRoot;return [...root.querySelectorAll('svg,canvas')].map(n=>n.tagName.toLowerCase()==='canvas'?n.toDataURL():n.innerHTML).join('')!==previous;},filteredDrawing);
   }
   assert.deepEqual(errors,[]);

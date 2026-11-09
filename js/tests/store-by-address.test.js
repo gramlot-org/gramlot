@@ -163,7 +163,7 @@ test('a chart follows the filter of the grid that reads the same store key', asy
         });
     await settle();
     assert.equal(f.notice().hidden, true);
-    const gridView = f.app.src.source.getNodeByAttr('nodeId', 'salesGrid').gridCollectionView;
+    const gridView = f.app.src.source.getNodeByAttr('nodeId', 'salesGrid')._internal.gridCollectionView;
     gridView.applyFilter({value:'^Zz', columns:['code'], dtype:'T', locale:'en-GB'}); await settle();
     assert.equal(f.notice().dataset.kind, 'info', 'the grid filter hides every row of the chart');
     gridView.applyFilter({value:'^Al', columns:['code'], dtype:'T', locale:'en-GB'}); await settle();

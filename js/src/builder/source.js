@@ -223,8 +223,9 @@ export class GramlotBuilderBagNode extends SourceBagNode {
 
     /**
      * Internal state of this node for its component or runtime (GC-225): a plain object, created on first read.
-     * It is not reactive, not an attribute, not Data and not serialized. It holds plain values only, never a
-     * Bag, BagNode or DOM node; state an author may read or bind goes to `#WORKSPACE` in Data.
+     * It is not reactive, not an attribute, not Data and not serialized. It holds plain values and component helper
+     * instances that hold no Bag, BagNode or Source node and reach Data and structure by address; state an author may
+     * read or bind goes to `#WORKSPACE` in Data.
      */
     get _internal() { return this.#internal ??= {}; }
 

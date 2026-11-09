@@ -25,7 +25,7 @@ for (const mode of ['values','attributes']) test(`chart experiment observes real
     const struct = gridNode.struct(); struct.column({field:'name',name:'Name'}); struct.column({field:'amount',name:'Amount'});
     app.src.startSource(builder.toTytx()); t.mock.timers.tick(0);
     const source = app.src.source.getNode('main.pane.grid');
-    const view = source.gridCollectionView;
+    const view = source._internal.gridCollectionView;
     const chartView = new ChartDataView(app.src.binding.collectionStore('model.rows',mode),view);
     const chart = new ChartRenderer(null,chartView.view,{renderer:'svg',ssr:true,width:640,height:320});
     const config = new Bag({chartType:'bar',captionField:'name',valueFields:'amount'});

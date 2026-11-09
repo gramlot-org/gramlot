@@ -3177,3 +3177,14 @@ confirmed "ok". The name `_internal` is the owner's.
   (`{text, value}`).
 - Second user (owner, 2026-11-09: "Sì, spostalo"): the form field draft text,
   `node._internal.formDraft`, formerly the node property `formDraft`.
+- Addition 2026-11-09 (owner: "Sì, ammettile"): `_internal` also admits component
+  helper instances, on one condition: the instance holds no Bag, BagNode or Source
+  node in its fields; it reaches Data and structure only by address (only the root
+  Data is held, everything else by path). Legacy precedent: GenroPy
+  `sourceNode.gnrwdg`. Moved from ad-hoc node properties under this condition:
+  `node._internal.gridCollectionView` (BagCollectionView; its BagCollectionStore
+  keeps the root Data and the path), `node._internal.gridSearch` (GridSearch) and
+  `node._internal.gridRowLayout` (GridRowLayout). `drawingController` and
+  `gridColumnFilters` stay node properties: DrawingPane keeps its source context,
+  whose `sourceNode` is the drawingPane Source node, and GridColumnFilters keeps
+  the Source nodes of its popup pane, frame grid, search box and date fields.
