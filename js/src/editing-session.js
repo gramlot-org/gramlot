@@ -18,6 +18,7 @@ export class EditingSession {
         this.node = node;
         this.runtime = runtime;
         this.registers = new Bag();
+        // Field Source nodes are keyed by fullpath and read again from the Source at each use (fieldNode).
         this.validationQueue = new Set();
         this.fields = new Map(); // mounted presentations only
         this.validations = new Map(); // semantic fields, independent of their views
@@ -50,11 +51,19 @@ export class EditingSession {
         this.path = path;
         this.subscription = this.runtime.router.register({path, recipient:this, subtree:true});
         this.updateChanges();
-        for (const adapter of this.fields.values()) {
+        for (const [fullpath,adapter] of this.fields) {
+            const node = this.fieldNode(fullpath);
             adapter.element.cancelValidation();
-            this.clearDraft(adapter.node);
+            this.clearDraft(node);
             this.scheduleValidation(adapter);
         }
+    }
+    /** The field Source node at `fullpath`, below the session's own node. A field the session uses must be there. */
+    fieldNode(fullpath) {
+        const base = this.node.fullpath;
+        const node = fullpath.startsWith(base + '.') ? this.node.value.getNode(fullpath.slice(base.length + 1)) : null;
+        if (!node) throw new Error(`Editing field ${fullpath} is missing from the Source of its session.`);
+        return node;
     }
     get data() { return this.runtime.gramlot.data.getItem(this.path); }
     /**
@@ -117,8 +126,8 @@ export class EditingSession {
     }
     focusField(path) {
         if (this.disposed) return false;
-        for (const adapter of this.fields.values()) {
-            if (fieldPath(adapter.node) === path && adapter.element.isConnected) {
+        for (const [fullpath,adapter] of this.fields) {
+            if (fieldPath(this.fieldNode(fullpath)) === path && adapter.element.isConnected) {
                 adapter.element.control.focus();
                 return true;
             }
@@ -153,12 +162,13 @@ export class EditingSession {
             status:invalid ? 'error' : pending || incomplete ? 'pending' : dirty ? 'changed' : 'ok'};
     }
     register(adapter) {
-        const node = adapter.node;
-        this.fields.set(node, adapter);
-        const field = this.registerField(node,adapter.element.constructor);
+        const fullpath = adapter.node.fullpath;
+        this.fields.set(fullpath, adapter);
+        const field = this.registerField(adapter.node,adapter.element.constructor);
         field.selection = adapter.element.validationSelection();
         this.schedule(() => {
-            if (this.fields.get(node) !== adapter) return;
+            if (this.fields.get(fullpath) !== adapter) return;
+            const node = this.fieldNode(fullpath);
             const draft = this.registers.getItem('drafts').getNode(key(node));
             if (draft) { node._internal.formDraft = draft.value; adapter.element.restoreFormDraft(draft.value); }
             if (field.result) adapter.element.presentValidation(field.result);
@@ -166,20 +176,24 @@ export class EditingSession {
             if (errors) adapter.element.error(errors.getNodes().map(n => n.value).join('\n'));
             adapter.element.setFieldState({invalid:Boolean(errors), pending:Boolean(this.fieldStatus(field.path).pending)});
         });
-        return () => { this.fields.delete(node); };
+        return () => { this.fields.delete(fullpath); };
     }
     /** A real Source declaration can validate without an element or ControlAdapter. */
     registerField(node, component, schedule = true) {
-        let field = this.validations.get(node);
-        if (field) return field;
+        const fullpath = node.fullpath, binding = this.runtime.bindingFor(node);
+        let field = this.validations.get(fullpath);
+        if (field) {
+            if (field.binding !== binding) throw new Error(`Editing field ${fullpath} is registered for another Source node.`);
+            return field;
+        }
         if (!component.validationExecutor) throw new TypeError('Grid editors require shared input validation.');
-        const binding = this.runtime.bindingFor(node), context = validationContext(binding);
-        field = {node,binding,context,component,run:new ValidationRun(),
+        const context = validationContext(binding);
+        field = {binding,context,component,run:new ValidationRun(),
             execute:component.validationExecutor,checkValue:component.validationValueCheck(context),
             path:fieldPath(node),rules:null,value:undefined,target:null,result:null,selection:null};
-        this.validations.set(node,field);
+        this.validations.set(fullpath,field);
         binding.editingSession = this;
-        field.release = binding.track(() => this.forgetField(node));
+        field.release = binding.track(() => this.forgetField(fullpath));
         this.refreshField(node,schedule);
         return field;
     }
@@ -190,7 +204,11 @@ export class EditingSession {
     }
     invalidateValidation() {
         this.validationRevision++;
-        if (this.fullValidation) for (const node of this.fullValidation.active) this.cancelValidation(node);
+        if (this.fullValidation) this.cancelActive(this.fullValidation);
+    }
+    /** Cancel the fields a full validation pass is checking; a field forgotten meanwhile was cancelled by forgetField. */
+    cancelActive(pass) {
+        for (const fullpath of pass.active) if (this.validations.has(fullpath)) this.cancelValidation(this.fieldNode(fullpath));
     }
     trackValidationDependency(absolute) {
         if (absolute === null || this.validationDependencies.has(absolute)) return;
@@ -206,37 +224,37 @@ export class EditingSession {
     validate() {
         if (this.disposed) return Promise.resolve(false);
         if (this.fullValidation) return this.fullValidation.promise;
-        for (const adapter of this.fields.values()) if (Object.hasOwn(adapter.node._internal,'formDraft')) adapter.commit();
+        for (const [fullpath,adapter] of this.fields) if (Object.hasOwn(this.fieldNode(fullpath)._internal,'formDraft')) adapter.commit();
         this.clearValidationDependencies();
         const pass = {revision:this.validationRevision,promise:null,active:new Set(),failed:false,complete:true};
         this.fullValidation = pass;
         this.notify();
         const fields = this.validationFields();
         const current = () => !this.disposed && !pass.failed && pass.revision === this.validationRevision;
-        const seen = new WeakSet();
+        const seen = new Set();
         const worker = async () => {
             let count = 0;
             while (current()) {
                 const next = fields.next();
                 if (next.done) return;
-                const {node,release} = next.value;
+                const {node,release} = next.value, fullpath = node.fullpath;
                 try {
-                    if (seen.has(node)) continue;
-                    seen.add(node);
+                    if (seen.has(fullpath)) continue;
+                    seen.add(fullpath);
                     for (const [name,pointer] of node.pointers()) if (name !== 'value') {
                         this.trackValidationDependency((name === 'datapath' ? node.parentNode : node).absDatapath(pointer));
                     }
-                    pass.active.add(node);
+                    pass.active.add(fullpath);
                     const outcome = await this.validateField(node);
                     if (!outcome?.ok) pass.complete = false;
-                } finally { pass.active.delete(node); release(); }
+                } finally { pass.active.delete(fullpath); release(); }
                 if (++count % 20 === 0) await new Promise(resolve => setTimeout(resolve,0));
             }
         };
         pass.promise = Promise.resolve().then(async () => {
             const outcomes = await Promise.allSettled(Array.from({length:8},() => worker().catch(error => {
                 pass.failed = true;
-                for (const node of pass.active) this.cancelValidation(node);
+                this.cancelActive(pass);
                 throw error;
             })));
             const failure = outcomes.find(outcome => outcome.status === 'rejected');
@@ -256,18 +274,19 @@ export class EditingSession {
     *validationFields() {
         const existing = [...this.validations.keys()];
         for (const fields of this.validationSources) yield* fields();
-        for (const node of existing) if (this.validations.has(node)) yield {node,release:() => {}};
+        for (const fullpath of existing) if (this.validations.has(fullpath)) yield {node:this.fieldNode(fullpath),release:() => {}};
     }
-    forgetField(node) {
-        const field = this.validations.get(node);
+    /** Called when the field's binding closes, after its node left the Source: the node is reached through that binding. */
+    forgetField(fullpath) {
+        const field = this.validations.get(fullpath);
         if (!field) return;
         field.run.cancel(); field.release();
         if (field.binding.editingSession === this) field.binding.editingSession = null;
-        this.validations.delete(node); this.validationQueue.delete(node);
+        this.validations.delete(fullpath); this.validationQueue.delete(fullpath);
         for (const name of ['errors','pending']) {
             const parts = this.registers.getItem(name).getItem(encoded(field.path));
             if (parts) {
-                for (const part of [...parts.getNodes()]) if (part.label.startsWith(encoded(node.fullpath) + ':')) parts.popNode(part.label);
+                for (const part of [...parts.getNodes()]) if (part.label.startsWith(encoded(fullpath) + ':')) parts.popNode(part.label);
                 if (!parts.length) this.registers.getItem(name).popNode(encoded(field.path));
             }
         }
@@ -275,11 +294,11 @@ export class EditingSession {
             const drafts = this.registers.getItem('drafts');
             if (drafts.getNode(encoded(field.path))) drafts.popNode(encoded(field.path));
         }
-        delete node._internal.formDraft;
+        delete field.binding.node._internal.formDraft;
         this.notify();
     }
     refreshField(node, schedule = true) {
-        const field = this.validations.get(node);
+        const field = this.validations.get(node.fullpath);
         if (!field || this.disposed || this.writing) return;
         const [, attrs] = node.rootBuilder.runtimeValues(node);
         const resolved = field.component.validationParameters(this.runtime.renderer.evaluateExpressions(node,attrs));
@@ -303,8 +322,8 @@ export class EditingSession {
         if (schedule) this.scheduleField(node);
     }
     cancelValidation(node) {
-        this.validations.get(node)?.run.cancel();
-        this.validationQueue.delete(node);
+        this.validations.get(node.fullpath)?.run.cancel();
+        this.validationQueue.delete(node.fullpath);
         this.pendingPart(node,'validation',null);
     }
     writeCandidate(node,value) {
@@ -312,50 +331,53 @@ export class EditingSession {
         this.writing++;
         try { this.runtime.renderer.html.writeParameter(node,'value',value); }
         finally { this.writing--; }
-        const field = this.validations.get(node);
+        const field = this.validations.get(node.fullpath);
         if (field) {
             field.value = node.getRelativeData(node.getAttr('value'));
             field.target = this.runtime.gramlot.data.getNode(field.path.split('?')[0]);
         }
-        for (const other of this.validations.keys()) if (other !== node) this.refreshField(other);
+        for (const other of this.validations.keys()) if (other !== node.fullpath) this.refreshField(this.fieldNode(other));
     }
     validateCandidate(node,value,selection) {
         this.invalidateValidation();
         this.cancelValidation(node);
         this.writeCandidate(node,value);
-        const field = this.validations.get(node);
+        const field = this.validations.get(node.fullpath);
         field.selection = selection;
         return this.validateField(node,false);
     }
     scheduleField(node) {
-        if (this.disposed || !this.validations.has(node) || this.validationQueue.has(node)) return;
+        const fullpath = node.fullpath;
+        if (this.disposed || !this.validations.has(fullpath) || this.validationQueue.has(fullpath)) return;
         if (this.registers.getItem('drafts').getNode(key(node))) return;
-        this.validationQueue.add(node);
+        this.validationQueue.add(fullpath);
         this.pendingPart(node,'validation','scheduled');
-        this.schedule(() => { if (this.validationQueue.delete(node)) this.validateField(node); });
+        this.schedule(() => { if (this.validationQueue.delete(fullpath)) this.validateField(this.fieldNode(fullpath)); });
     }
     scheduleValidation(adapter) {
-        this.refreshField(adapter.node);
-        const field = this.validations.get(adapter.node);
-        if (field && !field.result && !field.run.controller) this.scheduleField(adapter.node);
+        const node = adapter.node;
+        this.refreshField(node);
+        const field = this.validations.get(node.fullpath);
+        if (field && !field.result && !field.run.controller) this.scheduleField(node);
     }
     validateField(node, refreshSelection = true) {
-        const field = this.validations.get(node);
+        const fullpath = node.fullpath, field = this.validations.get(fullpath);
         if (!field || this.disposed || field.binding.closed) return;
-        this.validationQueue.delete(node);
+        this.validationQueue.delete(fullpath);
         if (this.registers.getItem('drafts').getNode(key(node))) return;
         if (this.registers.getItem('pending').getItem(key(node))?.getItem(contribution(node,'selection'))) return;
         const value = node.getRelativeData(node.getAttr('value'));
-        const adapter = this.fields.get(node);
+        const adapter = this.fields.get(fullpath);
         if (refreshSelection && adapter) field.selection = adapter.element.validationSelection();
         const selection = field.selection;
         const target = field.target;
         const current = field.context.validationCurrent();
         return field.run.start(value,field.rules,{...field.context,
-            validationCurrent:() => () => !this.disposed && current() && this.validations.get(node) === field
+            validationCurrent:() => () => !this.disposed && current() && this.validations.get(fullpath) === field
                 && this.runtime.gramlot.data.getNode(field.path.split('?')[0]) === target,
             selection
         },field.execute,outcome => {
+            const node = this.fieldNode(fullpath);
             if (outcome.ok) {
                 try { field.checkValue(outcome.value,value); }
                 catch (error) { outcome.ok = false; outcome.result.error = error.message; }
@@ -363,12 +385,12 @@ export class EditingSession {
             this.result(node,outcome.result);
             field.result = outcome.result;
             if (outcome.ok) this.writeCandidate(node,outcome.value);
-            const mounted = this.fields.get(node);
+            const mounted = this.fields.get(fullpath);
             if (mounted) mounted.element.presentValidation(outcome.result);
             field.context.finishValidation(outcome);
         },() => {
-            this.pendingPart(node,'validation','active');
-            this.fields.get(node)?.element.setFieldState({pending:true});
+            this.pendingPart(this.fieldNode(fullpath),'validation','active');
+            this.fields.get(fullpath)?.element.setFieldState({pending:true});
         });
     }
     remove(name, node) {
@@ -418,7 +440,7 @@ export class EditingSession {
         this.updateChanges(change.path);
         if (this.writing) return;
         this.invalidateValidation();
-        for (const node of this.validations.keys()) this.refreshField(node);
+        for (const fullpath of this.validations.keys()) this.refreshField(this.fieldNode(fullpath));
     }
 
     updateChanges(changedPath = null) {
@@ -473,15 +495,16 @@ export class EditingSession {
             for (const listener of this.listeners) listener(); });
     }
     commitField(path) {
-        for (const adapter of this.fields.values()) {
-            if (fieldPath(adapter.node) === path && Object.hasOwn(adapter.node._internal,'formDraft')) adapter.commit();
+        for (const [fullpath,adapter] of this.fields) {
+            const node = this.fieldNode(fullpath);
+            if (fieldPath(node) === path && Object.hasOwn(node._internal,'formDraft')) adapter.commit();
         }
     }
     /** Flush active drafts. Refuse errors/pending checks; accept only a valid local snapshot. */
     accept() {
         if (this.disposed) return false;
-        for (const adapter of this.fields.values()) {
-            if (Object.hasOwn(adapter.node._internal,'formDraft')) adapter.commit();
+        for (const [fullpath,adapter] of this.fields) {
+            if (Object.hasOwn(this.fieldNode(fullpath)._internal,'formDraft')) adapter.commit();
         }
         if (!this.status.valid || this.status.pending) return false;
         if (this.validationSources.size && this.validatedRevision !== this.validationRevision) return false;
@@ -498,23 +521,24 @@ export class EditingSession {
     restore() {
         if (this.disposed) return;
         this.invalidateValidation();
-        for (const node of this.validations.keys()) this.cancelValidation(node);
-        for (const adapter of this.fields.values()) {
+        for (const fullpath of this.validations.keys()) this.cancelValidation(this.fieldNode(fullpath));
+        for (const [fullpath,adapter] of this.fields) {
+            const node = this.fieldNode(fullpath);
             adapter.element.cancelValidation();
-            this.clearDraft(adapter.node);
+            this.clearDraft(node);
             adapter.element.restoreFormValue(this.registers.getItem('baseline').getItem(
-                adapter.node.absDatapath(adapter.node.getAttr('value')).slice(this.path ? this.path.length + 1 : 0)));
+                node.absDatapath(node.getAttr('value')).slice(this.path ? this.path.length + 1 : 0)));
         }
         this.runtime.gramlot.data.setItem(this.path,copy(this.registers.getItem('baseline')));
         for (const name of ['errors','pending','drafts']) this.registers.setItem(name,new Bag());
         this.updateChanges();
-        for (const node of this.validations.keys()) this.scheduleField(node);
+        for (const fullpath of this.validations.keys()) this.scheduleField(this.fieldNode(fullpath));
     }
     dispose() {
         if (this.disposed) return;
         this.disposed = true;
         this.subscription.close();
-        for (const node of this.validations.keys()) this.forgetField(node);
+        for (const fullpath of this.validations.keys()) this.forgetField(fullpath);
         this.fields.clear();
         this.validationQueue.clear();
         this.retainedFields.clear();

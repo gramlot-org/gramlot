@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 import {Bag, Gramlot, GramlotBuilder} from '../src/index.js';
 import inputs from '../src/components/inputs.js';
+import {assertFieldMapsByAddress} from './helpers/editing-session-addresses.js';
 
 const tick = () => new Promise(resolve => setTimeout(resolve,0));
 function fixture(t, extra = () => {}) {
@@ -77,7 +78,7 @@ test('external edits, removal and separate scopes preserve registers and instanc
     f.app.data.setItem('record.amount',23);await tick();assert.equal(f.state.status.dirty,true);
     const node=f.owner.value.getNode('amount'),host=f.host('amount');
     const mount=host.parentNode;host.remove();mount.append(host);await tick();
-    assert.equal(f.host('amount'),host);assert.equal(f.state.fields.has(node),true);
+    assert.equal(f.host('amount'),host);assert.equal(f.state.fields.has(node.fullpath),true);
     f.state.restore();await tick();assert.equal(f.state.status.status,'ok');
 });
 
@@ -199,6 +200,23 @@ test('two controls on one Data field keep independent validation contributions',
     f.owner.value.popNode('mirror');await tick();
     assert.equal(f.state.status.valid,false,'disposing the mirror must not erase another control error');
     f.edit('name','Ada');await tick();assert.equal(f.state.status.valid,true);
+});
+
+test('form field maps reference Source nodes by fullpath, also with two fields on one Data path',async t=>{
+    const f=fixture(t,(form)=>{form.textbox({node_label:'mirror',id:'mirror',value:'^.name',validate_len:'3:'});});await tick();
+    assertFieldMapsByAddress(f.state);
+    const name=f.owner.value.getNode('name'),mirror=f.owner.value.getNode('mirror');
+    assert.equal(f.state.fieldNode(name.fullpath),name);assert.equal(f.state.fieldNode(mirror.fullpath),mirror);
+    assert.equal(f.state.validations.get(name.fullpath).path,f.state.validations.get(mirror.fullpath).path);
+    f.edit('mirror','Al');await tick();
+    assert.equal(f.state.status.valid,false);assertFieldMapsByAddress(f.state);
+    f.edit('amount','-');assertFieldMapsByAddress(f.state);
+    f.edit('amount','5');f.edit('name','Alice');await tick();
+    assert.equal(f.state.status.valid,true);assert.equal(f.state.accept(),true);
+    const mirrorPath=mirror.fullpath;f.owner.value.popNode('mirror');await tick();
+    assert.equal(f.state.validations.has(mirrorPath),false);
+    assert.throws(()=>f.state.fieldNode(mirrorPath),/missing from the Source/);
+    assertFieldMapsByAddress(f.state);
 });
 
 

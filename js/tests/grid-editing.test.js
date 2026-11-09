@@ -7,6 +7,7 @@ import grid from '../src/components/grid.js';
 import {GridCellEditor} from '../src/components/grid-cell-editor.js';
 import {GramlotBuilderBagNode} from '../src/builder/source.js';
 import {layoutWindow} from './helpers/layout-window.js';
+import {assertFieldMapsByAddress} from './helpers/editing-session-addresses.js';
 
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
 async function fixture(t, {mode='values', form=false, nameColumn={}, nameValue=i=>`Item ${i}`,count=1000} = {}) {
@@ -185,6 +186,14 @@ for (const mode of ['values','attributes']) {
         assert.equal(session.validations.size,0,'clean suspended field releases semantic resources');
     });
 }
+test('grid editing session maps reference editor Source nodes by fullpath',async t=>{
+    const f=await fixture(t,{form:true}),calls=await remoteField(f),session=f.source.formState;
+    const editor=await f.open();f.edit(editor,'19',true);await tick();
+    assert.equal(session.validations.size>0,true);assertFieldMapsByAddress(session);
+    await f.scroll(500);assertFieldMapsByAddress(session);
+    calls.at(-1).resolve({value:21});await tick();
+    assert.equal(f.rows.getItem('r0.amount'),21);assertFieldMapsByAddress(session);
+});
 test('reopening a pending field attaches a fresh control without cancelling or repeating its request',async t=>{
     const f=await fixture(t),calls=await remoteField(f);
     let editor=await f.open();f.edit(editor,'19',true);await tick();const count=calls.length,request=calls.at(-1),old=editor;
@@ -203,7 +212,7 @@ test('normalization and callbacks retain real Source context after unmount',asyn
     const contexts=[];
     f.app.src.logicRegistry.register(class {accepted(node,kw) {contexts.push({node,value:kw.value});node.setRelativeData('.checked',kw.value);}}, {resource:'test:session-callback'});
     const editor=await f.open();f.edit(editor,'19',true);await tick();
-    const node=[...f.source.formState.validations.keys()][0];await f.scroll(500);
+    const node=f.source.formState.fieldNode([...f.source.formState.validations.keys()][0]);await f.scroll(500);
     calls.at(-1).resolve({value:23,data:new Bag({patched:true})});await tick();
     assert.equal(f.rows.getItem('r0.amount'),23);assert.equal(f.app.data.getItem('record.checked'),23);
     assert.equal(f.app.data.getItem('record.patched'),true);
@@ -270,7 +279,7 @@ test('wrong-type normalization is rejected equally with and without an editor',a
 test('Source rule updates on an unmounted editor do not recreate its DOM',async t=>{
     const f=await fixture(t),calls=await remoteField(f);
     const editor=await f.open();f.edit(editor,'19',true);await tick();
-    const node=[...f.source.formState.validations.keys()][0],request=calls.at(-1);
+    const node=f.source.formState.fieldNode([...f.source.formState.validations.keys()][0]),request=calls.at(-1);
     await f.scroll(500);node.setAttr({validate_min:20});await tick();
     assert.equal(request.signal.aborted,true);assert.equal(f.source.formState.status.valid,false);
     assert.equal(f.host.querySelector('[slot=cell-editor]'),null);
@@ -281,7 +290,7 @@ test('Source rule updates on an unmounted editor do not recreate its DOM',async 
 
 test('changing validation rules preserves an unparseable suspended draft',async t=>{
     const f=await fixture(t),editor=await f.open();f.edit(editor,'-',true);await tick();
-    const node=[...f.source.formState.validations.keys()][0];
+    const node=f.source.formState.fieldNode([...f.source.formState.validations.keys()][0]);
     await f.scroll(500);node.setAttr({validate_min:20});await tick();
     assert.equal(f.source.formState.registers.getItem('drafts').getNodes()[0].value,'-');
     await f.scroll(0);assert.equal((await f.open()).control.value,'-');
