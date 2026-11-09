@@ -4,6 +4,8 @@ import {JSDOM} from 'jsdom';
 import {Bag, Gramlot, GramlotBuilder} from '../src/index.js';
 import inputs from '../src/components/inputs.js';
 import grid from '../src/components/grid.js';
+import {GridCellEditor} from '../src/components/grid-cell-editor.js';
+import {GramlotBuilderBagNode} from '../src/builder/source.js';
 import {layoutWindow} from './helpers/layout-window.js';
 
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
@@ -102,6 +104,37 @@ test('Tab commits through the common adapter, moves in view order, and Escape di
     assert.equal(f.source.formState.registers.getItem('drafts').length,0);
 });
 
+test('editor declarations keep plain values and find the container and control by address',async t=>{
+    const editors=[],configure=GridCellEditor.prototype.configure;
+    GridCellEditor.prototype.configure=function(...args){editors.push(this);return configure.apply(this,args);};
+    t.after(()=>{GridCellEditor.prototype.configure=configure;});
+    const f=await fixture(t);let editor=await f.open();
+    const [cellEditor]=new Set(editors);
+    const plain=value=>{
+        assert.ok(!(value instanceof GramlotBuilderBagNode) && !(value instanceof Bag),'no Source node or Bag');
+        if (value && typeof value==='object') {
+            assert.equal(Object.getPrototypeOf(value),Object.prototype);
+            for (const item of Object.values(value)) plain(item);
+        }
+    };
+    assert.equal(cellEditor.declarations.size,1);
+    for (const declaration of cellEditor.declarations.values()) {
+        assert.deepEqual(Object.keys(declaration).sort(),['field','id','options','tag']);
+        plain(declaration);
+        const container=f.source.value.getNode(declaration.id);
+        assert.equal(cellEditor.container(declaration),container);
+        assert.equal(cellEditor.control(declaration).getAttr('id'),declaration.id);
+    }
+    f.edit(editor,'21');
+    editor.control.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'Enter',bubbles:true,composed:true}));await tick();
+    assert.equal(f.rows.getItem('r0.amount'),21);
+    assert.equal(cellEditor.declarations.size,0,'a committed clean field releases its declaration');
+    assert.equal(f.source.value.getNodes().filter(node=>node.label.startsWith('grid-cell-')).length,0,'its container is removed');
+    editor=await f.open('r1');f.edit(editor,'-');
+    editor.control.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true,composed:true}));await tick();
+    assert.equal(f.rows.getItem('r1.amount'),2);
+    assert.equal(f.source.formState.registers.getItem('drafts').length,0);
+});
 test('local load establishes one baseline for both form fields and grid rows',async t=>{
     const f=await fixture(t,{form:true});const session=f.source.formState;
     const rows=new Bag();rows.setItem('fresh',new Bag({name:'Loaded',amount:27}));
