@@ -140,8 +140,9 @@ for(const [name,engine] of Object.entries({chromium,webkit})) {
    for(const option of window.qualification.data.getItem('metrics.config.seriesOptions').getNodes())option.getValue().setItem('selected',false);
   });
   await page.waitForFunction(()=>window.qualification.data.getItem('metrics.config.valueFields')==='');
-  await chart.locator('.uplot canvas').waitFor();
-  assert.equal(await chart.getByRole('alert').isVisible(),false);
+  // No measure is a syntax error of the type: the notice replaces the chart.
+  await chart.getByRole('alert').waitFor();assert.match(await chart.getByRole('alert').textContent(),/needs at least one measure/);
+  assert.equal(await chart.locator('.uplot canvas').isVisible(),false);
   await page.evaluate(()=>window.qualification.data.setItem('metrics.config.seriesOptions.hours.selected',true));
   await page.locator('#metrics-pane-engine').selectOption('vega');await chart.locator('.measure0').waitFor();
   assert.equal(await chart.locator('.uplot').count(),0);
