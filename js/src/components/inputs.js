@@ -197,11 +197,29 @@ export const CallbackSelect = defineComponent({
     parameters: {callback: {dtype: 'T'}}, implementation: callbackChoices
 });
 export const ComboBox = defineComponent({
-    name: 'comboBox', tag: 'gramlot-combo-box', base: ChoiceEditor, mixins: [Labelbox, FieldState],
+    name: 'comboBox', tag: 'gramlot-combo-box', base: ChoiceEditor, mixins: [Labelbox, FieldState], sourceContext: true,
     parameters: {values: {dtype: 'T', default: '', binding: 'read'}, separator: {dtype: 'T', default: ',', binding: 'read'},
         store: {dtype: 'X', nullable: true, default: null, binding: 'read'}},
     implementation: Base => class extends localChoices(Base) {
         static get constrained() { return false; }
+        // The store choices are read at the address of the `store` pointer when they load; the control
+        // keeps only the path. `#storeSource` holds the path and is renewed when a Data change reaches it.
+        #context; #storeSource = null;
+        setSourceContext(context) { this.#context = context; }
+        // `store` is a `^` parameter of dtype 'X': a change inside the choices Bag or a replacement at its
+        // address projects the control again, and the renewed source makes it read the choices again.
+        projectAttributes(attrs, adapt, changedPath = null) {
+            const path = this.#context.attrDatapath('store');
+            if (path === null) this.#storeSource = null;
+            else if (this.#storeSource?.path !== path || changedPath === null || changedPath === path
+                || changedPath.startsWith(`${path}.`) || path.startsWith(`${changedPath}.`)) this.#storeSource = {path};
+            return super.projectAttributes(attrs, adapt);
+        }
+        get choiceSource() { return this.#storeSource ?? super.choiceSource; }
+        loadChoices(keywords) {
+            const store = this.#context.getStaticData(this.#context.attrDatapath('store'));
+            return this.constructor.loadChoices({...this.parameters, store}, this.pageContext, keywords);
+        }
     }
 });
 export const DbSelect = defineComponent({

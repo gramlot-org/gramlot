@@ -3224,3 +3224,25 @@ The names below are implementation choices, open to owner review.
   document; `#registrations` holds the registrations by document key.
 - `windowSelection` keeps no inbox Bag: a reply is the frame read at the `inbox`
   address whose `request_id` equals the pending request.
+
+### Bag parameters read by address — 2026-11-09
+
+Plan symbolic-references, final check; owner, 2026-11-09: "Sì, converti". A `^`
+parameter of dtype `X` is read at the address of its original attribute
+(`attrDatapath` + `getStaticData`) at the moment of use, as `seriesOptions` of the
+charts; the projection `this.parameters` is no longer read for these values. The
+subtree registration of the `X` parameter keeps projecting the component on a change
+inside the Bag and on a replacement at the address. A literal Bag in place of the
+pointer is rejected as "not a Data path".
+
+- grid `windowInfo`: read in `#windowInfo()` at each window draw and for the cell
+  editor's `store().window`.
+- tree `favorites`: read in `#favorites()` when the tree draws and by `#rowItem`;
+  `labelState`: read for each label callback call, passed as `state`.
+- rowActions `state`: read for each `actionState` call, passed as `state`.
+- comboBox `store`: comboBox gains `sourceContext`; its `loadChoices` reads the store
+  at the address and hands it to the shared `localChoices` loader for that call.
+  `#storeSource` (from *store* and the existing `choiceSource`) holds `{path}` and is
+  renewed when a Data change reaches the path, so the editor reloads its choices.
+- drawingPane `annotations`: already read by address since 2026-11-09 (`6ea03bde`);
+  no projection read remained.

@@ -350,8 +350,9 @@ export const Grid = defineComponent({
             this.#setSpaces();
             this.#scrollTo(top);
         }
+        /** The provider window, read at the address of the `windowInfo` pointer at each use; never kept. */
         #windowInfo() {
-            const value = this.parameters.windowInfo;
+            const value = this.#context.getStaticData(this.#context.attrDatapath('windowInfo'));
             if (value === null) return null;
             if (!(value instanceof Bag)) throw new TypeError('Grid windowInfo requires a Bag');
             return Object.fromEntries(['start', 'total', 'revision', 'sortedBy'].map(key => [key, value.getItem(key)]));
@@ -413,7 +414,7 @@ export const Grid = defineComponent({
                 () => this.parameters.setFilter, () => this.#collectionView);
             if (this.isConnected) this.#checkSets.connect();
             this.#cellEditor = new GridCellEditor(this, context, (row, field) => this.#rows.get(row)?.querySelector(`td[data-field="${field}"]`),
-                () => ({labels:() => this.#collectionStore().getRows().map(row => row.label), window:this.parameters.windowInfo}),
+                () => ({labels:() => this.#collectionStore().getRows().map(row => row.label), window:this.#windowInfo()}),
                 () => this.#rows, (row,field,step) => this.#nextEditor(row,field,step), path => this.#focusField(path));
             const node = context.sourceNode;
             this.#rowLayout = node._internal.gridRowLayout ??= new GridRowLayout();

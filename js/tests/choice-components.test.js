@@ -172,6 +172,27 @@ test('combo Bag choices preserve comma/colon paths and accept newly typed direct
     f.type('root','/tmp/new folder');f.key('root','Enter');assert.equal(f.app.data.getItem('root'),'/tmp/new folder');
 });
 
+test('combo store choices are read at the store address when they load',async t=>{
+    const bag=new Bag();bag.setItem('a','alpha',{caption:'Alpha'});
+    const f=fixture(t,(r,a)=>{a.data.setItem('recent',bag);r.comboBox({id:'root',value:'^root',store:'^recent'});});
+    const open=async()=>{f.key('root','Escape');f.key('root','ArrowDown');await settle();return f.host('root').choices.textContent;};
+    await settle();f.host('root').control.focus();
+    assert.equal(await open(),'Alpha');
+    bag.setItem('b','beta',{caption:'Beta'});await settle();
+    assert.equal(await open(),'AlphaBeta','a change inside the store Bag reaches the choices');
+    const replacement=new Bag();replacement.setItem('c','gamma',{caption:'Gamma'});
+    f.app.data.setItem('recent',replacement);await settle();
+    assert.equal(await open(),'Gamma','a replacement at the address reaches the choices');
+    bag.setItem('d','delta',{caption:'Delta'});await settle();
+    assert.equal(await open(),'Gamma','the replaced Bag is not read');
+    // A silent replacement (no Data event) is read by the next load: the choices come from the address.
+    const silent=new Bag();silent.setItem('e','epsilon',{caption:'Epsilon'});
+    f.app.data.setItem('recent',silent,null,'>',false,true,null,false,false);
+    assert.equal(await open(),'Epsilon');
+    f.app.data.setItem('recent',null);await settle();
+    assert.equal(await open(),'No results','an empty store address gives no choices');
+});
+
 test('local choices accept a newline separator',async t=>{
     const f=fixture(t,r=>r.comboBox({id:'choice',value:'^choice',values:'a,b\nc,d',separator:'\n'}));
     await settle();f.host('choice').control.focus();f.key('choice','ArrowDown');await settle();assert.equal(f.host('choice').choices.children.length,2);

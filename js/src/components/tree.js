@@ -24,6 +24,8 @@ export const RowActions = defineComponent({
             return item ? {item, path} : null;
         }
         clearRowContext() { this.#rowContext = null; this.hidden = true; }
+        // `state` is a `^` parameter of dtype 'X': a change inside the Bag or a replacement at its address
+        // projects the bar again, and actionState receives the value read at that address for the call.
         projectAttributes(attrs, adapt) {
             const rest = super.projectAttributes(attrs, adapt);
             if (!['start', 'end'].includes(this.parameters.position)) throw new TypeError('rowActions position must be start or end');
@@ -37,7 +39,7 @@ export const RowActions = defineComponent({
                 const code = action.getAttribute('rowAction');
                 if (code === null) continue;
                 const presentation = this.#context.callLogic(this.parameters.actionState,
-                    {...context, action: code, state: this.parameters.state});
+                    {...context, action: code, state: this.#context.getStaticData(this.#context.attrDatapath('state'))});
                 if (!presentation || typeof presentation.hidden !== 'boolean' ||
                     typeof presentation.icon !== 'string' || typeof presentation.title !== 'string') {
                     throw new TypeError('rowActions actionState must return hidden, icon and title');
@@ -458,7 +460,8 @@ export const Tree = defineComponent({
                         badge.hidden = value == null || value === '';
                         badge.style.backgroundColor = color ?? '';
                         badge.toggleAttribute('data-colored', color != null && color !== '');
-                        const keywords = {item: node, path, opened, selected, state: this.parameters.labelState};
+                        // labelState is read at its address for the callbacks of this draw; the tree keeps only the path.
+                        const keywords = {item: node, path, opened, selected, state: this.#context.getStaticData(this.#context.attrDatapath('labelState'))};
                         const attribute = this.parameters.labelAttribute;
                         const label = this.parameters.internalNames && node.getAttr('fieldpath') ? node.label
                             : this.parameters.getLabel !== null ? this.#call('getLabel', keywords)
@@ -542,10 +545,8 @@ export const Tree = defineComponent({
                 return list;
             };
             const root = build(store, '', null);
-            if (this.parameters.favorites !== null) {
-                if (!(this.parameters.favorites instanceof Bag)) throw new TypeError('tree favorites must be a Bag');
-                if (this.parameters.favorites.length) root.prepend(this.#buildFavorites(this.parameters.favorites, selected));
-            }
+            const favorites = this.#favorites();
+            if (favorites?.length) root.prepend(this.#buildFavorites(favorites, selected));
             this.control.replaceChildren(root);
             this.control.setAttribute('aria-busy', String(this.#searching));
             if (this.#searchText) {
@@ -934,8 +935,17 @@ export const Tree = defineComponent({
         /** The item of a drawn row: the store node at `path`, or the favorite whose originalPath is `path`. */
         #rowItem(path, favorite) {
             if (!favorite) return this.#rowNode(path);
-            const favorites = this.parameters.favorites;
+            const favorites = this.#context.getStaticData(this.#context.attrDatapath('favorites'));
             return favorites instanceof Bag ? favorites.getNodes().find(node => node.getAttr('originalPath') === path) ?? null : null;
+        }
+        /**
+         * The favorites Bag, read at the address of the `favorites` pointer at each use; null without
+         * favorites. A change inside the Bag or a replacement at its address projects the tree again.
+         */
+        #favorites() {
+            const favorites = this.#context.getStaticData(this.#context.attrDatapath('favorites'));
+            if (favorites !== null && !(favorites instanceof Bag)) throw new TypeError('tree favorites must be a Bag');
+            return favorites;
         }
         #tabStop(path) {
             const visible = this.#visible(), target = typeof path === 'string' || path == null

@@ -86,6 +86,18 @@ test('row action presentation follows the focused row and reactive state', async
     f.app.data.setItem('model.favorites', favorites); await tick();
     assert.equal(button.icon.textContent, '♥');
     assert.equal(button.control.getAttribute('aria-label'), 'Remove favorite');
+    // The state is read at its address for each call: a change inside the Bag reaches the bar,
+    // the Bag replaced at the address is no longer read.
+    favorites.setItem('saved', false); await tick();
+    assert.equal(button.icon.textContent, '♡');
+    f.app.data.setItem('model.favorites', new Bag({saved: true})); await tick();
+    assert.equal(button.icon.textContent, '♥');
+    favorites.setItem('saved', false); await tick();
+    assert.equal(button.icon.textContent, '♥');
+    // A silent replacement (no Data event) is read by the next call: the value comes from the address.
+    f.app.data.setItem('model.favorites', new Bag({saved: false}), null, '>', false, true, null, false, false);
+    f.row('folder').focus(); f.row('other').focus();
+    assert.equal(button.icon.textContent, '♡');
 });
 
 test('tree drop reports before, inside and after relative to the destination row', async t => {
@@ -1108,6 +1120,45 @@ test('named label and class callbacks receive row context, obey precedence and r
     assert.ok(f.row('folder').querySelector('.caption').classList.contains('selected-label'));
 });
 
+
+test('label callbacks receive labelState read at its address when the row draws', async t => {
+    class Logic { label(source, {item, state}) { return {text: `${state?.getItem('prefix') ?? '-'} ${item.label}`}; } }
+    const f = fixture(t, {logic: Logic, attrs: {labelAttribute: null, labelCb: 'label', labelState: '^.labels'}}); await tick();
+    assert.equal(f.row('other').querySelector('.caption').textContent, '- other');
+    const labels = new Bag({prefix: 'A'});
+    f.app.data.setItem('model.labels', labels); await tick();
+    assert.equal(f.row('other').querySelector('.caption').textContent, 'A other');
+    labels.setItem('prefix', 'B'); await tick();
+    assert.equal(f.row('other').querySelector('.caption').textContent, 'B other', 'a change inside the Bag draws the labels again');
+    f.app.data.setItem('model.labels', new Bag({prefix: 'C'})); await tick();
+    assert.equal(f.row('other').querySelector('.caption').textContent, 'C other', 'a replacement at the address draws the labels again');
+    labels.setItem('prefix', 'D'); await tick();
+    assert.equal(f.row('other').querySelector('.caption').textContent, 'C other', 'the replaced Bag is not read');
+    // A silent replacement (no Data event) is read by the next draw of a row: the value comes from the address.
+    f.app.data.setItem('model.labels', new Bag({prefix: 'E'}), null, '>', false, true, null, false, false);
+    f.row('folder').querySelector('button').click();
+    assert.equal(f.row('folder').querySelector('.caption').textContent, 'E folder');
+});
+
+test('favorites are read at their address: changes inside the Bag and replacements redraw the group', async t => {
+    const f = fixture(t, {attrs: {favorites: '^.favorites'}}); await tick();
+    assert.equal(f.host.shadowRoot.querySelector('[data-favorites-group]'), null);
+    const favorites = f.app.data.getItem('model.favorites');
+    favorites.setItem('one', null, {favoriteEntry: true, originalPath: 'other', fullcaption: 'Other'}); await settle();
+    assert.equal(f.host.shadowRoot.querySelectorAll('[data-favorite-path]').length, 1, 'a change inside the Bag reaches the tree');
+    const replacement = new Bag();
+    replacement.setItem('a', null, {favoriteEntry: true, originalPath: 'folder', fullcaption: 'Folder'});
+    replacement.setItem('b', null, {favoriteEntry: true, originalPath: 'folder.alpha', fullcaption: 'Folder.Alpha'});
+    f.app.data.setItem('model.favorites', replacement); await settle();
+    assert.deepEqual([...f.host.shadowRoot.querySelectorAll('[data-favorite-path]')].map(row => row.dataset.favoritePath), ['folder', 'folder.alpha']);
+    favorites.setItem('two', null, {favoriteEntry: true, originalPath: 'folder', fullcaption: 'Folder'}); await settle();
+    assert.equal(f.host.shadowRoot.querySelectorAll('[data-favorite-path]').length, 2, 'the replaced Bag is not read');
+    // A silent replacement (no Data event) is read by the next draw: the value comes from the address.
+    const silent = new Bag(); silent.setItem('c', null, {favoriteEntry: true, originalPath: 'other', fullcaption: 'Other'});
+    f.app.data.setItem('model.favorites', silent, null, '>', false, true, null, false, false);
+    f.host.retrySelection(); await settle();
+    assert.deepEqual([...f.host.shadowRoot.querySelectorAll('[data-favorite-path]')].map(row => row.dataset.favoritePath), ['other']);
+});
 
 test('structured HTML labels are sanitized and raw labels remain text', async t => {
     class Logic {

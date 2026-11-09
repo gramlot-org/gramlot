@@ -978,6 +978,32 @@ test('missing first windows, empty results and return to resident data have dist
 });
 
 
+test('windowInfo is read at its address: a change inside the Bag and a replacement redraw the grid', t => {
+    const f = fixture(t, {empty:true});
+    const status = f.host.shadowRoot.querySelector('[role=status]');
+    const first = new Bag({start:0,total:1000,revision:1,sortedBy:''});
+    f.app.data.setItem('model.window', first);
+    f.source.setAttr({windowInfo:'^.window',viewport:'^.viewport'});
+    f.flush(); f.layout.flush();
+    assert.equal(status.hidden, false);
+    first.setItem('total', 0); f.flush(); f.layout.flush();
+    assert.equal(status.hidden, true, 'a change inside the window Bag reaches the grid');
+    assert.deepEqual(f.cells(), ['No rows']);
+    f.app.data.setItem('model.window', new Bag({start:0,total:1000,revision:2,sortedBy:''}));
+    f.flush(); f.layout.flush();
+    assert.equal(status.hidden, false, 'a replacement at the address reaches the grid');
+    first.setItem('total', 0); f.flush(); f.layout.flush();
+    assert.equal(status.hidden, false, 'the replaced Bag is not read');
+    // A silent replacement (no Data event) is read by the next window draw: its new revision asks again.
+    f.app.data.setItem('model.viewport', null); f.flush(); f.layout.flush();
+    assert.equal(f.app.data.getItem('model.viewport'), null);
+    f.app.data.setItem('model.window', new Bag({start:0,total:1000,revision:3,sortedBy:''}), null, '>', false, true, null, false, false);
+    f.host.shadowRoot.querySelector('.body-viewport').dispatchEvent(new f.window.Event('scroll')); f.flush(); f.layout.flush();
+    assert.equal(f.app.data.getItem('model.viewport').start, 0);
+    assert.throws(() => f.source.setAttr({windowInfo:new Bag({start:0,total:1,revision:1,sortedBy:''})}), /is not a Data path/);
+});
+
+
 test('external loading and missing windows share one indicator without clearing each other', t => {
     const f=fixture(t,{empty:true});
     f.app.data.setItem('model.loading',true);
@@ -1106,8 +1132,8 @@ for (const mode of ['values','attributes']) test(`${mode}: set filters react to 
     f.app.data.setItem('model.sets.john','C');f.flush();assert.deepEqual(labels(),['r3']);
     assert.equal(f.window.document.getElementById('second').shadowRoot.querySelectorAll('tr[data-row]').length,3);
     assert.equal(f.rows.getNodes().length,3);
-    const windowInfo=new Bag({start:0,count:3,total:20,revision:1,sortedBy:''});
-    assert.throws(()=>f.source.setAttr({windowInfo}),/complete resident store/);
+    f.app.data.setItem('model.window',new Bag({start:0,count:3,total:20,revision:1,sortedBy:''}));
+    assert.throws(()=>f.source.setAttr({windowInfo:'^.window'}),/complete resident store/);
 });
 
 test('column popup uses a shared grid, isolated literal search and preserved selections',t=>{
@@ -1176,7 +1202,8 @@ test('column popup uses a shared grid, isolated literal search and preserved sel
     root.querySelector('.column-filter[data-field="code"]').click();f.flush();assert.equal(f.host.querySelector('gramlot-grid'),inner);
     assert.equal(search.value,'','reopening clears the search box reached by childname');
     assert.equal(searchHost.shadowRoot.activeElement,search,'reopening focuses the search box');
-    assert.throws(()=>f.source.setAttr({windowInfo:new Bag({start:0,count:3,total:30,revision:1,sortedBy:''})}),/complete resident store/);
+    f.app.data.setItem('model.window',new Bag({start:0,count:3,total:30,revision:1,sortedBy:''}));
+    assert.throws(()=>f.source.setAttr({windowInfo:'^.window'}),/complete resident store/);
 });
 
 test('date popup applies periods atomically, preserves invalid drafts and resets without rebuilding',async t=>{
@@ -1239,7 +1266,7 @@ for (const mode of ['values','attributes']) test(`${mode}: external radio writes
  assert.equal(f.app.data.getItem('product.primary_supplier_id'),'B');
  f.source._internal.gridCollectionView.applyFilter(null);f.flush();assert.equal(radios(f.host)[1].checked,true);
  f.app.data.setItem('product.primary_supplier_id',null);f.flush();assert.ok(radios(f.host).every(r=>!r.checked));
- f.source.setAttr({windowInfo:new Bag({start:0,count:2,total:20,revision:1,sortedBy:''})});f.flush();
+ f.app.data.setItem('model.window',new Bag({start:0,count:2,total:20,revision:1,sortedBy:''}));f.source.setAttr({windowInfo:'^.window'});f.flush();
  f.app.data.setItem('product.primary_supplier_id','OFFSCREEN');f.flush();assert.ok(radios(f.host).every(r=>!r.checked));
  radios(f.host)[0].click();assert.equal(f.app.data.getItem('product.primary_supplier_id'),'A');
 });
