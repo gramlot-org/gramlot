@@ -311,16 +311,19 @@ class GramlotServer:
             if self._terminals.get(key, (None,))[0] is terminal:
                 del self._terminals[key]
 
-    def close_terminal(self, page_id, session):
-        """Close an open terminal session and cancel its method; an unknown session is left as it is."""
-        record = self._terminals.pop((page_id, session), None)
-        if record is not None:
-            record[0].close()
-            record[1].cancel()
+    def close_terminal(self, terminal):
+        """Close ``terminal``, a session ``open_terminal`` returned, and cancel its method. A session
+        already closed is left as it is: its name may belong to a newer session of the page."""
+        for key, record in list(self._terminals.items()):
+            if record[0] is terminal:
+                del self._terminals[key]
+                record[1].cancel()
+        terminal.close()
 
     def _close_terminals(self, page_id=None):
-        for key in [key for key in self._terminals if page_id is None or key[0] == page_id]:
-            self.close_terminal(*key)
+        for key, record in list(self._terminals.items()):
+            if page_id is None or key[0] == page_id:
+                self.close_terminal(record[0])
 
     def publish_to_page(self, topic, payload, *, source_page_id, page_id, owner):
         """Enqueue an event for a connected browser page of the source's owner."""

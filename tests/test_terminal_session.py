@@ -198,7 +198,9 @@ class ServerTerminalTests(unittest.TestCase):
             await settle()
             again = await server.open_terminal(page_id, "echo", send=Sent(), owner="alice")
             self.assertFalse(again.closed)
-            server.close_terminal(page_id, "echo")
+            server.close_terminal(session)
+            self.assertFalse(again.closed)
+            server.close_terminal(again)
             self.assertTrue(again.closed)
         asyncio.run(run())
 
