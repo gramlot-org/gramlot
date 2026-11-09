@@ -20,6 +20,16 @@ COVERAGE = {
         "pages/06-editors/01-base.md pages/06-editors/02-options.md",
         "Text editing and runtime options.",
     ),
+    "terminal": _record(
+        "Reads session, the name of an @terminal method of the page store. Writes connected, rows and columns when the socket opens, closes or the screen is resized. Terminal bytes never pass through Data.",
+        "Keys go to the session as typed, including arrows, Tab and Ctrl-C. Output is written to the screen as it arrives. input(text) sends text as if typed.",
+        "Leaf control. It fills its box and resizes the server terminal with it.",
+        "Requires a server with a PageStore channel (websocket). A page has one open session per name: opening it again closes the open one. The server stops sending output while 1 MB is unacknowledged by the screen.",
+        "js/src/components/terminal.js src/gramlot/server/terminal.py",
+        "js/tests/terminal.test.js tests/test_terminal_session.py",
+        "",
+        "Keystroke sessions on the server.",
+    ),
     "htmlEditor": _record(
         "Bind value two ways to HTML source. Live writes are the default and deferred edits commit on blur. Rich edits can normalize markup, while undo to the initial snapshot restores the original source.",
         "The rich toolbar edits supported body content. Undo, redo and the local save shortcut follow the editor history contract.",

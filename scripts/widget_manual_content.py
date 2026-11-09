@@ -264,6 +264,57 @@ Markdown in a sandboxed iframe. `allowHtml=False` shows embedded HTML as text;
 True sanitizes rendered HTML before insertion, without rewriting original Markdown.
 External image requests remain blocked by preview policy. See
 [Markdown behavior](105-components.md#gc-105-140).
+
+## Connect a terminal to a session of the PageStore
+
+`terminal` is an interactive terminal for programs that work key by key: a shell,
+`exec` into a container, a REPL, `top` or `vim`. Every key goes to the server at once.
+The server output is written to the screen as it arrives. The component knows no
+backend: the page's PageStore connects it to a process or a remote session.
+
+```python
+class Page(BasePage):
+    def main(self, root):
+        root.terminal(session="echo", connected="^.connected", rows="^.rows", columns="^.columns")
+
+
+class PageStore(BasePageStore):
+    @terminal
+    async def echo(self, session):
+        while data := await session.read():
+            await session.write(data)
+```
+
+`session` names an async PageStore method declared with `@terminal`
+(`from gramlot.page import terminal`). The method receives a `TerminalSession`:
+
+- `await session.read()` returns the next bytes of the keys, `b""` once the session is closed;
+- `await session.write(data)` sends output bytes, in frames of at most 1 MB; it waits
+  while 1 MB is not yet written by the screen, so a method that reads its process only
+  after `write` returns reads it no faster than the browser draws;
+- `await session.resized()` returns the next `(rows, columns)`; `session.size` holds the last one;
+- `session.host` is the `Host` header of the socket request.
+
+The session closes when the method returns, when the page closes or when the
+socket closes. `@terminal(auth="rule")` applies the same auth rules as `@endpoint`.
+A page has one open session per name: opening the name again, as a component
+attached again to the page does, closes the open one first. More than 1 MB of
+input not yet read closes the socket. `connected`, `rows` and `columns` are written to
+Data; the terminal bytes never pass through Data. `input(text)` sends text as if typed.
+
+The method runs beside the store's own operations, not inside them: it talks to its
+process or remote session and does not write the store's Data.
+
+The bytes travel on a WebSocket of their own, `/gramlot/terminal`, beside the PageStore
+channel: enable it with `websocket=True` on the Python host. A large output never
+reaches the PageStore channel. xterm.js loads on first use; a page without a terminal
+downloads none of it. The frames are in the
+[server protocol](101-server-protocol.md#gc-101-325).
+
+A local shell runs with the rights of the server process. The origin check of the
+socket compares `Origin` with `Host`, which DNS rebinding can make equal: a shell
+method checks `session.host` as well. The gramlot-examples terminal trial offers the
+shell only when `GRAMLOT_DEV` is set and the page was opened at `localhost` or `127.0.0.1`.
 """,
     "typst": """
 ## Choosing and using the preview

@@ -77,6 +77,7 @@ DESCRIPTIONS = {
  'imageUploader': 'Editable image value with local crop or an application-owned upload destination.',
  'uploader': 'Shared file queue with progress, preview, selected-file metadata and application-owned upload targets.',
  'codeMirror': 'Code/text editor with composed language and editor options.',
+ 'terminal': 'Interactive terminal connected to a @terminal session of the page store.',
  'htmlEditor': 'Rich HTML editing using the supported engine configuration.',
  'htmlPreview': 'Read-only HTML preview with the component sanitization contract.',
  'markdownEditor': 'Markdown editing with the supported editor modes.',
@@ -136,7 +137,7 @@ FAMILIES = {
     'Dialogs and floating windows': ('dialog', 'floatingPane'),
     'Trees': ('tree', 'rowActions'),
     'File uploads': ('uploader', 'imageUploader', 'attachmentManager'),
-    'Editors and document previews': ('codeMirror', 'htmlEditor', 'htmlPreview', 'markdownEditor', 'markdownPreview', 'typstPreview'),
+    'Editors and document previews': ('codeMirror', 'htmlEditor', 'htmlPreview', 'markdownEditor', 'markdownPreview', 'typstPreview', 'terminal'),
 }
 SHARED = {
     'value': ('Values and bindings', 'The value type and writeback behavior depend on the control. '
@@ -277,6 +278,7 @@ connects these controls to runnable lessons and screenshots.
     stable.update(grid='gc-345-365', searchBox='gc-345-370', chatMessages='gc-345-375',
                   grouplet='gc-345-380', groupletCard='gc-345-385')
     stable['gauge'] = 'gc-345-500'
+    stable['terminal'] = 'gc-345-270'
     stable.update({name: f'gc-345-{505 + index * 5}' for index, name in enumerate(chart_types)})
     stable.update({name: f'gc-345-{450 + index * 5}' for index, name in enumerate(('chartPane', 'chartView', 'chartFields', 'chartGeoJSON', 'chartTimeline', 'vizabiBubble', 'audioAnalyser', 'drawingPane'))})
     if not set(entries) <= set(stable):

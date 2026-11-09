@@ -5,7 +5,7 @@ Document ID: **GC-460**.
 <a id="gc-460-005"></a>
 ## Scope and evidence
 
-This audit covers all **89 component declarations in 14 packaged collections**. The reviewed core baseline is `2b1f2d80`; lesson references use examples `c59a19c`. Local uncommitted work is excluded. The inventory comes from packaged grammars; the behavior paragraphs were reviewed against implementation and test assertions on 2026-11-04. The reference documents purpose, parameters/defaults, Data, interaction/events, composition and limits for each declaration. An explicitly absent callback or unsupported behavior is part of the contract, not a missing implementation to invent.
+This audit covers all **90 component declarations in 14 packaged collections**. The reviewed core baseline is `2b1f2d80`; lesson references use examples `c59a19c`. Local uncommitted work is excluded. The inventory comes from packaged grammars; the behavior paragraphs were reviewed against implementation and test assertions on 2026-11-04. The reference documents purpose, parameters/defaults, Data, interaction/events, composition and limits for each declaration. An explicitly absent callback or unsupported behavior is part of the contract, not a missing implementation to invent.
 
 Parameter coverage is checked mechanically against metadata. Behavioral coverage is a source review, not proof that every possible interaction, failure, accessibility requirement or host/browser combination has been tested. Test files below are inspected evidence: their presence is not a new test-run result or a maturity rating. A statement that no callback is declared concerns component-specific callback parameters; ordinary Source event handling remains available. Example links are confined to the appendix and are teaching evidence, not a substitute for behavioral qualification.
 
@@ -64,6 +64,7 @@ Dedicated catalogue lessons now cover `transformPane` and `rowActions`; their ex
 | `htmlPreview` | [Reference](430-editors.md#gc-430-htmlpreview) | [Reviewed](430-editors.md#gc-430-htmlpreview) | [Reviewed](430-editors.md#gc-430-htmlpreview) |
 | `markdownEditor` | [Reference](430-editors.md#gc-430-markdowneditor) | [Reviewed](430-editors.md#gc-430-markdowneditor) | [Reviewed](430-editors.md#gc-430-markdowneditor) |
 | `markdownPreview` | [Reference](430-editors.md#gc-430-markdownpreview) | [Reviewed](430-editors.md#gc-430-markdownpreview) | [Reviewed](430-editors.md#gc-430-markdownpreview) |
+| `terminal` | [Reference](430-editors.md#gc-430-terminal) | [Reviewed](430-editors.md#gc-430-terminal) | [Reviewed](430-editors.md#gc-430-terminal) |
 | `typstPreview` | [Reference](435-typst.md#gc-435-typstpreview) | [Reviewed](435-typst.md#gc-435-typstpreview) | [Reviewed](435-typst.md#gc-435-typstpreview) |
 | `uploader` | [Reference](440-uploads.md#gc-440-uploader) | [Reviewed](440-uploads.md#gc-440-uploader) | [Reviewed](440-uploads.md#gc-440-uploader) |
 | `imageUploader` | [Reference](440-uploads.md#gc-440-imageuploader) | [Reviewed](440-uploads.md#gc-440-imageuploader) | [Reviewed](440-uploads.md#gc-440-imageuploader) |
@@ -554,6 +555,16 @@ These links identify the owning code and test suites examined. Shared suites can
 **Tests inspected:** [markdown-editor.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/markdown-editor.test.js).
 
 [Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-markdownpreview).
+
+
+<a id="gc-460-terminal"></a>
+### `terminal`
+
+**Implementation:** [terminal.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/terminal.js), [terminal.py](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/src/gramlot/server/terminal.py).
+
+**Tests inspected:** [terminal.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/terminal.test.js), [test_terminal_session.py](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/tests/test_terminal_session.py).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-terminal).
 
 
 <a id="gc-460-typstpreview"></a>

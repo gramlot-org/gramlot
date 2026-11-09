@@ -37,6 +37,14 @@ export class PageStoreConnection {
         if (!this.parent) this.open();
     }
 
+    /** The address of the terminal socket of `session` for this page: `terminal` beside the store route. */
+    terminalUrl(session) {
+        const address = new URL('terminal', this.endpoint);
+        address.searchParams.set('pageId', this.gramlot.pageId);
+        address.searchParams.set('session', session);
+        return address.href;
+    }
+
     /** Opens this page's own WebSocket: the page is the root of its family channel. */
     open() {
         const address = this.address;

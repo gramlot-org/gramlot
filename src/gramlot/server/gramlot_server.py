@@ -4,7 +4,11 @@ from urllib.parse import quote
 from copy import deepcopy
 from ..collection import collection_graph, declared_collections, page_collections, standard_collections
 
+import asyncio
+import contextvars
+import functools
 import inspect
+import logging
 import json
 import math
 import secrets
@@ -23,6 +27,7 @@ from .assets import gramlot_dev
 from .files import LIBRARIES, THEMES, file_below
 from .resources import SEGMENT, InvalidResourceName, load_order
 from .upload import _UploadRegistry, _invoke
+from .terminal import TerminalSession
 
 
 class PageExpired(LookupError):
@@ -156,6 +161,7 @@ class GramlotServer:
         self._page_stores = {}
         self._database_access = None
         self._page_channels = {}
+        self._terminals = {}
         self.websocket_url = websocket_url
         self._uploads = None
         self.collections = collection_graph((*standard_collections(), *collections))
@@ -268,6 +274,70 @@ class GramlotServer:
         if page_id in self._page_channels:
             raise ValueError("Page already has a channel")
         self._page_channels[page_id] = send
+
+    async def open_terminal(self, page_id, session, *, send, owner, identity=None, host=None, client=None):
+        """Open the terminal session ``session`` of the page's store and run its ``@terminal`` method.
+
+        ``send`` is the adapter's async callable for output frames; ``host`` is the ``Host`` header of
+        the socket request and ``client`` the address of its peer. The returned ``TerminalSession`` takes the browser frames with ``receive``;
+        it closes when the method returns, when the page closes, or when the adapter calls
+        ``close_terminal``. The method runs in an empty context: the context variables of the caller
+        do not reach it. A page has one open session per name: opening the name again closes the
+        open one first.
+        """
+        store = self.page_store(page_id, owner=owner)
+        declared = resolve_declared(store, session, "__gramlot_terminal__") if self.name_syntax.matches(session) else None
+        if declared is None:
+            raise EndpointNotFound(f"Unknown terminal session: {session}")
+        instance, method = declared
+        if not inspect.iscoroutinefunction(method):
+            raise TypeError(f"Terminal session {session} must be an async method")
+        refused = self._auth_outcome(getattr(method, "__gramlot_terminal__")["auth"], owner, identity)
+        if refused is not None:
+            raise {OUTCOME_CODES[cls]: cls for cls in (NotAuthenticated, NotAuthorized)}[refused](
+                f"Access refused: {session}")
+        key = (page_id, session)
+        if key in self._terminals:
+            self.close_terminal(self._terminals[key][0])
+        terminal = TerminalSession(send, host=host, client=client)
+        # The method outlives the request that opens it: it runs in a context of its own, so context
+        # variables of the adapter's operation (a held lock, the current request) do not reach it.
+        task = asyncio.get_running_loop().create_task(
+            self._run_terminal(key, method.__get__(instance, type(instance)), terminal), context=contextvars.Context())
+        self._terminals[key] = (terminal, task)
+        return terminal
+
+    async def _run_terminal(self, key, function, terminal):
+        try:
+            await function(terminal)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logging.getLogger(__name__).exception("Terminal session %s failed", key[1])
+        finally:
+            terminal.close()
+            if self._terminals.get(key, (None,))[0] is terminal:
+                del self._terminals[key]
+
+    def close_terminal(self, terminal):
+        """Close ``terminal``, a session ``open_terminal`` returned, and cancel its method. A session
+        already closed is left as it is: its name may belong to a newer session of the page. It may be
+        called from another thread (``close_page`` from a worker): the close, the cancellation and
+        the removal of the name then run on the session's loop, the only thread that changes the
+        open sessions."""
+        terminal._on_loop(functools.partial(self._close_terminal, terminal))
+
+    def _close_terminal(self, terminal):
+        for key, record in list(self._terminals.items()):
+            if record[0] is terminal:
+                del self._terminals[key]
+                record[1].cancel()
+        terminal.close()
+
+    def _close_terminals(self, page_id=None):
+        for key, record in list(self._terminals.items()):
+            if page_id is None or key[0] == page_id:
+                self.close_terminal(record[0])
 
     def publish_to_page(self, topic, payload, *, source_page_id, page_id, owner):
         """Enqueue an event for a connected browser page of the source's owner."""
@@ -679,6 +749,7 @@ class GramlotServer:
         record = self._pages.get(page_id)
         if record is not None and record[2] == owner:
             del self._pages[page_id]
+            self._close_terminals(page_id)
             self._page_channels.pop(page_id, None)
             store = self._page_stores.pop(page_id, None)
             if store is not None:
@@ -687,6 +758,7 @@ class GramlotServer:
     def close_all(self):
         """Forget every registered page; adapters call it on shutdown."""
         self._pages = {}
+        self._close_terminals()
         self._page_channels.clear()
         for store in self._page_stores.values():
             store.close()
