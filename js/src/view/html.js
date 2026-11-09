@@ -133,6 +133,11 @@ export class HtmlElement {
                 collectionView: (bag, rowMode) => node.rootBuilder.binding.collectionView(node, bag, rowMode),
                 format: this.format,
                 upload: () => this.uploadContext(),
+                terminalUrl: session => {
+                    const store = node.rootBuilder.binding.gramlot._pageStore;
+                    if (!store) throw new Error('A terminal requires a server with a PageStore channel (websocket)');
+                    return store.terminalUrl(session);
+                },
                 reportError: (error, title) => this.reportError(node, error, title),
                 publish: (topic, payload) => node.publish(topic, payload),
                 writeParameter: (name, value) => this.writeParameter(node, name, value),

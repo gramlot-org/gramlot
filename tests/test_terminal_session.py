@@ -3,6 +3,8 @@ import asyncio
 import json
 import unittest
 
+from genro_tytx import from_tytx, to_tytx
+
 from gramlot import Page, PageStore
 from gramlot.page import terminal
 from gramlot.server import GramlotServer
@@ -220,6 +222,27 @@ class ServerTerminalTests(unittest.TestCase):
                 await server.open_terminal(page_id, "blocking", send=Sent(), owner="alice")
             self.assertEqual(server._terminals, {})
         asyncio.run(run())
+
+
+class TerminalDeclarationTests(unittest.TestCase):
+    def test_a_page_declares_a_terminal_of_the_standard_editors_collection(self):
+        class TerminalPage(Page):
+            def main(self, root):
+                root.terminal(session="echo", fontSize=13, connected="^.connected", rows="^.rows",
+                              columns="^.columns")
+
+        server = ShellServer(css_theme=False)
+        server.resolve_page = lambda path: TerminalPage
+        self.addCleanup(server.close_all)
+        page_id = asyncio.run(server.open_page("/", owner="alice")).page_id
+        text = to_tytx({"id": "r1", "pageId": page_id, "contentType": "source", "name": "main", "params": {}})
+        result = from_tytx(asyncio.run(server.call(text, owner="alice")))
+        self.assertNotIn("error", result)
+        node = result["value"].get_node("#0")
+        self.assertEqual(node.node_tag, "terminal")
+        self.assertEqual(node.attr["_meta"]["render_tag"], "gramlot-terminal")
+        self.assertEqual(node.attr["session"], "echo")
+        self.assertEqual(node.attr["connected"], "^.connected")
 
 
 if __name__ == "__main__":

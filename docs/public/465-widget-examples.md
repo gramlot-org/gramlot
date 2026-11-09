@@ -431,6 +431,14 @@ Preview of a shared Markdown draft.
 
 - [04-markdown](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/06-editors/04-markdown.md)
 
+<a id="gc-465-terminal"></a>
+### `terminal`
+
+Keystroke sessions on the server.
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
 <a id="gc-465-setup-typst"></a>
 ## Typst previews: setup
 

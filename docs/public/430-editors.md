@@ -69,6 +69,7 @@ External image requests remain blocked by preview policy. See
 - [`htmlPreview`](#gc-430-htmlpreview): Read-only HTML preview with the component sanitization contract.
 - [`markdownEditor`](#gc-430-markdowneditor): Markdown editing with the supported editor modes.
 - [`markdownPreview`](#gc-430-markdownpreview): Rendered Markdown preview.
+- [`terminal`](#gc-430-terminal): Interactive terminal connected to a @terminal session of the page store.
 
 
 <a id="gc-430-005"></a>
@@ -372,5 +373,41 @@ Shared contracts: [Values and bindings](#gc-430-shared-value).
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `allowHtml` | B | False | read | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
+<a id="gc-430-270"></a>
+<a id="gc-430-terminal"></a>
+### `terminal`
+
+Interactive terminal connected to a @terminal session of the page store.
+
+Collection: **editors**. Browser element: `gramlot-terminal`.
+
+[Editor composition and document behavior](105-components.md#gc-105-125).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-terminal).
+
+
+**Data contract.** Reads session, the name of an @terminal method of the page store. Writes connected, rows and columns when the socket opens, closes or the screen is resized. Terminal bytes never pass through Data.
+
+
+**Interaction and events.** Keys go to the session as typed, including arrows, Tab and Ctrl-C. Output is written to the screen as it arrives. input(text) sends text as if typed.
+
+
+**Composition.** Leaf control. It fills its box and resizes the server terminal with it.
+
+
+**Limits and lifecycle.** Requires a server with a PageStore channel (websocket). One page opens a session name once. The server stops sending output while 1 MB is unacknowledged by the screen.
+
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `session` | T | '' | read | — |
+| `fontSize` | L | 14 | read | — |
+| `fontFamily` | T | 'monospace' | read | — |
+| `connected` | B | False | write | — |
+| `rows` | L | 0 | write | — |
+| `columns` | L | 0 | write | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
