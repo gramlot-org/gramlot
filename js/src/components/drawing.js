@@ -89,18 +89,18 @@ export const DrawingPane = defineComponent({
             if(this.#built)return;
             const node=this.context.sourceNode,builder=node.rootBuilder;
             const existing=node.value?.getNode('bar');
-            if(existing){existing.drawingController=this;this.#built=true;this.#tool=this.#state('tool');this.#lastColor=this.#state('color');this.#lastSize=this.#state('size');return;}
+            if(existing){existing._internal.drawingController=this;this.#built=true;this.#tool=this.#state('tool');this.#lastColor=this.#state('color');this.#lastSize=this.#state('size');return;}
             // The private area keeps the tool state of an earlier build of the same node.
             if(!(this.#state('tool')&&this.#state('color')&&this.#state('size')))
                 node.data.setItem(this.#statePath,new Bag({tool:'select',color:'#dd2222',size:3}));
             this.#tool=this.#state('tool');this.#lastColor=this.#state('color');this.#lastSize=this.#state('size');
             const fragment=new builder.source.constructor(null,builder),root=builder.wrapSource(fragment);
             const bar=root.menu({node_label:'bar',presentation:'bar',orientation:'vertical',labelPosition:'tooltip',iconSize:20,aria_label:'Image annotations'});
-            Object.defineProperty(sourceTarget(bar),'drawingController',{value:this,configurable:true,writable:true});
+            sourceTarget(bar)._internal.drawingController=this;
             const paths={select:'M5 3l13 11-6 .5-3 5z',freehand:'M4 20l3.5-.7L19 7.8 16.2 5 4.7 16.5z M14.7 6.5l2.8 2.8',arrow:'M4 19L19 4 M12 4h7v7',circle:'M20 12a8 8 0 1 1-16 0 8 8 0 0 1 16 0z',text:'M4 5h16 M12 5v14 M8 19h8',delete:'M4 7h16 M9 7V4h6v3 M7 7l1 13h8l1-13 M10 10v7 M14 10v7'};
             const icon=key=>'data:image/svg+xml,'+encodeURIComponent(`<svg xmlns="${SVG_NS}" viewBox="0 0 24 24" fill="none" stroke="#7e93ad" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${paths[key]}"/></svg>`);
             for(const [tool,label] of [['select','Select'],['freehand','Draw'],['arrow','Arrow'],['circle','Circle'],['text','Text']]){
-                bar.menuline({caption:label,tooltip:label,iconSrc:icon(tool),checked:`^${this.#statePath}.tool:={} === '${tool}'`,action:`this.parentBag.parentNode.drawingController.setTool('${tool}')`});
+                bar.menuline({caption:label,tooltip:label,iconSrc:icon(tool),checked:`^${this.#statePath}.tool:={} === '${tool}'`,action:`this.parentBag.parentNode._internal.drawingController.setTool('${tool}')`});
             }
             bar.contentPane({height:'1px',margin:'6px 4px',background:'var(--gramlot-border-control,#a8b2bf)'});
             const circleIcon=color=>'data:image/svg+xml,'+encodeURIComponent(`<svg xmlns="${SVG_NS}" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="${color}" stroke="#8793a3" stroke-width="1.5"/></svg>`);
@@ -115,7 +115,7 @@ export const DrawingPane = defineComponent({
             for(const size of [1,3,5,7,12,20])sizeMenu.menuline({caption:`${size} px`,iconSrc:strokeIcon(Math.min(size,12)),checked:`^${this.#statePath}.size:={} === ${size}`,action:`this.SET('${this.#statePath}.size', ${size});`});
             sizeMenu.contentPane({padding:'8px'}).numberTextBox({value:`^${this.#statePath}.size`,lbl:'Custom size',aria_label:'Pen size',dtype:'L',min:1,max:20,width:'140px'});
             bar.contentPane({flex:'1',min_height:'12px'});
-            bar.menuline({caption:'Delete',tooltip:'Delete',iconSrc:icon('delete'),action:'this.parentBag.parentNode.drawingController.deleteSelection()'});
+            bar.menuline({caption:'Delete',tooltip:'Delete',iconSrc:icon('delete'),action:'this.parentBag.parentNode._internal.drawingController.deleteSelection()'});
             const app=builder.binding.gramlot,source=app.src.prepareSource(fragment);
             app.src.renderer.validateCandidate(source);this.#built=true;node.setValue(source);
         }

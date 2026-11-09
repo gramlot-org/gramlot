@@ -40,6 +40,15 @@ test('creates, moves, removes and restores Bag annotations',()=>{
     restored.app.dispose();restored.window.close();
 });
 
+test('the toolbar Source node keeps the drawing component in _internal',()=>{
+    const f=fixture();
+    try {
+        const bar=f.pane.context.sourceNode.value.getNode('bar');
+        assert.equal(bar._internal.drawingController,f.pane);
+        assert.equal(Object.hasOwn(bar,'drawingController'),false);
+    } finally { f.app.dispose();f.window.close(); }
+});
+
 test('drawing popup tools have downward indicators',()=>{
     const f=fixture();
     try {

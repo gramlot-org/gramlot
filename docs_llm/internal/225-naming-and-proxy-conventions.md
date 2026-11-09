@@ -3183,3 +3183,8 @@ confirmed "ok". The name `_internal` is the owner's.
   `gridColumnFilters` stay node properties: DrawingPane keeps its source context,
   whose `sourceNode` is the drawingPane Source node, and GridColumnFilters keeps
   the Source nodes of its popup pane, frame grid, search box and date fields.
+- Addition (owner, 2026-11-09, "Sì, è ammesso"): a component's own Source node,
+  held in its source context (`context.sourceNode`), does not break the condition.
+  `drawingController` moved to `node._internal.drawingController` on the toolbar
+  Source node; its menu actions read `this.parentBag.parentNode._internal.drawingController`.
+  `gridColumnFilters` stays a node property: it keeps child Source nodes.
