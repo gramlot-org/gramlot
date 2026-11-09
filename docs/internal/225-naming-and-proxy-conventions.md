@@ -292,6 +292,8 @@ Nessun nome deve essere bello, brutto o descrittivo e facile: deve rispettare de
 convenzioni e se per un naming mancano delle convenzioni si decidono, si scrivono e
 si applicano."
 
+Gallery source files — owner, 2026-11-09: the owner confirmed “Sì, usa sourceFiles” to declare additional example source paths in gallery catalogue metadata; the Code panel presents the Page and support files in separate read-only tabs (the existing Page editing contract is unchanged). This approves `sourceFiles` as the shared catalogue field, not a general filesystem or editor API.
+
 <a id="gc-225-010"></a>
 
 ## 010 · Conventions in force

@@ -10,7 +10,7 @@ domain rules, authorization and durable storage.
 `Page.main(root)` builds the **Source** declaration tree. **Data** is a separate
 Bag; `^` binds an attribute reactively to a path. **Logic** contains browser
 behavior, formulas and controllers. The server opens pages and handles requests.
-See [family](055-family.md), [writing pages](095-writing-pages.md),
+Start with [Inside Gramlot](017-inside-gramlot.md), then see [family](055-family.md), [writing pages](095-writing-pages.md),
 [Data binding](097-data-binding.md) and [server calls](098-server-calls.md).
 
 ## The library and the servers
