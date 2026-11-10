@@ -2729,7 +2729,7 @@ CLI automatic new-project setup confirmed — 2026-10-22. Owner replied “ok”
 
 Shared collection lookup — 2026-11-03: `Gramlot.getCollection(name)` follows `get` + noun camel case and returns the page's activated collection object. It exposes the existing Gramlot-owned registry without a new proxy. Owner requested sharing base collections with Inspector and confirmed they are always provided.
 
-External tree store — 2026-11-04: `treeStore` and `setTreeStore` follow the existing tree/store and camel-case getter/setter vocabulary. The reference belongs to the tree's Source node, not attributes, Data or a serialised copy. Owner requested observing the original Bag without moving or copying it.
+External tree store — 2026-11-04: **Superseded 2026-11-08** (owner decision d-scope: no Source-node reference to an external Bag): see the note "External tree store, superseded — 2026-11-08" under "Named dataBinder connections — 2026-11-08". Historical text: `treeStore` and `setTreeStore` follow the existing tree/store and camel-case getter/setter vocabulary. The reference belongs to the tree's Source node, not attributes, Data or a serialised copy. Owner requested observing the original Bag without moving or copying it.
 
 Inspector tree migration — 2026-11-04: `resolveLazy` controls resolver expansion, search and selection; `placement` uses the existing Inspector `before`/`inside`/`after` drag vocabulary; `storeBag` pairs with existing `setStoreBag`. Owner requested shared tree parity.
 
