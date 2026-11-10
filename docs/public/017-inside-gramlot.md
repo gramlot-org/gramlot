@@ -53,13 +53,13 @@ root.dataFormula(
     base="^triangle.base", height="^triangle.height", _init=True,
 )
 
-root.div("^triangle.area", lbl="Area", lbl_variant="card",
-         font_size="24px", text_align="center")
+root.div("^triangle.area", lbl="Area", lbl_position="L",
+         font_size="24px")
 ```
 
 These inline formulas require a page Content Security Policy that permits inline expressions; see [Classes and hosts](090-classes-and-hosts.md#gc-090-035).
 
-The formula calculates `triangle.area` from `triangle.base` and `triangle.height`. The card follows `triangle.area` and displays the result.
+The formula calculates `triangle.area` from `triangle.base` and `triangle.height`. The displayed value follows `triangle.area`.
 
 The fields start with 8 and 6, so the initial area is 24. The formula is declared once; Gramlot runs it initially and when an input changes.
 
@@ -169,7 +169,7 @@ For the first triangle, `^.base` refers to `triangles.first.base`. For the secon
 
 The description is reused; the Data stays separate. Each triangle can have its own dimensions and color.
 
-Source is hierarchical too: each triangle is a branch of the interface containing fields, a formula, a card and a drawing. Its `datapath` connects that branch to its own part of Data.
+Source is hierarchical too: each triangle is a branch of the interface containing fields, a formula, a result and a drawing. Its `datapath` connects that branch to its own part of Data.
 
 <a id="gc-017-045"></a>
 
@@ -221,7 +221,7 @@ def triangle(pane, base, height, color):
         ".area", "base * height / 2",
         base="^.base", height="^.height", _init=True,
     )
-    pane.div("^.area", lbl="Area", lbl_variant="card", class_="result")
+    pane.div("^.area", lbl="Area", lbl_position="L", class_="result")
 
     drawing = pane.svg(viewBox="-1 -1 12 12", role="img",
                        aria_label="Triangle", class_="triangle-svg")
