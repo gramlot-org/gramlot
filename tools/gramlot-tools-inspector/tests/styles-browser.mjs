@@ -52,7 +52,7 @@ const server = createServer(async (request, response) => {
     }
     const entry = files.get(request.url);
     if (!entry) {response.writeHead(404).end(); return;}
-    response.writeHead(200, {'Content-Type': entry[0], 'Content-Security-Policy': "default-src 'none'; script-src 'self' 'nonce-fixture'; style-src 'self' 'unsafe-inline'"});
+    response.writeHead(200, {'Content-Type': entry[0], 'Content-Security-Policy': "default-src 'none'; script-src 'self' 'nonce-fixture'; style-src 'self' 'unsafe-inline'; img-src data:"});
     response.end(entry[1]);
 });
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
