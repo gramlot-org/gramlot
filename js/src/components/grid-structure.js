@@ -7,10 +7,32 @@ const COLUMN_KEYS = new Set(['tag', 'field', 'name', 'title', 'dtype', 'width', 
 const FORMULA_PARAMETER = /^formula_[A-Za-z_$][\w$]*$/;
 const GROUP_KEYS = new Set(['tag', 'code', 'name', 'background', 'color']);
 
-/** Legacy Data contract: ordered cells and independent columnset definitions. */
+/**
+ * A Bag among the editor options of `edit` is used as is only when it is independent: a Bag with a parent
+ * is a sub Bag of other data, which a column reaches by its path (`storepath` or a `^` pointer), never by
+ * holding it. Plain objects and arrays among the options are checked through, Bags are not entered.
+ */
+function requireIndependentBags(value, key) {
+    if (value instanceof Bag) {
+        if (value.parent || value.parentNode) throw new TypeError(`grid edit option ${key} holds a Bag with a parent; pass its path (storepath or a ^ pointer) instead`);
+    } else if (Array.isArray(value)) value.forEach((item, index) => requireIndependentBags(item, `${key}[${index}]`));
+    else if (value !== null && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype) {
+        for (const [name, item] of Object.entries(value)) requireIndependentBags(item, `${key}.${name}`);
+    }
+}
+
+/**
+ * Legacy Data contract: ordered cells and independent columnset definitions. The model keeps plain
+ * values and the cell key (label) of each field, never struct nodes; with its Data address
+ * (`data`, the page Data root, and `path`, the absolute struct path) it writes the struct by path.
+ */
 export class GridStructure {
-    #nodes = new Map();
-    constructor(bag) {
+    #labels = new Map();
+    #data;
+    #path;
+    constructor(bag, {data = null, path = null} = {}) {
+        this.#data = data;
+        this.#path = path;
         if (!(bag instanceof Bag)) throw new TypeError('grid structpath must resolve to a Bag');
         const view = branch(bag, 'view_0'), info = branch(bag, 'info');
         const cells = branch(view, 'rows_0'), definitions = branch(info, 'columnsets');
@@ -36,7 +58,7 @@ export class GridStructure {
             if (attrs.tag !== 'cell' || node.staticValue != null || node.resolver) throw new TypeError('grid cell must be a scalar declaration');
             requireIdentity(attrs.field, 'field');
             if (fields.has(attrs.field)) throw new TypeError(`Duplicate grid field: ${attrs.field}`);
-            fields.add(attrs.field); this.#nodes.set(attrs.field, node);
+            fields.add(attrs.field); this.#labels.set(attrs.field, node.label);
             if (attrs.columnset != null && !groups.has(attrs.columnset)) throw new TypeError(`Unknown grid columnset: ${attrs.columnset}`);
             if (attrs.dtype != null && !TYPES.has(attrs.dtype)) throw new TypeError(`Unsupported grid dtype: ${attrs.dtype}`);
             if (attrs.align != null && !['start', 'center', 'end'].includes(attrs.align)) throw new TypeError('grid align requires start, center or end');
@@ -49,6 +71,7 @@ export class GridStructure {
             if (attrs.white_space != null && !['normal','nowrap','pre-wrap'].includes(attrs.white_space)) throw new TypeError('grid white_space requires normal, nowrap or pre-wrap');
             for (const key of ['name', 'title', 'format']) if (attrs[key] != null && typeof attrs[key] !== 'string') throw new TypeError(`grid ${key} must be text`);
             if (attrs.edit != null && typeof attrs.edit !== 'boolean' && (typeof attrs.edit !== 'object' || Array.isArray(attrs.edit))) throw new TypeError('grid edit requires a boolean or editor options');
+            if (attrs.edit != null && typeof attrs.edit === 'object') for (const [key, value] of Object.entries(attrs.edit)) requireIndependentBags(value, key);
             if (attrs.check != null || attrs.checked != null || attrs.checkedField != null) {
                 if (!['multiple','single'].includes(attrs.check) || typeof attrs.checked !== 'string' ||
                     !attrs.checked.startsWith('^') || attrs.checked.length < 2 || attrs.checked.includes('?')) {
@@ -78,18 +101,33 @@ export class GridStructure {
         for (const group of this.groups) { Object.freeze(group.columns); Object.freeze(group); }
         Object.freeze(this.columns); Object.freeze(this.groups); Object.freeze(this);
     }
-    columnNode(field) { return this.#nodes.get(field); }
+    /** The cells Bag at the struct address, read at each use. */
+    #cells() {
+        if (this.#data === null || this.#path === null) throw new TypeError('grid structure without a Data address cannot be read or written');
+        const bag = this.#data.getItem(this.#path, null, true);
+        if (!(bag instanceof Bag)) throw new TypeError('grid structpath must resolve to a Bag');
+        return branch(branch(bag, 'view_0'), 'rows_0');
+    }
+    /** The width written in the struct for `field`, read at its address. */
+    columnWidth(field) { return this.#cells().getNode(this.#labels.get(field))?.getAttr('width'); }
+    /** The field of the cell `step` places after (negative: before) the cell of `field`, or null. */
+    adjacentField(field, step) {
+        const nodes = this.#cells().getNodes();
+        const target = nodes[nodes.findIndex(node => node.label === this.#labels.get(field)) + step];
+        return target?.getAttr('tag') === 'cell' ? target.getAttr('field') : null;
+    }
     moveColumn(field, targetField, after = false) {
-        const node = this.#nodes.get(field), target = this.#nodes.get(targetField);
-        if (!node || !target || node === target) return;
-        const bag = node.parentBag, nodes = bag.getNodes();
-        const from = nodes.indexOf(node), targetIndex = nodes.indexOf(target);
+        const label = this.#labels.get(field), targetLabel = this.#labels.get(targetField);
+        if (label === undefined || targetLabel === undefined || label === targetLabel) return;
+        const bag = this.#cells(), labels = bag.keys();
+        const from = labels.indexOf(label), targetIndex = labels.indexOf(targetLabel);
+        if (from < 0 || targetIndex < 0) return;
         const position = targetIndex + Number(after) - Number(from < targetIndex);
         if (position !== from) bag.move(from, position);
     }
     setColumnWidth(field, width) {
         if (!Number.isFinite(width) || width <= 0) throw new TypeError('grid resized width must be positive pixels');
-        this.#nodes.get(field).setAttr({width: `${Math.round(width)}px`});
+        this.#cells().getNode(this.#labels.get(field)).setAttr({width: `${Math.round(width)}px`});
     }
 }
 

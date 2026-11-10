@@ -140,8 +140,9 @@ for(const [name,engine] of Object.entries({chromium,webkit})) {
    for(const option of window.qualification.data.getItem('metrics.config.seriesOptions').getNodes())option.getValue().setItem('selected',false);
   });
   await page.waitForFunction(()=>window.qualification.data.getItem('metrics.config.valueFields')==='');
-  await chart.locator('.uplot canvas').waitFor();
-  assert.equal(await chart.getByRole('alert').isVisible(),false);
+  // No measure is a syntax error of the type: the notice replaces the chart.
+  await chart.getByRole('alert').waitFor();assert.match(await chart.getByRole('alert').textContent(),/needs at least one measure/);
+  assert.equal(await chart.locator('.uplot canvas').isVisible(),false);
   await page.evaluate(()=>window.qualification.data.setItem('metrics.config.seriesOptions.hours.selected',true));
   await page.locator('#metrics-pane-engine').selectOption('vega');await chart.locator('.measure0').waitFor();
   assert.equal(await chart.locator('.uplot').count(),0);
@@ -168,7 +169,7 @@ for(const [name,engine] of Object.entries({chromium,webkit})) {
    await page.waitForTimeout(250); // Allow the asynchronous engine switch and initial layout to settle.
    const before=await drawing();
    await page.locator('#sales-frame gramlot-search-box input').fill('Notebook');
-   await page.waitForFunction(()=>window.qualification.src.binding.nodeIds.get('salesGrid').gridCollectionView.getRows().length===5);
+   await page.waitForFunction(()=>window.qualification.src.binding.nodeIds.get('salesGrid')._internal.gridCollectionView.getRows().length===5);
    await page.waitForFunction(before=>{
     const root=document.querySelector('#sales-pane-view').shadowRoot;
     return [...root.querySelectorAll('svg,canvas')].map(n=>n.tagName.toLowerCase()==='canvas'?n.toDataURL():n.innerHTML).join('')!==before;
@@ -176,7 +177,7 @@ for(const [name,engine] of Object.entries({chromium,webkit})) {
    assert.equal(await view.getByRole('alert').isVisible(),false,engine);
    const filteredDrawing=await drawing();
    await page.locator('#sales-frame gramlot-search-box input').fill('');
-   await page.waitForFunction(()=>window.qualification.src.binding.nodeIds.get('salesGrid').gridCollectionView.getRows().length===12);
+   await page.waitForFunction(()=>window.qualification.src.binding.nodeIds.get('salesGrid')._internal.gridCollectionView.getRows().length===12);
    await page.waitForFunction(previous=>{const root=document.querySelector('#sales-pane-view').shadowRoot;return [...root.querySelectorAll('svg,canvas')].map(n=>n.tagName.toLowerCase()==='canvas'?n.toDataURL():n.innerHTML).join('')!==previous;},filteredDrawing);
   }
   assert.deepEqual(errors,[]);

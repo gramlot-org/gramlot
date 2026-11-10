@@ -3,12 +3,11 @@ import {Bag} from '@gramlot/gramlot';
 import {defineComponent} from './registry.js';
 import {Container} from './container.js';
 import {SVG_NS} from '../renderer/attributes.js';
-import {randomId} from '../random-id.js';
 import {corners, overlaps, contactFraction} from './tray-geometry.js';
 import {createTraySettings} from './tray-settings.js';
 
 export const TrayPane = defineComponent({
-    name: 'trayPane', tag: 'gramlot-tray-pane', base: Container, subTags: '*', bagStore: true,
+    name: 'trayPane', tag: 'gramlot-tray-pane', base: Container, subTags: '*', sourceContext: true,
     parameters: {storepath: {dtype: 'T'}, locked: {dtype:'B',default:false,binding:'read'},
         gridStep:{dtype:'L',default:10,binding:'read'},gridVisible:{dtype:'B',default:false,binding:'read'},
         rotationStep:{dtype:'N',default:15,binding:'read'}},
@@ -80,9 +79,10 @@ export const TrayPane = defineComponent({
             return {...rest, box_position: 'absolute',
                 ...(rest.lbl_variant == null ? {lbl_variant: 'card'} : {})};
         }
-        #store;
+        #context;
+        // The router registration on the storepath address: the geometry events reach the tray by path.
+        #geometry = null;
         #settings=new Set();
-        #subscription = `tray-${randomId()}`;
         #events;
         #scheduled = false;
         #drag;
@@ -105,24 +105,19 @@ export const TrayPane = defineComponent({
             this.style.setProperty('--tray-grid-size',`${this.parameters.gridStep}px`);
             this.style.setProperty('--tray-grid-display',this.parameters.gridVisible&&this.parameters.gridStep>0?'block':'none');
             if(this.parameters.locked)this.#finish();
+            if(this.isConnected)this.#observeGeometry();
             this.#schedule();
             return rest;
         }
-        setStoreBag(bag) {
-            if (!(bag instanceof Bag)) throw new TypeError('trayPane storepath must resolve to a Bag');
-            // External geometry changes end an in-progress gesture, without
-            // overwriting the new store. Own writes retain pointer capture.
-            if(this.#store!==bag) {
-                this.#finish();
-
-                this.#store?.unsubscribe(this.#subscription,{any:true});
-                this.#store = bag;
-                if(this.isConnected)this.#observeGeometry();
-            }
-            this.#schedule();
+        setSourceContext(context) { this.#context = context; }
+        /** The geometry Bag, read at the storepath address at each use; the tray never keeps it. */
+        #storeBag() {
+            const store = this.#context.getStaticData(this.#context.attrDatapath('storepath'));
+            if (!(store instanceof Bag)) throw new TypeError('trayPane storepath must resolve to a Bag');
+            return store;
         }
         connectedCallback() {
-            if(this.#store)this.#observeGeometry();
+            this.#observeGeometry();
             this.#events = new this.ownerDocument.defaultView.AbortController();
             const options = {signal:this.#events.signal};
             this.shadowRoot.querySelector('slot').addEventListener('slotchange', () => this.#schedule(), options);
@@ -156,7 +151,7 @@ export const TrayPane = defineComponent({
                     box.labelbox.traySettings.remove();
                     this.#settings.delete(box.labelbox.traySettings);
                     block.remove();
-                    if(this.#store.getNode(block.label))this.#store.popNode(block.label);
+                    const store=this.#storeBag();if(store.getNode(block.label))store.popNode(block.label);
                     return;
                 }
                 const settings=box.labelbox.traySettings;
@@ -168,39 +163,52 @@ export const TrayPane = defineComponent({
         disconnectedCallback() {
             for(const settings of this.#settings)settings.remove();
             this.#finish(); this.#events.abort();
-            this.#store?.unsubscribe(this.#subscription,{any:true});
+            this.#geometry?.close(); this.#geometry=null;
         }
+        /**
+         * Observe the geometry at the storepath address through a router registration. External
+         * geometry changes, a replacement of the Bag at the address and a new address end an
+         * in-progress gesture, without overwriting the new store. Own writes retain pointer capture.
+         */
         #observeGeometry() {
-            this.#store.subscribe(this.#subscription,{any:event=>{
-                if(this.#writing)return;
-                if(event.node.label!=='selected'||this.#drag?.members||this.#drag?.marquee)this.#finish();
-                if(!['layer','rotation','scale'].includes(event.node.label) || !['upd_value','upd_value_attr'].includes(event.evt))return;
-                const box=[...this.children].find(child=>
-                    this.#store.getItem([TrayPane.#blocks.get(child).label])===event.node.parentBag);
-                if(!box)return;
-                const key=event.node.label,value=event.node.value;
-                let accepted=value;
-                if(key==='layer') {
-                    if(!Number.isInteger(value) || this.#obstacles(box,value).some(other=>overlaps(this.#rectangle(box),other)))accepted=event.oldvalue;
-                } else if(typeof value!=='number'||!Number.isFinite(value)||(key==='scale'&&value<=0))accepted=event.oldvalue;
-                else {
-                    const to=this.#rectangle(box),from={...to,[key]:event.oldvalue};
-                    const fraction=contactFraction(from,to,this.#obstacles(box,event.node.parentBag.getItem('layer')),this.#bounds());
-                    accepted=event.oldvalue+(value-event.oldvalue)*fraction;
-                }
-                if(accepted!==value) {
-                    this.#writing=true;
-                    try { event.node.setValue(accepted); } finally { this.#writing=false; }
-                }
-                this.#schedule();
-            }});
+            const path=this.#context.attrDatapath('storepath');
+            if(this.#geometry?.path===path)return;
+            if(this.#geometry){this.#finish();this.#geometry.close();}
+            this.#geometry=this.#context.sourceNode.rootBuilder.binding.router.register({path,subtree:true,
+                recipient:{receive:change=>this.#geometryChange(change)}});
+        }
+        #geometryChange(event) {
+            if(this.#writing)return;
+            if(event.node.label!=='selected'||this.#drag?.members||this.#drag?.marquee)this.#finish();
+            if(!['layer','rotation','scale'].includes(event.node.label) || !['upd_value','upd_value_attr'].includes(event.evt))return;
+            // The row of the event, by address: <storepath>.<row label>.<key>.
+            const prefix=`${this.#geometry.path}.`,suffix=`.${event.node.label}`;
+            if(!event.path.startsWith(prefix)||!event.path.endsWith(suffix))return;
+            const label=event.path.slice(prefix.length,-suffix.length);
+            const box=[...this.children].find(child=>TrayPane.#blocks.get(child).label===label);
+            if(!box)return;
+            const key=event.node.label,value=event.node.value;
+            let accepted=value;
+            if(key==='layer') {
+                if(!Number.isInteger(value) || this.#obstacles(box,value).some(other=>overlaps(this.#rectangle(box),other)))accepted=event.oldvalue;
+            } else if(typeof value!=='number'||!Number.isFinite(value)||(key==='scale'&&value<=0))accepted=event.oldvalue;
+            else {
+                const to=this.#rectangle(box),from={...to,[key]:event.oldvalue};
+                const fraction=contactFraction(from,to,this.#obstacles(box,event.node.parentBag.getItem('layer')),this.#bounds());
+                accepted=event.oldvalue+(value-event.oldvalue)*fraction;
+            }
+            if(accepted!==value) {
+                this.#writing=true;
+                try { event.node.setValue(accepted); } finally { this.#writing=false; }
+            }
+            this.#schedule();
         }
         #schedule() {
             if (this.#scheduled) return;
             this.#scheduled = true;
             queueMicrotask(() => {
                 this.#scheduled = false;
-                if (!this.isConnected || !this.#store) return;
+                if (!this.isConnected) return;
                 for(const settings of this.#settings)if(![...this.children].some(box=>box.labelbox.traySettings===settings)) {
                     settings.remove();this.#settings.delete(settings);
                 }
@@ -238,11 +246,11 @@ export const TrayPane = defineComponent({
             });
         }
         #row(label) {
-            const node = this.#store.getNode([label]);
+            const store = this.#storeBag(), node = store.getNode([label]);
             let row = node?.value;
             if (!node) {
                 row = new Bag({left:0, top:0, layer:0, selected:false});
-                this.#store.setItem([label], row);
+                store.setItem([label], row);
             }
             if (!(row instanceof Bag)) throw new TypeError(`trayPane position '${label}' must be a Bag`);
             if(!row.getNode('selected'))row.setItem('selected',false);
@@ -298,7 +306,7 @@ export const TrayPane = defineComponent({
             if (!block) {
                 const rect=this.getBoundingClientRect(),overlay=this.ownerDocument.createElement('div');
                 overlay.className='tray-marquee';overlay.hidden=true;overlay.setAttribute('aria-hidden','true');
-                const marquee=[...this.children].map(child=>({box:child,row:this.#row(TrayPane.#blocks.get(child).label),
+                const marquee=[...this.children].map(child=>({box:child,label:TrayPane.#blocks.get(child).label,
                     selected:this.#row(TrayPane.#blocks.get(child).label).getItem('selected')}));
                 this.#drag={id:event.pointerId,marquee,overlay,extend:event.shiftKey,
                     x:event.clientX-rect.left-this.clientLeft,y:event.clientY-rect.top-this.clientTop};
@@ -316,8 +324,8 @@ export const TrayPane = defineComponent({
             if(!rotate&&!resize&&!move)return;
             const row = this.#row(block.label), rect = this.getBoundingClientRect();
             const members=!rotate&&!resize ? [...this.children].filter(child=>child===box||this.#row(TrayPane.#blocks.get(child).label).getItem('selected'))
-                .map(child=>({box:child,row:this.#row(TrayPane.#blocks.get(child).label),...this.#rectangle(child)})) : null;
-            this.#drag = {box, row, members, pendingSelection, extend:event.shiftKey, moved:false, id:event.pointerId, left:row.getItem('left'), top:row.getItem('top'),
+                .map(child=>({box:child,label:TrayPane.#blocks.get(child).label,...this.#rectangle(child)})) : null;
+            this.#drag = {box, label:block.label, members, pendingSelection, extend:event.shiftKey, moved:false, id:event.pointerId, left:row.getItem('left'), top:row.getItem('top'),
                 resize, rotate, angle:row.getItem('rotation'), ...this.#rectangle(box),
                 x:event.clientX-rect.left, y:event.clientY-rect.top};
             if(rotate)this.#drag.pointerAngle=Math.atan2(event.clientY-rect.top-this.clientTop-this.#drag.top-this.#drag.height/2,
@@ -335,6 +343,15 @@ export const TrayPane = defineComponent({
                 this.#write(row,{selected});
             }
         }
+        /**
+         * The rows of an in-progress gesture, read at their addresses in the store. Null when a
+         * row has left the store: the gesture ends instead of recreating it.
+         */
+        #gestureRows(labels) {
+            const store=this.#storeBag();
+            if(!labels.every(label=>store.getNode([label])))return null;
+            return labels.map(label=>this.#row(label));
+        }
         #write(row, values) {
             this.#writing = true;
             try {
@@ -348,6 +365,9 @@ export const TrayPane = defineComponent({
             if (!drag || event.pointerId !== drag.id) return;
             if(drag.marquee){this.#marqueeMove(event);return;}
             if (drag.box.parentElement !== this||drag.members?.some(member=>member.box.parentElement!==this)) { this.#finish(); return; }
+            const rows=this.#gestureRows([drag.label,...(drag.members ?? []).map(member=>member.label)]);
+            if(!rows){this.#finish();return;}
+            const [row,...memberRows]=rows;
             const rect = this.getBoundingClientRect();
             const dx=event.clientX-rect.left-drag.x,dy=event.clientY-rect.top-drag.y;
             if(drag.rotate){
@@ -358,12 +378,12 @@ export const TrayPane = defineComponent({
                 drag.pointerAngle=angle;
                 drag.angle+=delta;
                 const rotation=this.#snap(drag.angle,this.parameters.rotationStep,event.shiftKey);
-                this.#write(drag.row,this.#constrain(drag.box,drag.row,{rotation}));
+                this.#write(row,this.#constrain(drag.box,row,{rotation}));
                 this.#suppressClick=true;event.preventDefault();return;
             }
             if(drag.resize){
                 const angle=drag.rotation*Math.PI/180,c=Math.cos(angle),s=Math.sin(angle);
-                this.#resize(drag.box,drag.row,
+                this.#resize(drag.box,row,
                     this.#snap(drag.width+(c*dx+s*dy)/drag.scale,this.parameters.gridStep,event.shiftKey),
                     this.#snap(drag.height+(-s*dx+c*dy)/drag.scale,this.parameters.gridStep,event.shiftKey),drag);
                 this.#suppressClick=true;event.preventDefault();return;
@@ -373,18 +393,18 @@ export const TrayPane = defineComponent({
             const left=this.#snap(Math.round(drag.left+dx),this.parameters.gridStep,event.shiftKey),
                 top=this.#snap(Math.round(drag.top+dy),this.parameters.gridStep,event.shiftKey);
             if (left !== drag.left || top !== drag.top) this.#suppressClick = true;
-            const delta={left:left-drag.row.getItem('left'),top:top-drag.row.getItem('top')};
+            const delta={left:left-row.getItem('left'),top:top-row.getItem('top')};
             const moving=new Set(drag.members.map(member=>member.box));
             let fraction=1;
-            for(const member of drag.members) {
+            for(const [index,member] of drag.members.entries()) {
                 const from=this.#rectangle(member.box),to={...from,left:from.left+delta.left,top:from.top+delta.top};
                 const obstacles=[...this.children].filter(other=>!moving.has(other)
-                    &&this.#row(TrayPane.#blocks.get(other).label).getItem('layer')===member.row.getItem('layer'))
+                    &&this.#row(TrayPane.#blocks.get(other).label).getItem('layer')===memberRows[index].getItem('layer'))
                     .map(other=>this.#rectangle(other));
                 fraction=Math.min(fraction,contactFraction(from,to,obstacles,this.#bounds()));
             }
-            for(const member of drag.members)this.#write(member.row,{
-                left:member.row.getItem('left')+delta.left*fraction,top:member.row.getItem('top')+delta.top*fraction});
+            for(const memberRow of memberRows)this.#write(memberRow,{
+                left:memberRow.getItem('left')+delta.left*fraction,top:memberRow.getItem('top')+delta.top*fraction});
             event.preventDefault();
         }
         #marqueeMove(event) {
@@ -395,10 +415,12 @@ export const TrayPane = defineComponent({
             const moved=right>left&&bottom>top;
             Object.assign(drag.overlay.style,{left:`${left}px`,top:`${top}px`,width:`${right-left}px`,height:`${bottom-top}px`});
             drag.overlay.hidden=!moved;
-            for(const member of drag.marquee) {
-                if(member.box.parentElement!==this)continue;
+            const members=drag.marquee.filter(member=>member.box.parentElement===this);
+            const rows=this.#gestureRows(members.map(member=>member.label));
+            if(!rows){this.#finish();return;}
+            for(const [index,member] of members.entries()) {
                 const inside=moved&&corners(this.#rectangle(member.box)).every(p=>p.x>=left&&p.x<=right&&p.y>=top&&p.y<=bottom);
-                this.#write(member.row,{selected:inside||(drag.extend&&member.selected)});
+                this.#write(rows[index],{selected:inside||(drag.extend&&member.selected)});
             }
             this.#suppressClick ||= moved;event.preventDefault();
         }
@@ -406,12 +428,14 @@ export const TrayPane = defineComponent({
         #cancel() {
             const drag = this.#drag;
             if(drag.marquee) {
-                for(const member of drag.marquee)if(member.box.parentElement===this)this.#write(member.row,{selected:member.selected});
+                for(const member of drag.marquee)if(member.box.parentElement===this&&this.#gestureRows([member.label]))
+                    this.#write(this.#row(member.label),{selected:member.selected});
             }
             else if(drag.members)for(const member of drag.members) {
-                if(member.box.parentElement===this)this.#write(member.row,{left:member.left,top:member.top});
+                if(member.box.parentElement===this&&this.#gestureRows([member.label]))
+                    this.#write(this.#row(member.label),{left:member.left,top:member.top});
             }
-            else if (drag.box.parentElement === this) this.#write(drag.row,drag.rotate ? {rotation:drag.rotation} : drag.resize
+            else if (drag.box.parentElement === this&&this.#gestureRows([drag.label])) this.#write(this.#row(drag.label),drag.rotate ? {rotation:drag.rotation} : drag.resize
                 ? {left:drag.left,top:drag.top,width:drag.width,height:drag.height} : {left:drag.left,top:drag.top});
             this.#suppressClick = false;
             this.#finish();

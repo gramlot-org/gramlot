@@ -13,7 +13,9 @@ export const DrawingPane = defineComponent({
     parameters:{image:{dtype:'T',nullable:true,default:null,binding:'read'},
         annotations:{dtype:'X',binding:'read'}},
     implementation:Base => class extends Base {
-        #svg; #image; #editor; #editing; #state; #statePath; #stateSubscription = `drawing-state-${randomId()}`; #syncing = false; #built = false; #lastColor; #lastSize; #bag; #subscription = `drawing-${randomId()}`;
+        // The annotations are read at the address of the `annotations` pointer at each use; the
+        // tool state lives in the node's private Data area and is observed through a router registration.
+        #svg; #image; #editor; #editing; #stateRegistration = null; #syncing = false; #built = false; #lastColor; #lastSize; #annotationsPath = null;
         #tool='select'; #selected=null; #gesture=null; #dimensions=[1000,1000]; #url=null; #events;
         constructor() {
             super();
@@ -33,6 +35,16 @@ export const DrawingPane = defineComponent({
             this.#image=d.createElement('img');
         }
         setSourceContext(context) { this.context=context; }
+        /** The tool state address: the private Data area of the drawingPane node (`workspaceDatapath`). */
+        get #statePath() { return this.context.sourceNode.workspaceDatapath; }
+        #state(key) { return this.context.getStaticData(`${this.#statePath}.${key}`); }
+        #setState(key,value) { this.context.sourceNode.data.setItem(`${this.#statePath}.${key}`,value); }
+        /** The annotations Bag, read at the address of the `annotations` pointer at each use; never kept. */
+        #annotations() {
+            const bag=this.context.getStaticData(this.#annotationsPath);
+            if(!(bag instanceof Bag))throw new TypeError('drawingPane annotations requires a Data Bag');
+            return bag;
+        }
         projectAttributes(attrs,adapt) {
             const rest=super.projectAttributes(attrs,adapt);
             if(this.isConnected)this.#connect();
@@ -42,21 +54,24 @@ export const DrawingPane = defineComponent({
             this.#events=new this.ownerDocument.defaultView.AbortController();const options={signal:this.#events.signal};
             this.#makeToolbar();
             if(!this.isConnected)return;
-            this.#state.subscribe(this.#stateSubscription,{any:()=>this.#stateChanged()});
+            this.#stateRegistration=this.context.sourceNode.rootBuilder.binding.router.register({path:this.#statePath,subtree:true,
+                recipient:{receive:()=>this.#stateChanged()}});
             this.#svg.addEventListener('pointerdown',e=>this.#down(e),options);
             this.#svg.addEventListener('pointermove',e=>this.#move(e),options);
             this.#svg.addEventListener('pointerup',e=>this.#up(e),options);
             this.#svg.addEventListener('pointercancel',()=>{this.#gesture=null;this.#render();},options);
-            this.#svg.addEventListener('dblclick',e=>{const id=e.target.closest('[data-id]')?.dataset.id;if(id&&this.#bag.getItem(id)?.getItem('type')==='text'){this.#gesture=null;this.#editText(id);e.preventDefault();}},options);
+            this.#svg.addEventListener('dblclick',e=>{const id=e.target.closest('[data-id]')?.dataset.id;if(id&&this.#annotations().getItem(id)?.getItem('type')==='text'){this.#gesture=null;this.#editText(id);e.preventDefault();}},options);
             this.#editor.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();this.#finishText(true);}else if(e.key==='Escape'){e.preventDefault();this.#finishText(false);}},options);
             this.#editor.addEventListener('blur',()=>this.#finishText(true),options);
             this.#connect();
         }
-        disconnectedCallback() {this.#finishText(false);this.#events?.abort();this.#events=null;this.#state?.unsubscribe(this.#stateSubscription,{any:true});this.#bag?.unsubscribe(this.#subscription,{any:true});this.#bag=null;this.#image.onload=null;this.#image.onerror=null;this.#url=null;this.#gesture=null;}
+        disconnectedCallback() {this.#finishText(false);this.#events?.abort();this.#events=null;this.#stateRegistration?.close();this.#stateRegistration=null;this.#annotationsPath=null;this.#image.onload=null;this.#image.onerror=null;this.#url=null;this.#gesture=null;}
         #connect() {
-            const bag=this.parameters.annotations;
-            if(!(bag instanceof Bag))throw new TypeError('drawingPane annotations requires a Data Bag');
-            if(bag!==this.#bag){this.#bag?.unsubscribe(this.#subscription,{any:true});this.#bag=bag;bag.subscribe(this.#subscription,{any:()=>this.#render()});this.#selected=null;}
+            // `annotations` is a `^` parameter of dtype 'X': a change inside the Bag or a replacement at its
+            // address projects the pane again. A new address ends the selection.
+            const path=this.context.attrDatapath('annotations');
+            if(path!==this.#annotationsPath){this.#annotationsPath=path;this.#selected=null;}
+            this.#annotations();
             const url=this.parameters.image;
             if(url!==this.#url){
                 this.#url=url;this.#gesture=null;
@@ -74,20 +89,18 @@ export const DrawingPane = defineComponent({
             if(this.#built)return;
             const node=this.context.sourceNode,builder=node.rootBuilder;
             const existing=node.value?.getNode('bar');
-            if(existing){this.#state=node.drawingState;this.#statePath=node.drawingStatePath;existing.drawingController=this;this.#built=true;this.#tool=this.#state.getItem('tool');this.#lastColor=this.#state.getItem('color');this.#lastSize=this.#state.getItem('size');return;}
-            this.#statePath=`_gramlot.drawing.${randomId()}`;
-            this.#state=new Bag({tool:'select',color:'#dd2222',size:3});
-            node.setRelativeData(this.#statePath,this.#state);
-            Object.defineProperty(node,'drawingState',{value:this.#state,configurable:true});
-            Object.defineProperty(node,'drawingStatePath',{value:this.#statePath,configurable:true});
-            this.#lastColor=this.#state.getItem('color');this.#lastSize=this.#state.getItem('size');
+            if(existing){existing._internal.drawingController=this;this.#built=true;this.#tool=this.#state('tool');this.#lastColor=this.#state('color');this.#lastSize=this.#state('size');return;}
+            // The private area keeps the tool state of an earlier build of the same node.
+            if(!(this.#state('tool')&&this.#state('color')&&this.#state('size')))
+                node.data.setItem(this.#statePath,new Bag({tool:'select',color:'#dd2222',size:3}));
+            this.#tool=this.#state('tool');this.#lastColor=this.#state('color');this.#lastSize=this.#state('size');
             const fragment=new builder.source.constructor(null,builder),root=builder.wrapSource(fragment);
             const bar=root.menu({node_label:'bar',presentation:'bar',orientation:'vertical',labelPosition:'tooltip',iconSize:20,aria_label:'Image annotations'});
-            Object.defineProperty(sourceTarget(bar),'drawingController',{value:this,configurable:true,writable:true});
+            sourceTarget(bar)._internal.drawingController=this;
             const paths={select:'M5 3l13 11-6 .5-3 5z',freehand:'M4 20l3.5-.7L19 7.8 16.2 5 4.7 16.5z M14.7 6.5l2.8 2.8',arrow:'M4 19L19 4 M12 4h7v7',circle:'M20 12a8 8 0 1 1-16 0 8 8 0 0 1 16 0z',text:'M4 5h16 M12 5v14 M8 19h8',delete:'M4 7h16 M9 7V4h6v3 M7 7l1 13h8l1-13 M10 10v7 M14 10v7'};
             const icon=key=>'data:image/svg+xml,'+encodeURIComponent(`<svg xmlns="${SVG_NS}" viewBox="0 0 24 24" fill="none" stroke="#7e93ad" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${paths[key]}"/></svg>`);
             for(const [tool,label] of [['select','Select'],['freehand','Draw'],['arrow','Arrow'],['circle','Circle'],['text','Text']]){
-                bar.menuline({caption:label,tooltip:label,iconSrc:icon(tool),checked:`^${this.#statePath}.tool:={} === '${tool}'`,action:`this.parentBag.parentNode.drawingController.setTool('${tool}')`});
+                bar.menuline({caption:label,tooltip:label,iconSrc:icon(tool),checked:`^${this.#statePath}.tool:={} === '${tool}'`,action:`this.parentBag.parentNode._internal.drawingController.setTool('${tool}')`});
             }
             bar.contentPane({height:'1px',margin:'6px 4px',background:'var(--gramlot-border-control,#a8b2bf)'});
             const circleIcon=color=>'data:image/svg+xml,'+encodeURIComponent(`<svg xmlns="${SVG_NS}" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="${color}" stroke="#8793a3" stroke-width="1.5"/></svg>`);
@@ -102,15 +115,15 @@ export const DrawingPane = defineComponent({
             for(const size of [1,3,5,7,12,20])sizeMenu.menuline({caption:`${size} px`,iconSrc:strokeIcon(Math.min(size,12)),checked:`^${this.#statePath}.size:={} === ${size}`,action:`this.SET('${this.#statePath}.size', ${size});`});
             sizeMenu.contentPane({padding:'8px'}).numberTextBox({value:`^${this.#statePath}.size`,lbl:'Custom size',aria_label:'Pen size',dtype:'L',min:1,max:20,width:'140px'});
             bar.contentPane({flex:'1',min_height:'12px'});
-            bar.menuline({caption:'Delete',tooltip:'Delete',iconSrc:icon('delete'),action:'this.parentBag.parentNode.drawingController.deleteSelection()'});
+            bar.menuline({caption:'Delete',tooltip:'Delete',iconSrc:icon('delete'),action:'this.parentBag.parentNode._internal.drawingController.deleteSelection()'});
             const app=builder.binding.gramlot,source=app.src.prepareSource(fragment);
             app.src.renderer.validateCandidate(source);this.#built=true;node.setValue(source);
         }
-        setTool(tool){this.#finishText(true);this.#gesture=null;this.#state.setItem('tool',tool);}
-        deleteSelection(){if(this.#selected){this.#bag.popNode(this.#selected);this.#selected=null;this.#render();}}
+        setTool(tool){this.#finishText(true);this.#gesture=null;this.#setState('tool',tool);}
+        deleteSelection(){if(this.#selected){this.#annotations().popNode(this.#selected);this.#selected=null;this.#render();}}
         #stateChanged(){
-            const tool=this.#state.getItem('tool');this.#tool=tool;
-            const color=this.#state.getItem('color'),size=this.#state.getItem('size');
+            const tool=this.#state('tool');this.#tool=tool;
+            const color=this.#state('color'),size=this.#state('size');
             const changed=color!==this.#lastColor||size!==this.#lastSize;this.#lastColor=color;this.#lastSize=size;
             if(changed&&!this.#syncing)this.#styleSelection();
             this.#render();
@@ -125,9 +138,9 @@ export const DrawingPane = defineComponent({
             const id=event.target.closest('[data-id]')?.getAttribute('data-id');
             if(this.#tool==='select'){
                 this.#selected=id||null;
-                if(id){const value=this.#bag.getItem(id);if(!(value instanceof Bag))throw new TypeError('Annotation must be a Bag');const row=this.#read(value);this.#syncing=true;try{this.#state.setItem('color',row.color);this.#state.setItem('size',row.width);}finally{this.#syncing=false;}this.#gesture={id,start:point,original:row};}
+                if(id){const value=this.#annotations().getItem(id);if(!(value instanceof Bag))throw new TypeError('Annotation must be a Bag');const row=this.#read(value);this.#syncing=true;try{this.#setState('color',row.color);this.#setState('size',row.width);}finally{this.#syncing=false;}this.#gesture={id,start:point,original:row};}
             }else if(this.#tool==='text'){
-                const value=id?this.#bag.getItem(id):null;
+                const value=id?this.#annotations().getItem(id):null;
                 this.#editText(value instanceof Bag&&value.getItem('type')==='text'?id:null,point);
             }else {this.#selected=null;this.#gesture={start:point,current:point,points:[point]};}
             if(this.#gesture)this.#svg.setPointerCapture(event.pointerId);this.#render();event.preventDefault();
@@ -135,20 +148,20 @@ export const DrawingPane = defineComponent({
         #move(event){if(!this.#gesture||!this.#dimensions)return;const point=this.#point(event);if(!point)return;this.#gesture.current=point;if(this.#tool==='freehand')this.#gesture.points.push(point);this.#render();}
         #up(event){
             if(!this.#gesture)return;this.#move(event);const gesture=this.#gesture;this.#gesture=null;
-            if(gesture.id){const delta={x:gesture.current.x-gesture.start.x,y:gesture.current.y-gesture.start.y};const row=this.#translate(gesture.original,delta);this.#bag.setItem(gesture.id,new Bag(row));}
+            if(gesture.id){const delta={x:gesture.current.x-gesture.start.x,y:gesture.current.y-gesture.start.y};const row=this.#translate(gesture.original,delta);this.#annotations().setItem(gesture.id,new Bag(row));}
             else {const {start,current,points}=gesture;let row;
                 if(this.#tool==='arrow')row={type:'arrow',x:start.x,y:start.y,x2:current.x,y2:current.y};
                 else if(this.#tool==='circle')row={type:'circle',x:start.x,y:start.y,radius:Math.hypot(current.x-start.x,current.y-start.y)};
                 else if(this.#tool==='freehand')row={type:'freehand',points};
-                if(row)this.#insert({...row,color:this.#state.getItem('color'),width:this.#penSize()});
+                if(row)this.#insert({...row,color:this.#state('color'),width:this.#penSize()});
             }
             if(this.#svg.hasPointerCapture(event.pointerId))this.#svg.releasePointerCapture(event.pointerId);this.#render();
         }
-        #insert(row){const id=`item_${randomId()}`;this.#bag.setItem(id,new Bag(row));this.#selected=id;}
-        #penSize(){const value=this.#state.getItem('size');return Number.isFinite(value)?Math.max(1,Math.min(20,value)):3;}
-        #styleSelection(){if(!this.#selected)return;const value=this.#bag.getItem(this.#selected);if(!(value instanceof Bag))return;const row=this.#read(value);row.color=this.#state.getItem('color');row.width=this.#penSize();this.#bag.setItem(this.#selected,new Bag(row));}
+        #insert(row){const id=`item_${randomId()}`;this.#annotations().setItem(id,new Bag(row));this.#selected=id;}
+        #penSize(){const value=this.#state('size');return Number.isFinite(value)?Math.max(1,Math.min(20,value)):3;}
+        #styleSelection(){if(!this.#selected)return;const value=this.#annotations().getItem(this.#selected);if(!(value instanceof Bag))return;const row=this.#read(value);row.color=this.#state('color');row.width=this.#penSize();this.#annotations().setItem(this.#selected,new Bag(row));}
         #editText(id,point){
-            this.#finishText(true);const row=id?this.#read(this.#bag.getItem(id)):{type:'text',...point,text:'',color:this.#state.getItem('color'),width:this.#penSize()};
+            this.#finishText(true);const row=id?this.#read(this.#annotations().getItem(id)):{type:'text',...point,text:'',color:this.#state('color'),width:this.#penSize()};
             this.#selected=id;this.#editing={id,row};this.#editor.value=row.text;this.#editor.hidden=false;
             const svgPoint=this.#svg.createSVGPoint();svgPoint.x=row.x;svgPoint.y=row.y;const matrix=this.#svg.getScreenCTM();if(!matrix){this.#finishText(false);return;}
             const position=svgPoint.matrixTransform(matrix),box=this.controlBox.getBoundingClientRect();
@@ -158,8 +171,8 @@ export const DrawingPane = defineComponent({
         }
         #finishText(commit){
             if(!this.#editing)return;const {id,row}=this.#editing;this.#editing=null;const text=this.#editor.value.trim();this.#editor.hidden=true;
-            if(commit&&text){row.text=text;if(id)this.#bag.setItem(id,new Bag(row));else this.#insert(row);}
-            if(commit)this.#state.setItem('tool','select');
+            if(commit&&text){row.text=text;if(id)this.#annotations().setItem(id,new Bag(row));else this.#insert(row);}
+            if(commit)this.#setState('tool','select');
             this.#render();
         }
         #read(row){
@@ -183,16 +196,16 @@ export const DrawingPane = defineComponent({
             return g;
         }
         #render(){
-            if(!this.#svg||!this.#bag)return;this.#svg.replaceChildren();if(!this.#dimensions)return;
+            if(!this.#svg||!this.#annotationsPath)return;this.#svg.replaceChildren();if(!this.#dimensions)return;
             const [width,height]=this.#dimensions;this.#svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
             if(this.#url)this.#svg.append(this.#element('image',{href:this.#url,x:0,y:0,width,height,'pointer-events':'none'}));
-            for(const node of this.#bag.getNodes()){
+            for(const node of this.#annotations().getNodes()){
                 const value=node.getValue();if(!(value instanceof Bag))throw new TypeError('Annotation must be a Bag');let row=this.#read(value);
                 if(this.#gesture?.id===node.label&&this.#gesture.current)row=this.#translate(this.#gesture.original,{x:this.#gesture.current.x-this.#gesture.start.x,y:this.#gesture.current.y-this.#gesture.start.y});
                 const shape=this.#shape(row,node.label);this.#svg.append(shape);
                 if(row.type==='text'){const bounds=shape.querySelector('text').getBBox(),hit=shape.querySelector('[data-text-hit]');for(const name of ['x','y','width','height'])hit.setAttribute(name,bounds[name]);}
             }
-            const g=this.#gesture;if(g&&!g.id&&g.current){let row;if(this.#tool==='arrow')row={type:'arrow',x:g.start.x,y:g.start.y,x2:g.current.x,y2:g.current.y};if(this.#tool==='circle')row={type:'circle',x:g.start.x,y:g.start.y,radius:Math.hypot(g.current.x-g.start.x,g.current.y-g.start.y)};if(this.#tool==='freehand')row={type:'freehand',points:g.points};if(row)this.#svg.append(this.#shape({...row,color:this.#state.getItem('color'),width:this.#penSize()},''));}
+            const g=this.#gesture;if(g&&!g.id&&g.current){let row;if(this.#tool==='arrow')row={type:'arrow',x:g.start.x,y:g.start.y,x2:g.current.x,y2:g.current.y};if(this.#tool==='circle')row={type:'circle',x:g.start.x,y:g.start.y,radius:Math.hypot(g.current.x-g.start.x,g.current.y-g.start.y)};if(this.#tool==='freehand')row={type:'freehand',points:g.points};if(row)this.#svg.append(this.#shape({...row,color:this.#state('color'),width:this.#penSize()},''));}
         }
     }
 });

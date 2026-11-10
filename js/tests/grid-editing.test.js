@@ -4,10 +4,13 @@ import {JSDOM} from 'jsdom';
 import {Bag, Gramlot, GramlotBuilder} from '../src/index.js';
 import inputs from '../src/components/inputs.js';
 import grid from '../src/components/grid.js';
+import {GridCellEditor} from '../src/components/grid-cell-editor.js';
+import {GramlotBuilderBagNode} from '../src/builder/source.js';
 import {layoutWindow} from './helpers/layout-window.js';
+import {assertFieldMapsByAddress} from './helpers/editing-session-addresses.js';
 
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
-async function fixture(t, {mode='values', form=false, nameColumn={}, nameValue=i=>`Item ${i}`,count=1000} = {}) {
+async function fixture(t, {mode='values', form=false, nameColumn={}, nameValue=i=>`Item ${i}`,amountEdit={validate_min:0},count=1000} = {}) {
     const {window} = new JSDOM('<main id="gramlot-root"></main>');
     const layout = layoutWindow(window);
     for (const name of ['showPopover','hidePopover','scrollIntoView']) window.HTMLElement.prototype[name] = function() {};
@@ -23,7 +26,7 @@ async function fixture(t, {mode='values', form=false, nameColumn={}, nameValue=i
     const g = pane.grid({node_label:'grid',id:'grid',storepath:'.rows',rowMode:mode,rowHeaders:true});
     const s = g.struct();
     s.column({field:'name',edit:{validate_notnull:true},...nameColumn});
-    s.column({field:'amount',dtype:'L',edit:{validate_min:0}});
+    s.column({field:'amount',dtype:'L',edit:amountEdit});
     app.src.startSource(builder.toTytx()); await tick(); layout.flush();
     const host=window.document.getElementById('grid'), body=host.shadowRoot.querySelector('.body-viewport');
     Object.defineProperty(body,'clientHeight',{value:320});layout.flush();
@@ -32,7 +35,7 @@ async function fixture(t, {mode='values', form=false, nameColumn={}, nameValue=i
     const cell=(row,field)=>host.shadowRoot.querySelector(`tr[data-row="${row}"] td[data-field="${field}"]`);
     const open=async(row='r0',field='amount')=>{cell(row,field).dispatchEvent(new window.MouseEvent('dblclick',{bubbles:true}));await tick();if(failures.length)throw failures[0];return host.querySelector('[slot=cell-editor] gramlot-number-text-box');};
     const edit=(element,text,commit=false)=>{element.control.value=text;element.control.dispatchEvent(new window.Event('input',{bubbles:true}));if(commit)element.control.dispatchEvent(new window.Event('change',{bubbles:true}));};
-    const scroll=async(index)=>{body.scrollTop=source.gridRowLayout.offset(index);body.dispatchEvent(new window.Event('scroll'));layout.flush();await tick();layout.flush();};
+    const scroll=async(index)=>{body.scrollTop=source._internal.gridRowLayout.offset(index);body.dispatchEvent(new window.Event('scroll'));layout.flush();await tick();layout.flush();};
     return {window,app,host,source,rows,cell,open,edit,scroll,layout,mode};
 }
 for (const mode of ['values','attributes']) {
@@ -80,6 +83,18 @@ test('grid changes include attribute originals and returning to baseline removes
     assert.equal(change.getItem('currentAttributes.amount'),9);
     f.edit(editor,'1',true);await tick();assert.equal(session.status.dirty,false);
 });
+test('a row reloaded with a new node at the same path keeps its invalid draft and error',async t=>{
+    const f=await fixture(t);const editor=await f.open();
+    f.edit(editor,'-',true);await tick();const session=f.source.formState;
+    const path='record.rows.r0.amount', before=f.app.data.getNode(path);
+    assert.equal(session.fieldStatus(path).draft,'-');
+    f.rows.setItem('r0',new Bag({name:'Item 0',amount:1}));await tick();await tick();
+    assert.notEqual(f.app.data.getNode(path),before);
+    assert.equal(session.fieldStatus(path).draft,'-');
+    assert.equal(session.registers.getItem('drafts').length,1);
+    assert.equal(session.registers.getItem('errors').length,1);
+    assert.equal(session.status.valid,false);
+});
 test('removing a row clears its suspended drafts/errors, while restore resets the whole shared scope',async t=>{
     const f=await fixture(t,{form:true});const editor=await f.open();f.edit(editor,'-',true);await tick();await f.scroll(500);
     f.rows.popNode('r0');await tick();await tick();
@@ -102,6 +117,63 @@ test('Tab commits through the common adapter, moves in view order, and Escape di
     assert.equal(f.source.formState.registers.getItem('drafts').length,0);
 });
 
+test('editor declarations keep plain values and find the container and control by address',async t=>{
+    const editors=[],configure=GridCellEditor.prototype.configure;
+    GridCellEditor.prototype.configure=function(...args){editors.push(this);return configure.apply(this,args);};
+    t.after(()=>{GridCellEditor.prototype.configure=configure;});
+    const f=await fixture(t);let editor=await f.open();
+    const [cellEditor]=new Set(editors);
+    const plain=value=>{
+        assert.ok(!(value instanceof GramlotBuilderBagNode) && !(value instanceof Bag),'no Source node or Bag');
+        if (value && typeof value==='object') {
+            assert.equal(Object.getPrototypeOf(value),Object.prototype);
+            for (const item of Object.values(value)) plain(item);
+        }
+    };
+    assert.equal(cellEditor.declarations.size,1);
+    for (const declaration of cellEditor.declarations.values()) {
+        assert.deepEqual(Object.keys(declaration).sort(),['field','id','options','tag']);
+        plain(declaration);
+        const container=f.source.value.getNode(declaration.id);
+        assert.equal(cellEditor.container(declaration),container);
+        assert.equal(cellEditor.control(declaration).getAttr('id'),declaration.id);
+    }
+    f.edit(editor,'21');
+    editor.control.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'Enter',bubbles:true,composed:true}));await tick();
+    assert.equal(f.rows.getItem('r0.amount'),21);
+    assert.equal(cellEditor.declarations.size,0,'a committed clean field releases its declaration');
+    assert.equal(f.source.value.getNodes().filter(node=>node.label.startsWith('grid-cell-')).length,0,'its container is removed');
+    editor=await f.open('r1');f.edit(editor,'-');
+    editor.control.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true,composed:true}));await tick();
+    assert.equal(f.rows.getItem('r1.amount'),2);
+    assert.equal(f.source.formState.registers.getItem('drafts').length,0);
+});
+for (const mode of ['values','attributes']) {
+    test(`${mode}: =#ROW in column edit options reads the edited row, as legacy condition_*='=#ROW.x'`,async t=>{
+        const f=await fixture(t,{mode,count:2,amountEdit:{validate_min:0,placeholder:'=#ROW.name'}});
+        let editor=await f.open('r0');
+        assert.equal(editor.control.placeholder,'Item 0');
+        const control=f.source.value.getNode(editor.id).value.getNodes()[0];
+        assert.equal(control.getAttr('placeholder'),mode==='values'?'=record.rows.r0.name':'=record.rows.r0?name','the option stays an address');
+        editor.control.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true,composed:true}));await tick();
+        editor=await f.open('r1');
+        assert.equal(editor.control.placeholder,'Item 1');
+        const struct=f.source.getRelativeData(f.source.getAttr('structpath'));
+        struct.getNode('view_0.rows_0.cell_amount').setAttr({edit:{validate_min:0,placeholder:'=#ROW.name:Row {}'}});
+        await tick();await tick();f.layout.flush();
+        assert.equal(editor.control.placeholder,'Row Item 1','a changed struct applies the options to the edited row');
+    });
+    test(`${mode}: ^#ROW in column edit options follows the edited row, as legacy condition_*='^#ROW.x'`,async t=>{
+        const f=await fixture(t,{mode,count:2,amountEdit:{validate_min:0,placeholder:'^#ROW.name'}});
+        const editor=await f.open('r0');
+        assert.equal(editor.control.placeholder,'Item 0');
+        if (mode==='values') f.rows.getItem('r0').setItem('name','Renamed');
+        else f.rows.getNode('r0').setAttr({name:'Renamed'});
+        await tick();await tick();
+        assert.equal(editor.control.placeholder,'Renamed');
+        assert.equal(f.rows.getItem(mode==='values'?'r1.name':'r1?name'),'Item 1');
+    });
+}
 test('local load establishes one baseline for both form fields and grid rows',async t=>{
     const f=await fixture(t,{form:true});const session=f.source.formState;
     const rows=new Bag();rows.setItem('fresh',new Bag({name:'Loaded',amount:27}));
@@ -152,6 +224,14 @@ for (const mode of ['values','attributes']) {
         assert.equal(session.validations.size,0,'clean suspended field releases semantic resources');
     });
 }
+test('grid editing session maps reference editor Source nodes by fullpath',async t=>{
+    const f=await fixture(t,{form:true}),calls=await remoteField(f),session=f.source.formState;
+    const editor=await f.open();f.edit(editor,'19',true);await tick();
+    assert.equal(session.validations.size>0,true);assertFieldMapsByAddress(session);
+    await f.scroll(500);assertFieldMapsByAddress(session);
+    calls.at(-1).resolve({value:21});await tick();
+    assert.equal(f.rows.getItem('r0.amount'),21);assertFieldMapsByAddress(session);
+});
 test('reopening a pending field attaches a fresh control without cancelling or repeating its request',async t=>{
     const f=await fixture(t),calls=await remoteField(f);
     let editor=await f.open();f.edit(editor,'19',true);await tick();const count=calls.length,request=calls.at(-1),old=editor;
@@ -170,7 +250,7 @@ test('normalization and callbacks retain real Source context after unmount',asyn
     const contexts=[];
     f.app.src.logicRegistry.register(class {accepted(node,kw) {contexts.push({node,value:kw.value});node.setRelativeData('.checked',kw.value);}}, {resource:'test:session-callback'});
     const editor=await f.open();f.edit(editor,'19',true);await tick();
-    const node=[...f.source.formState.validations.keys()][0];await f.scroll(500);
+    const node=f.source.formState.fieldNode([...f.source.formState.validations.keys()][0]);await f.scroll(500);
     calls.at(-1).resolve({value:23,data:new Bag({patched:true})});await tick();
     assert.equal(f.rows.getItem('r0.amount'),23);assert.equal(f.app.data.getItem('record.checked'),23);
     assert.equal(f.app.data.getItem('record.patched'),true);
@@ -237,7 +317,7 @@ test('wrong-type normalization is rejected equally with and without an editor',a
 test('Source rule updates on an unmounted editor do not recreate its DOM',async t=>{
     const f=await fixture(t),calls=await remoteField(f);
     const editor=await f.open();f.edit(editor,'19',true);await tick();
-    const node=[...f.source.formState.validations.keys()][0],request=calls.at(-1);
+    const node=f.source.formState.fieldNode([...f.source.formState.validations.keys()][0]),request=calls.at(-1);
     await f.scroll(500);node.setAttr({validate_min:20});await tick();
     assert.equal(request.signal.aborted,true);assert.equal(f.source.formState.status.valid,false);
     assert.equal(f.host.querySelector('[slot=cell-editor]'),null);
@@ -248,7 +328,7 @@ test('Source rule updates on an unmounted editor do not recreate its DOM',async 
 
 test('changing validation rules preserves an unparseable suspended draft',async t=>{
     const f=await fixture(t),editor=await f.open();f.edit(editor,'-',true);await tick();
-    const node=[...f.source.formState.validations.keys()][0];
+    const node=f.source.formState.fieldNode([...f.source.formState.validations.keys()][0]);
     await f.scroll(500);node.setAttr({validate_min:20});await tick();
     assert.equal(f.source.formState.registers.getItem('drafts').getNodes()[0].value,'-');
     await f.scroll(0);assert.equal((await f.open()).control.value,'-');
@@ -482,9 +562,12 @@ for(const action of ['restore','dispose']) {
         const f=await fixture(t,{count:20});const calls=await remoteField(f);
         const session=f.source.formState,pending=session.validate();await tick();
         assert.ok(calls.length>0);
+        const started=[...calls];
         if(action==='restore')session.restore();else f.app.dispose();
         assert.equal(await pending,false);
-        for(const call of calls){assert.equal(call.signal.aborted,true);call.resolve({value:999});}
+        // Retained cell fields follow the row key: restore validates them again on the restored values.
+        for(const call of started){assert.equal(call.signal.aborted,true);call.resolve({value:999});}
+        for(const call of calls.slice(started.length))call.resolve(true);
         await tick();
         if(action==='restore')assert.equal(f.app.data.getItem('record.rows.r0.amount'),1);
     });

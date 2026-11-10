@@ -26,7 +26,7 @@ try {
         const image = new Image(); image.src = canvas.toDataURL('image/png'); await image.decode();
         const original = new File(['original'], 'original.png', {type:'image/png'});
         globalThis.makeDialog = () => {
-            const editor = new ImageCropDialog({state:new Bag(),document,original,image,sourceWidth:4,sourceHeight:2,
+            const editor = new ImageCropDialog({data:new Bag(),path:'crop',document,original,image,sourceWidth:4,sourceHeight:2,
                 width:2,height:2,x:0,y:0,zoom:1,rotate:0,outputWidth:4,outputHeight:4,type:'image/png'});
             globalThis.editorResult = editor.open();
         };

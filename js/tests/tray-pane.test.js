@@ -101,6 +101,27 @@ test('replacement store restores the same DOM and ends the old drag; removal rel
     assert.equal(f.box.hasAttribute('data-moving'),false);
 });
 
+test('drag reads its rows at their addresses; a row missing mid-gesture ends it without recreation',async t => {
+    const f = await fixture(t), original = f.store.getItem('card');
+    // Untriggered replacements: the tray receives no event and reads the address on the next move.
+    const quietly = (path,value) => f.app.data.setItem(path,value,null,'>',false,true,null,false,false);
+    f.send(f.box.labelbox.fieldLabel,'pointerdown',20,30);
+    f.send(f.host,'pointermove',40,50);
+    assert.equal(original.getItem('left'),30);assert.equal(original.getItem('top'),40);
+    const replacement=new Bag({layer:0,left:30,top:40,selected:true,rotation:0,scale:1});
+    quietly('scope.layout.card',replacement);
+    f.send(f.host,'pointermove',60,70);
+    assert.equal(replacement.getItem('left'),50);assert.equal(replacement.getItem('top'),60);
+    assert.equal(original.getItem('left'),30);assert.equal(original.getItem('top'),40);
+    assert.equal(f.box.hasAttribute('data-moving'),true);
+    const empty=new Bag();
+    quietly('scope.layout',empty);
+    f.send(f.host,'pointermove',80,90);
+    assert.equal(empty.getNode('card'),null);
+    assert.equal(f.box.hasAttribute('data-moving'),false);
+    assert.equal(f.host.hasPointerCapture(1),false);
+});
+
 test('same labels in two trays are isolated; new block positions initialize in Data',async t => {
     const f = await fixture(t,(root,app) => {
         app.data.setItem('scope.other',new Bag());
@@ -213,7 +234,7 @@ test('layer change refuses overlap using the Bag old value; the bound editor and
 test('ordinary tray reprojection keeps the gesture; actual external geometry changes stop it',async t=>{
     const f=await fixture(t),row=f.store.getItem('card');
     f.send(f.box.labelbox.fieldLabel,'pointerdown',20,30);
-    f.host.setStoreBag(f.store);
+    f.app.src.renderer.project(f.app.src.renderer.getBaseSourceNode(f.host));
     f.send(f.host,'pointermove',40,50);assert.equal(row.getItem('left'),30);
     row.setItem('top',75);
     f.send(f.host,'pointermove',80,80);assert.equal(row.getItem('left'),30);assert.equal(row.getItem('top'),75);
@@ -606,4 +627,18 @@ test('tray close is opt-in and obeys layout lock and dynamic closable changes',a
     card.setAttr({closable:true});await settle();
     assert.equal(f.box.labelbox.closeButton,button);
     assert.equal(button.hidden,false);
+});
+
+test('the tray observes its geometry at the storepath address and follows a new address',async t=>{
+    const f=await fixture(t), router=f.app.src.renderer.binding.router, row=f.store.getItem('card');
+    assert.deepEqual(Object.keys(f.store._updSubscribers),[],'the tray keeps no subscription on the geometry Bag');
+    const other=new Bag({card:new Bag({layer:0,left:70,top:40})});
+    f.app.data.setItem('scope.other',other);
+    const size=router.size;
+    sourceTarget(f.card).parentNode.setAttr({storepath:'.other'});await settle();
+    assert.equal(router.size,size,'the registration moves to the new address');
+    assert.equal(f.box.style.left,'70px');
+    row.setItem('left',5);await settle();assert.equal(f.box.style.left,'70px','the old address no longer reaches the tray');
+    other.getItem('card').setItem('left',90);await settle();assert.equal(f.box.style.left,'90px');
+    f.host.remove();assert.equal(router.size,size-1,'disconnection closes the geometry registration');
 });

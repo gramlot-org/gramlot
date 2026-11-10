@@ -1,6 +1,6 @@
 import {Bag} from '@genrojs/bag';
 import {BagCollectionView} from '../stores/bag-collection-view.js';
-import {BagCollectionStore} from '../stores/bag-collection-store.js';
+import {BagCollectionStore, collectionKey} from '../stores/bag-collection-store.js';
 import {SourceBag} from '@genrojs/builders';
 import {DataRouter} from './router.js';
 import {DataInstaller} from './installation.js';
@@ -12,7 +12,8 @@ import {DataBinder} from './data-binder.js';
 import {AskDialog} from './ask-dialog.js';
 import {ErrorNotifications} from './error-notifications.js';
 import {randomId} from '../random-id.js';
-import {pointerDependencies} from '@genrojs/builders';
+import {DATA_ROOT, pointerDependencies} from '@genrojs/builders';
+import {SYMBOLIC_ATTRIBUTES} from '../builder/source.js';
 
 
 // The Provider class of each provider data-element (§4.8).
@@ -22,7 +23,19 @@ const PROVIDERS = {
 };
 
 // Attributes whose change moves the Data context of a whole branch (§4.4, upd_attrs row).
-const CONTEXT_ATTRIBUTES = ['datapath', '_anchor', 'nodeId', 'form', 'formId'];
+const CONTEXT_ATTRIBUTES = ['datapath', '_anchor', 'nodeId', 'form', 'formId', ...SYMBOLIC_ATTRIBUTES];
+
+/**
+ * The names a node gives to the symbolic resolution, besides the node itself: its nodeId and its
+ * childname. A NodeBinding whose resolution read one of them is rebound when it
+ * changes.
+ */
+function startKeys(node) {
+    const keys = [node];
+    if (node.getAttr('nodeId') != null) keys.push(`id:${node.getAttr('nodeId')}`);
+    if (node.getAttr('childname') != null) keys.push(`childname:${node.getAttr('childname')}`);
+    return keys;
+}
 
 /**
  * Semantic lifetime of one Gramlot page (source plan §4.4).
@@ -37,6 +50,13 @@ export class BindingRuntime {
     #gramlot;
     #bindings = new Map();
     #nodeIds = new Map();
+    // The NodeBindings whose registrations read a start of the symbolic resolution, by key: a Source
+    // node, or `id:<nodeId>`, `childname:<name>`.
+    #dependents = new Map();
+    // The NodeBinding whose registrations are being resolved, or null.
+    #resolving = null;
+    // The keys moved by the Source event being handled and the nodes already resolved again, or null outside one.
+    #moved = null;
     #router;
     #installer;
     #inlineCompiler;
@@ -47,7 +67,8 @@ export class BindingRuntime {
     #disposed = false;
     #sourceTrees = new Set();
     #dataRootTrees = new Set();
-    #collectionStores = new WeakMap();
+    // One collection store per absolute Data path and rowMode, never per Bag identity.
+    #collectionStores = new Map();
 
     constructor(gramlot, {subscriptions}) {
         this.#gramlot = gramlot;
@@ -70,7 +91,6 @@ export class BindingRuntime {
     get data() { return this.builder.data; }
     /** Resolve a tree store against the selected live root. */
     treeStore(node) {
-        if (node.treeStore !== null) return node.treeStore;
         const path = node.getAttr('storepath');
         if (path === '*S' || path.startsWith('*S.')) {
             const root = this.renderer.source.getItem('main');
@@ -105,24 +125,64 @@ export class BindingRuntime {
     /** `nodeId → node` of the Source nodes with an open NodeBinding (R06). */
     get nodeIds() { return this.#nodeIds; }
 
-    /** One shared resident data resource per Bag; presentation state belongs to views. */
-    collectionStore(bag, rowMode) {
+    /** Run `run` resolving the registrations of `binding`: the starts it reads are recorded for it. */
+    resolveFor(binding, run) {
+        const previous = this.#resolving;
+        this.#resolving = binding;
+        try { return run(); } finally { this.#resolving = previous; }
+    }
+
+    /** Record that the registrations being resolved read the start `key` (a Source node or a name key). */
+    dependOn(key) {
+        const binding = this.#resolving;
+        if (!binding) return;
+        let dependents = this.#dependents.get(key);
+        if (!dependents) this.#dependents.set(key, dependents = new Set());
+        dependents.add(binding);
+        binding.dependencies.add(key);
+    }
+
+    /** Forget the starts read by `binding`; called when its registrations close. */
+    releaseDependencies(binding) {
+        for (const key of binding.dependencies) {
+            const dependents = this.#dependents.get(key);
+            dependents?.delete(binding);
+            if (dependents && !dependents.size) this.#dependents.delete(key);
+        }
+        binding.dependencies.clear();
+    }
+
+    /**
+     * One shared resident data resource per absolute Data `path` and `rowMode`; presentation state
+     * belongs to views. The store keeps the address: a replacement of the Bag at `path` keeps it.
+     */
+    collectionStore(path, rowMode) {
         if (this.disposed) throw new Error('BindingRuntime is disposed');
-        let store = this.#collectionStores.get(bag);
+        const key = collectionKey(path, rowMode);
+        let store = this.#collectionStores.get(key);
         if (!store) {
-            store = new BagCollectionStore(bag, rowMode);
-            this.#collectionStores.set(bag, store);
-        } else if (store.rowMode !== rowMode) throw new TypeError('A shared collection store requires one rowMode');
+            store = new BagCollectionStore(this.data, path, rowMode);
+            this.#collectionStores.set(key, store);
+        }
         return store;
     }
 
-    /** Each grid Source owns one view; only the underlying Bag access is shared. */
-    collectionView(node, bag, rowMode) {
-        const store = this.collectionStore(bag,rowMode);
-        if (!Object.hasOwn(node,'gridCollectionView')) {
-            Object.defineProperty(node,'gridCollectionView',{value:new BagCollectionView(store),configurable:true});
-        } else node.gridCollectionView.bindStore(store);
-        return node.gridCollectionView;
+    /**
+     * Each grid Source owns one view over the store at `path`. A new address gives a new view that
+     * starts from the criteria of the previous one; the previous view is disconnected.
+     */
+    collectionView(node, path, rowMode) {
+        const store = this.collectionStore(path,rowMode);
+        const previous = node._internal.gridCollectionView ?? null;
+        if (previous?.path === path && previous.rowMode === rowMode) return previous;
+        const view = new BagCollectionView(store);
+        if (previous) {
+            previous.disconnect();
+            view.sort(previous.sortedBy);
+            view.copyFiltersFrom(previous);
+        }
+        node._internal.gridCollectionView = view;
+        return view;
     }
 
     /** Subscribe once on Builder's Data wrapper; nothing is created. */
@@ -132,20 +192,42 @@ export class BindingRuntime {
 
     /** Callback of the one Data subscription. */
     receiveData(event) {
-        // Visit resident stores along the affected Data path before their consumers.
-        // Static values avoid invoking resolvers; deletion paths still reach the containing Bag.
-        let bag = this.root;
-        for (const [index, segment] of (event.pathlist ?? []).entries()) {
-            const value = bag.node(segment)?.staticValue;
-            if (!(value instanceof Bag)) break;
-            const store = this.#collectionStores.get(value);
-            store?.receiveData(event, index + 1 < event.pathlist.length ? value.node(event.pathlist[index + 1]) : null,
-                event.pathlist[index + 2] ?? null);
-            bag = value;
-        }
+        // Resident stores reconcile before the consumers that the router reaches.
+        this.#notifyCollectionStores(event);
         this.router.deliver(event);
         for (const binding of [...this.#dataRootTrees]) {
             if (!binding.closed && this.renderer.attached(binding.node)) this.renderer.project(binding.node);
+        }
+    }
+
+    /**
+     * Notify the collection stores an event reaches, by path. An event inside the collection
+     * carries its row (the node under the store path, read without resolvers) and field; an event
+     * on the store path, on a row list, or replacing an ancestor is a full change. A path that
+     * does not hold a Bag notifies nothing: its consumers read the address and report the error.
+     */
+    #notifyCollectionStores(event) {
+        const {pathlist} = event;
+        if (!this.#collectionStores.size || !pathlist?.length || pathlist[0] !== DATA_ROOT) return;
+        const base = pathlist.slice(1), container = event.evt === 'ins' || event.evt === 'del';
+        const labels = container ? (Array.isArray(event.node) ? event.node : [event.node]).map(node => node.label) : [];
+        for (const store of this.#collectionStores.values()) {
+            const target = store.path.split('.');
+            const shared = Math.min(base.length, target.length);
+            let index = 0;
+            while (index < shared && base[index] === target[index]) index++;
+            if (index < shared) continue;
+            let row = null, field = null;
+            if (base.length > target.length) {
+                row = base[target.length];
+                field = base[target.length + 1] ?? null;
+            } else if (base.length < target.length) {
+                const reached = container ? labels.includes(target[base.length]) : event.evt === 'upd_value';
+                if (!reached) continue;
+            }
+            const bag = this.data.getItem(store.path, null, true);
+            if (!(bag instanceof Bag)) continue;
+            store.receiveData(event, row === null ? null : bag.node(row) ?? null, field);
         }
     }
 
@@ -179,6 +261,7 @@ export class BindingRuntime {
             const nodeId = node.getAttr('nodeId');
             if (this.nodeIds.get(nodeId) === node) this.nodeIds.delete(nodeId);
             try { binding.close(); } catch (error) { errors.push(error); }
+            try { this.#moving(startKeys(node)); } catch (error) { errors.push(error); }
         }
         if (errors.length) throw new AggregateError(errors, 'Source branch close failed');
     }
@@ -194,6 +277,47 @@ export class BindingRuntime {
         for (const each of nodes) this.bindingFor(each)?.rebind();
         for (const each of nodes) this.renderer.project(each);
         for (const each of nodes) this.bindingFor(each)?.remote?.trigger();
+        this.#moving(nodes, nodes);
+    }
+
+    /**
+     * Rebind and project the open NodeBindings whose registrations read one of `keys`, except those of
+     * the nodes in `skip`; their errors are returned. A NodeBinding whose resolution fails keeps no
+     * registration on the old paths and keeps its dependencies: it is rebound again when the start returns.
+     */
+    #rebindDependents(keys, skip = new Set()) {
+        const bindings = new Set();
+        for (const key of keys) {
+            for (const binding of this.#dependents.get(key) ?? []) if (!skip.has(binding.node)) bindings.add(binding);
+        }
+        const errors = [];
+        const failed = new Set();
+        for (const binding of bindings) {
+            if (binding.closed) continue;
+            try { binding.rebind(); } catch (error) { errors.push(error); failed.add(binding); }
+        }
+        for (const binding of bindings) {
+            if (binding.closed || failed.has(binding)) continue;
+            try {
+                this.renderer.project(binding.node);
+                binding.remote?.trigger();
+            } catch (error) { errors.push(error); }
+        }
+        return errors;
+    }
+
+    /**
+     * Keys moved by a Source change, with the nodes whose NodeBindings resolved again already: collected
+     * until the end of the Source event, rebound at once outside one.
+     */
+    #moving(keys, done = []) {
+        if (this.#moved) {
+            for (const key of keys) this.#moved.keys.add(key);
+            for (const node of done) this.#moved.done.add(node);
+            return;
+        }
+        const errors = this.#rebindDependents(keys, new Set(done));
+        if (errors.length) throw errors.length === 1 ? errors[0] : new AggregateError(errors, 'Symbolic start rebinding failed');
     }
 
     /**
@@ -214,6 +338,7 @@ export class BindingRuntime {
         const close = removed => {
             try { this.closeBranch(removed); } catch (error) { errors.push(error); }
         };
+        const moved = this.#moved = {keys: new Set(), done: new Set()};
         try {
             if (evt === 'ins') {
                 this.#openBranch(node);
@@ -235,7 +360,11 @@ export class BindingRuntime {
         } catch (error) {
             if (!errors.length) throw error;
             throw new AggregateError([...errors, error], 'Source event failed');
+        } finally {
+            this.#moved = null;
         }
+        // The NodeBindings that read a start this event moved resolve again; their errors follow the closings'.
+        errors.push(...this.#rebindDependents(moved.keys, moved.done));
         return errors;
     }
 
@@ -275,7 +404,8 @@ export class BindingRuntime {
         this.#disposed = true;
         this.root.unsubscribe(this.#subscription, {any: true});
         this.nodeIds.clear();
-        this.#collectionStores = new WeakMap();
+        this.#dependents.clear();
+        this.#collectionStores.clear();
         const errors = [];
         for (const [node, binding] of [...this.#bindings.entries()].reverse()) {
             this.#bindings.delete(node);
@@ -328,6 +458,10 @@ export class BindingRuntime {
             if (errors.length > 1) throw new AggregateError(errors, 'Source branch installation failed');
             throw error;
         }
+        // The nodeIds and childnames that entered can be the start a NodeBinding waits for; the
+        // NodeBindings installed here resolved them already.
+        const installed = nodes.filter(node => !known.has(node));
+        this.#moving(installed.flatMap(node => startKeys(node).slice(1)), installed);
         // An `_init` may remove a later node of the branch: each node is checked when its turn comes.
         for (const node of nodes) {
             const binding = this.bindingFor(node);
@@ -380,7 +514,9 @@ export class BindingRuntime {
             }
             if (this.nodeIds.get(previous) === node) this.nodeIds.delete(previous);
             if (current != null) this.nodeIds.set(current, node);
+            this.#moving([`id:${previous}`, `id:${current}`]);
         }
+        if (Object.hasOwn(diff, 'childname')) this.#moving([`childname:${diff.childname.old}`, `childname:${diff.childname.new}`]);
         if (CONTEXT_ATTRIBUTES.some(name => Object.hasOwn(diff, name))) this.rebindBranch(node);
         else binding.rebind();
     }
@@ -433,6 +569,8 @@ export class NodeBinding {
     // The registration of the node's own variable datapath, read in the parent's context.
     #datapathRegistrations = new Set();
     #storeRegistration = null;
+    // The starts of the symbolic resolution read by the registrations (BindingRuntime.dependOn).
+    #dependencies = new Set();
     editingSession = null;
 
     constructor(runtime, node) {
@@ -445,6 +583,8 @@ export class NodeBinding {
     get closed() { return this.#closed; }
     /** The active DataRegistrations of the node. */
     get registrations() { return [...this.#registrations]; }
+    /** The starts of the symbolic resolution read by the active registrations: Source nodes and name keys. */
+    get dependencies() { return this.#dependencies; }
     /** The Provider of a `dataFormula`, `dataController`, `dataRpc` or `dataRemote`, as a list of zero or one. */
     get providers() { return this.#provider ? [this.#provider] : []; }
     /** The RemoteBinding of a node whose `remote` attribute is a string, or null. */
@@ -477,6 +617,10 @@ export class NodeBinding {
      * again from its current value.
      */
     registerPointers() {
+        this.runtime.resolveFor(this, () => this.#registerPointers());
+    }
+
+    #registerPointers() {
         // Data elements have semantic lifetime but no rendered item to register their reference.
         if (this.node._getMeta('data_element')) {
             this.runtime.renderer.references.remove(this.node);
@@ -492,36 +636,41 @@ export class NodeBinding {
         }
         const remoteDependencies = new Set();
         const component = node._getMeta('gramlot_component');
-        for (const [capability, attribute] of [['bagStore', 'storepath'], ['bagStruct', 'structpath']]) {
-            if (!component?.[capability]) continue;
-            if (capability === 'bagStore' && node.nodeTag === 'tree' && node.treeStore !== null) {
-                const store = node.treeStore;
-                const subscription = `gramlot-tree-${randomId()}`;
-                store.subscribe(subscription, {any: () => {
-                    if (!this.closed && this.runtime.renderer.attached(node)) this.runtime.renderer.project(node);
-                }});
-                this.#registrations.push({close: () => store.unsubscribe(subscription, {any: true})});
-                continue;
-            }
+        // A component that declares `storepath` or `structpath` reads data or structure at that
+        // address when it draws: a change inside the Bag and a replacement of the Bag at the
+        // address reach the node through one subtree registration.
+        for (const attribute of ['storepath', 'structpath']) {
+            if (!component?.parameters?.[attribute]) continue;
+            const store = attribute === 'storepath';
             const value = node.getAttr(attribute);
             if (typeof value !== 'string' || !value || /^[\^=]/.test(value) || value.includes('?')) {
                 throw new TypeError(`${attribute} requires a plain Bag data path`);
             }
-            if (capability === 'bagStore' && node.nodeTag === 'tree' && (value === '*S' || value.startsWith('*S.'))) {
+            if (store && node.nodeTag === 'tree' && (value === '*S' || value.startsWith('*S.'))) {
                 this.#registrations.push(this.runtime.registerTreeRoot(this, true));
                 continue;
             }
-            if (capability === 'bagStore' && node.nodeTag === 'tree' && value === '*D') {
+            if (store && node.nodeTag === 'tree' && value === '*D') {
                 this.#registrations.push(this.runtime.registerTreeRoot(this, false));
                 continue;
             }
-            const path = capability === 'bagStore' && node.nodeTag === 'tree' && value.startsWith('*D.')
+            const path = store && node.nodeTag === 'tree' && value.startsWith('*D.')
                 ? value.slice(3) : node.absDatapath(value);
             const registration = this.runtime.router.register({path, recipient: this, subtree: true});
             this.#registrations.push(registration);
             // Grid receives store invalidations separately. Other Bag consumers
             // (such as tree) continue to receive every ordinary Data event.
-            if (capability === 'bagStore' && component.bagStruct) this.#storeRegistration = registration;
+            if (store && component.parameters.structpath) this.#storeRegistration = registration;
+        }
+        // A tree `checked_<attribute>` names a Data path with the legacy syntax `path[:joiner]`: the tree
+        // reads that list when it draws, so a change at the path projects the tree again.
+        if (node.nodeTag === 'tree') for (const [name, value] of Object.entries(node.getAttr())) {
+            if (!name.startsWith('checked_')) continue;
+            if (typeof value !== 'string' || !value || /^[\^=]/.test(value)) {
+                throw new TypeError(`tree ${name} requires a Data path, optionally followed by :joiner`);
+            }
+            const path = node.absDatapath(value.split(':')[0]);
+            this.#registrations.push(this.runtime.router.register({path, recipient: this}));
         }
         const timingDependencies = this.remote ? pointerDependencies(node, node.getAttr('_timing')) : new Set();
         if (this.remote) for (const [name, raw] of Object.entries(node.getAttr())) {
@@ -533,7 +682,14 @@ export class NodeBinding {
             const absolute = context.absDatapath(pointer);
             if (absolute === null) continue;
             const [path, attr = null] = absolute.split('?', 2);
-            const registration = this.runtime.router.register({path, attr, recipient: this});
+            // A component parameter declared with dtype 'X' carries data or structure: a change
+            // inside the Bag and a replacement of the Bag at the path reach the node through the
+            // same subtree registration, as storepath/structpath above. Write-only parameters
+            // are not read by the component and keep the value registration.
+            const spec = component?.parameters?.[name];
+            const subtree = attr === null && spec !== undefined && spec.binding !== 'write'
+                && [spec.dtype].flat().includes('X');
+            const registration = this.runtime.router.register({path, attr, recipient: this, subtree});
             this.#registrations.push(registration);
             if (name === 'datapath') this.#datapathRegistrations.add(registration);
             if (this.remote && (name === 'remote' || name.startsWith('remote_') || remoteDependencies.has(name))) this.#remoteRegistrations.add(registration);
@@ -649,6 +805,7 @@ export class NodeBinding {
     }
 
     #closeRegistrations() {
+        this.runtime.releaseDependencies(this);
         this.#binder?.unregister();
         for (const registration of this.#registrations.splice(0)) registration.close();
         this.#storeRegistration = null;

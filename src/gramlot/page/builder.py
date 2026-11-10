@@ -16,7 +16,7 @@ from genro_builders.builder.pointers import pointer_transform
 # Loading the Gramlot Source classes adds GramlotBuilderBag to the TYTX subtype
 # dictionary of X, so every GramlotBuilder user can encode and decode it.
 from .name_syntax import NAME_SYNTAX, NameSyntax
-from .source import GramlotBuilderBag
+from .source import SYMBOLIC_ATTRIBUTES, GramlotBuilderBag
 
 # P19: `data` is ambiguous between the legacy data-element and the HTML5 element.
 DATA_FORBIDDEN = "data is forbidden: write dataSetter for a Data value or html_data for the HTML5 <data> element"
@@ -35,7 +35,8 @@ DATA_INLINE_ATTRIBUTES = {"dataFormula": "formula", "dataController": "script"}
 FRAMEWORK_ATTRIBUTES = frozenset({"node_label", "node_position", "nodeId", "target_id", "datapath",
                                   "iterate", "store", "_tag", "_meta", "ns"})
 # Source meta attributes of every node (Builder JS META_ATTRS).
-META_ATTRIBUTES = frozenset({"_meta", "datapath", "nodeId", "ns", "form", "formId", "_anchor", "updateOn"})
+META_ATTRIBUTES = frozenset({"_meta", "datapath", "nodeId", "ns", "form", "formId", "_anchor", "updateOn",
+                             "_workspace", "_workspace_path", "childname"})
 # Export formats of the grid:export command, in menu order, with their captions.
 EXPORT_FORMATS = {"csv": "CSV", "json": "JSON", "tytx": "TYTX", "xml": "XML", "xlsx": "Excel"}
 # frameGrid composes these grid attributes itself; its own parameters reach the grid too.
@@ -84,6 +85,8 @@ class GramlotBuilder(HtmlBuilder):
 
     _name = "gramlot"
     _source_class = GramlotBuilderBag
+    # The attributes of the symbolic resolution are node metadata, never rendered, as ``_anchor``.
+    _meta_attrs = HtmlBuilder._meta_attrs | SYMBOLIC_ATTRIBUTES
     # Builder applies it on the inherited HtmlBuilder grammar; its data-elements replace Builder's.
     _grammar_documents = ("../collections/binding.json", "../collections/webcomponent.json", "../collections/buttons.json")
 

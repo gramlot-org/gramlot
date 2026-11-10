@@ -20,6 +20,19 @@ function measureAction(binding) {
     return chartLogic.get(binding);
 }
 
+/**
+ * The rows of `store`, or null when its address holds no readable collection. Chart fields and the
+ * timeline derive configuration from the rows; the chart view, which reads the same address when it
+ * draws, shows that error in its notice.
+ */
+export function chartRows(store) {
+    try { return store.getRows(); }
+    catch (error) {
+        if (error instanceof TypeError) return null;
+        throw error;
+    }
+}
+
 /** Schema comes from the complete store, independently of any grid filter. */
 export function chartFields(store) {
     const rows = store.getRows();
@@ -34,25 +47,24 @@ export function chartFields(store) {
 }
 
 export const ChartFields = defineComponent({
-    name:'chartFields',tag:'gramlot-chart-fields',base:Container,sourceContext:true,bagStore:true,
+    name:'chartFields',tag:'gramlot-chart-fields',base:Container,sourceContext:true,
     parameters:{timeFieldId:{dtype:'T'},storepath:{dtype:'T'},rowMode:{dtype:'T'},configpath:{dtype:'T'},categoryId:{dtype:'T'},mapMeasureId:{dtype:'T'},mapLabelId:{dtype:'T'},secondCategoryId:{dtype:'T'},geometryId:{dtype:'T'},measureMenuId:{dtype:'T'},measureRoleIds:{dtype:'T'}},
     implementation:Base => class extends Base {
-        #context; #bag; #store; #release; #signature; #active=false;
+        #context; #store; #release; #signature; #active=false;
         constructor() { super(); const style=this.ownerDocument.createElement('style');style.textContent=':host{display:none}';this.shadowRoot.append(style); }
         setSourceContext(context) { this.#context=context; }
-        setStoreBag(bag) { if(!(bag instanceof Bag))throw new TypeError('chartFields requires a Data Bag'); this.#bag=bag; }
         projectAttributes(attrs,adapt) { const rest=super.projectAttributes(attrs,adapt);if(this.#active)this.#connectStore();return rest; }
         connectedCallback() { this.#active=true;this.#connectStore(); }
         #connectStore() {
             const binding=this.#context.sourceNode.rootBuilder.binding;
-            const store=binding.collectionStore(this.#bag,this.parameters.rowMode);
-            if(store===this.#store)return;
+            const store=binding.collectionStore(this.#context.attrDatapath('storepath'),this.parameters.rowMode);
+            if(store.key===this.#store?.key)return;
             this.#release?.();this.#store=store;this.#signature=undefined;
             this.#release=store.subscribe(()=>this.#sync(store));
             this.#sync(store);
         }
         #sync(store) {
-            if(!store.getRows().length)return;
+            if(!chartRows(store)?.length)return;
             const {fields,measures,dates}=chartFields(store);
             const signature=JSON.stringify([fields,measures,dates]);
             if(signature===this.#signature)return;

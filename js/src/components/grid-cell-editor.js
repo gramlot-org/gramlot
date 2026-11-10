@@ -1,7 +1,15 @@
-import {sourceTarget, toTytx} from '@gramlot/gramlot';
+import {Bag, sourceTarget, toTytx} from '@gramlot/gramlot';
+import {pointerTransform} from '@genrojs/builders';
 
-/** Grid navigation and temporary Source controls; all editing registers belong to the shared session. */
+/**
+ * Grid navigation and temporary Source controls; all editing registers belong to the shared session.
+ * A row is its key (node label): the editor keeps keys and Data paths, never row nodes.
+ */
 export class GridCellEditor {
+    /**
+     * `cellFor(label, field)` gives the rendered cell; `store()` gives `{labels(), window}`;
+     * `renderedRows()` the rendered rows by key; `navigate(label, field, step)` opens a neighbour editor.
+     */
     constructor(grid, context, cellFor, store, renderedRows, navigate, focusField) {
         this.grid = grid;
         this.context = context;
@@ -23,7 +31,7 @@ export class GridCellEditor {
             if (event.key === 'Escape') {
                 event.preventDefault();
                 const cell = this.cellFor(this.active.row,this.active.column.field);
-                this.session.clearDraft(this.active.source);
+                this.session.clearDraft(this.control(this.active));
                 this.close(); cell?.focus({preventScroll:true});
             } else if (event.key === 'Enter' || event.key === 'Tab') {
                 if (event.key === 'Enter' && this.active.element.control.localName === 'textarea' && !event.ctrlKey && !event.metaKey) return;
@@ -74,9 +82,9 @@ export class GridCellEditor {
         this.grid.removeEventListener('keydown',this.arrowKeydown,true);
         this.releaseNavigator?.(); this.releaseNavigator = null;
     }
+    /** The Data path of `field` in the row of key `row`: `#ROW.<field>` of the grid for that row. */
     path(row, field) {
-        const {mode} = this.store();
-        return this.context.sourceNode.absDatapath(this.context.sourceNode.getAttr('storepath')) + '.' + row.label + (mode === 'attributes' ? '?' : '.') + field;
+        return this.context.sourceNode.absDatapath(`#ROW.${field}`, {row});
     }
     configure(columns) {
         const editable = columns.filter(column => column.edit);
@@ -100,7 +108,7 @@ export class GridCellEditor {
                     if (this.active?.path === path) this.close();
                     this.releaseField(path);
                 } else {
-                    declaration.source.setAttr({...Object.fromEntries(Object.keys(declaration.options).map(key => [key,null])),...options});
+                    this.control(declaration).setAttr({...Object.fromEntries(Object.keys(declaration.options).map(key => [key,null])),...this.rowOptions(options,this.retained.get(path))});
                     declaration.options = options;
                 }
             }
@@ -121,17 +129,33 @@ export class GridCellEditor {
         delete options.tag;
         return {tag,options:{...options,dtype:column.dtype ?? 'T'}};
     }
+    /**
+     * The control options of `options` for the row of key `row`: an option holding a `=#ROW` or `^#ROW`
+     * pointer (`#ROW`, `#ROW.<field>`, `#ROW?<attr>`, `#ROW.<field>?<attr>`, with any `:` template or
+     * expression after it) keeps its prefix and tail, its path becomes the Data path of that row, as legacy
+     * GenroPy evaluated `#ROW` edit attributes against the edited row. The control has no row context.
+     */
+    rowOptions(options, row) {
+        const owner = this.context.sourceNode;
+        return Object.fromEntries(Object.entries(options).map(([key,value]) => {
+            const pointer = pointerTransform(value)?.pointer ?? value, type = owner.pointerType(pointer);
+            const bare = type ? pointer.slice(1) : null;
+            if (bare !== '#ROW' && !bare?.startsWith('#ROW.') && !bare?.startsWith('#ROW?')) return [key,value];
+            return [key,`${type}${owner.absDatapath(pointer,{row})}${value.slice(pointer.length)}`];
+        }));
+    }
     *validationFields() {
         const owner = this.context.sourceNode;
         this.session.trackValidationDependency(owner.absDatapath(owner.getAttr('structpath')));
-        const bag = this.store().bag;
-        for (const row of bag.getNodes()) for (const column of this.columns) {
-            if (row.parentBag !== bag) continue;
+        for (const row of this.store().labels()) for (const column of this.columns) {
+            // A row deleted while the validation pass runs has no field to declare.
+            const bag = this.collection();
+            if (!(bag instanceof Bag) || !bag.getNode(row)) continue;
             const path = this.path(row,column.field);
             this.checking.add(path);
             try {
                 const declaration = this.declare(row,column,false);
-                yield {node:declaration.source,release:() => {
+                yield {node:this.control(declaration),release:() => {
                     this.checking.delete(path);
                     if (path !== this.active?.path) this.releaseCleanField(path);
                 }};
@@ -161,24 +185,36 @@ export class GridCellEditor {
             // Unmount the branch before declaring a control: no editor element is constructed.
             if (!mount) builder.binding.renderer.unmountView(sourceTarget(container));
             try {
-                const control = container[tag]({...options, value:'^'+path, id, width:'100%', margin:'0'});
-                declaration = {container:sourceTarget(container),source:sourceTarget(control),id,tag,options,field:column.field};
-                const component = this.grid.ownerDocument.defaultView.customElements.get(declaration.source._getMeta('render_tag'));
-                this.session.registerField(declaration.source,component,mount);
+                const control = sourceTarget(container[tag]({...this.rowOptions(options,row), value:'^'+path, id, width:'100%', margin:'0'}));
+                declaration = {id,tag,options,field:column.field};
+                const component = this.grid.ownerDocument.defaultView.customElements.get(control._getMeta('render_tag'));
+                this.session.registerField(control,component,mount);
                 this.declarations.set(path,declaration);
             } catch (error) {
                 const node = sourceTarget(container); node.parentBag.popNode(node.label);
                 this.releaseCleanField(path);
                 throw error;
             }
-        } else if (mount) owner.rootBuilder.binding.renderer.mountView(declaration.container);
+        } else if (mount) owner.rootBuilder.binding.renderer.mountView(this.container(declaration));
         return declaration;
+    }
+    /** The editor container of `declaration`: the grid Source child labelled with its id, read at each call. */
+    container(declaration) {
+        const node = this.context.sourceNode.value.getNode(declaration.id);
+        if (!node) throw new Error(`Grid cell editor container ${declaration.id} is missing from the grid Source.`);
+        return node;
+    }
+    /** The editor control of `declaration`: the only child of its container. */
+    control(declaration) {
+        const nodes = this.container(declaration).value.getNodes();
+        if (nodes.length !== 1) throw new Error(`Grid cell editor container ${declaration.id} must hold exactly one control, found ${nodes.length}.`);
+        return nodes[0];
     }
     close() {
         const active = this.active;
         this.active = null; this.layer.hidden = true;
         if (active) {
-            this.context.sourceNode.rootBuilder.binding.renderer.unmountView(active.container);
+            this.context.sourceNode.rootBuilder.binding.renderer.unmountView(this.container(active));
             this.releaseCleanField(active.path);
         }
     }
@@ -192,7 +228,8 @@ export class GridCellEditor {
     releaseField(path) {
         const declaration = this.declarations.get(path);
         this.declarations.delete(path);
-        if (declaration?.container.parentBag) declaration.container.parentBag.popNode(declaration.container.label);
+        // The container may already be gone with its grid Source branch; nothing is left to remove then.
+        if (declaration && this.context.sourceNode.value.getNode(declaration.id)) this.context.sourceNode.value.popNode(declaration.id);
         this.session.releaseField(path); this.retained.delete(path);
     }
     position(cell = null) {
@@ -222,24 +259,30 @@ export class GridCellEditor {
             else { cell.removeAttribute('aria-invalid'); cell.removeAttribute('title'); }
         }
     }
+    /** The value at the store path, read by address at each call and never kept. */
+    collection() {
+        const owner = this.context.sourceNode;
+        return this.context.getStaticData(owner.absDatapath(owner.getAttr('storepath')));
+    }
+    /**
+     * Retained fields follow the row key: a field whose row key left the store is released, and the
+     * fields of the keys still present survive a replacement of the Bag at the store path.
+     */
     refresh() {
-        const bag = this.store().bag;
-        for (const [path,row] of this.retained) if (row.parentBag !== bag) {
-            this.releaseField(path);
-            if (this.active?.row === row) this.close();
+        const bag = this.collection();
+        const rows = new Set(bag instanceof Bag ? bag.keys() : []);
+        for (const [path,label] of this.retained) if (!rows.has(label)) {
+            // Close before releasing: closing unmounts the container, which releasing removes from the Source.
+            if (this.active?.row === label) this.close();
+            if (this.retained.has(path)) this.releaseField(path);
         }
         for (const path of this.retained.keys()) if (path !== this.active?.path) this.releaseCleanField(path);
         for (const [row,tr] of this.renderedRows()) this.decorate(tr,row);
     }
-    replaceData() {
-        this.close();
-        if (this.session) {
-            for (const path of this.retained.keys()) this.releaseField(path);
-            this.retained.clear();
-        }
-    }
     dispose() {
         this.releaseValidation?.(); this.releaseValidation = null;
-        this.disconnect(); this.replaceData(); this.releaseStatus?.(); this.layer.remove();
+        this.disconnect();
+        if (this.session) for (const path of [...this.retained.keys()]) this.releaseField(path);
+        this.releaseStatus?.(); this.layer.remove();
     }
 }

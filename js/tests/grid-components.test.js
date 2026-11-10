@@ -61,7 +61,7 @@ for (const mode of ['values','attributes']) test(`${mode}: row invalidations coa
     f.rows.setItem('r2', mode === 'values' ? new Bag({code:'B',amount:8}) : null,
         mode === 'attributes' ? {code:'B',amount:8} : {});
     f.flush();
-    const store = f.app.src.binding.collectionStore(f.rows,mode);
+    const store = f.app.src.binding.collectionStore('model.rows',mode);
     const value = store.value.bind(store), reads = [];
     t.mock.method(store,'value',(node,field) => { reads.push(node); return value(node,field); });
     const timer = t.mock.method(f.window,'setTimeout');
@@ -86,12 +86,12 @@ for (const mode of ['values','attributes']) test(`${mode}: row invalidations coa
 test('full invalidation absorbs pending row changes and pulls the final order once', t => {
     const f = fixture(t);
     f.rows.setItem('r2',null,{code:'B',amount:8}); f.flush();
-    const store=f.app.src.binding.collectionStore(f.rows,'attributes');
+    const store=f.app.src.binding.collectionStore('model.rows','attributes');
     const value=store.value.bind(store), reads=[];
     t.mock.method(store,'value',(node,field)=>{ reads.push(node); return value(node,field); });
     const timer=t.mock.method(f.window,'setTimeout');
     f.rows.getNode('r1').setAttr({code:'Changed'});
-    f.source.gridCollectionView.moveRow(f.rows.getNode('r2'),f.rows.getNode('r1'));
+    f.source._internal.gridCollectionView.moveRow(f.rows.getNode('r2').label,f.rows.getNode('r1').label);
     f.rows.getNode('r2').setAttr({amount:9});
     assert.deepEqual(f.cells(),['A','12.50','B','8.00']);
     assert.equal(timer.mock.callCount(),1);
@@ -126,7 +126,7 @@ test('render errors are isolated per grid and a later valid change recovers', t 
 
 test('removal cancels the pending pull and releases the store subscription', t => {
     const f=fixture(t);
-    const store=f.app.src.binding.collectionStore(f.rows,'attributes');
+    const store=f.app.src.binding.collectionStore('model.rows','attributes');
     const value=t.mock.method(store,'value');
     const timer=t.mock.method(f.window,'setTimeout');
     const cancel=t.mock.method(f.window,'clearTimeout');
@@ -150,7 +150,7 @@ test('business rowidx attributes cannot reorder a grid view', t => {
 
 test('retargeting discards queued identities and detaches the old store listener', t => {
     const f=fixture(t);
-    const old=f.app.src.binding.collectionStore(f.rows,'attributes');
+    const old=f.app.src.binding.collectionStore('model.rows','attributes');
     f.rows.getNode('r1').setAttr({amount:23});
     const replacement=new Bag(); replacement.setItem('new',null,{code:'New',amount:9});
     f.app.data.setItem('replacement',replacement);
@@ -170,12 +170,15 @@ test('sort defers subtree projection and row edits never rebuild the struct', t 
     f.app.data.setItem('model.rows', rows);
     const hosts = [f.host, f.window.document.getElementById('second')];
     let structures = 0, projections = 0;
+    // The grid reads its structure at the structpath address, without resolvers, when it rebuilds it.
+    const getItem = f.app.data.getItem.bind(f.app.data);
+    f.app.data.getItem = (path, ...rest) => { if (path === 'model.structure' && rest[1] === true) structures++; return getItem(path, ...rest); };
+    t.after(() => { delete f.app.data.getItem; });
     for (const host of hosts) {
-        const setStruct = host.setStructBag.bind(host), project = host.projectAttributes.bind(host);
-        host.setStructBag = bag => { structures++; setStruct(bag); };
+        const project = host.projectAttributes.bind(host);
         host.projectAttributes = (...args) => { projections++; return project(...args); };
     }
-    const store = f.source.gridCollectionView;
+    const store = f.source._internal.gridCollectionView;
     store.sort('amount:a');
     f.flush();
     assert.equal(structures, 0);
@@ -205,10 +208,10 @@ test('ancestor replacement, emptying and disposal preserve binding ownership', t
     rows.clear();
     f.flush();
     assert.deepEqual(f.cells(), ['No rows']);
-    const store = f.app.src.binding.collectionStore(rows,'attributes');
+    const store = f.app.src.binding.collectionStore('model.rows','attributes');
     f.source.parentBag.popNode(f.source.label);
     rows.setItem('later',null,{code:'Later',amount:8});
-    f.app.src.source.getNode('main.pane.second').gridCollectionView.sort('amount:d');
+    f.app.src.source.getNode('main.pane.second')._internal.gridCollectionView.sort('amount:d');
     f.flush();
     assert.deepEqual(f.cells(), ['No rows'], 'detached grid no longer receives store completion');
     assert.equal(second.shadowRoot.querySelector('tbody td').textContent,'Later');
@@ -217,9 +220,11 @@ test('ancestor replacement, emptying and disposal preserve binding ownership', t
 test('views are Source-owned and share only the parent collection resource',t=>{
     const f=fixture(t,{two:true});
     const second=f.app.src.source.getNode('main.pane.second');
-    assert.notEqual(f.source.gridCollectionView,second.gridCollectionView);
-    assert.equal(f.source.gridCollectionView.bag,second.gridCollectionView.bag);
-    assert.equal(f.app.src.binding.collectionView(f.source,f.rows,'attributes'),f.source.gridCollectionView);
+    assert.notEqual(f.source._internal.gridCollectionView,second._internal.gridCollectionView);
+    assert.ok(f.source._internal.gridCollectionView, 'the view is in the node _internal object');
+    assert.equal(Object.hasOwn(f.source,'gridCollectionView'), false, 'the view is not an own property of the node');
+    assert.equal(f.source._internal.gridCollectionView.path,second._internal.gridCollectionView.path);
+    assert.equal(f.app.src.binding.collectionView(f.source,'model.rows','attributes'),f.source._internal.gridCollectionView);
     assert.equal(f.rows.getNode('r1').getAttr('rowidx'),null);
 });
 
@@ -242,6 +247,9 @@ test('nested struct is installed as ordinary Data before the component renders',
     const second = f.app.src.source.getNode('main.pane.second').getAttr('structpath');
     f.flush();
     assert.notEqual(path, second);
+    // The structure lives in the private area of its grid, named from the grid node: the same page gets the same path.
+    assert.equal(path, `${f.source.workspaceDatapath}.struct`);
+    assert.match(path, /^_gramlot\.workspace\.grid_\d+\.struct$/);
     const data = f.app.data.getItem(path);
     f.flush();
     assert.equal(data.constructor, Bag);
@@ -251,6 +259,12 @@ test('nested struct is installed as ordinary Data before the component renders',
     f.flush();
     assert.equal(f.host.shadowRoot.querySelector('th[data-field]').textContent, 'Updated');
     assert.equal(f.window.document.getElementById('second').shadowRoot.querySelector('th[data-field]').textContent, 'Code');
+});
+
+test('the nested struct path derives from the grid node: two pages built from the same Source use the same path', async t => {
+    const paths = [];
+    for (const page of [1, 2]) await t.test(`page ${page}`, st => { paths.push(fixture(st, {inline: true}).source.getAttr('structpath')); });
+    assert.equal(paths[0], paths[1]);
 });
 
 test('insert, delete, replace store and retarget path follow the existing binding lifecycle', t => {
@@ -386,15 +400,16 @@ test('wrong representations and resolvers fail without reads or writes', () => {
     let loads = 0;
     class Lazy extends BagResolver { load() { loads++; return 'loaded'; } }
     const rows = new Bag(); const data = new Bag(); data.setItem('rows', rows); data.setBackref(); rows.setItem('r1', new Lazy());
-    assert.throws(() => new GridRows(new BagCollectionStore(rows, 'attributes')).read([{field: 'code'}]), /loaded rows/);
+    assert.throws(() => new GridRows(new BagCollectionStore(data,'rows','attributes')).read([{field: 'code'}]), /loaded rows/);
     rows.popNode('r1');
     rows.setItem('r1', new Bag()); rows.getItem('r1').setItem('code', new Lazy());
-    assert.throws(() => new GridRows(new BagCollectionStore(rows, 'values')).read([{field: 'code'}]), /loaded cells/);
+    assert.throws(() => new GridRows(new BagCollectionStore(data,'rows','values')).read([{field: 'code'}]), /loaded cells/);
     assert.equal(loads, 0);
-    assert.throws(() => new BagCollectionStore({}, 'values'), /Bag/);
-    assert.throws(() => new BagCollectionStore(rows, undefined), /rowMode/);
+    assert.throws(() => new BagCollectionStore({}, 'rows', 'values'), /Bag/);
+    assert.throws(() => new BagCollectionStore(data, '', 'values'), /Data path/);
+    assert.throws(() => new BagCollectionStore(data,'rows',undefined), /rowMode/);
     rows.setItem('r1', 'bad');
-    assert.throws(() => new GridRows(new BagCollectionStore(rows, 'values')).read([]), /contain a Bag/);
+    assert.throws(() => new GridRows(new BagCollectionStore(data,'rows','values')).read([]), /contain a Bag/);
 });
 
 test('struct rejects unknown attributes, duplicate fields and nested groups', () => {
@@ -405,6 +420,19 @@ test('struct rejects unknown attributes, duplicate fields and nested groups', ()
     assert.throws(() => new GridStructure(duplicate), /Duplicate grid field/);
     const nested = struct(); nested.getItem('view_0.rows_0').setItem('bad', struct(), {tag: 'colgroup', code: 'bad'});
     assert.throws(() => new GridStructure(nested), /Unsupported|scalar declaration/);
+});
+
+test('a Bag among the edit options is accepted only without a parent', () => {
+    const independent = new Bag({a:'Alpha', b:'Beta'});
+    const accepted = struct(); accepted.getNode('view_0.rows_0.code').setAttr({edit:{tag:'filteringSelect', values:independent}});
+    const structure = new GridStructure(accepted);
+    assert.equal(structure.columns.find(column => column.field === 'code').edit.values, independent);
+    // Page Data keeps back references, so a sub Bag knows its parent.
+    const data = new Bag({choices:new Bag({a:'Alpha'})}); data.setBackref(); const sub = data.getItem('choices');
+    const owned = struct(); owned.getNode('view_0.rows_0.code').setAttr({edit:{tag:'filteringSelect', values:sub}});
+    assert.throws(() => new GridStructure(owned), /edit option values holds a Bag with a parent; pass its path/);
+    const nested = struct(); nested.getNode('view_0.rows_0.code').setAttr({edit:{config:{list:[sub]}}});
+    assert.throws(() => new GridStructure(nested), /edit option config\.list\[0\] holds a Bag with a parent/);
 });
 
 test('invalid inline structure is rejected before preceding Data setters run', t => {
@@ -428,7 +456,7 @@ test('resizing writes the existing struct column and preserves both sharing grid
     const row = f.host.shadowRoot.querySelector('tbody tr');
     const cell = row.cells[1];
     const node = bag.getNode('view_0.rows_0.amount');
-    new GridStructure(bag).setColumnWidth('amount', 211);
+    new GridStructure(bag, {data:f.app.data, path:'model.structure'}).setColumnWidth('amount', 211);
     f.flush();
     assert.equal(bag.getNode('view_0.rows_0.amount'), node);
     assert.equal(node.getAttr('width'), '211px');
@@ -453,7 +481,7 @@ test('column movement changes Bag order and projects all sharing grids without r
     const node = group.getNode('amount');
     f.flush();
     const row = f.host.shadowRoot.querySelector('tbody tr');
-    new GridStructure(bag).moveColumn('amount', 'quantity', true);
+    new GridStructure(bag, {data:f.app.data, path:'model.structure'}).moveColumn('amount', 'quantity', true);
     f.flush();
     assert.deepEqual(group.getNodes().map(n => n.label), ['code','quantity','amount']);
     assert.equal(group.getNode('amount'), node);
@@ -473,14 +501,14 @@ test('moving across a columnset preserves membership and splits/joins contiguous
     const bag = f.app.data.getItem('model.structure'), cells = bag.getItem('view_0.rows_0');
     cells.setItem('quantity', null, {tag:'cell',field:'quantity',columnset:'numbers'});
     const amount = cells.getNode('amount'), definitions = bag.getItem('info.columnsets');
-    new GridStructure(bag).moveColumn('code', 'amount', true);
+    new GridStructure(bag, {data:f.app.data, path:'model.structure'}).moveColumn('code', 'amount', true);
     f.flush();
     assert.deepEqual(cells.getNodes().map(node=>node.getAttr('field')), ['amount','code','quantity']);
     assert.equal(cells.getNode('amount'), amount);
     assert.equal(amount.getAttr('columnset'), 'numbers');
     assert.equal(bag.getItem('info.columnsets'), definitions);
     assert.deepEqual([...f.host.shadowRoot.querySelectorAll('th[scope=colgroup]')].map(th=>th.textContent), ['Numbers','Numbers']);
-    new GridStructure(bag).moveColumn('code', 'quantity', true);
+    new GridStructure(bag, {data:f.app.data, path:'model.structure'}).moveColumn('code', 'quantity', true);
     f.flush();
     assert.equal(f.host.shadowRoot.querySelectorAll('th[scope=colgroup]').length, 1);
     assert.equal(f.host.shadowRoot.querySelector('th[scope=colgroup]').colSpan, 2);
@@ -516,7 +544,7 @@ for (const mode of ['values', 'attributes']) test(`${mode}: row headers are gene
     assert.equal(corner.rowSpan, 2);
     assert.equal(corner.querySelector('.column-resize').getAttribute('aria-label'), 'Resize row numbers');
     assert.equal(f.host.shadowRoot.querySelectorAll('col').length, 6);
-    f.source.gridCollectionView.moveRow(f.rows.getNode('r2'), f.rows.getNode('r1'));
+    f.source._internal.gridCollectionView.moveRow(f.rows.getNode('r2').label,f.rows.getNode('r1').label);
     f.flush();
     assert.deepEqual(headings(), ['1','2']);
     assert.deepEqual(f.cells(), ['B','7.00','A','12.50']);
@@ -562,17 +590,19 @@ for (const mode of ['values','attributes']) test(`${mode}: row heights belong to
     f.flush();
     const second = f.window.document.getElementById('second').shadowRoot.querySelector('tbody tr');
     f.flush();
-    assert.notEqual(f.source.gridRowLayout, otherSource.gridRowLayout);
+    assert.notEqual(f.source._internal.gridRowLayout, otherSource._internal.gridRowLayout);
+    assert.ok(f.source._internal.gridRowLayout, 'the row layout is in the node _internal object');
+    assert.equal(Object.hasOwn(f.source, 'gridRowLayout'), false, 'the row layout is not an own property of the node');
     const originalData = JSON.stringify(f.rows.getNodes().map(node => [node.label, node.attr, node.staticValue instanceof Bag ? node.staticValue.getNodes().map(cell => [cell.label,cell.staticValue]) : node.staticValue]));
     g.pointer('pointerdown', 32, g.handle); g.pointer('pointermove', 82);
     f.flush();
     assert.equal(g.row.style.height, '82px');
-    assert.equal(f.source.gridRowLayout.height(node), null, 'preview is not committed');
+    assert.equal(f.source._internal.gridRowLayout.height(node.label), null, 'preview is not committed');
     assert.equal(second.style.height, '');
     g.pointer('pointerup', 82);
     f.flush();
-    assert.equal(f.source.gridRowLayout.height(node), 82);
-    assert.equal(otherSource.gridRowLayout.height(node), null);
+    assert.equal(f.source._internal.gridRowLayout.height(node.label), 82);
+    assert.equal(otherSource._internal.gridRowLayout.height(node.label), null);
     assert.equal(JSON.stringify(f.rows.getNodes().map(node => [node.label, node.attr, node.staticValue instanceof Bag ? node.staticValue.getNodes().map(cell => [cell.label,cell.staticValue]) : node.staticValue])), originalData);
     g.pointer('pointerdown', 82, g.handle); g.pointer('pointermove', 120); g.key('Escape');
     assert.equal(g.row.style.height, '82px');
@@ -592,15 +622,15 @@ for (const mode of ['values','attributes']) test(`${mode}: row heights belong to
     g.pointer('pointerdown', 32, g.handle); g.pointer('pointerup', 10);
     f.flush();
     assert.equal(g.row.getBoundingClientRect().height, 32, 'content is the minimum');
-    assert.equal(f.source.gridRowLayout.height(node), null, 'a gesture with no size change keeps automatic height');
+    assert.equal(f.source._internal.gridRowLayout.height(node.label), null, 'a gesture with no size change keeps automatic height');
     g.handle.dispatchEvent(new f.window.MouseEvent('dblclick', {bubbles:true}));
     f.flush();
-    assert.equal(f.source.gridRowLayout.height(node), null);
+    assert.equal(f.source._internal.gridRowLayout.height(node.label), null);
 });
 
-test('row heights survive updates and DOM moves; removal/replacement clears their state', t => {
+test('row heights survive updates, DOM moves and a replacement keeping the key; removal clears their state', t => {
     const f = fixture(t, {rowResize:true});
-    const g = rowGesture(f), node = f.rows.getNode('r1'), layout = f.source.gridRowLayout;
+    const g = rowGesture(f), node = f.rows.getNode('r1'), layout = f.source._internal.gridRowLayout;
     g.pointer('pointerdown', 32, g.handle); g.pointer('pointerup', 80);
     f.rows.getNode('r1').setAttr({amount:17});
     f.flush();
@@ -615,21 +645,25 @@ test('row heights survive updates and DOM moves; removal/replacement clears thei
     assert.equal(g.row.style.height, '80px');
     parent.append(f.host);
     f.flush();
-    assert.equal(f.source.gridRowLayout, layout);
+    assert.equal(f.source._internal.gridRowLayout, layout);
     assert.equal(g.row.style.height, '80px');
     g.pointer('pointerdown', 80, g.handle); g.pointer('pointermove', 100);
     f.rows.popNode('r1');
     f.flush();
     assert.equal(g.captured.size, 0);
-    assert.equal(layout.height(node), null);
+    assert.equal(layout.height(node.label), null);
     f.rows.setItem('r1', null, {code:'New',amount:1});
     f.flush();
     assert.equal(f.host.shadowRoot.querySelector('tbody tr').style.height, '');
-    const newNode = f.rows.getNode('r1'); layout.setHeight(newNode, 90);
+    const newNode = f.rows.getNode('r1'); layout.setHeight(newNode.label, 90);
     const replacement = new Bag(); replacement.setItem('r1', null, {code:'Replacement',amount:2});
     f.app.data.setItem('model.rows', replacement);
     f.flush();
-    assert.equal(layout.height(newNode), null);
+    assert.equal(layout.height(replacement.getNode('r1').label), 90, 'the row key keeps its height across a replacement');
+    const other = new Bag(); other.setItem('r2', null, {code:'Other',amount:3});
+    f.app.data.setItem('model.rows', other);
+    f.flush();
+    assert.equal(layout.height(newNode.label), null);
     assert.equal(f.host.shadowRoot.querySelector('tbody tr').style.height, '');
 });
 
@@ -649,8 +683,8 @@ for (const mode of ['values','attributes']) test(`${mode}: selfDragRows changes 
         mode === 'values' ? new Bag({code,amount:2}) : null, mode === 'attributes' ? {code,amount:2} : {});
     f.flush();
     const nodes = f.rows.getNodes(), rows = [...f.host.shadowRoot.querySelectorAll('tbody tr')];
-    const layout = f.source.gridRowLayout;
-    layout.setHeight(nodes[0], 91);
+    const layout = f.source._internal.gridRowLayout;
+    layout.setHeight(nodes[0].label, 91);
     f.source.setAttr({rowHeaders:true});
     const drag = rowDrag(f);
     drag(rows[0], 'dragstart');
@@ -732,7 +766,7 @@ for (const mode of ['values', 'attributes']) test(`${mode}: multicolumn headers 
     const click = (field, shiftKey = false) => header(field).dispatchEvent(new f.window.MouseEvent('click', {bubbles:true,shiftKey}));
     click('code'); click('amount', true);
     f.flush();
-    assert.equal(f.source.gridCollectionView.sortedBy, 'code:a,amount:a');
+    assert.equal(f.source._internal.gridCollectionView.sortedBy, 'code:a,amount:a');
     assert.deepEqual(labels(f.host), ['r4','r1','r3','r2']);
     assert.deepEqual(labels(f.window.document.getElementById('second')), ['r1','r2','r3','r4']);
     assert.equal(header('code').getAttribute('aria-sort'), 'ascending');
@@ -741,7 +775,7 @@ for (const mode of ['values', 'attributes']) test(`${mode}: multicolumn headers 
     click('amount', true);
     f.flush();
     assert.deepEqual(labels(f.host), ['r3','r1','r4','r2']);
-    assert.equal(f.source.gridCollectionView.sortedBy, 'code:a,amount:d');
+    assert.equal(f.source._internal.gridCollectionView.sortedBy, 'code:a,amount:d');
     // Values are live; numbers are compared before their displayed 0.00 formatting.
     if (mode === 'values') f.rows.getItem('r1').setItem('amount', 200);
     else f.rows.getNode('r1').setAttr({amount:200});
@@ -751,7 +785,7 @@ for (const mode of ['values', 'attributes']) test(`${mode}: multicolumn headers 
     drag(original[0], 'dragstart'); drag(original[1], 'drop', 1);
     f.flush();
     assert.deepEqual(labels(f.host), ['r3','r4','r2','r1']);
-    assert.equal(f.source.gridCollectionView.sortedBy, '');
+    assert.equal(f.source._internal.gridCollectionView.sortedBy, '');
     assert.equal(f.host.shadowRoot.querySelector('[data-sort-priority]'), null);
     assert.equal(f.window.document.getElementById('second').shadowRoot.querySelector('[data-sort-priority]'), null);
     assert.deepEqual(f.rows.getNodes(), physical);
@@ -772,7 +806,7 @@ test('view sort survives detach, struct changes and store replacement; resize do
     header.click();
     const parent = f.host.parentElement;
     f.host.remove();
-    f.source.gridCollectionView.sort('code:d');
+    f.source._internal.gridCollectionView.sort('code:d');
     parent.append(f.host);
     f.flush();
     assert.equal(f.host.shadowRoot.querySelector('th[data-field=code]').getAttribute('aria-sort'), 'descending');
@@ -781,14 +815,14 @@ test('view sort survives detach, struct changes and store replacement; resize do
     assert.equal(f.host.shadowRoot.querySelector('th[data-field=code]').getAttribute('aria-sort'), 'descending');
     f.host.shadowRoot.querySelector('.column-resize').click();
     f.flush();
-    assert.equal(f.source.gridCollectionView.sortedBy, 'code:d');
+    assert.equal(f.source._internal.gridCollectionView.sortedBy, 'code:d');
     const replacement = new Bag(); replacement.setItem('x', null, {code:'X',amount:1});
     f.app.data.setItem('model.fresh', replacement);
     f.source.setAttr({storepath:'.fresh'});
     f.flush();
     assert.equal(f.host.shadowRoot.querySelector('th[data-field=code]').dataset.sortDirection,'descending');
     assert.equal(f.host.shadowRoot.querySelector('tbody tr').dataset.row, 'x');
-    f.source.gridCollectionView.sort('code:a');
+    f.source._internal.gridCollectionView.sort('code:a');
     f.flush();
     assert.equal(f.host.shadowRoot.querySelector('tbody tr').dataset.row, 'x');
 });
@@ -797,8 +831,8 @@ test('view sort survives detach, struct changes and store replacement; resize do
 test('two grids keep independent filters and both react to shared values',t=>{
     const f=fixture(t,{two:true});f.rows.setItem('r2',null,{code:'B',amount:2});f.flush();
     const second=f.window.document.getElementById('second');
-    const other=f.app.src.source.getNode('main.pane.second').gridCollectionView;
-    f.source.gridCollectionView.applyFilter({value:'A',columns:['code'],dtype:'T',locale:'en-GB'});
+    const other=f.app.src.source.getNode('main.pane.second')._internal.gridCollectionView;
+    f.source._internal.gridCollectionView.applyFilter({value:'A',columns:['code'],dtype:'T',locale:'en-GB'});
     other.applyFilter({value:'^B$',columns:['code'],dtype:'T',locale:'en-GB'});
     f.flush();assert.deepEqual(f.cells(),['A','12.50']);
     assert.equal(second.shadowRoot.querySelector('tbody td').textContent,'B');
@@ -817,12 +851,12 @@ test('resident viewport bounds DOM work, reads offscreen edits on entry and pres
     f.app.data.setItem('model.rows',rows); f.flush();
     const body = f.host.shadowRoot.querySelector('.body-viewport');
     Object.defineProperty(body,'clientHeight',{value:320});
-    Object.defineProperty(body,'scrollHeight',{get:()=>f.source.gridRowLayout.totalHeight});
+    Object.defineProperty(body,'scrollHeight',{get:()=>f.source._internal.gridRowLayout.totalHeight});
     f.layout.flush();
     assert.ok(f.host.shadowRoot.querySelectorAll('tbody tr').length < 40);
     assert.equal(f.host.control.getAttribute('aria-rowcount'),'1002');
-    const layout = f.source.gridRowLayout;
-    layout.setHeight(rows.getNode('r500'),96);
+    const layout = f.source._internal.gridRowLayout;
+    layout.setHeight(rows.getNode('r500').label,96);
     rows.getNode('r500').setAttr({code:'Offscreen update'}); f.flush();
     body.scrollTop=layout.offset(500); body.dispatchEvent(new f.window.Event('scroll')); f.layout.flush();
     const row=f.host.shadowRoot.querySelector('tr[data-row=r500]');
@@ -833,13 +867,13 @@ test('resident viewport bounds DOM work, reads offscreen edits on entry and pres
     assert.equal(f.host.shadowRoot.querySelector('tr[data-row=r0]'),null);
     const second=f.window.document.getElementById('second');
     assert.equal(second.shadowRoot.querySelector('tbody tr').dataset.row,'r0');
-    f.source.gridCollectionView.applyFilter({value:'= 500',columns:['amount'],dtype:'N',locale:'en-US'}); f.flush();
+    f.source._internal.gridCollectionView.applyFilter({value:'= 500',columns:['amount'],dtype:'N',locale:'en-US'}); f.flush();
     assert.equal(f.host.shadowRoot.querySelectorAll('tbody tr').length,1);
     assert.equal(body.scrollTop,0);
     assert.equal(f.host.shadowRoot.querySelector('tbody tr').dataset.row,'r500');
     assert.equal(f.host.shadowRoot.querySelector('tbody tr').style.height,'96px');
     assert.equal(second.control.getAttribute('aria-rowcount'),'1002');
-    f.source.gridCollectionView.applyFilter(null); f.source.gridCollectionView.sort('amount:d'); f.flush();
+    f.source._internal.gridCollectionView.applyFilter(null); f.source._internal.gridCollectionView.sort('amount:d'); f.flush();
     assert.equal(f.host.shadowRoot.querySelector('tbody tr').dataset.row,'r999');
     assert.equal(rows.getNodes()[0].label,'r0');
     body.scrollTop=layout.totalHeight; body.dispatchEvent(new f.window.Event('scroll')); f.layout.flush();
@@ -858,10 +892,10 @@ test('row number width is local geometry, survives view changes and shares resiz
     header.getBoundingClientRect = () => ({width:60});
     header.querySelector('.row-number-measure').getBoundingClientRect = () => ({width:58});
     handle.dispatchEvent(new f.window.KeyboardEvent('keydown', {key:'ArrowRight',bubbles:true}));
-    assert.equal(f.source.gridRowLayout.headerWidth, 70);
-    assert.equal(f.app.src.source.getNode('main.pane.second').gridRowLayout.headerWidth, null);
+    assert.equal(f.source._internal.gridRowLayout.headerWidth, 70);
+    assert.equal(f.app.src.source.getNode('main.pane.second')._internal.gridRowLayout.headerWidth, null);
     handle.dispatchEvent(new f.window.KeyboardEvent('keydown', {key:'ArrowLeft',bubbles:true}));
-    assert.equal(f.source.gridRowLayout.headerWidth, 58, 'cannot clip the measured ordinal');
+    assert.equal(f.source._internal.gridRowLayout.headerWidth, 58, 'cannot clip the measured ordinal');
     const captured = new Set();
     head.setPointerCapture = id => captured.add(id);
     head.hasPointerCapture = id => captured.has(id);
@@ -871,13 +905,13 @@ test('row number width is local geometry, survives view changes and shares resiz
         Object.defineProperty(event,'pointerId',{value:1}); target.dispatchEvent(event);
     };
     pointer('pointerdown',60,handle); pointer('pointermove',100);
-    assert.equal(f.source.gridRowLayout.headerWidth,58,'preview does not commit');
+    assert.equal(f.source._internal.gridRowLayout.headerWidth,58,'preview does not commit');
     pointer('pointercancel',100);
-    assert.equal(f.source.gridRowLayout.headerWidth,58);
+    assert.equal(f.source._internal.gridRowLayout.headerWidth,58);
     pointer('pointerdown',60,handle); pointer('pointerup',100);
-    assert.equal(f.source.gridRowLayout.headerWidth,100);
+    assert.equal(f.source._internal.gridRowLayout.headerWidth,100);
     f.source.setAttr({sortedBy:'code:d'}); f.flush();
-    assert.equal(f.source.gridRowLayout.headerWidth,100);
+    assert.equal(f.source._internal.gridRowLayout.headerWidth,100);
     assert.equal(f.app.data.getItem('model.structure').getItem('view_0.rows_0').getNodes().length,2);
 });
 
@@ -895,7 +929,7 @@ test('server windows request missing ranges, render global ordinals and delegate
     f.flush();
     const body = f.host.shadowRoot.querySelector('.body-viewport');
     Object.defineProperty(body, 'clientHeight', {value:320});
-    Object.defineProperty(body, 'scrollHeight', {get:()=>f.source.gridRowLayout.totalHeight});
+    Object.defineProperty(body, 'scrollHeight', {get:()=>f.source._internal.gridRowLayout.totalHeight});
     f.layout.flush();
     body.dispatchEvent(new f.window.KeyboardEvent('keydown', {key:'End', bubbles:true}));
     f.layout.flush();
@@ -918,7 +952,7 @@ test('server windows request missing ranges, render global ordinals and delegate
     const header = field => f.host.shadowRoot.querySelector(`th[data-field=${field}]`);
     header('amount').dispatchEvent(new f.window.MouseEvent('click', {bubbles:true}));
     assert.equal(f.app.data.getItem('model.sortRequest'), 'amount:a');
-    assert.equal(f.source.gridCollectionView.sortedBy, '', 'loaded rows are never locally sorted');
+    assert.equal(f.source._internal.gridCollectionView.sortedBy, '', 'loaded rows are never locally sorted');
     f.app.data.setItem('model.window', new Bag({start:0,total:500000,revision:2,sortedBy:'amount:a'}));
     f.app.data.setItem('model.rows', rows(0)); f.flush(); f.layout.flush();
     assert.equal(body.scrollTop, 0);
@@ -954,6 +988,32 @@ test('missing first windows, empty results and return to resident data have dist
     assert.equal(status.hidden, true);
     assert.equal(f.host.control.hasAttribute('aria-busy'), false);
     assert.deepEqual(f.cells(), ['Ready','1.00']);
+});
+
+
+test('windowInfo is read at its address: a change inside the Bag and a replacement redraw the grid', t => {
+    const f = fixture(t, {empty:true});
+    const status = f.host.shadowRoot.querySelector('[role=status]');
+    const first = new Bag({start:0,total:1000,revision:1,sortedBy:''});
+    f.app.data.setItem('model.window', first);
+    f.source.setAttr({windowInfo:'^.window',viewport:'^.viewport'});
+    f.flush(); f.layout.flush();
+    assert.equal(status.hidden, false);
+    first.setItem('total', 0); f.flush(); f.layout.flush();
+    assert.equal(status.hidden, true, 'a change inside the window Bag reaches the grid');
+    assert.deepEqual(f.cells(), ['No rows']);
+    f.app.data.setItem('model.window', new Bag({start:0,total:1000,revision:2,sortedBy:''}));
+    f.flush(); f.layout.flush();
+    assert.equal(status.hidden, false, 'a replacement at the address reaches the grid');
+    first.setItem('total', 0); f.flush(); f.layout.flush();
+    assert.equal(status.hidden, false, 'the replaced Bag is not read');
+    // A silent replacement (no Data event) is read by the next window draw: its new revision asks again.
+    f.app.data.setItem('model.viewport', null); f.flush(); f.layout.flush();
+    assert.equal(f.app.data.getItem('model.viewport'), null);
+    f.app.data.setItem('model.window', new Bag({start:0,total:1000,revision:3,sortedBy:''}), null, '>', false, true, null, false, false);
+    f.host.shadowRoot.querySelector('.body-viewport').dispatchEvent(new f.window.Event('scroll')); f.flush(); f.layout.flush();
+    assert.equal(f.app.data.getItem('model.viewport').start, 0);
+    assert.throws(() => f.source.setAttr({windowInfo:new Bag({start:0,total:1,revision:1,sortedBy:''})}), /is not a Data path/);
 });
 
 
@@ -1085,8 +1145,8 @@ for (const mode of ['values','attributes']) test(`${mode}: set filters react to 
     f.app.data.setItem('model.sets.john','C');f.flush();assert.deepEqual(labels(),['r3']);
     assert.equal(f.window.document.getElementById('second').shadowRoot.querySelectorAll('tr[data-row]').length,3);
     assert.equal(f.rows.getNodes().length,3);
-    const windowInfo=new Bag({start:0,count:3,total:20,revision:1,sortedBy:''});
-    assert.throws(()=>f.source.setAttr({windowInfo}),/complete resident store/);
+    f.app.data.setItem('model.window',new Bag({start:0,count:3,total:20,revision:1,sortedBy:''}));
+    assert.throws(()=>f.source.setAttr({windowInfo:'^.window'}),/complete resident store/);
 });
 
 test('column popup uses a shared grid, isolated literal search and preserved selections',t=>{
@@ -1099,14 +1159,35 @@ test('column popup uses a shared grid, isolated literal search and preserved sel
     root.querySelector('.column-filter[data-field="code"]').click();f.flush();
     const panel=root.querySelector('.column-filter-panel'),inner=f.host.querySelector('gramlot-grid');
     assert.equal(f.host,f.window.document.getElementById('first'));
+    // The popup Data and the popup grid structure live in private areas, under the outer grid's.
+    const area=f.source.workspaceDatapath;
+    assert.ok(f.app.data.getItem(`${area}.columnFilter.rows`) instanceof Bag);
+    const innerPath=f.source.staticValue.getNodes().flatMap(function walk(node){
+        return [node,...(node.staticValue?.getNodes?.() ?? []).flatMap(walk)];
+    }).find(node=>node.nodeTag==='grid').getAttr('structpath');
+    assert.match(innerPath,/^_gramlot\.workspace\.grid_\d+\.struct$/);
+    assert.notEqual(innerPath,`${area}.struct`);
     assert.ok(inner,'the popup reuses the grid component');
+    // The popup Source nodes are reached by childname from the grid Source node; the controller lives in
+    // `_internal` of its action bar and keeps no child Source node.
+    const pane=f.source.getChild('columnFilter');
+    assert.equal(pane.getChild('frame').nodeTag,'framePane');
+    assert.equal(f.source.getChild('columnFilter/frame/search').nodeTag,'searchBox');
+    assert.equal(f.source.getChild('search'),null,'the named pane hides its descendants');
+    assert.equal(pane.getChild('frame').getAttr('height'),`${76+28*3}px`,'the frame height follows the entries');
+    const bar=pane.staticValue.getNodes().find(node=>node.nodeTag==='menu');
+    const controller=bar._internal.gridColumnFilters;
+    assert.equal(typeof controller.reset,'function');
+    assert.equal(Object.hasOwn(bar,'gridColumnFilters'),false);
+    assert.equal('gridColumnFilters' in bar,false);
+    for(const value of Object.values(controller))assert.equal(value instanceof Bag || value?.constructor?.name?.includes('BagNode'),false);
     const options=()=>[...inner.shadowRoot.querySelectorAll('tr[data-row]')];
     const text=()=>options().map(row=>row.textContent);
-    assert.equal(f.source.gridCollectionView.sortedBy,'');
+    assert.equal(f.source._internal.gridCollectionView.sortedBy,'');
     assert.deepEqual(text(),['A1','B1','C1']);
     const input=options()[0].querySelector('input');input.focus();input.click();f.flush();
     assert.equal(inner.shadowRoot.activeElement,input);
-    assert.deepEqual(f.source.gridCollectionView.columnFilter('code'),['B','C']);
+    assert.deepEqual(f.source._internal.gridCollectionView.columnFilter('code'),['B','C']);
     assert.equal(text()[0],'A1');
     const searchHost=f.host.querySelector('gramlot-search-box');
     const search=searchHost.shadowRoot.querySelector('input');
@@ -1114,24 +1195,28 @@ test('column popup uses a shared grid, isolated literal search and preserved sel
     const searchEvent=()=>{search.dispatchEvent(new f.window.Event('input',{bubbles:true}));t.mock.timers.tick(100);};
     search.value='B';searchEvent();f.flush();
     assert.deepEqual(text(),['B1']);
-    assert.deepEqual(f.source.gridCollectionView.columnFilter('code'),['B','C']);
+    assert.deepEqual(f.source._internal.gridCollectionView.columnFilter('code'),['B','C']);
     options()[0].querySelector('input').click();f.flush();
-    assert.deepEqual(f.source.gridCollectionView.columnFilter('code'),['C']);
+    assert.deepEqual(f.source._internal.gridCollectionView.columnFilter('code'),['C']);
     search.value='[';searchEvent();f.flush();assert.equal(options().length,0);
     search.value='';searchEvent();f.flush();assert.equal(options()[2].querySelector('input').checked,true);
-    f.source.gridCollectionView.applyColumnFilter('amount',[12.5]);f.flush();assert.deepEqual(text(),['A1','B1','C0']);
+    f.source._internal.gridCollectionView.applyColumnFilter('amount',[12.5]);f.flush();assert.deepEqual(text(),['A1','B1','C0']);
     f.rows.getNode('r1').setAttr({amount:20});f.flush();assert.equal(text()[0],'A0');
     const toolbar=f.host.querySelector('[aria-label="Column filter actions"]');
     const command=text=>[...toolbar.querySelectorAll('[role="menuitem"]')].find(item=>item.control.getAttribute('aria-label')===text).control.click();
-    command('None');f.flush();assert.equal(f.source.gridCollectionView.getRows().length,0);
-    command('Reset');f.flush();assert.deepEqual(f.source.gridCollectionView.getRows(),[f.rows.getNode('r2')]);
-    assert.equal(f.source.gridCollectionView.columnFilter('code'),null);
-    assert.deepEqual(f.source.gridCollectionView.columnFilter('amount'),[12.5]);
+    command('None');f.flush();assert.equal(f.source._internal.gridCollectionView.getRows().length,0);
+    command('Reset');f.flush();assert.deepEqual(f.source._internal.gridCollectionView.getRows(),[f.rows.getNode('r2')]);
+    assert.equal(f.source._internal.gridCollectionView.columnFilter('code'),null);
+    assert.deepEqual(f.source._internal.gridCollectionView.columnFilter('amount'),[12.5]);
     search.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true,composed:true}));
     assert.equal(panel.hasAttribute('data-open'),false);
     assert.equal(root.activeElement,root.querySelector('.column-filter[data-field="code"]'));
+    search.value='B';
     root.querySelector('.column-filter[data-field="code"]').click();f.flush();assert.equal(f.host.querySelector('gramlot-grid'),inner);
-    assert.throws(()=>f.source.setAttr({windowInfo:new Bag({start:0,count:3,total:30,revision:1,sortedBy:''})}),/complete resident store/);
+    assert.equal(search.value,'','reopening clears the search box reached by childname');
+    assert.equal(searchHost.shadowRoot.activeElement,search,'reopening focuses the search box');
+    f.app.data.setItem('model.window',new Bag({start:0,count:3,total:30,revision:1,sortedBy:''}));
+    assert.throws(()=>f.source.setAttr({windowInfo:'^.window'}),/complete resident store/);
 });
 
 test('date popup applies periods atomically, preserves invalid drafts and resets without rebuilding',async t=>{
@@ -1144,7 +1229,11 @@ test('date popup applies periods atomically, preserves invalid drafts and resets
     f.source.setAttr({columnFilters:true});f.flush();
     f.host.shadowRoot.querySelector('.column-filter[data-field="day"]').click();f.flush();
     const [from,to]=f.host.querySelectorAll('gramlot-date-text-box'),inner=f.host.querySelector('gramlot-grid');
-    const view=f.source.gridCollectionView;
+    // The date fields restored on open and on Reset are the nodes named `from` and `to`.
+    const renderer=f.source.rootBuilder.binding.renderer;
+    assert.equal(renderer.getDomNode(f.source.getChild('columnFilter/from')),from);
+    assert.equal(renderer.getDomNode(f.source.getChild('columnFilter/to')),to);
+    const view=f.source._internal.gridCollectionView;
     const edit=async(host,text)=>{host.control.focus();host.control.value=text;
         for(const type of ['input','change'])host.control.dispatchEvent(new f.window.Event(type,{bubbles:true}));
         await Promise.resolve();f.flush();};
@@ -1185,12 +1274,12 @@ for (const mode of ['values','attributes']) test(`${mode}: external radio writes
  assert.deepEqual(radios(f.window.document.getElementById('second')).map(r=>r.checked),[false,true]);
  radios(f.host)[1].click();assert.equal(f.app.data.getItem('product.primary_supplier_id'),'B');
  assert.equal(f.rows.toTytx(),before);assert.equal(f.host.shadowRoot.querySelector('tr[data-row=r1]'),row);
- f.source.gridCollectionView.applyFilter({value:'^A$',columns:['code'],dtype:'T'});f.flush();
+ f.source._internal.gridCollectionView.applyFilter({value:'^A$',columns:['code'],dtype:'T'});f.flush();
  assert.equal(radios(f.host).length,1);assert.equal(radios(f.host)[0].checked,false);
  assert.equal(f.app.data.getItem('product.primary_supplier_id'),'B');
- f.source.gridCollectionView.applyFilter(null);f.flush();assert.equal(radios(f.host)[1].checked,true);
+ f.source._internal.gridCollectionView.applyFilter(null);f.flush();assert.equal(radios(f.host)[1].checked,true);
  f.app.data.setItem('product.primary_supplier_id',null);f.flush();assert.ok(radios(f.host).every(r=>!r.checked));
- f.source.setAttr({windowInfo:new Bag({start:0,count:2,total:20,revision:1,sortedBy:''})});f.flush();
+ f.app.data.setItem('model.window',new Bag({start:0,count:2,total:20,revision:1,sortedBy:''}));f.source.setAttr({windowInfo:'^.window'});f.flush();
  f.app.data.setItem('product.primary_supplier_id','OFFSCREEN');f.flush();assert.ok(radios(f.host).every(r=>!r.checked));
  radios(f.host)[0].click();assert.equal(f.app.data.getItem('product.primary_supplier_id'),'A');
 });

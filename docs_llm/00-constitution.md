@@ -5438,3 +5438,34 @@ possible, from a vendored copy we ship. One manifest describes them." This super
 third-party library of the standard components (GC-325 §160). Servers choose `cdn`
 (default) or `local`; serverless and file exports use the local copies. The names and
 the public API wait for owner confirmation (GC-225, 2026-11-07).
+
+### Data and structure by address only — owner, 2026-11-10
+
+Owner decisions of plan symbolic-references (d-rule, d-scope, d-exception, 2026-11-07),
+completed on 2026-11-09 and 2026-11-10.
+
+1. Data and structure are referenced only by address in the page Data or Source, never by
+   holding a Bag or a BagNode. Only the root Data and the Source root are held; only the
+   final consumer reads values; the data Bag is never replaced.
+2. Passing a node or a Bag to a synchronous call that does not keep it is allowed.
+3. A Bag without a parent may be held: a Bag created internally (also a copy) or a literal
+   Bag in Source. A Bag with a parent is a sub-Bag of Data or Source and is passed by path
+   (owner, 2026-11-10: "basta che non abbia parent. se ha parent significa che sto passando
+   una sub bag"). An internal Bag inserted into a store gets a parent and is no longer held.
+4. Non-reactive state of a Source node goes to `node._internal`: plain values, or helpers
+   that hold no Bag or node except their own Source node. State an author may read or bind
+   goes to `#WORKSPACE` in Data.
+5. Attributes whose name starts with `_dv_` are derived values and never count as a change
+   of an editing session (owner, 2026-11-10). The choice caption is `_dv_displayedValue`.
+6. The legacy symbolic paths are resolved in Python and JavaScript with the same cases:
+   `#ROW`, `#WORKSPACE`, `#DATA`, `#FORM`, `#ANCHOR`, `#<nodeId>`, `#parent`, `?attr`,
+   named children (GC-210, "Symbolic paths").
+7. Exceptions only with the owner's explicit authorization, case by case (d-exception).
+   Recorded exception: the inspector history holds nodes of the inspected page until the
+   inspector is redesigned as two synchronized pages (owner, 2026-11-10).
+
+This supersedes, in "Reserved system Data namespace" (2026-11-05), the generated drawing
+state at `_gramlot.drawing` and the grid state at `_gramlot.grid`: component state now lives
+in the component's private area `#WORKSPACE` (`_gramlot.workspace.<name>`). It also
+supersedes the inspector tree's `storeBag` (Amendment 11.62, 2026-10-14): a tree reads its store only at
+`storepath`, and the inspector keeps its copies through a named connection.

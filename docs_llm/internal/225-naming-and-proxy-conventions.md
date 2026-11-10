@@ -85,6 +85,9 @@ uses the existing permanent `menu`/`menuline` presentation and shared input
 components; no slotBar alias is introduced. `drawingController` follows the
 existing `gridColumnFilters` Source-owned controller pattern; `drawingState`
 and `drawingStatePath` identify its private state Bag under `gramlot.drawing`.
+Superseded on 2026-11-08 (plan symbolic-references p7): `drawingState` and `drawingStatePath`
+are removed; tool, color and pen size are Data values at the drawingPane node's
+`workspaceDatapath` (`_gramlot.workspace.<name>`), read and observed by path.
 Text uses 12 + 2 × pen width, at least 14 image units. Committing text selects
 the cursor tool. These are implementation details of the existing component.
 
@@ -2523,6 +2526,7 @@ Browser screen image — 2026-11-01: the image uploader’s visible action is �
 
 
 **Uploader consolidation — 2026-11-01.** Internal Source-owned `attachmentState` and `imageCropState` follow `formState` and `ideContext`: component state belongs to its Source node, never Logic. The attachment Bag holds `items`, `selected`, `preview`, `message` and the current `contextKey`. The image Bag holds `initial` and `transform` framing values. These are internal ownership names, not new public bindings or alternate upload stores. Native files, decoded images, requests and object URLs remain browser resources.
+Superseded on 2026-11-08 (plan symbolic-references p7): `attachmentState` and `imageCropState` are removed. The same values live in Data at the node's `workspaceDatapath` (`_gramlot.workspace.<name>`): `contextKey`, `selected`, `items`, `preview`, `message` for attachmentManager; `initial`, `transform` for imageUploader. `ImageCropSession` and `ImageCropDialog` take `data` (the Data root) and `path` instead of a state Bag, as `UploadEngine`.
 
 <a id="gc-225-visual-editor-consolidation"></a>
 ## Visual Editor names — consolidated 2026-11-01
@@ -2725,7 +2729,7 @@ CLI automatic new-project setup confirmed — 2026-10-22. Owner replied “ok”
 
 Shared collection lookup — 2026-11-03: `Gramlot.getCollection(name)` follows `get` + noun camel case and returns the page's activated collection object. It exposes the existing Gramlot-owned registry without a new proxy. Owner requested sharing base collections with Inspector and confirmed they are always provided.
 
-External tree store — 2026-11-04: `treeStore` and `setTreeStore` follow the existing tree/store and camel-case getter/setter vocabulary. The reference belongs to the tree's Source node, not attributes, Data or a serialised copy. Owner requested observing the original Bag without moving or copying it.
+External tree store — 2026-11-04: **Superseded 2026-11-08** (owner decision d-scope: no Source-node reference to an external Bag): see the note "External tree store, superseded — 2026-11-08" under "Named dataBinder connections — 2026-11-08". Historical text: `treeStore` and `setTreeStore` follow the existing tree/store and camel-case getter/setter vocabulary. The reference belongs to the tree's Source node, not attributes, Data or a serialised copy. Owner requested observing the original Bag without moving or copying it.
 
 Inspector tree migration — 2026-11-04: `resolveLazy` controls resolver expansion, search and selection; `placement` uses the existing Inspector `before`/`inside`/`after` drag vocabulary; `storeBag` pairs with existing `setStoreBag`. Owner requested shared tree parity.
 
@@ -2745,7 +2749,8 @@ Shared icon-only commands — 2026-11-04: internal `icon-only` control class and
 
 Owner: "ok allora completiamolo" after the legacy/PoC comparison; complete remote
 lists confirmed with "Sì, elenco completo come nel legacy". Reuse `popup`,
-`identifier`, `labelAttribute` and `_displayedValue` from the inspected legacy,
+`identifier`, `labelAttribute` and `_displayedValue` (renamed `_dv_displayedValue` on
+2026-11-10, see "Derived values `_dv_`") from the inspected legacy,
 and `dbtable`, `method`, `caption_field`, `order_by`, `condition_*` from current
 selectors. `limit=None` denotes the complete option list. Internal camelCase
 helpers `choiceOptions` and `selectionDisplay` follow existing component/context
@@ -2762,6 +2767,8 @@ Owner: “completiamo anche la variante gerarchica riusando il tree con checkbox
 
 Owner: “completa checkBoxText anche con testo editabile e selezione per descrizione, mantenendo i codici nei Data”. `CheckBoxTextEditor` follows the component editor naming; `sourceNode.checkBoxTextState.draft` owns incomplete text and its code baseline, following existing Source-owned component state. Popup text accepts a comma-separated description list with case-insensitive exact resolution; native datalist suggestions complete the last description. Enter/change commits through existing field validation; unknown/ambiguous text is not committed and blocks form acceptance. Escape and form restore discard the draft. Checkbox selection remains authoritative, and remote/hierarchical choices reuse the existing option index without extra queries. Legacy evidence: `Genropy/genropy/gnrjs/gnr_d11/js/genro_components.js`, CheckBoxText lines 5699–6114, uses caption/value dictionaries but declares the popup textbox `readOnly:true`; no typed-description resolver was found there. The edited-description behavior is explicitly owner-requested, not claimed as verified legacy parity. No new authoring parameter.
 
+Superseded on 2026-11-09 (owner, `_internal`): the draft lives in `sourceNode._internal.draft`, same shape; `checkBoxTextState` no longer exists.
+
 
 Search capsule refinement — 2026-11-04: owner requests a fully rounded, lower and more compact shared searchBox, darker column-selector background and no information icon unless explicitly requested. The shared defaults become 26 px input height, 240 px width and 12 px type (touch minimum retained). `searchHelp=False` is the Boolean opt-in on frameGrid/searchBox; it forwards unchanged to the search control and is reactive there. This supersedes the preceding rectangular 32 px default and always-visible help button. No example-local styling.
 
@@ -2777,6 +2784,13 @@ Chart multiple measures — 2026-11-04: owner clarifies “intendo piu curve o p
 
 
 Chart series presentation — 2026-11-04: owner says “procedi” to per-measure axis/color configuration and a separate right Y axis for Units. Private `seriesOptions` follows ECharts series vocabulary; it is a Data Bag keyed by field with `axis` (left/right) and `color` (six-digit hex). Units defaults right, revenue/margin left. The chart subscribes to that Bag and releases subscriptions with its lifecycle. Settings survive measure deselection and bar/line switching. This remains an experimental chart contract.
+Superseded for the chart on 2026-11-08 (plan symbolic-references p5): the chart neither keeps nor
+subscribes to the `seriesOptions` Bag. `seriesOptions='^<path>'` is a subtree registration that projects
+the chart again; `ChartRenderer.update(structure, {data, path})` receives the address and reads the options
+at it, without resolvers, where the context goes to the engine adapter. Store keys: `collectionKey(path,
+rowMode)` is the key of a collection store, `BagCollectionStore.key` and `BagCollectionView.storeKey` expose
+it; `ChartDataView.follow` compares store keys. `chartRows(store)` gives the rows or null when the address
+holds no readable collection, so chart fields and the timeline leave that error to the chart notice.
 
 ### Eager tree search — 2026-11-04
 
@@ -2998,6 +3012,11 @@ The owner approved proceeding with the general system-path migration after the
 DeviceHandler audit ("possiamo procedere"). System-owned root Data now uses
 `_gramlot`: device state is `_gramlot.device` and generated drawing state is
 `_gramlot.drawing`; generated grid structure/filter state uses `_gramlot.grid`. This supersedes the earlier `gramlot.device` Data reservation.
+Superseded for the grid on 2026-11-08 (plan symbolic-references p4): the grid structure and
+column filter state live in the grid's private area `_gramlot.workspace.<name>` (`#WORKSPACE`
+naming rule, name derived from the grid node), at `.struct` and `.columnFilter`.
+Superseded for the drawing on 2026-11-08 (plan symbolic-references p7): the drawingPane tool state
+lives in the drawingPane node's private area `_gramlot.workspace.<name>`; `_gramlot.drawing` is no longer written.
 Update producers and consumer bindings together; do not introduce aliases.
 The JavaScript runtime object, native bridge protocol/plugin names and persistent
 storage keys are unchanged. The proposed Inspector root-node exclusion remains
@@ -3096,6 +3115,174 @@ convention. `EXPORT_FORMATS` follows the existing upper-case constant
 convention. The XML root `GenRoBag` is the legacy GenroPy root element. The
 license assets `writeExcelFileLicense` and `fflateLicense` follow the charts
 collection `<engine>License` asset names.
+
+### Named dataBinder connections — 2026-11-08
+
+Plan symbolic-references p6 (design `client-databinder-design`, phases 1-3). The
+registry place, the reserved attribute and keeping `server_path` are implementation
+choices open to owner review (plan p6 records them as such).
+
+- `connection` (dataBinder attribute, both `binding.json` copies, same spelling in
+  Python and JavaScript): the literal name of the store; it follows the existing
+  vocabulary of `PageStoreConnection`. `server_path` keeps its name.
+- `gramlot.rpc.connection(name)`, `registerConnection(name, port)`,
+  `unregisterConnection(name)` and the member `connections`: the registry of named
+  connections on the proxy that already holds the PageStore channel as transport.
+  The verbs follow `FrameMessages.registerChannel`/`unregisterChannel` (§010,
+  unified family protocol); `connections` follows `remoteRequests`.
+- `MessagePortConnection` (`message-port-connection.js`) and `MessagePortStore`
+  (`message-port-store.js`): the kind of channel before the word, as
+  `HttpTransport`/`WorkerTransport` (§010, server adapter row); `Connection` and
+  `Store` are the words of `PageStoreConnection` and `PageStore`. The file is
+  named after the class (§010, Files). `messageText` names what it returns.
+  States `waiting`, `open`, `closed` describe the port.
+- Protocol messages keep the PageStore operations (`subscribe`, `unsubscribe`,
+  `change`, `snapshot`) and add `closed` (already the PageStore close operation)
+  and `error` (the existing RPC field name).
+- `_inspector`: the reserved attribute of the inspector's projection nodes. Rule:
+  a reserved name not authored by applications starts with an underscore followed
+  by the name of its owner (`_meta` of genro-builders, `_gramlot` system Data
+  root); the owner is the inspector tool, whose vocabulary is `inspector`
+  (`InspectorConnection`, Logic group `inspector`, §030/§035).
+- `target` (the inspector's connection name and Data path `target.data`,
+  `target.source`): the tool's existing word for the inspected page (`targets`,
+  `selectedTarget`, target records, §035).
+
+External tree store, superseded — 2026-11-08: the 2026-11-04 entry for `treeStore`
+and `setTreeStore` (a Source-node reference to an external Bag) is withdrawn. Owner
+decision d-scope, 2026-11-07: "setTreeStore con un Bag oggetto sparisce". A tree
+reads its store only at `storepath`; the inspector keeps copies in its own Data
+through the named connection above. The runtime's `treeStore(node)` remains the
+reader of `storepath` for the tree context.
+
+### Node internal state `_internal` — owner, 2026-11-09
+
+Owner: "mettere nei source node di gramlot un ._internal che è un object che tiene lo
+stato interno al nodo e che non è reattivo e non deve essere visto dall'utente";
+confirmed "ok". The name `_internal` is the owner's.
+
+- Component state an author may read or bind goes to the node's private area
+  `#WORKSPACE` in Data.
+- Internal, non-reactive state of a Source node goes to `node._internal`, a plain
+  object defined on `GramlotBuilderBagNode` (`js/src/builder/source.js`) and created
+  on first read. Writing it fires no Source event and no rebind. It is not an
+  attribute, not Data and not serialized with Source; authors do not use it.
+- `_internal` holds plain values only: strings, numbers, booleans, null, and plain
+  objects/arrays of those. Never a Bag, BagNode or DOM node: data and structure are
+  reached by address.
+- Python Source nodes have no `_internal`: it is browser runtime state.
+- First user: the checkBoxText typed-description draft, `node._internal.draft`
+  (`{text, value}`).
+- Second user (owner, 2026-11-09: "Sì, spostalo"): the form field draft text,
+  `node._internal.formDraft`, formerly the node property `formDraft`.
+- Addition 2026-11-09 (owner: "Sì, ammettile"): `_internal` also admits component
+  helper instances, on one condition: the instance holds no Bag, BagNode or Source
+  node in its fields; it reaches Data and structure only by address (only the root
+  Data is held, everything else by path). Legacy precedent: GenroPy
+  `sourceNode.gnrwdg`. Moved from ad-hoc node properties under this condition:
+  `node._internal.gridCollectionView` (BagCollectionView; its BagCollectionStore
+  keeps the root Data and the path), `node._internal.gridSearch` (GridSearch) and
+  `node._internal.gridRowLayout` (GridRowLayout). `drawingController` and
+  `gridColumnFilters` stay node properties: DrawingPane keeps its source context,
+  whose `sourceNode` is the drawingPane Source node, and GridColumnFilters keeps
+  the Source nodes of its popup pane, frame grid, search box and date fields.
+- Addition (owner, 2026-11-09, "Sì, è ammesso"): a component's own Source node,
+  held in its source context (`context.sourceNode`), does not break the condition.
+  `drawingController` moved to `node._internal.drawingController` on the toolbar
+  Source node; its menu actions read `this.parentBag.parentNode._internal.drawingController`.
+  `gridColumnFilters` stays a node property: it keeps child Source nodes.
+- Addition (owner, 2026-11-09, "Sì, converti"): GridColumnFilters reaches the
+  Source nodes of its popup by childname at the moment of use, through
+  `getChild` on the grid Source node (`context.sourceNode`): the pane it builds
+  is `columnFilter`, below it `frame` (the frame grid), `frame/search` (the search
+  box inside the named frame) and `from`/`to` (the two date fields). It holds no
+  child Source node in its fields. `gridColumnFilters` moved to
+  `node._internal.gridColumnFilters` on the action bar Source node; its menu
+  actions read `this.parentBag.parentNode._internal.gridColumnFilters`.
+- Addition (owner, 2026-11-09, "ok"): the ad-hoc non-enumerable Source-node
+  properties `indexContext`, `ideContext` and `fileSystemController` moved to
+  `node._internal.indexContext`, `node._internal.ideContext` and
+  `node._internal.fileSystemController`.
+- Coherence review, 2026-11-10 (implementation choices open to owner review, under
+  the helper condition above): the module-level WeakMaps of chat and the visual
+  editor moved to `_internal`. Chat keeps its rendered rows as plain values in
+  `node._internal.chatRows` on the message list Source node and compares a message
+  by its text or Source TYTX, so a message Source changed in place renders again.
+  The visual editor keeps its SourcePicker in `node._internal.canvasSelection` and
+  its VisualEditorCanvas in `node._internal.canvasDocument` on the editor Source
+  node. SourcePicker receives the Source root and the path of the preview root
+  (`source`, `path`) and resolves the root at each use; VisualEditorCanvas uses the
+  design node only while mounting.
+- Held Bags (owner, 2026-11-10: "basta che non abbia parent. se ha parent significa
+  che sto passando una sub bag"): a parentless Bag, such as a Source-literal value
+  (chartPane `configDefaults`), may be held and copied. A dtype 'X' component
+  parameter whose value is a Bag with a parent is projected as null in the
+  renderer's resolved attributes, so `element.parameters`, the renderer record and
+  the ControlAdapter never hold it; the component reads it at its address. Grid
+  `edit` options follow the same rule with an explicit error. Python has no
+  runtime projection of component parameters.
+
+### Derived values `_dv_` — owner, 2026-11-10
+
+Owner: "usare una regola sui nomi che sono derivati: _dv_displayedValue ad esempio e
+tutti i _dv_ sono esclusi"; confirmed "si".
+
+- Every Data attribute whose name starts with `_dv_` is a derived value. It never
+  counts as a change of an EditingSession, without any registration: `isDerived`
+  returns true for `<path>?<attribute>` when the attribute starts with `_dv_`.
+  `registerDerived` stays for path-based derived values (grid formulas, totals).
+- Reserved name rule: underscore followed by the owner word, as `_meta` and
+  `_inspector`; the owner word is `dv` (derived value).
+- Rename: the choice-field caption attribute `_displayedValue` becomes
+  `_dv_displayedValue` (written by `selectionDisplay` in `js/src/view/controls.js`).
+- Legacy: GenroPy excluded `_displayedValue` by name in `genro_frm.js:1952`
+  (`kw.changedAttr!='_displayedValue'`); the prefix generalises that exclusion.
+
+### Non-component runtimes by address — 2026-11-09
+
+Plan symbolic-references, phase "Runtime che non sono componenti"; owner decision
+d-scope, 2026-11-07: "Sì, senza eccezioni: index page, IDE, DeviceHandler inclusi".
+The names below are implementation choices, open to owner review.
+
+- `mountIndexPage` option `state`: the name stays; its value becomes the absolute
+  Data path of the index state (default `root.absDatapath('.')`), as a `^` pointer
+  keeps its name and travels as an address (decision d-pointer). It supersedes the
+  2026-10-18 entry where the gallery passed the `galleryIndex` Bag through this option.
+- Index entry `paneLabel`: the label of the entry's contentPane in the tabs, from the
+  existing words *pane* (contentPane) and *label* (node label). `entry.pane` and
+  `entry.node` keep their names and become getters that read the panel by
+  `paneLabel` and the navigation node by `path` on each access.
+- DeviceHandler: `#deviceNode(name)` reads `_gramlot.device.<name>` at each use;
+  `#receive(change)` is the recipient of one Data router registration with
+  `subtree:true` on `_gramlot.device`, replacing the root subscription
+  `gramlot.device`. The public `resolvers` Map is removed; `resolver(name)` reads
+  `node.resolver` at the device path.
+- IdeDocuments: `#observeAnnotations(key)` registers the annotations path of an image
+  document; `#registrations` holds the registrations by document key.
+- `windowSelection` keeps no inbox Bag: a reply is the frame read at the `inbox`
+  address whose `request_id` equals the pending request.
+
+### Bag parameters read by address — 2026-11-09
+
+Plan symbolic-references, final check; owner, 2026-11-09: "Sì, converti". A `^`
+parameter of dtype `X` is read at the address of its original attribute
+(`attrDatapath` + `getStaticData`) at the moment of use, as `seriesOptions` of the
+charts; the projection `this.parameters` is no longer read for these values. The
+subtree registration of the `X` parameter keeps projecting the component on a change
+inside the Bag and on a replacement at the address. A literal Bag in place of the
+pointer is rejected as "not a Data path".
+
+- grid `windowInfo`: read in `#windowInfo()` at each window draw and for the cell
+  editor's `store().window`.
+- tree `favorites`: read in `#favorites()` when the tree draws and by `#rowItem`;
+  `labelState`: read for each label callback call, passed as `state`.
+- rowActions `state`: read for each `actionState` call, passed as `state`.
+- comboBox `store`: comboBox gains `sourceContext`; its `loadChoices` reads the store
+  at the address and hands it to the shared `localChoices` loader for that call.
+  `#storeSource` (from *store* and the existing `choiceSource`) holds `{path}` and is
+  renewed when a Data change reaches the path, so the editor reloads its choices.
+- drawingPane `annotations`: already read by address since 2026-11-09 (`6ea03bde`);
+  no projection read remained.
 
 <a id="gc-225-shared-modules-20261107"></a>
 ### Shared modules of prepared collections — 2026-11-07

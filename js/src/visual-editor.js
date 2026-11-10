@@ -71,10 +71,6 @@ const specifications = (node, tag, current = null) => {
         ...(node._getMeta('gramlot_component')?.childParameters ?? {})};
 };
 
-// Editor-local view resources; selection itself remains in the Data Bag.
-const canvasSelections = new WeakMap();
-const canvasDocuments = new WeakMap();
-
 export class VisualEditorLogic {
     chatRender(node, params) { return chatRender(this.page, node, params); }
     chatCompleted(node, params) {
@@ -233,33 +229,36 @@ export class VisualEditorLogic {
         node.SET('.selection', selected);
     }
 
+    // Editor view resources live in the editor node's _internal (GC-225) and reach the design root by its
+    // path; selection itself remains in the Data Bag.
     initializeCanvasSelection(node) {
         const renderer = node.rootBuilder.binding.renderer;
-        const design = node.builder.source.getNode(sourceRoot(node));
-        const editor = visualEditorScope(node), css = editor.GET('.canvasCss');
+        const editor = visualEditorScope(node), css = editor.GET('.canvasCss'), path = sourceRoot(editor);
         if (css != null) this.applyCanvasCss(editor, css);
-        const previous = canvasSelections.get(design);
+        const previous = editor._internal.canvasSelection;
         previous?.dispose();
-        const picker = new SourcePicker({renderer, root:design,
-            ...(canvasDocuments.has(design) ? {canvas:canvasDocuments.get(design).body} : {}),
+        const canvas = editor._internal.canvasDocument;
+        const picker = new SourcePicker({renderer, source:editor.builder.source, path,
+            ...(canvas ? {canvas:canvas.body} : {}),
             onSelect:selected => {
-                node.SET('.sourceSearch', '');
-                node.SET('.selection', selected.fullpath.slice(design.fullpath.length + 1));
+                const design = editor.builder.source.getNode(path);
+                editor.SET('.sourceSearch', '');
+                editor.SET('.selection', selected.fullpath.slice(design.fullpath.length + 1));
             }});
-        canvasSelections.set(design, picker);
-        if (!previous) renderer.onDispose(design.parentNode, () => {
-            canvasSelections.delete(design); canvasDocuments.delete(design);
+        editor._internal.canvasSelection = picker;
+        if (!previous) renderer.onDispose(editor.builder.source.getNode(path).parentNode, () => {
+            delete editor._internal.canvasSelection; delete editor._internal.canvasDocument;
         });
         this.highlightSelection(node);
     }
     applyCanvasCss(node, texts) {
         if (!Array.isArray(texts) || texts.some(text => typeof text !== 'string'))
             throw new TypeError('canvas CSS must be a list of CSS texts');
-        const editor = visualEditorScope(node), design = editor.builder.source.getNode(sourceRoot(editor));
-        let canvas = canvasDocuments.get(design);
+        const editor = visualEditorScope(node);
+        let canvas = editor._internal.canvasDocument;
         if (!canvas) {
-            canvas = new VisualEditorCanvas({app:editor.rootBuilder.binding.gramlot, editor, design});
-            canvasDocuments.set(design, canvas);
+            canvas = editor._internal.canvasDocument = new VisualEditorCanvas({app:editor.rootBuilder.binding.gramlot, editor,
+                design:editor.builder.source.getNode(sourceRoot(editor))});
         }
         canvas.setCss(texts);
     }
@@ -272,7 +271,7 @@ export class VisualEditorLogic {
     highlightSelection(node) {
         const design = node.builder.source.getNode(sourceRoot(node));
         const path = node.GET('.selection');
-        canvasSelections.get(design)?.select(path ? design.staticValue.getNode(path) : null);
+        visualEditorScope(node)._internal.canvasSelection?.select(path ? design.staticValue.getNode(path) : null);
     }
 
     clipboardShortcut(node, event) {

@@ -8,7 +8,6 @@
     "attachmentManager": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -240,7 +239,6 @@
     "imageUploader": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -486,7 +484,6 @@
     "uploader": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {

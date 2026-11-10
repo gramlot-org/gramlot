@@ -7,12 +7,22 @@ export const documentKey = (root, path) => 'd_' + [...new TextEncoder().encode(J
 
 /** Source-owned document requests; drafts and saved baselines are relative Data. */
 export class IdeDocuments {
+    #registrations = new Map();
     constructor(gramlot, source) {
         this.gramlot = gramlot; this.source = source;
         this.pending = new Map(); this.disposed = false;
     }
     get state() { return this.source.getRelativeData('.'); }
     get documents() { return this.state.getItem('documents'); }
+    /** An image document's annotations, observed at their Data path, are serialized into its content. */
+    #observeAnnotations(key) {
+        const path = this.source.absDatapath(`.documents.${key}.annotations`);
+        this.#registrations.set(key, this.gramlot.src.binding.router.register({path, subtree:true,
+            recipient:{receive:() => {
+                const doc = this.documents.getItem(key);
+                doc.setItem('content',doc.getItem('annotations').toTytx());
+            }}}));
+    }
     async open(root, path) {
         // Only registered IDE document types may create an editor tab.
         if (!/\.(?:py|js|mjs|ts|json|html|css|xml|md|markdown|sql|typ|txt|png|jpg|jpeg|webp)$/i.test(path)) return null;
@@ -26,12 +36,9 @@ export class IdeDocuments {
             const document = new Bag();
             const content = result.language === 'image' ? result.content.toTytx() : result.content;
             for (const [name,value] of Object.entries({...result, content, root, saved:content, busy:false})) document.setItem(name,value);
-            if (result.language === 'image') {
-                const annotations = result.content;
-                document.setItem('annotations',annotations);
-                annotations.subscribe('ide-annotations',{any:()=>document.setItem('content',annotations.toTytx())});
-            }
+            if (result.language === 'image') document.setItem('annotations',result.content);
             this.documents.setItem(key, document);
+            if (result.language === 'image') this.#observeAnnotations(key);
             return key;
         }).finally(() => this.pending.delete(key));
         this.pending.set(key,{request,promise});
@@ -58,6 +65,7 @@ export class IdeDocuments {
         const promise = this.gramlot.rpc.call('data','document_create',{root,path,content},
             {signal:request.signal}).then(result => {
             if (this.disposed || request.signal.aborted) return false;
+            const doc = this.documents.getItem(key);
             doc.setItem('root',result.root);
             doc.setItem('path',result.path);
             doc.setItem('revision',result.revision);
@@ -65,7 +73,7 @@ export class IdeDocuments {
             doc.setItem('isNew',false);
             doc.setItem('createHidden',true);
             return true;
-        }).finally(() => { this.pending.delete(key); if (!this.disposed) doc.setItem('busy',false); });
+        }).finally(() => { this.pending.delete(key); if (!this.disposed) this.documents.getItem(key).setItem('busy',false); });
         this.pending.set(key,{request,promise});
         return promise;
     }
@@ -88,17 +96,19 @@ export class IdeDocuments {
         doc.setItem('renderStatus','Generating Typst on the server…');
         const promise = this.gramlot.rpc.call('data','document_render_typst',{content},
             {signal:request.signal}).then(result => {
-            if (this.disposed || request.signal.aborted || doc.getItem('content') !== content) return false;
+            if (this.disposed || request.signal.aborted) return false;
+            const doc = this.documents.getItem(key);
+            if (doc.getItem('content') !== content) return false;
             doc.setItem('typstSource',result.source);
             doc.setItem('previewHidden',false);
             doc.setItem('renderStatus','Typst generated from the current recipe.');
             return true;
         }).catch(error => {
-            if (!this.disposed && !request.signal.aborted) doc.setItem('renderStatus',error.message);
+            if (!this.disposed && !request.signal.aborted) this.documents.getItem(key).setItem('renderStatus',error.message);
             return false;
         }).finally(() => {
             this.pending.delete(key);
-            if (!this.disposed) { doc.setItem('rendering',false); doc.setItem('busy',false); }
+            if (!this.disposed) { const doc = this.documents.getItem(key); doc.setItem('rendering',false); doc.setItem('busy',false); }
         });
         this.pending.set(key,{request,promise});
         return promise;
@@ -120,10 +130,11 @@ export class IdeDocuments {
             ...(creating ? {} : {revision:doc.getItem('revision')})
         }, {signal:request.signal}).then(result => {
             if (this.disposed || request.signal.aborted) return false;
+            const doc = this.documents.getItem(key);
             doc.setItem('revision',result.revision);
             doc.setItem('saved',content);
             return true;
-        }).finally(() => { this.pending.delete(key); if (!this.disposed) doc.setItem('busy',false); });
+        }).finally(() => { this.pending.delete(key); if (!this.disposed) this.documents.getItem(key).setItem('busy',false); });
         this.pending.set(key,{request,promise});
         return promise;
     }
@@ -142,11 +153,18 @@ export class IdeDocuments {
     }
     close(key, discard = false) {
         if (!this.canClose(key,discard)) return false;
+        this.#registrations.get(key)?.close();
+        this.#registrations.delete(key);
         this.documents.popNode(key);
         if (this.state.getItem('active') === key) this.state.setItem('active',this.documents.getNodes()[0]?.label ?? null);
         return true;
     }
-    dispose() { this.disposed = true; for (const {request} of this.pending.values()) request.abort(); }
+    dispose() {
+        this.disposed = true;
+        for (const {request} of this.pending.values()) request.abort();
+        for (const registration of this.#registrations.values()) registration.close();
+        this.#registrations.clear();
+    }
 }
 
 /** Preferences only: six successfully opened roots, never document content. */
