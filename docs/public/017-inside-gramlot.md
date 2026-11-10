@@ -30,7 +30,7 @@ root.div("^example.name", lbl="Your name", lbl_variant="card",
          font_size="24px", text_align="center")
 ```
 
-<iframe class="inside-example inside-name" src="https://gramlot-examples.readthedocs.io/en/latest/documentation/index.html" title="Try the name binding" loading="lazy"></iframe>
+<iframe class="inside-example inside-name" src="../../inside/name/index.html" title="Try the name binding" loading="lazy"></iframe>
 
 Both elements are connected to `example.name`.
 
@@ -43,21 +43,23 @@ The field lets the user enter a name. The card follows the same value and displa
 A formula declares a value derived from other values. For example, the area of a triangle depends on its base and height:
 
 ```python
-root.input(type="number", value="^triangle.base", lbl="Base", default=8)
-root.input(type="number", value="^triangle.height", lbl="Height", default=6)
+root.input(type="number", value="^triangle.base",
+           lbl="Base", default=8)
+root.input(type="number", value="^triangle.height",
+           lbl="Height", default=6)
 
 root.dataFormula(
     "triangle.area", "base * height / 2",
     base="^triangle.base", height="^triangle.height", _init=True,
 )
 
-root.div("^triangle.area", lbl="Area", lbl_variant="card",
-         font_size="24px", text_align="center")
+root.div("^triangle.area", lbl="Area", lbl_position="L",
+         font_size="24px")
 ```
 
 These inline formulas require a page Content Security Policy that permits inline expressions; see [Classes and hosts](090-classes-and-hosts.md#gc-090-035).
 
-The formula calculates `triangle.area` from `triangle.base` and `triangle.height`. The card follows `triangle.area` and displays the result.
+The formula calculates `triangle.area` from `triangle.base` and `triangle.height`. The displayed value follows `triangle.area`.
 
 The fields start with 8 and 6, so the initial area is 24. The formula is declared once; Gramlot runs it initially and when an input changes.
 
@@ -109,7 +111,7 @@ drawing.polygon(
 )
 ```
 
-<iframe class="inside-example inside-triangle" src="https://gramlot-examples.readthedocs.io/en/latest/documentation/triangle/index.html" title="Try one triangle" loading="lazy"></iframe>
+<iframe class="inside-example inside-triangle" src="../../inside/triangle/index.html" title="Try one triangle" loading="lazy"></iframe>
 
 The `points` template combines base and height into the three vertices required by SVG. The `fill` binding connects the color to Data too.
 
@@ -152,7 +154,9 @@ A `datapath` establishes the Data context for a branch of the interface. Each ca
 for name, base, height, color in examples:
     card = cards.section(class_="triangle-card")
     card.div(class_="window-bar").span("●  ●  ●")
-    pane = card.div(datapath=f"triangles.{name}", class_="triangle-body")
+    pane = card.div(
+        datapath=f"triangles.{name}", class_="triangle-body"
+    )
     triangle(pane, base, height, color)
     card.div(f"triangles.{name}", class_="path-label")
 ```
@@ -161,83 +165,36 @@ The page imports `triangle` from a separate Python module. Inside the function, 
 
 For the first triangle, `^.base` refers to `triangles.first.base`. For the second, the same declaration refers to `triangles.second.base`.
 
-<iframe class="inside-example inside-many" src="https://gramlot-examples.readthedocs.io/en/latest/documentation/many/index.html" title="Try three independent triangles" loading="lazy"></iframe>
+<iframe class="inside-example inside-many" src="../../inside/many/index.html" title="Try three independent triangles" loading="lazy"></iframe>
 
 The description is reused; the Data stays separate. Each triangle can have its own dimensions and color.
 
-Source is hierarchical too: each triangle is a branch of the interface containing fields, a formula, a card and a drawing. Its `datapath` connects that branch to its own part of Data.
+Source is hierarchical too: each triangle is a branch of the interface containing fields, a formula, a result and a drawing. Its `datapath` connects that branch to its own part of Data.
 
 <a id="gc-017-045"></a>
 
 ## 045 · Reuse the triangle in another page
 
-The example belongs to `gramlot-examples`. It has two Python files and a stylesheet. The Page imports the packaged function; the function receives the Source node whose `datapath` gives it a Data context.
+The example has two Python files and a stylesheet. The Page imports the function; the function receives the Source node whose `datapath` gives it a Data context.
 
-### Page: `03-many.py`
+### Page: `many_triangles.py`
 
-```python
-from gramlot import Page as BasePage
-from gramlot_examples.documentation_gallery.triangle import triangle
-
-
-class Page(BasePage):
-    title = "Many triangles"
-
-    def main(self, root):
-        root.h2("One description", class_="demo-title")
-        cards = root.div(class_="triangle-grid")
-
-        examples = (
-            ("first", 8, 4, "#417bda"),
-            ("second", 4, 8, "#23a5a2"),
-            ("third", 7, 7, "#ed9d2d"),
-        )
-        for name, base, height, color in examples:
-            card = cards.section(class_="triangle-card")
-            card.div(class_="window-bar").span("●  ●  ●")
-            pane = card.div(datapath=f"triangles.{name}", class_="triangle-body")
-            triangle(pane, base, height, color)
-            card.div(f"triangles.{name}", class_="path-label")
+```{literalinclude} examples/inside/many_triangles.py
+:language: python
 ```
 
-### Reusable block: `triangle.py`
+### Reusable block: `triangle_block.py`
 
-```python
-def triangle(pane, base, height, color):
-    pane.input(type="number", value="^.base", lbl="Base",
-               default=base, min=0, max=10, step=1)
-    pane.input(type="number", value="^.height", lbl="Height",
-               default=height, min=0, max=10, step=1)
-    pane.input(type="color", value="^.color", lbl="Color", default=color)
-
-    pane.dataFormula(
-        ".area", "base * height / 2",
-        base="^.base", height="^.height", _init=True,
-    )
-    pane.div("^.area", lbl="Area", lbl_variant="card", class_="result")
-
-    drawing = pane.svg(viewBox="-1 -1 12 12", role="img",
-                       aria_label="Triangle", class_="triangle-svg")
-    drawing.polygon(
-        points="^.base:0,0 {},0 0,{height}",
-        height="^.height", fill="^.color",
-        transform="translate(0 10) scale(1 -1)",
-    )
+```{literalinclude} examples/inside/triangle_block.py
+:language: python
 ```
 
 A different page can import `triangle` and pass it a node in its own Data context. The function keeps the same relative bindings.
 
-### Another page: `04-reuse.py`
+### Another page: `reuse.py`
 
-```python
-from gramlot import Page as BasePage
-from gramlot_examples.documentation_gallery.triangle import triangle
-
-
-class Page(BasePage):
-    def main(self, root):
-        pane = root.div(datapath="example", class_="triangle-body")
-        triangle(pane, 8, 6, "#3366cc")
+```{literalinclude} examples/inside/reuse.py
+:language: python
 ```
 
 ### Companion stylesheet

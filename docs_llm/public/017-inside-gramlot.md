@@ -14,7 +14,7 @@ A spreadsheet analogy introduces declared relationships: change an input and a r
 
 ## 010 · Connect an interface to Data
 
-`^example.name` connects a field and a display to one Data value.
+`^example.name` connects a field and a display to one Data value. The interactive examples are authored in Python beside this guide; the documentation build serializes their Source as TYTX for the browser runtime.
 
 <a id="gc-017-015"></a>
 

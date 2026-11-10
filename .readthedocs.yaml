@@ -3,10 +3,16 @@ build:
   os: ubuntu-24.04
   tools:
     python: "3.12"
+    nodejs: "22"
   jobs:
     pre_build:
       - python scripts/generate_widget_reference.py --check
+      - npm --prefix js install --ignore-scripts --package-lock=false
+      - npm --prefix tools/gramlot-builder install --ignore-scripts --package-lock=false
+      - npm --prefix js run build
       - python scripts/prepare_docs.py
+      - python scripts/build_docs_examples.py
+      - node js/scripts/build-docs-examples.mjs
 sphinx:
   configuration: build/docs-source/conf.py
   fail_on_warning: true

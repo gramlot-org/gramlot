@@ -86,6 +86,11 @@ def llm_downloads(root):
 
 
 PUBLIC_ASSETS = (
+    "docs/public/examples/inside/name.py",
+    "docs/public/examples/inside/triangle.py",
+    "docs/public/examples/inside/many_triangles.py",
+    "docs/public/examples/inside/triangle_block.py",
+    "docs/public/examples/inside/reuse.py",
     "docs/public/assets/inside/spreadsheet.png",
     "docs/public/assets/inside/triangle.png",
     "docs/public/assets/inside/triangles.png",

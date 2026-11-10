@@ -3,7 +3,8 @@
 ## Setup
 
 ```sh
-npm --prefix js install
+npm --prefix js install --ignore-scripts --package-lock=false
+npm --prefix tools/gramlot-builder install --ignore-scripts --package-lock=false
 npm --prefix js run build
 python3 -m venv .venv && .venv/bin/pip install -e '.[test]'
 .venv/bin/pip install -r requirements-docs.txt   # documentation only
@@ -19,6 +20,8 @@ mode, fails without the browser assets (see Python package below).
 GRAMLOT_TEST_PYTHON="$PWD/.venv/bin/python" npm --prefix js test
 node scripts/verify_binding_browser.mjs <playwright-core index.mjs> chromium   # when behavior changes
 python3 scripts/prepare_docs.py
+.venv/bin/python scripts/build_docs_examples.py
+node js/scripts/build-docs-examples.mjs
 .venv/bin/python -m sphinx -W --keep-going -n -b html build/docs-source build/docs-site
 .venv/bin/python scripts/check_public_docs.py   # when documentation changes
 ```
