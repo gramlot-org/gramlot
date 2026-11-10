@@ -1,20 +1,27 @@
 /** Select rendered Source descendants in an editor preview without activating them. */
 export class SourcePicker {
-    #renderer; #root; #canvas; #onSelect; #observer; #selectedPath = null;
+    #renderer; #source; #path; #canvas; #onSelect; #observer; #selectedPath = null;
     #highlighted = null; #release = null; #disposed = false;
-    constructor({renderer, root, onSelect, canvas = renderer.records.get(root.parentNode)?.presentation}) {
+    /** `source` is the Source root and `path` the address of the preview root in it; the root node is never held. */
+    constructor({renderer, source, path, onSelect, canvas}) {
+        const root = typeof path === 'string' ? source?.getNode(path) : null;
         if (!root?.parentNode || typeof onSelect !== 'function') throw new TypeError('SourcePicker requires a mounted Source root and onSelect');
+        canvas ??= renderer.records.get(root.parentNode)?.presentation;
         if (!canvas || canvas.nodeType !== 1) throw new TypeError('SourcePicker requires a mounted preview');
-        this.#renderer = renderer; this.#root = root; this.#canvas = canvas; this.#onSelect = onSelect;
+        this.#renderer = renderer; this.#source = source; this.#path = path; this.#canvas = canvas; this.#onSelect = onSelect;
         canvas.addEventListener('pointerdown', this, true);
         canvas.addEventListener('click', this, true);
         this.#observer = new canvas.ownerDocument.defaultView.MutationObserver(() => this.#paint());
         this.#observer.observe(canvas, {subtree:true, childList:true, attributes:true, attributeFilter:['class']});
         this.#release = renderer.onDispose(root.parentNode, () => this.dispose());
     }
+    /** The preview root node now at the picker's address, or null. */
+    #root() { return this.#source.getNode(this.#path); }
     handleEvent(event) {
         if (this.#disposed) return;
-        const prefix = this.#root.fullpath + '.';
+        const root = this.#root();
+        if (!root) return;
+        const prefix = root.fullpath + '.';
         const record = event.composedPath().map(element => this.#renderer.elements.get(element)).find(item =>
             item?.node.fullpath.startsWith(prefix));
         if (!record) return;
@@ -28,7 +35,9 @@ export class SourcePicker {
         if (this.#disposed) return;
         if (node === null) this.#selectedPath = null;
         else {
-            const prefix = this.#root.fullpath + '.';
+            const root = this.#root();
+            if (!root) throw new TypeError('SourcePicker preview root is missing');
+            const prefix = root.fullpath + '.';
             if (!node.fullpath.startsWith(prefix)) throw new TypeError('Selected node must be inside the preview Source root');
             this.#selectedPath = node.fullpath.slice(prefix.length);
         }
@@ -36,7 +45,7 @@ export class SourcePicker {
     }
     #paint() {
         if (this.#disposed) return;
-        const node = this.#selectedPath ? this.#root.staticValue.getNode(this.#selectedPath) : null;
+        const node = this.#selectedPath ? this.#root()?.staticValue.getNode(this.#selectedPath) ?? null : null;
         const element = node ? this.#renderer.records.get(node)?.presentation : null;
         const next = element?.nodeType === 1 ? element : null;
         if (this.#highlighted !== next) {

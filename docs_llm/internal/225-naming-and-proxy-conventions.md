@@ -3202,6 +3202,16 @@ confirmed "ok". The name `_internal` is the owner's.
   properties `indexContext`, `ideContext` and `fileSystemController` moved to
   `node._internal.indexContext`, `node._internal.ideContext` and
   `node._internal.fileSystemController`.
+- Coherence review, 2026-11-10 (implementation choices open to owner review, under
+  the helper condition above): the module-level WeakMaps of chat and the visual
+  editor moved to `_internal`. Chat keeps its rendered rows as plain values in
+  `node._internal.chatRows` on the message list Source node and compares a message
+  by its text or Source TYTX, so a message Source changed in place renders again.
+  The visual editor keeps its SourcePicker in `node._internal.canvasSelection` and
+  its VisualEditorCanvas in `node._internal.canvasDocument` on the editor Source
+  node. SourcePicker receives the Source root and the path of the preview root
+  (`source`, `path`) and resolves the root at each use; VisualEditorCanvas uses the
+  design node only while mounting.
 
 ### Non-component runtimes by address — 2026-11-09
 
