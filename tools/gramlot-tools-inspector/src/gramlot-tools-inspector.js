@@ -869,6 +869,8 @@ export class GramlotToolsInspector extends HTMLElement {
         const generation = this.#generation;
         ui.data.setItem('busy', true);
         ui.data.setItem('status', ''); ui.data.setItem('insert.status', '');
+        // Undo and Redo are disabled until the agent replies: a command sent meanwhile would be dropped.
+        this.#refresh();
         try {
             const {selection} = await this.#connection.request(type, command);
             if (!this.#ui || generation !== this.#generation) return;

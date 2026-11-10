@@ -38,6 +38,10 @@ try {
    const palette=page.locator('gramlot-tools-inspector'), tree=palette.locator('gramlot-tree[data-root=source]');
    const row=path=>tree.locator(`[data-path="${path}"] > .row`);
    const undo=palette.getByRole('button',{name:'↶ Undo',exact:true}),redo=palette.getByRole('button',{name:'↷ Redo',exact:true});
+   // Shortcuts act only when the agent has answered the previous command, as the enabled buttons show.
+   const enabled=name=>palette.getByRole('button',{name,exact:true,disabled:false}).waitFor();
+   // Tree actions sent before the agent's reply are dropped; Undo is enabled again once it arrives.
+   const settled=()=>enabled('↶ Undo');
    await palette.getByRole('tab',{name:'Source',exact:true}).click();
    await row('main').locator('.expander').click();await row('main.left').locator('.expander').click();
    await row('main').hover();
@@ -52,10 +56,10 @@ try {
    await undo.click();await page.waitForFunction(()=>!app.src.renderer.destination.querySelector('p').style.color);
    await redo.click();await page.waitForFunction(()=>app.src.renderer.destination.querySelector('p').style.color==='crimson');
    // Keyboard history outside text inputs uses the same journal.
-   await row('main.left.text').locator('..').focus();await page.keyboard.press('Control+z');
+   await enabled('↶ Undo');await row('main.left.text').locator('..').focus();await page.keyboard.press('Control+z');
    await page.waitForFunction(()=>!app.src.renderer.destination.querySelector('p').style.color);
-   await page.keyboard.press('Control+Shift+z');
-   await page.waitForFunction(()=>app.src.renderer.destination.querySelector('p').style.color==='crimson');
+   await enabled('↷ Redo');await page.keyboard.press('Control+Shift+z');
+   await page.waitForFunction(()=>app.src.renderer.destination.querySelector('p').style.color==='crimson');await settled();
    // Add actual HTML, installed widget and installed container through the same dialog.
    const add=async(kind,tag)=>{
     await row('main.right').hover();await tree.getByRole('button',{name:'Add child element',exact:true}).click();
@@ -76,7 +80,7 @@ try {
    await add('html','span');await row('main.right.span_0').waitFor();
    assert.equal(await page.evaluate(()=>app.src.source.getNode('main.right').getAttr('_text')),'Prefix');
    await undo.click();await page.waitForFunction(()=>app.src.source.getItem('main.right')==='Prefix');
-   await redo.click();await row('main.right.span_0').waitFor();
+   await redo.click();await row('main.right.span_0').waitFor();await settled();
    await add('component','checkbox');await page.locator('#app gramlot-checkbox').waitFor();
    await add('component','formlet');await page.locator('#app gramlot-formlet').waitFor({state:'attached'});
    if(engine===chromium && !remote) {
@@ -99,17 +103,17 @@ try {
    await regionDialog.waitFor({state: 'hidden'});
    assert.equal(await page.evaluate(path => app.src.source.getNode(path).value.getNodes()[0].getAttr('region'), borderPath), 'center');
    await undo.click();
-   await redo.click();
+   await redo.click();await settled();
    // Actual native DnD: move a bound text into another parent and back, then reorder.
    await row('main.left.text').dragTo(row('main.right'));
    await page.waitForFunction(()=>!!app.src.source.getNode('main.right.text'));
    await undo.click();await page.waitForFunction(()=>!!app.src.source.getNode('main.left.text'));
    await redo.click();await page.waitForFunction(()=>!!app.src.source.getNode('main.right.text'));
-   await undo.click();await page.waitForFunction(()=>!!app.src.source.getNode('main.left.text'));
+   await undo.click();await page.waitForFunction(()=>!!app.src.source.getNode('main.left.text'));await settled();
    const box=await row('main.left.input').boundingBox();
    await row('main.left.text').dragTo(row('main.left.input'),{targetPosition:{x:box.width/2,y:box.height-2}});
    await page.waitForFunction(()=>app.src.source.getItem('main.left').getNodes()[0].label==='input');
-   await undo.click();await page.waitForFunction(()=>app.src.source.getItem('main.left').getNodes()[0].label==='text');
+   await undo.click();await page.waitForFunction(()=>app.src.source.getItem('main.left').getNodes()[0].label==='text');await settled();
    // Remove an entire branch; undo restores both nodes and two-way binding.
    await row('main.left').hover();await tree.getByRole('button',{name:'Remove branch',exact:true}).click();
    await page.waitForFunction(()=>!app.src.source.getNode('main.left'));
