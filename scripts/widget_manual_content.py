@@ -190,7 +190,7 @@ BagNode with path/opened/selected context. A label callback returns exactly
 `{text: ...}` or `{html: ...}`; HTML is sanitized and cannot supply form controls
 or executable behavior. `getLabelClass`, `getIconClass` and `selectedLabelClass`
 control appearance without changing store identity. Callbacks are not asynchronous
-caption providers. Bag attributes can supply badges and checked state.
+caption providers. Bag attributes can supply badges.
 
 Bind `searchText` to an input for case-insensitive literal caption search. After
 a short debounce it may load unresolved branches, retaining matches and ancestors;
@@ -200,9 +200,11 @@ selection or replace the Bag. Nodes marked `loop=True` stop recursive search.
 See [search lifetime](105-components.md#gc-105-965).
 
 `checkedPaths` binds serialized checked paths; `checkedPaths_joiner` chooses the
-separator. The actual state is each node's `checked` attribute, including mixed
-and disabled states. `checkChildren=True` propagates through loaded descendants
-and is inherited as unresolved descendants load. A synchronous `onChecked`
+separator. The list is the only source of the checks, including mixed branches;
+`checked_<attribute>` binds the list of an attribute's values of the checked nodes.
+Only a node attribute `checked='disabled:on'` or `'disabled:off'` fixes a check.
+`checkChildren=True` propagates through loaded descendants and holds for
+descendants loaded later. A synchronous `onChecked`
 callback can veto a click by returning false; `onChecked=True` enables ordinary
 checks without that callback. Selection and checked paths are separate state.
 `favorites` is a Bag of references retaining `originalPath`, not copied tree data.
