@@ -43,8 +43,10 @@ The field lets the user enter a name. The card follows the same value and displa
 A formula declares a value derived from other values. For example, the area of a triangle depends on its base and height:
 
 ```python
-root.input(type="number", value="^triangle.base", lbl="Base", default=8)
-root.input(type="number", value="^triangle.height", lbl="Height", default=6)
+root.input(type="number", value="^triangle.base",
+           lbl="Base", default=8)
+root.input(type="number", value="^triangle.height",
+           lbl="Height", default=6)
 
 root.dataFormula(
     "triangle.area", "base * height / 2",
@@ -152,7 +154,9 @@ A `datapath` establishes the Data context for a branch of the interface. Each ca
 for name, base, height, color in examples:
     card = cards.section(class_="triangle-card")
     card.div(class_="window-bar").span("●  ●  ●")
-    pane = card.div(datapath=f"triangles.{name}", class_="triangle-body")
+    pane = card.div(
+        datapath=f"triangles.{name}", class_="triangle-body"
+    )
     triangle(pane, base, height, color)
     card.div(f"triangles.{name}", class_="path-label")
 ```
@@ -195,7 +199,10 @@ class Page(BasePage):
         for name, base, height, color in examples:
             card = cards.section(class_="triangle-card")
             card.div(class_="window-bar").span("●  ●  ●")
-            pane = card.div(datapath=f"triangles.{name}", class_="triangle-body")
+            pane = card.div(
+                datapath=f"triangles.{name}",
+                class_="triangle-body",
+            )
             triangle(pane, base, height, color)
             card.div(f"triangles.{name}", class_="path-label")
 ```

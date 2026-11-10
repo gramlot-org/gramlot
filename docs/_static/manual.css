@@ -34,3 +34,9 @@
 .inside-triangle { height: 330px; }
 .inside-many { height: 610px; }
 @media (max-width: 600px) { .inside-many { height: 1250px; } }
+
+/* Keep the introductory examples readable at narrow widths. */
+#inside-gramlot .highlight pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
