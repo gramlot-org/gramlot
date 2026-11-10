@@ -99,11 +99,11 @@ export class FileSystemLogic {
     fileSystemMount(node) {
         const scope = node.parentNode;
         const controller = new FileSystemController(this.page, scope);
-        Object.defineProperty(scope,'fileSystemController',{value:controller,configurable:true});
+        scope._internal.fileSystemController = controller;
         this.page.src.renderer.onDispose(scope, () => controller.dispose());
     }
     fileSystemOpen(node, {root}) {
-        if (root) return node.parentNode.fileSystemController.open(root);
+        if (root) return node.parentNode._internal.fileSystemController.open(root);
     }
 }
 

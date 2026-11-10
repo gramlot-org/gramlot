@@ -1,6 +1,6 @@
 {
   "name": "@gramlot/gramlot",
-  "version": "0.3.36",
+  "version": "0.3.37",
   "description": "Declarative HTML/SVG interfaces with live data binding, authored in JavaScript or Python.",
   "license": "Apache-2.0",
   "repository": {
@@ -93,8 +93,7 @@
     "./components/chat": "./src/components/chat.js",
     "./components/selection_trial": "./src/experiments/selection-trial.js",
     "./components/charts": "./src/components/charts.js",
-    "./components/drawing": "./src/components/drawing.js",
-    "./components/vizabi": "./src/components/vizabi.js"
+    "./components/drawing": "./src/components/drawing.js"
   },
   "files": [
     "LICENSE",

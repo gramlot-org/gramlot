@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-import {readFile} from 'node:fs/promises';
+import {readFile, readdir} from 'node:fs/promises';
 import {chromium, webkit} from 'playwright';
 
 const repo = fileURLToPath(new URL('../../../', import.meta.url));
@@ -26,8 +26,9 @@ window.qualification = app;
 const assets = new Map([['/runtime.js', bootstrap],
     ['/core.js', await readFile(`${artifacts}/gramlot/resources/gramlot.js`, 'utf8')],
     ['/logic.js', await readFile(`${repo}/tests/fixtures/components/frame_grid_logic.js`, 'utf8')]]);
-for (const name of ['grid', 'layout', 'inputs']) for (const file of ['index.js', 'collection.js']) {
-    assets.set(`/collections/${name}/${file}`, await readFile(`${artifacts}/gramlot/collections/${name}/assets/${file}`, 'utf8'));
+for (const name of ['grid', 'layout', 'inputs', 'tree']) {
+    const folder = `${artifacts}/gramlot/collections/${name}/assets`;
+    for (const file of await readdir(folder, {recursive:true})) if (file.endsWith('.js')) assets.set(`/collections/${name}/${file}`, await readFile(`${folder}/${file}`, 'utf8'));
 }
 const base = await readFile(`${repo}/themes/gramlot-base/theme.css`, 'utf8');
 const compact = await readFile(`${repo}/themes/gramlot-compact/theme.css`, 'utf8');
@@ -42,7 +43,7 @@ const server = createServer((req, res) => {
         const theme = Object.hasOwn(themes,url.searchParams.get('theme')) ? url.searchParams.get('theme') : 'compact';
         const mode = url.searchParams.get('mode') === 'dark' ? 'dark' : 'light';
         res.writeHead(200, {'Content-Type':'text/html'});
-        res.end(`<!doctype html><html data-theme="${mode}"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gramlot · FrameGrid</title><script type="importmap">{"imports":{"@gramlot/gramlot":"/core.js","@gramlot/gramlot/components":"/core.js","@gramlot/collections/inputs":"/collections/inputs/index.js"}}</script><link rel="stylesheet" href="/base.css"><link id="appearance" rel="stylesheet" href="/theme.css?theme=${theme}"></head><body><div id="app"></div><script type="module" src="/runtime.js"></script></body></html>`);
+        res.end(`<!doctype html><html data-theme="${mode}"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gramlot · FrameGrid</title><script type="importmap">{"imports":{"@gramlot/gramlot":"/core.js","@gramlot/gramlot/components":"/core.js","@gramlot/collections/inputs":"/collections/inputs/index.js","@gramlot/collections/tree":"/collections/tree/index.js"}}</script><link rel="stylesheet" href="/base.css"><link id="appearance" rel="stylesheet" href="/theme.css?theme=${theme}"></head><body><div id="app"></div><script type="module" src="/runtime.js"></script></body></html>`);
     }
 });
 const portIndex = process.argv.indexOf('--port');
@@ -58,10 +59,12 @@ try {
             await page.locator('#grid-values tbody tr').first().waitFor().catch(async error => { console.error({errors, body:await page.locator('body').innerText()}); throw error; });
             await page.waitForFunction(()=>document.getElementById('count-values').textContent==='60');
             const settle=()=>page.evaluate(()=>new Promise(resolve=>setTimeout(()=>requestAnimationFrame(()=>requestAnimationFrame(resolve)),0)));
+            // The search column is chosen from the label menu: trigger button, then the checkable menu item with the column caption.
+            const chooseColumn=async (scope,caption)=>{await scope.locator('button.label-menu-trigger').first().click();await page.getByRole('menuitemcheckbox',{name:caption,exact:true}).click();await settle();};
             await settle();
             const first=page.locator('#grid-values');
             const row=await first.locator('tbody tr').first().elementHandle();
-            assert.equal(await page.getByRole('toolbar').count(),6);
+            assert.equal(await page.getByRole('toolbar').count(),4);
             await page.locator('#update-values button').click();await settle();
             assert.equal(await first.locator('tbody td[data-field=price]').first().textContent(),'99,50');
             assert.equal(await page.locator('#grid-attributes tbody td[data-field=price]').first().textContent(),'12,50');
@@ -115,7 +118,7 @@ try {
             await settle();
             await first.locator('th[data-field=price]').click({modifiers:['Shift']});
             await settle();
-            assert.equal(await page.evaluate(() => window.qualification.src.binding.renderer.getBaseSourceNode(document.getElementById('grid-values')).gridCollectionView.sortedBy), 'code:a,price:a');
+            assert.equal(await page.evaluate(() => window.qualification.src.binding.renderer.getBaseSourceNode(document.getElementById('grid-values'))._internal.gridCollectionView.sortedBy), 'code:a,price:a');
             assert.equal(await first.locator('th[data-field=price]').getAttribute('data-sort-priority'), '2');
             for (const field of ['code','price']) {
                 const headerBox = await first.locator(`th[data-field=${field}]`).boundingBox();
@@ -137,7 +140,7 @@ try {
             assert.deepEqual(await first.locator('tbody tr').evaluateAll(rows=>rows.slice(0,3).map(row=>row.dataset.row)), ['r1','r2','r0']);
             assert.deepEqual(await page.evaluate(() => window.qualification.data.getItem('values.rows').getNodes().map(node=>node.label)), physicalLabels);
             assert.deepEqual(await page.evaluate(() => window.qualification.data.getItem('values.rows').getNodes().slice(0,3).map(node=>node.getAttr('rowidx'))), [null,null,null]);
-            assert.equal(await page.evaluate(() => window.qualification.src.binding.renderer.getBaseSourceNode(document.getElementById('grid-values')).gridCollectionView.sortedBy), '');
+            assert.equal(await page.evaluate(() => window.qualification.src.binding.renderer.getBaseSourceNode(document.getElementById('grid-values'))._internal.gridCollectionView.sortedBy), '');
             assert.equal(await first.locator('[data-sort-priority]').count(), 0);
 
             assert.ok(Math.abs((await movingRow.boundingBox()).height-movingHeight)<1, 'height follows the moved presentation row');
@@ -151,7 +154,8 @@ try {
             if (name === 'webkit') await page.locator('#count-values').click();
             const quantity = first.locator('th[data-field=quantity]');
             const widthInData = () => page.evaluate(() => {
-                const struct = window.qualification.data.getItem('gramlot.grid').getNodes()[0].staticValue.getItem('struct');
+                const app = window.qualification, node = app.src.binding.renderer.getBaseSourceNode(document.getElementById('grid-values'));
+                const struct = node.getRelativeData(node.getAttr('structpath'));
                 return struct.getNode('view_0.rows_0.cell_quantity').getAttr('width');
             });
             await quantity.scrollIntoViewIfNeeded(); await settle();
@@ -182,7 +186,7 @@ try {
             await page.setViewportSize({width:390,height:950}); await settle(); aligned(await geometry());
             assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth));
             // Original group and commands remain in Source; the shared bar projects them into overflow.
-            const toolbar=page.getByRole('toolbar',{name:'Attributes commands'});
+            const toolbar=page.locator('#frame-attributes').getByRole('toolbar',{name:'Grid toolbar'});
             const overflow=toolbar.getByRole('button',{name:'More commands'});
             await overflow.click();
             await page.locator('#update-attributes button').click();
@@ -211,13 +215,15 @@ try {
             await page.goto(url); await page.locator('#grid-values tbody tr').first().waitFor();
             for (const mode of ['values','attributes']) {
                 const scope=page.locator(`#frame-${mode}`), search=scope.locator('gramlot-search-box');
-                const field=search.getByRole('combobox'), input=search.getByRole('searchbox');
+                const input=search.getByRole('searchbox');
                 const visible=scope.locator('tbody tr[data-row]');
                 const clear=search.getByRole('button',{name:'Clear filter'});
                 assert.equal(await clear.isVisible(),false,'empty search hides its internal clear control');
                 assert.equal(await input.getAttribute('placeholder'),' ','query examples are not printed inside the input');
+                await chooseColumn(scope,'Quantity');
+                // The capsule width follows the chosen column label, so it is measured after the choice and before typing.
                 const capsuleBefore=await search.boundingBox();
-                await field.selectOption('quantity'); await input.fill('> 40');
+                await input.fill('> 40');
                 await page.waitForFunction(mode=>document.getElementById(`grid-${mode}`).shadowRoot.querySelector('[role=table]').getAttribute('aria-rowcount')==='22',mode);
                 assert.equal(await scope.locator('[role=table]').getAttribute('aria-rowcount'),'22');
                 assert.equal(await clear.isVisible(),true,'typing reveals the clear control');
@@ -241,9 +247,9 @@ try {
                 assert.equal(await clear.isVisible(),false,'clearing hides the button');
                 assert.equal(await input.evaluate(el=>el.getRootNode().activeElement===el),true,'clear returns keyboard focus to input');
                 assert.equal(await visible.first().getAttribute('data-row'),'r59','clear retains descending sort');
-                await field.selectOption('updated');await input.fill('= 28/10/2026');await page.waitForTimeout(150);await settle();
+                await chooseColumn(scope,'Updated');await input.fill('= 28/10/2026');await page.waitForTimeout(150);await settle();
                 assert.equal(await input.getAttribute('aria-invalid'),null);assert.equal(await scope.locator('[role=table]').getAttribute('aria-rowcount'),'62'); assert.ok(await visible.count()<60,'only the viewport is mounted');
-                await field.selectOption('code');await input.fill('^P00[1-3]$');
+                await chooseColumn(scope,'Code');await input.fill('^P00[1-3]$');
                 await page.waitForFunction(mode=>document.getElementById(`grid-${mode}`).shadowRoot.querySelectorAll('tbody tr[data-row]').length===3,mode);
                 assert.equal(await visible.count(),3);
                 await search.getByRole('button',{name:'Clear filter'}).click();await settle();
@@ -304,7 +310,7 @@ try {
             await scroll(0);
             assert.equal((await virtual.locator('tr[data-row=v0]').boundingBox()).height,resizedHeight,'manual height survives eviction');
             const virtualSearch=page.locator('#frame-attributes gramlot-search-box');
-            await virtualSearch.getByRole('combobox').selectOption('quantity');
+            await chooseColumn(page.locator('#frame-attributes'),'Quantity');
             await virtualSearch.getByRole('searchbox').fill('= 999');await virtualSearch.getByRole('searchbox').press('Enter');await settle();
             assert.equal(await virtual.locator('tbody tr').count(),1);
             assert.equal(await virtual.locator('tbody tr').getAttribute('data-row'),'v999');
@@ -325,18 +331,20 @@ try {
                         await new Promise(resolve => requestAnimationFrame(()=>requestAnimationFrame(resolve)));
                         const host = document.getElementById('grid-attributes');
                         const original = [...host.shadowRoot.querySelectorAll('tbody tr')];
-                        const setStruct = host.setStructBag, project = host.projectAttributes;
+                        const project = host.projectAttributes, getItem = app.data.getItem;
+                        const gridNode = app.src.binding.renderer.getBaseSourceNode(host), structpath = gridNode.absDatapath(gridNode.getAttr('structpath'));
                         let structures=0, projections=0, indexEvents=0;
-                        host.setStructBag = function(...args) { structures++; return setStruct.apply(this,args); };
+                        // The grid reads its structure at the structpath address, without resolvers, when it rebuilds it.
+                        app.data.getItem = function(path,...rest) { if (path === structpath && rest[1] === true) structures++; return getItem.call(this,path,...rest); };
                         host.projectAttributes = function(...args) { projections++; return project.apply(this,args); };
                         rows.subscribe('ordering-probe',{any:event => { if (event.attrs_diff?.rowidx) indexEvents++; }});
                         const start = performance.now();
-                        app.src.binding.renderer.getBaseSourceNode(host).gridCollectionView.sort('quantity:a,price:d');
+                        app.src.binding.renderer.getBaseSourceNode(host)._internal.gridCollectionView.sort('quantity:a,price:d');
                         const sortMs = performance.now()-start;
                         await new Promise(resolve => requestAnimationFrame(()=>requestAnimationFrame(resolve)));
                         const settledMs = performance.now()-start;
                         rows.unsubscribe('ordering-probe');
-                        host.setStructBag=setStruct; host.projectAttributes=project;
+                        delete app.data.getItem; host.projectAttributes=project;
                         const projected = [...host.shadowRoot.querySelectorAll('tbody tr')];
                         return {size,structures,projections,indexEvents,sortMs:Math.round(sortMs),settledMs:Math.round(settledMs),
                             identity:projected.every((row,i)=>row===original[size-i-1]),

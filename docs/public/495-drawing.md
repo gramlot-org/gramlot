@@ -15,12 +15,14 @@ Initialize the annotations Bag before mounting. image supplies an optional image
 
 ### Original annotation Bag
 
-annotations must resolve to a Bag. The component subscribes to that original Bag and writes
-shape records there. image changes the background without replacing the annotation store.
+annotations must point to a Bag in Data. The component reads the Bag at that address when it
+draws and writes shape records there; a change inside the Bag or a new Bag at the address
+redraws the surface. image changes the background without replacing the annotation store.
 Without an image, coordinates use a 1000 by 1000 surface; an image uses its natural dimensions.
-The toolbar is a shared menu, with tool state under _gramlot.drawing. Removing the component
-releases event handlers and Bag subscriptions. Save annotations through the application's own
-persistence contract; the drawing component does not perform a server save.
+The toolbar is a shared menu. Its tool, color and pen size are Data values in the private area of
+the drawingPane node (`_gramlot.workspace.<name>`, the `#WORKSPACE` naming rule). Removing the
+component releases event handlers and Data registrations. Save annotations through the
+application's own persistence contract; the drawing component does not perform a server save.
 
 ## Choose a component
 
@@ -55,7 +57,7 @@ Collection: **drawing**. Browser element: `gramlot-drawing-pane`.
 [Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-drawingpane).
 
 
-**Data contract.** annotations reads and mutates the original Data Bag; image reads an optional background URL.
+**Data contract.** annotations reads and mutates the Data Bag at its pointer address; image reads an optional background URL.
 
 
 **Interaction and events.** Shared toolbar actions select, draw, edit text and delete shapes. Bag changes redraw the surface.
@@ -64,7 +66,7 @@ Collection: **drawing**. Browser element: `gramlot-drawing-pane`.
 **Composition.** Composes a shared Source menu and an SVG drawing surface.
 
 
-**Limits and lifecycle.** Requires an initialized annotation Bag. Coordinates follow image dimensions or a 1000 by 1000 empty surface. Disposal releases subscriptions; persistence belongs to the application.
+**Limits and lifecycle.** Requires an initialized annotation Bag. Coordinates follow image dimensions or a 1000 by 1000 empty surface. Disposal releases Data registrations; persistence belongs to the application.
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |

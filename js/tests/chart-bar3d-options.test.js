@@ -9,7 +9,7 @@ for(const mode of ['attributes','values'])test(`adjacent measure bars on each pl
     const data=new Bag(),rows=new Bag();data.setItem('rows',rows);data.setBackref();
     [{product:'A',region:'North',revenue:250,advertising:70},
      {product:'B',region:'South',revenue:80,advertising:20}].forEach((record,i)=>rows.setItem(`r${i}`,mode==='values'?new Bag(record):null,mode==='attributes'?record:{}));
-    const view=new BagCollectionView(new BagCollectionStore(rows,mode));view.connect();
+    const view=new BagCollectionView(new BagCollectionStore(data,'rows',mode));view.connect();
     const fields=['revenue','advertising'],settings=[{color:'#5470c6'},{color:'#ee6666'}];
     try {
         const options=chartBar3DOptions(view,'product','region',fields,settings);

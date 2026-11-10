@@ -37,11 +37,11 @@ try {
             const rotated = await pixels({...base,rotate:180});
             const originalRight = [...context.getImageData(3,0,1,1).data];
             const originalFile = new File(['original'], 'original.png', {type:'image/png'});
-            const session = new ImageCropSession({state:new Bag(),...base, original:originalFile});
+            const session = new ImageCropSession({data:new Bag(),path:'crop',...base, original:originalFile});
             session.setTransform({x:1,y:0,zoom:1,rotate:0});
             session.reset();
             const confirmed = await session.confirm({outputWidth:4,outputHeight:4,type:'image/png'});
-            const cancelled = new ImageCropSession({state:new Bag(),...base, original:originalFile});
+            const cancelled = new ImageCropSession({data:new Bag(),path:'crop',...base, original:originalFile});
             const pending = cancelled.confirm({outputWidth:4,outputHeight:4,type:'image/png'});
             cancelled.cancel();
             let cancellation;

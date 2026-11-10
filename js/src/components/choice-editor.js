@@ -90,7 +90,7 @@ export function ChoiceEditor(HTMLElement) {
         get autoHighlight() { return true; }
         get matchTypedChoice() { return true; }
         get emptyChoice() { return null; }
-        get choiceSource() { return this.parameters.store ?? this.parameters.callback ?? this.parameters.values; }
+        get choiceSource() { return this.parameters.callback ?? this.parameters.values; }
         get searchDelay() { return 0; }
         textValue(text) { return text; }
         selectionAccepted(row) {}

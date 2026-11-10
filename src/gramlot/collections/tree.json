@@ -697,8 +697,7 @@
           "dataScope": false,
           "command": false,
           "sourceContext": true,
-          "dragSource": true,
-          "bagStore": true
+          "dragSource": true
         }
       }
     },

@@ -5,6 +5,7 @@ import {callLogic, invokeHook} from '../binding/hooks.js';
  *
  * @module
  */
+import {Bag} from '@genrojs/bag';
 import {BuilderBase, SourceBag, sourceTarget} from '@genrojs/builders';
 import {HtmlElement} from '../view/html.js';
 import {ControlAdapter, RadioControl, RadioGroups, SelectControl} from '../view/controls.js';
@@ -14,7 +15,7 @@ import {GroupletCardActions} from '../view/grouplet-card.js';
 import {NativeEventBinding} from '../view/events.js';
 import {References} from '../references.js';
 import {randomId} from '../random-id.js';
-import {GramlotBuilderBag, GramlotBuilderBagNode} from '../builder/source.js';
+import {GramlotBuilderBag, GramlotBuilderBagNode, SYMBOLIC_ATTRIBUTES} from '../builder/source.js';
 import {BindingRuntime} from '../binding/runtime.js';
 import {requireInstallable} from '../binding/installation.js';
 import {GramlotHtmlRenderer} from './gramlot-html-renderer.js';
@@ -50,7 +51,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         this._binding = binding;
         this.source = source;
         this.destination = destination;
-        this.html = new HtmlElement({uploadContext: () => ({gramlot: binding.gramlot, window: destination.ownerDocument.defaultView}), metadataAttributes: ['__ref'],
+        this.html = new HtmlElement({uploadContext: () => ({gramlot: binding.gramlot, window: destination.ownerDocument.defaultView}), metadataAttributes: ['__ref', ...SYMBOLIC_ATTRIBUTES],
             format: (value, options) => binding.gramlot.format(value, options),
             reportError: (node, error, title) => { if (this.records.has(node)) binding.reportError(error, title); },
             callLogic: (node, name, keywords) => {
@@ -129,8 +130,26 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
             attrs = Object.assign({}, ...ancestors, attrs);
         }
         this.#rebuildAttributes.delete(node);
+        attrs = this.#withoutHeldBags(attrs, component);
         this.#resolvedAttributes.set(node, attrs);
         return attrs;
+    }
+
+    /**
+     * A dtype 'X' component parameter whose value is a Bag with a parent (a sub Bag of Data or Source,
+     * reached through a pointer) is projected as null: the component reads it at its address when it uses
+     * it and never holds it (owner, 2026-11-10: "basta che non abbia parent"). A parentless Bag, such as a
+     * Source-literal value, and every non-Bag value are projected as they are.
+     */
+    #withoutHeldBags(attrs, component) {
+        let result = attrs;
+        for (const [name, spec] of Object.entries(component?.parameters ?? {})) {
+            const value = attrs[name];
+            if (!(value instanceof Bag) || !(value.parent || value.parentNode) || ![spec.dtype].flat().includes('X')) continue;
+            if (result === attrs) result = {...attrs};
+            result[name] = null;
+        }
+        return result;
     }
 
     /**

@@ -322,7 +322,11 @@ editable grid owns its scope. load(Bag) establishes local working data and its
 baseline; accept() accepts a validated local snapshot; restore() restores that
 snapshot. These are local operations, not database load/save or server replies.
 
-Cell editors are ordinary Source controls. Enter confirms, Tab/Shift+Tab moves
+Cell editors are ordinary Source controls. An `edit` option with a `=#ROW` or
+`^#ROW` pointer, such as `placeholder='^#ROW.name'`, resolves to the edited row,
+as legacy `condition_*='=#ROW.x'` did. A Bag among the `edit` options is used as
+is only when it has no parent; a sub Bag of other data is an error: pass its path
+(`storepath` or a `^` pointer) instead. Enter confirms, Tab/Shift+Tab moves
 between editable cells, and Escape discards unfinished text. Double-click or
 Enter/F2 opens an editable cell. Scrolling releases editor DOM while preserving
 incomplete drafts and errors in the session. Reopening restores the draft.
@@ -416,3 +420,21 @@ so the user must confirm again. Edited cells still validate immediately.
 Remote rules run for each applicable cell, with bounded concurrency; validation
 cost therefore depends on row count and endpoint latency. No remote batch protocol
 or cross-cell result cache is introduced.
+
+
+<a id="gc-340-130"></a>
+## 130 · Components that read a store: addresses, not objects
+
+A component never receives or keeps a Data Bag: store, structure and `^` parameters
+pointing to a Bag stay Data addresses; it reads values only where it writes the DOM or
+hands them to an engine, again at each draw. A replacement at the address and a change
+inside it are the same event. With `sourceContext: true` the context offers `sourceNode`
+(its own node), `attrDatapath(name)` (absolute path of the attribute as written, resolved
+now; null when absent), `getStaticData(path)` (value without running resolvers),
+`readRelativeData`/`setRelativeData`, `writeParameter(name, value)` (two-way `^`) and
+`collectionView(path, rowMode)` (stores shared by path and `rowMode`). Example:
+`const options = this.context.getStaticData(this.context.attrDatapath('seriesOptions'))`
+inside the draw. A row is its key (row node label); row paths use `#ROW`
+([Data binding](097-data-binding.md#gc-095-040)); per-instance state an author may read
+goes under `#WORKSPACE`. A node may be passed to a synchronous call (drag, row action),
+never kept.

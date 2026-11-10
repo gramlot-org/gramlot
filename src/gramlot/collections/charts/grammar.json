@@ -8,7 +8,6 @@
     "chartArea": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -562,7 +561,6 @@
     "chartBar": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -1116,7 +1114,6 @@
     "chartBar3D": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -1670,7 +1667,6 @@
     "chartBoxplot": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -2284,7 +2280,6 @@
     "chartCandlestick": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -2883,7 +2878,6 @@
     "chartDonut": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -3437,7 +3431,6 @@
     "chartFields": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -3627,7 +3620,6 @@
     "chartFunnel": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -4256,7 +4248,6 @@
     "chartHeatmap": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -4810,7 +4801,6 @@
     "chartHorizontalBar": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -5364,7 +5354,6 @@
     "chartLine": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -5918,7 +5907,6 @@
     "chartLine3D": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -6472,7 +6460,6 @@
     "chartLines3D": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -7026,7 +7013,6 @@
     "chartMap": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -7565,7 +7551,6 @@
     "chartMap3D": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -8119,7 +8104,6 @@
     "chartMapBar3D": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -8799,7 +8783,6 @@
     "chartParallel": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -9353,7 +9336,6 @@
     "chartPie": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -9907,7 +9889,6 @@
     "chartPolygons3D": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -10461,7 +10442,6 @@
     "chartRadar": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -11015,7 +10995,6 @@
     "chartSankey": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -11569,7 +11548,6 @@
     "chartScatter": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -12123,7 +12101,6 @@
     "chartScatter3D": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -12677,7 +12654,6 @@
     "chartStackedArea": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -13231,7 +13207,6 @@
     "chartStackedBar": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -13785,7 +13760,6 @@
     "chartSunburst": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -14339,7 +14313,6 @@
     "chartSurface": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -14893,7 +14866,6 @@
     "chartTimeline": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -15035,7 +15007,6 @@
     "chartTreemap": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {
@@ -15589,7 +15560,6 @@
     "chartView": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
           "command": false,
           "dataScope": false,
           "parameters": {

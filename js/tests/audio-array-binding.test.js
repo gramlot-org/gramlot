@@ -33,5 +33,6 @@ test('audio snapshots occupy one Data node and replacement triggers existing bin
 });
 
 test('current chart collection contract does not consume raw snapshot arrays', () => {
-    assert.throws(() => new BagCollectionStore([0, 0.5, 1], 'values'), /requires a Bag/);
+    const data = new Bag(); data.setItem('samples', [0, 0.5, 1]);
+    assert.throws(() => new BagCollectionStore(data, 'samples', 'values').getRows(), /requires a Bag/);
 });

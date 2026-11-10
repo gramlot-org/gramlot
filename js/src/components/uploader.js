@@ -5,14 +5,14 @@ import {Container} from './container.js';
 import {UploadEngine, readUploadContext} from './upload-engine.js';
 
 export const Uploader = defineComponent({
-    name:'uploader', tag:'gramlot-uploader', base:Container, sourceContext:true, bagStore:true,
+    name:'uploader', tag:'gramlot-uploader', base:Container, sourceContext:true,
     parameters:{operation:{dtype:'T'}, storepath:{dtype:'T'}, contextPath:{dtype:'T',nullable:true,default:null}, accept:{dtype:'T', default:'', binding:'read'},
         multiple:{dtype:'B', default:false, binding:'read'}, autoUpload:{dtype:'B', default:true, binding:'read'},
         manualUpload:{dtype:'B', default:true, binding:'read'},
         disabled:{dtype:'B', default:false, binding:'read'},
         selectedPath:{dtype:'T', nullable:true, default:null, binding:'twoWay'}, onComplete:{dtype:'T', nullable:true, default:null}},
     implementation: Base => class extends Base {
-        #context; #store; #engine; #draining = false; #previewUrl = null; #previewId = null;
+        #context; #engine; #draining = false; #previewUrl = null; #previewId = null;
         #requestedPath; #selectedPath = null;
         constructor() {
             super();
@@ -40,17 +40,19 @@ export const Uploader = defineComponent({
             this.drop.addEventListener('drop', event => { if (!this.parameters?.disabled && [...event.dataTransfer.types].includes('Files')) { event.preventDefault(); event.stopPropagation(); this.#add(event.dataTransfer.files); } });
         }
         setSourceContext(context) { this.#context = context; }
-        setStoreBag(store) {
+        /** The queue Bag, read at the storepath address at each use; the uploader never keeps it. */
+        #storeBag() {
+            const store = this.#context.getStaticData(this.#context.attrDatapath('storepath'));
             if (!(store instanceof Bag)) throw new TypeError('uploader storepath must resolve to a Bag');
-            const changed = this.#store && this.#store !== store;
-            if (changed) {
-                this.#clearPreview(); this.#engine?.dispose(); this.#engine = null;
-                this.#selectedPath = null; this.#requestedPath = null;
-            }
-            this.#store = store;
-            if (changed && this.#context) this.#context.writeParameter('selectedPath', null);
+            return store;
         }
         projectAttributes(attrs, adapt) {
+            // A new address is a new queue: the engine of the previous one ends with its selection.
+            if (this.#engine && this.#engine.path !== this.#context.attrDatapath('storepath')) {
+                this.#clearPreview(); this.#engine.dispose(); this.#engine = null;
+                this.#selectedPath = null; this.#requestedPath = null;
+                this.#context.writeParameter('selectedPath', null);
+            }
             const wasReady = Boolean(this.parameters?.autoUpload && !this.parameters.disabled);
             const rest = super.projectAttributes(attrs, adapt);
             this.input.accept = this.parameters.accept || '';
@@ -73,9 +75,10 @@ export const Uploader = defineComponent({
             return rest;
         }
         #ensureEngine() {
-            if (!this.#engine && this.#context && this.#store && this.parameters) {
+            if (!this.#engine && this.#context && this.parameters) {
                 const {gramlot, window} = this.#context.upload();
-                this.#engine = new UploadEngine({gramlot, window, store:this.#store, operation:this.parameters.operation,
+                this.#engine = new UploadEngine({gramlot, window, data:this.#context.sourceNode.data,
+                    path:this.#context.attrDatapath('storepath'), operation:this.parameters.operation,
                     onChange:() => this.#render(), getContext:() => readUploadContext(this.#context.sourceNode,this.parameters.contextPath),
                     onComplete:(item, result) => this.parameters.onComplete ? this.#context.callLogic(this.parameters.onComplete, {item, result}) : null});
             }
@@ -109,7 +112,7 @@ export const Uploader = defineComponent({
             const engine = this.#engine;
             try {
                 while (!this.parameters.disabled && this.#engine === engine) {
-                    const node = this.#store.getNodes().find(item => item.value.getItem('status') === 'queued');
+                    const node = engine.store.getNodes().find(item => item.value.getItem('status') === 'queued');
                     if (!node) break;
                     await engine.start(node.label);
                 }
@@ -147,9 +150,9 @@ export const Uploader = defineComponent({
             this.preview.textContent = 'No preview available';
         }
         #render() {
-            if (!this.list || !this.#store) return;
+            if (!this.list || !this.#context) return;
+            const nodes = this.#storeBag().getNodes();
             this.list.replaceChildren();
-            const nodes = this.#store.getNodes();
             const counts = new Map();
             let loaded = 0, size = 0;
             for (const node of nodes) {
@@ -160,42 +163,43 @@ export const Uploader = defineComponent({
             this.summary.textContent = `${nodes.length} file${nodes.length === 1 ? '' : 's'} — ${loaded}/${size} bytes` +
                 [...counts].map(([state, count]) => ` · ${count} ${state}`).join('');
             for (const node of nodes) {
-                const row = node.value, item = this.ownerDocument.createElement('li');
+                // The listeners keep the row key only: the row is read at the queue address when they run.
+                const row = node.value, label = node.label, item = this.ownerDocument.createElement('li');
                 const select = this.ownerDocument.createElement('button');
                 select.type = 'button'; select.textContent = row.getItem('name');
                 select.disabled = Boolean(this.parameters.disabled);
-                select.setAttribute('aria-pressed', String(node.label === this.#selectedPath));
+                select.setAttribute('aria-pressed', String(label === this.#selectedPath));
                 select.setAttribute('aria-label', `Select ${row.getItem('name')}`);
                 select.addEventListener('click', () => {
-                    this.#select(node.label);
-                    const index = this.#store.getNodes().findIndex(item => item.label === node.label);
+                    this.#select(label);
+                    const index = this.#storeBag().getNodes().findIndex(item => item.label === label);
                     if (index >= 0) this.list.children[index].firstElementChild.focus();
                 });
                 item.append(select, this.ownerDocument.createTextNode(` — ${row.getItem('status')} (${row.getItem('loaded')}/${row.getItem('size')}) `));
                 const state = row.getItem('status');
                 if (['preparing','uploading'].includes(state)) {
                     const button = this.ownerDocument.createElement('button'); button.textContent = 'Cancel'; button.type = 'button';
-                    button.addEventListener('click', () => this.#engine.cancel(node.label)); item.append(button);
+                    button.addEventListener('click', () => this.#engine.cancel(label)); item.append(button);
                 } else if (['failed','cancelled'].includes(state)) {
                     const button = this.ownerDocument.createElement('button'); button.textContent = 'Retry'; button.type = 'button'; button.disabled = Boolean(this.parameters.disabled);
-                    button.addEventListener('click', () => { this.#engine.retry(node.label); if (this.parameters.autoUpload) void this.#startAll(); }); item.append(button);
+                    button.addEventListener('click', () => { this.#engine.retry(label); if (this.parameters.autoUpload) void this.#startAll(); }); item.append(button);
                 }
                 if (state === 'uncertain') {
                     const button = this.ownerDocument.createElement('button'); button.textContent = 'Check status'; button.type = 'button';
-                    button.addEventListener('click', () => void this.#engine.reconcile(node.label)); item.append(button);
+                    button.addEventListener('click', () => void this.#engine.reconcile(label)); item.append(button);
                 }
                 if (['queued','completed','failed','cancelled'].includes(state)) {
-                    const file = this.#engine?.localFile(node.label);
+                    const file = this.#engine?.localFile(label);
                     if (file) {
                         const preview = this.ownerDocument.createElement('button'); preview.textContent = 'Preview'; preview.type = 'button';
-                        preview.addEventListener('click', () => void this.#showPreview(node.label, file)); item.append(preview);
+                        preview.addEventListener('click', () => void this.#showPreview(label, file)); item.append(preview);
                     }
                     const remove = this.ownerDocument.createElement('button'); remove.textContent = 'Remove'; remove.type = 'button';
                     remove.disabled = Boolean(this.parameters.disabled);
                     remove.addEventListener('click', () => {
-                        if (this.#engine.remove(node.label)) {
-                            if (this.#previewId === node.label) this.#clearPreview();
-                            if (this.#selectedPath === node.label) this.#select(null);
+                        if (this.#engine.remove(label)) {
+                            if (this.#previewId === label) this.#clearPreview();
+                            if (this.#selectedPath === label) this.#select(null);
                         }
                     });
                     item.append(remove);

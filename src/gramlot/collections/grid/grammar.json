@@ -394,8 +394,6 @@
     "grid": {
       "_meta": {
         "gramlot_component": {
-          "bagStore": true,
-          "bagStruct": true,
           "command": false,
           "dataScope": false,
           "parameters": {

@@ -12,7 +12,7 @@
   "abstracts": {},
   "elements": {
     "dataBinder": {
-      "doc": "Bidirectional subscription between a client Data branch and its page's server store.",
+      "doc": "Bidirectional subscription between a client Data branch and its page's server store, or the store of a named connection.",
       "sub_tags": "",
       "parent_tags": null,
       "inherits_from": null,
@@ -40,6 +40,28 @@
               "name": "str"
             },
             "has_default": false
+          },
+          {
+            "name": "connection",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "type",
+                  "module": "builtins",
+                  "name": "str"
+                },
+                {
+                  "kind": "type",
+                  "module": "builtins",
+                  "name": "NoneType"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
           },
           {
             "name": "attr",

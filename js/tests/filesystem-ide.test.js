@@ -75,14 +75,26 @@ test('save errors retain revision and draft, disposal rejects pending read resul
     pending.resolve({content:'late'});assert.equal(await loading,null);assert.equal(docs.documents.getNode(documentKey('/root','late.py')),null);
 });
 
-test('image annotations create and update the companion, retain drafts and revert',async()=>{
-    const data=state(),calls=[],empty=new Bag().toTytx();
-    const app={rpc:{call:async(type,method,args)=>{
+/** A real page: IdeDocuments observes the annotations through the Data router at their path. */
+function idePage(t,call){
+    const {window}=new JSDOM('<main id="gramlot-root"></main>');
+    const app=new Gramlot({document:window.document,transport:false});
+    t.after(()=>{app.dispose();window.close();});
+    app.rpc.call=call;
+    app.data.setItem('ide',state());
+    const builder=new GramlotBuilder();builder.root.div({node_label:'ide',datapath:'ide'});
+    app.src.startSource(builder.toTytx());
+    return {app,data:app.data.getItem('ide'),source:app.src.source.getNode('main.ide')};
+}
+
+test('image annotations create and update the companion, retain drafts and revert',async t=>{
+    const calls=[],empty=new Bag().toTytx();
+    const {app,source}=idePage(t,async(type,method,args)=>{
         calls.push({method,args});
         if(method==='document_read')return {path:args.path,language:'image',image:'data:image/png;base64,AA==',annotationPath:'radiografia_png.ant.tytx',content:Bag.fromTytx(empty),revision:null,writable:true};
         return {revision:method==='document_create'?'r1':'r2'};
-    }}};
-    const docs=new IdeDocuments(app,dataOwner(data)),key=await docs.open('/root','radiografia.png');
+    });
+    const docs=new IdeDocuments(app,source),key=await docs.open('/root','radiografia.png');
     const doc=docs.documents.getItem(key),annotations=doc.getItem('annotations');
     annotations.setItem('item',new Bag({type:'text',x:2,y:3,text:'Test'}));
     assert.equal(docs.dirty(key),true);await docs.save(key);
@@ -92,6 +104,23 @@ test('image annotations create and update the companion, retain drafts and rever
     assert.equal(docs.revert(key),true);assert.equal(annotations.getItem('item.text'),'Test');assert.equal(docs.dirty(key),false);
     annotations.setItem('item.text','Again');await docs.save(key);
     assert.equal(calls.at(-1).method,'document_save');assert.equal(calls.at(-1).args.revision,'r1');
+    docs.dispose();
+});
+
+test('image annotations are observed at their Data path: a replaced Bag still updates the content, close releases',async t=>{
+    const empty=new Bag().toTytx();
+    const {app,source}=idePage(t,async(type,method,args)=>({path:args.path,language:'image',image:'data:image/png;base64,AA==',
+        annotationPath:'a_png.ant.tytx',content:Bag.fromTytx(empty),revision:null,writable:true}));
+    const router=app.src.binding.router,before=router.size;
+    const docs=new IdeDocuments(app,source),key=await docs.open('/root','a.png');
+    assert.equal(router.size,before+1);
+    const annotations=new Bag({item:new Bag({type:'text',x:1,y:1,text:'New'})});
+    app.data.setItem(`ide.documents.${key}.annotations`,annotations);
+    assert.equal(docs.documents.getItem(key).getItem('content'),annotations.toTytx());
+    annotations.setItem('item.text','Edited');
+    assert.equal(docs.documents.getItem(key).getItem('content'),annotations.toTytx());
+    assert.equal(docs.close(key,true),true);
+    assert.equal(router.size,before);
     docs.dispose();
 });
 
@@ -147,7 +176,7 @@ print(b.to_tytx())
     app.src.startSource(source);await new Promise(resolve=>setTimeout(resolve,20));
     t.after(()=>{app.dispose();window.close();});
     const ideSource = app.src.source.getItem('main').getNodes()[0];
-    const ideDocuments = ideSource.ideContext.documents;
+    const ideDocuments = ideSource._internal.ideContext.documents;
     assert.equal(window.document.getElementById('ide-open'),null);
     const workspace=window.document.getElementById('gramlot-ide-workspace');
     workspace.control.value='/workspace';

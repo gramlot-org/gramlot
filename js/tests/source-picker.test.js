@@ -13,7 +13,8 @@ test('preview selection suppresses actions, follows rendering and releases resou
     let cleanup, selected, action = 0;
     const renderer = {records,elements,onDispose(node, callback) { assert.equal(node,owner); cleanup=callback; return () => {}; }};
     button.addEventListener('click', () => action++);
-    const picker = new SourcePicker({renderer,root,onSelect:node => {selected=node;}});
+    const source = {getNode:path => path === 'design' ? root : null};
+    const picker = new SourcePicker({renderer,source,path:'design',onSelect:node => {selected=node;}});
     const click = new window.MouseEvent('click',{bubbles:true,cancelable:true});
     assert.equal(button.dispatchEvent(click),false); assert.equal(selected,child); assert.equal(action,0);
     picker.select(child); assert.equal(button.classList.contains('gramlot-source-selected'),true);

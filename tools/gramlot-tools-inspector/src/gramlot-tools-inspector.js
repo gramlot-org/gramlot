@@ -2,11 +2,9 @@
 import {Bag, Gramlot, GramlotBuilder} from '@gramlot/gramlot';
 import layout from '@gramlot/collections/layout';
 import tree from '@gramlot/collections/tree';
-import {InspectorConnection, encodeScalar} from './inspector-bridge.js';
+import {InspectorConnection, attachInspectorAgent} from './inspector-bridge.js';
 export {InspectorConnection, attachInspectorAgent} from './inspector-bridge.js';
-import {editorTypes, scalarType, scalarText, parseScalar, readParameterEnums} from '../../../js/src/editor-values.js';
-import {InspectorHistory} from './inspector-history.js';
-import {InspectorStyles} from './inspector-styles.js';
+import {editorTypes, scalarType, scalarText, parseScalar} from '../../../js/src/editor-values.js';
 import inspectorStyle from './gramlot-tools-inspector.css';
 
 let nextId = 0;
@@ -22,7 +20,8 @@ export class GramlotToolsInspector extends HTMLElement {
     }
 
     #target = null;
-    #history = null;
+    // The agent and connection of a local target, on a MessageChannel of this palette.
+    #local = null;
     #insertTarget = null;
     #catalog = [];
     #connection = null;
@@ -32,19 +31,16 @@ export class GramlotToolsInspector extends HTMLElement {
     #ui = null;
     #mount;
     #subscriber = `gramlot-tools-inspector-${++nextId}`;
-    #subscriptions = [];
+    // Paths and agent identities of the copied nodes; the copies live in this palette's Data at `target`.
     #nodes = [];
-    #nodeIds = new WeakMap();
-    #nextNodeId = 0;
+    #copies = null;
+    #applyAgain = null;
     #pending = false;
     #generation = 0;
     #snapshot = null;
     #nextRow = 0;
-    #nextBreakpoint = 0;
-    #breakpointTests = new Map();
     #trees = {};
     #breakpointTarget = null;
-    #styles = null;
     #styleNames = '';
     #styleRequest = 0;
     #styleDownloadUrl = null;
@@ -68,7 +64,6 @@ export class GramlotToolsInspector extends HTMLElement {
         this.#target = value;
         this.#snapshot = null;
         this.#breakpointTarget = null;
-        this.#breakpointTests.clear();
         if (this.#ui) {
             this.#renderTargets();
             this.#dialog().close();
@@ -109,7 +104,6 @@ export class GramlotToolsInspector extends HTMLElement {
         this.#connection = entry.connection;
         this.#snapshot = null;
         this.#breakpointTarget = null;
-        this.#breakpointTests.clear();
         if (this.#ui) {
             this.#dialog().close(); this.#dialog('breakpoints').close();
             this.#ui.data.setItem('selection', null);
@@ -128,8 +122,11 @@ export class GramlotToolsInspector extends HTMLElement {
         this.#ui.data.setItem('singleTarget', this.#targets.length < 2);
         this.#ui.data.setItem('targetId', this.#selectedTarget ?? this.#targets[0]?.id ?? '');
     }
-    #state() { return (this.#connection ?? this.#target)?.state; }
-    #targetBag(root) { return this.#connection ? this.#connection[root] : root === 'data' ? this.#target.data : this.#target.src.source; }
+    #state() { return this.#connection?.state; }
+    /** The copied node at `path` of `root`, read from this palette's Data for the current call only. */
+    #copyNode(root, path) { return this.#ui.data.getNode(`target.${root}.${path}`); }
+    /** The agent's identity, revision and edit limits of the copied node at `path` of `root`. */
+    #info(root, path) { return this.#copyNode(root, path)?.getAttr('_inspector') ?? null; }
 
     connectedCallback() {
         if (this.#ui) return;
@@ -327,18 +324,10 @@ export class GramlotToolsInspector extends HTMLElement {
             showBreakpoints() { inspector.#renderBreakpoints(); inspector.#dialog('breakpoints').showModal(); }
             closeBreakpoints() { inspector.#dialog('breakpoints').close(); }
             removeBreakpoint(node) {
-                const id = node.getAttr('data-breakpoint');
-                if (inspector.#connection) {
-                    const config = ui.data.getItem(`breakpoints.${id}`);
-                    inspector.#connection.request('breakpoint', {root: config.getItem('root'), path: config.getItem('path'), mode: '', condition: ''})
-                        .then(() => {inspector.#refresh(); inspector.#renderBreakpoints();})
-                        .catch(error => ui.data.setItem('breakpointError', error.message));
-                    return;
-                }
-                ui.data.getItem('breakpoints').popNode(id);
-                inspector.#breakpointTests.delete(id);
-                inspector.#renderBreakpoints();
-                inspector.#refresh();
+                const config = ui.data.getItem(`breakpoints.${node.getAttr('data-breakpoint')}`);
+                inspector.#connection?.request('breakpoint', {root: config.getItem('root'), path: config.getItem('path'), mode: '', condition: ''})
+                    .then(() => {inspector.#refresh(); inspector.#renderBreakpoints();})
+                    .catch(error => ui.data.setItem('breakpointError', error.message));
             }
         }
         ui.src.logicRegistry.register(Logic, {group: 'inspector', resource: 'gramlot-tools-inspector'});
@@ -348,7 +337,8 @@ export class GramlotToolsInspector extends HTMLElement {
         ui.data.setItem('insert', new Bag({kind: 'html', tag: '', html: true, component: false, status: ''}));
         ui.data.setItem('editor', new Bag({dirty: false, disabled: true, status: '', mode: '', condition: ''}));
         ui.data.setItem('breakpoints', new Bag());
-        ui.data.setItem('emptyTree', new Bag());
+        // The copies of the inspected Data and Source, kept by the two dataBinders on the `target` connection.
+        ui.data.setItem('target', new Bag({data: new Bag(), source: new Bag()}));
         ui.data.setItem('treeSelection', new Bag({data:null, source:null}));
         ui.data.setItem('breakpointDirty', false);
         ui.data.setItem('styles', new Bag({status: '', busy: false, noChanges: true, noDownload: true, downloadUrl: null, rows: new Bag()}));
@@ -359,6 +349,7 @@ export class GramlotToolsInspector extends HTMLElement {
             docked: this.hasAttribute('embedded') || this.hasAttribute('docked'), width: '480px', height: '620px', left: '16px', top: '16px', minWidth: 'min(280px, calc(100vw - 16px))', minHeight: 'min(200px, calc(100dvh - 16px))'});
         const palette = window.frame.center.section({node_label: 'palette', class: 'embedded-panel', 'aria-label': 'Gramlot inspector', connect_onkeydown: 'inspector.historyKey'});
         root.dataController({func: 'inspector.close', open: '^inspectorOpen'});
+        for (const name of ['data', 'source']) root.dataBinder({destination_path: `target.${name}`, server_path: name, connection: 'target'});
         const targetbar = palette.div({node_label: 'targetbar', class: 'targetbar', hidden: '^singleTarget'});
         targetbar.select({node_label: 'targets', value: '^targetId', disabled: '^busy', 'aria-label': 'Inspected page', connect_onchange: 'inspector.selectTarget'});
         const toolbar = palette.tabContainer({node_label: 'tabs', class: 'inspector-tabs', tabMode: 'underline', selectedPage: '^requestedTab'});
@@ -373,7 +364,7 @@ export class GramlotToolsInspector extends HTMLElement {
         const trees = content.contentPane({node_label: 'tree', region: 'top', height: '45%', minSize: 60,
             splitter: true, splitter_aria_label: 'Resize tree and properties', class: 'tree'});
         for (const name of ['data', 'source']) {
-            const sourceTree = trees.tree({node_label:name, 'data-root':name, storepath:'emptyTree', hideValues:true, resolveLazy:false,
+            const sourceTree = trees.tree({node_label:name, 'data-root':name, storepath:`target.${name}`, hideValues:true, resolveLazy:false,
                 getLabel:'inspector.treeLabel', getLabelClass:'inspector.treeLabelClass', labelState:'^breakpoints',
                 selectedPath:`^treeSelection.${name}`, hidden:name === 'data' ? '^sourceActive' : '^dataActive',
                 ...(name === 'source' ? {draggable:true, dropTarget:true, dropTypes:'treenode', effectAllowed:'move', dropEffect:'move',
@@ -432,6 +423,8 @@ export class GramlotToolsInspector extends HTMLElement {
         insertActions.html_button('Cancel', {type: 'button', connect_onclick: 'inspector.closeInsert'});
         insertActions.html_button('Add', {type: 'button', disabled: '^busy', connect_onclick: 'inspector.addElement'});
         ui.src.startSource(builder.source);
+        // The copies change by their dataBinders: the palette redraws its selection and editor.
+        this.#copies = ui.src.binding.router.register({path: 'target', subtree: true, recipient: {receive: () => this.#schedule()}});
         for (const name of ['data', 'source']) this.#trees[name] = ui.dom.getDomNode(ui.src.source.getNode(`main.window.frame.center.palette.content.tree.${name}`));
         this.#renderTargets();
         this.#subscribe();
@@ -441,6 +434,8 @@ export class GramlotToolsInspector extends HTMLElement {
     #dialog(name = 'breakpoint') { return this.#ui.dom.getDomNode(this.#ui.src.source.getNode(`main.window.frame.center.palette.${name}`)); }
 
     disconnectedCallback() {
+        this.#copies?.close();
+        this.#copies = null;
         this.#unsubscribe();
         this.#ui?.dispose();
         this.#ui = null;
@@ -448,28 +443,25 @@ export class GramlotToolsInspector extends HTMLElement {
         this.#trees = {};
         this.#breakpointTarget = null;
         this.#snapshot = null;
-        this.#breakpointTests.clear();
     }
 
+    /** Connect the palette to its target: a local instance gets its agent on a new MessageChannel. */
     #subscribe() {
-        if (this.#connection) { this.#connectionRelease = this.#connection.subscribe(() => this.#schedule()); return; }
-        if (!this.#target) return;
-        this.#history = new InspectorHistory(this.#target);
-        this.#subscriptions = [this.#target.data, this.#target.src.source];
-        for (const [index, bag] of this.#subscriptions.entries()) bag.subscribe(this.#subscriber, {any: event => {
-            this.#checkBreakpoints(index === 0 ? 'data' : 'source', event);
-            this.#schedule();
-        }});
+        if (this.#target && !this.#local) {
+            const channel = new this.ownerDocument.defaultView.MessageChannel();
+            const agent = attachInspectorAgent(this.#target, channel.port1);
+            this.#local = {agent, connection: new InspectorConnection(channel.port2)};
+            this.#connection = this.#local.connection;
+        }
+        if (!this.#connection) return;
+        this.#connectionRelease = this.#connection.subscribe(() => this.#schedule());
+        this.#ui.rpc.registerConnection('target', this.#connection.port);
     }
 
     #unsubscribe() {
-        this.#history?.clear();
-        this.#history = null;
         this.#insertTarget = null;
         if (this.#ui) this.#dialog('insert').close();
         ++this.#styleRequest;
-        this.#styles?.dispose();
-        this.#styles = null;
         if (this.#ui) {
             this.#renderStyles([]);
             this.#ui.data.setItem('styles.busy', false);
@@ -479,8 +471,18 @@ export class GramlotToolsInspector extends HTMLElement {
         this.#connectionRelease = null;
         ++this.#generation;
         this.#pending = false;
-        for (const bag of this.#subscriptions) bag.unsubscribe(this.#subscriber, {any: true});
-        this.#subscriptions = [];
+        this.#applyAgain = null;
+        if (this.#ui) {
+            this.#ui.rpc.unregisterConnection('target');
+            for (const name of ['data', 'source']) this.#ui.data.setItem(`target.${name}`, new Bag());
+        }
+        if (this.#local) {
+            // A local target's history, breakpoints and style previews end with its connection.
+            this.#local.connection.close();
+            this.#local.agent.dispose();
+            if (this.#connection === this.#local.connection) this.#connection = null;
+            this.#local = null;
+        }
     }
 
     #schedule() {
@@ -494,10 +496,6 @@ export class GramlotToolsInspector extends HTMLElement {
         });
     }
 
-    #bag() {
-        return this.#targetBag(this.#ui.data.getItem('root'));
-    }
-
     #refresh() {
         const ui = this.#ui;
         if (!ui) return;
@@ -508,12 +506,13 @@ export class GramlotToolsInspector extends HTMLElement {
             ui.data.setItem('stylesActive', tab === 'styles');
             ui.data.setItem('treeActive', tab !== 'styles');
             if (this.#connection) {
+                if (this.#state() === 'disposed') ui.rpc.unregisterConnection('target');
                 const configurations = new Bag();
                 for (const [index, record] of this.#connection.breakpoints.entries()) configurations.setItem(`b${index}`, new Bag(record));
                 ui.data.setItem('breakpoints', configurations);
                 ui.data.setItem('breakpointError', this.#connection.breakpoints.filter(record => record.error).map(record => `${record.root}: ${record.path}: ${record.error}`).join('; '));
             }
-            const history = this.#connection ? this.#connection.history : this.#history?.state;
+            const history = this.#connection?.history;
             for (const action of ['undo', 'redo']) {
                 ui.data.setItem(`history.${action}`, history?.[action] ?? '');
                 ui.data.setItem(`history.no${action === 'undo' ? 'Undo' : 'Redo'}`, !history?.[action] || ui.data.getItem('busy') || this.#state() !== 'started');
@@ -523,15 +522,11 @@ export class GramlotToolsInspector extends HTMLElement {
             ui.data.setItem('noBreakpoints', count === 0);
             ui.data.setItem('dataActive', root === 'data');
             ui.data.setItem('sourceActive', root === 'source');
-            for (const name of ['data', 'source']) {
-                const sourceTree = ui.src.source.getNode(`main.window.frame.center.palette.content.tree.${name}`);
-                sourceTree.setTreeStore((this.#connection || this.#target) ? this.#targetBag(name) : null);
-            }
-            if (this.#target || this.#connection) this.#index(this.#bag(), []);
+            if (this.#connection) this.#index(ui.data.getItem(`target.${root}`), []);
             ui.data.setItem('selectionSync', true);
             ui.data.setItem(`treeSelection.${root}`, this.#selected()?.path.join('.') ?? null);
             ui.data.setItem('selectionSync', false);
-            ui.data.setItem('error', this.#connection ? this.#connection.error || (this.#state() === 'disposed' ? 'Inspected page disconnected.' : this.#state() === 'connecting' ? 'Connecting…' : '') : this.#target ? '' : 'No Gramlot instance selected.');
+            ui.data.setItem('error', this.#connection ? this.#connection.error || (this.#state() === 'disposed' ? 'Inspected page disconnected.' : this.#state() === 'connecting' ? 'Connecting…' : '') : 'No Gramlot instance selected.');
             this.#details();
         } catch (error) { ui.data.setItem('error', error.message); }
     }
@@ -544,21 +539,11 @@ export class GramlotToolsInspector extends HTMLElement {
         ui.data.setItem('styles.noDownload', true);
         ui.data.setItem('styles.status', '');
         try {
-            if (!this.#state() || this.#state() === 'disposed' || (this.#connection && this.#state() !== 'started')) {
-                throw new Error('Select a connected page before editing CSS variables');
-            }
-            let rows;
-            if (this.#connection) {
-                const connection = this.#connection;
-                await connection.request(type, command);
-                rows = connection.styles;
-            } else {
-                this.#styles ??= new InspectorStyles(this.#target.src.renderer.destination.ownerDocument);
-                if (type === 'setStyle') this.#styles.set(command.name, command.value);
-                if (type === 'resetStyle') this.#styles.reset(command.name);
-                if (type === 'resetStyles') this.#styles.dispose();
-                rows = this.#styles.snapshot();
-            }
+            // A connection still starting queues the request: the agent answers after its first state.
+            if (!this.#connection || this.#state() === 'disposed') throw new Error('Select a connected page before editing CSS variables');
+            const connection = this.#connection;
+            await connection.request(type, command);
+            const rows = connection.styles;
             if (this.#ui !== ui || request !== this.#styleRequest) return;
             this.#renderStyles(rows, type, command);
         } catch (error) {
@@ -631,39 +616,48 @@ export class GramlotToolsInspector extends HTMLElement {
         ui.src.source.getNode('main.window.frame.center.palette.styles.empty').setAttr({hidden: rows.length !== 0});
     }
 
+    /** Record the path and the agent identity of every copied node below `bag`. */
     #index(bag, labels) {
+        if (!bag) return;
         for (const node of bag.getNodes()) {
             const path = [...labels, node.label];
-            if (!this.#nodeIds.has(node)) this.#nodeIds.set(node, String(++this.#nextNodeId));
-            this.#nodes.push({id: this.#nodeIds.get(node), node, path});
+            this.#nodes.push({id: String(node.getAttr('_inspector').id), path});
             const value = node.getValue(true);
-            if (!node.resolver && value instanceof Bag) this.#index(value, path);
+            if (value instanceof Bag) this.#index(value, path);
         }
     }
 
     #details() {
         const ui = this.#ui;
         const entry = this.#selected();
-        const node = entry?.node;
-        ui.data.setItem('path', node ? entry.path.join('.') : '');
-        const bp = node ? this.#findBreakpoint(ui.data.getItem('root'), entry.path.join('.'))?.value : null;
+        ui.data.setItem('path', entry ? entry.path.join('.') : '');
+        const bp = entry ? this.#findBreakpoint(ui.data.getItem('root'), entry.path.join('.'))?.value : null;
         ui.data.setItem('breakpointLine', bp ? `Breakpoint: ${bp.getItem('mode')} · ${bp.getItem('hits')} hits${bp.getItem('condition') ? ` · if ${bp.getItem('condition')}` : ''}` : '');
-        if (!node || this.#snapshot?.node !== node || (!ui.data.getItem('editor.dirty') && !this.#unchanged())) this.#loadEditor(entry);
+        if (!entry || this.#snapshot?.id !== entry.id || (!ui.data.getItem('editor.dirty') && !this.#unchanged())) this.#loadEditor(entry);
         else if (!this.#unchanged()) ui.data.setItem('editor.status', 'Node changed outside this draft. Press Escape to reload the cell before saving.');
     }
 
     #selected() { return this.#nodes.find(item => item.id === this.#ui.data.getItem('selection')); }
 
+    /** The editor's copy of the selected node: path, identity, revision, value and attributes. */
+    #read(entry) {
+        const root = this.#ui.data.getItem('root');
+        const node = entry ? this.#copyNode(root, entry.path.join('.')) : null;
+        if (!node) return null;
+        const info = node.getAttr('_inspector');
+        const value = node.getValue(true);
+        const attrs = {...node.getAttr()};
+        delete attrs._inspector;
+        return {id: entry.id, nodeId: info.id, revision: info.revision, branch: value instanceof Bag,
+            value: value instanceof Bag ? null : value, attrs, readonly: info.readonly, readonlyAttrs: info.readonlyAttrs,
+            parameterEnums: root === 'source' ? info.parameterEnums : {}};
+    }
+
     #unchanged() {
         const entry = this.#selected();
         const snapshot = this.#snapshot;
-        if (!entry || !snapshot || entry.node !== snapshot.node || !entry.node.parentBag ||
-            !entry.node.parentBag.getNodes().includes(entry.node) || this.#state() === 'disposed') return false;
-        if (this.#connection && this.#connection.nodeInfo(entry.node)?.revision !== snapshot.revision) return false;
-        const attrs = entry.node.getAttr();
-        return Object.is(entry.node.getValue(true), snapshot.value) && entry.node.resolver === snapshot.resolver &&
-            Object.keys(attrs).length === Object.keys(snapshot.attrs).length &&
-            Object.entries(snapshot.attrs).every(([name, value]) => Object.is(attrs[name], value));
+        if (!entry || !snapshot || entry.id !== snapshot.id || this.#state() === 'disposed') return false;
+        return this.#info(this.#ui.data.getItem('root'), entry.path.join('.'))?.revision === snapshot.revision;
     }
 
     #inputType(type) { return ({boolean: 'checkbox', number: 'number', integer: 'number', date: 'date', time: 'time', datetime: 'datetime-local'})[type] ?? 'text'; }
@@ -671,7 +665,7 @@ export class GramlotToolsInspector extends HTMLElement {
     #row(name, value, primary, locked = false) {
         const scalar = scalarType(value);
         const type = scalar === 'null' ? 'string' : scalar;
-        let text = value === null ? '' : type === 'boolean' ? value : type ? scalarText(value, type) : this.#format(value);
+        let text = value === null ? '' : type === 'boolean' ? value : type ? scalarText(value, type) : String(value);
         if (type === 'datetime') text = text.replace(/Z$/, '');
         return new Bag({name, initialName: name, initialText: text, initialType: type, text,
             type: type ?? 'readonly', inputType: this.#inputType(type), isNull: value === null,
@@ -680,19 +674,17 @@ export class GramlotToolsInspector extends HTMLElement {
 
     #loadEditor(entry) {
         const ui = this.#ui;
-        this.#snapshot = entry ? {node: entry.node, value: entry.node.getValue(true),
-            parameterEnums: ui.data.getItem('root') !== 'source' ? {} : this.#connection
-                ? this.#connection.nodeInfo(entry.node).parameterEnums : readParameterEnums(entry.node),
-            attrs: {...entry.node.getAttr()}, resolver: entry.node.resolver, revision: this.#connection?.nodeInfo(entry.node)?.revision} : null;
+        this.#snapshot = this.#read(entry);
+        const snapshot = this.#snapshot;
         const rows = new Bag();
-        if (entry) {
-            if (!(this.#snapshot.value instanceof Bag)) rows.setItem(`r${++this.#nextRow}`, this.#row('value', this.#snapshot.value, true, !!entry.node.resolver || !!this.#connection?.nodeInfo(entry.node)?.readonly));
-            for (const [name, value] of Object.entries(this.#snapshot.attrs)) {
-                if (name !== '_meta') rows.setItem(`r${++this.#nextRow}`, this.#row(name, value, false, !!this.#connection?.nodeInfo(entry.node)?.readonlyAttrs.has(name)));
+        if (snapshot) {
+            if (!snapshot.branch) rows.setItem(`r${++this.#nextRow}`, this.#row('value', snapshot.value, true, snapshot.readonly));
+            for (const [name, value] of Object.entries(snapshot.attrs)) {
+                rows.setItem(`r${++this.#nextRow}`, this.#row(name, value, false, snapshot.readonlyAttrs.includes(name)));
             }
         }
         ui.data.setItem('editor.rows', rows);
-        ui.data.setItem('editor.disabled', !entry || this.#state() === 'disposed');
+        ui.data.setItem('editor.disabled', !snapshot || this.#state() === 'disposed');
         ui.data.setItem('editor.dirty', false);
         ui.data.setItem('editor.status', '');
         this.#renderEditor();
@@ -747,27 +739,37 @@ export class GramlotToolsInspector extends HTMLElement {
         this.shadowRoot.querySelector('[aria-label="New attribute name"]').focus();
     }
 
-    #acceptEdit(target) {
+    #acceptEdit() {
         this.#ui.data.setItem('editor.dirty', false);
         const rows = this.#ui.data.getItem('editor.rows').getNodes();
-        if (rows.some(row => row.value.getItem('removed') || row.value.getItem('initialName') === '')) {
+        const current = this.#read(this.#selected());
+        if (!current || current.id !== this.#snapshot?.id || rows.some(row => row.value.getItem('removed') || row.value.getItem('initialName') === '')) {
             this.#loadEditor(this.#selected());
         } else {
-            this.#snapshot = {...this.#snapshot, node: target, value: target.getValue(true), attrs: {...target.getAttr()}, resolver: target.resolver,
-                revision: this.#connection?.nodeInfo(target).revision};
+            this.#snapshot = current;
+            // A cell typed while the edit travelled keeps its draft: only the agent's values are initial.
+            let dirty = false;
             for (const row of rows) {
-                row.value.setItem('initialText', row.value.getItem('text'));
-                row.value.setItem('initialType', row.value.getItem('type'));
+                const data = row.value, primary = data.getItem('primary');
+                const committed = this.#row(data.getItem('name'), primary ? current.value : current.attrs[data.getItem('initialName')], primary);
+                data.setItem('initialText', committed.getItem('text'));
+                data.setItem('initialType', committed.getItem('type'));
+                dirty ||= data.getItem('text') !== committed.getItem('text') || data.getItem('type') !== committed.getItem('type');
             }
+            this.#ui.data.setItem('editor.dirty', dirty);
         }
         this.#ui.data.setItem('editor.status', '');
     }
 
     #applyEdit(after = () => {}, focusTarget = this.shadowRoot.activeElement) {
-        if (this.#ui.data.getItem('busy')) return false;
+        if (this.#ui.data.getItem('busy')) {
+            // The draft is applied again when the agent replies to the edit in flight.
+            this.#applyAgain = {after, focusTarget};
+            return false;
+        }
         try {
             if (!this.#unchanged()) throw new Error('Node changed or was removed. Press Escape to reload the cell before saving.');
-            const attrs = Object.hasOwn(this.#snapshot.attrs, '_meta') ? {_meta: this.#snapshot.attrs._meta} : {};
+            const attrs = {};
             let value = this.#snapshot.value;
             for (const node of this.#ui.data.getItem('editor.rows').getNodes()) {
                 const row = node.getValue(true);
@@ -776,7 +778,7 @@ export class GramlotToolsInspector extends HTMLElement {
                 if (row.getItem('removed')) continue;
                 if (!primary) {
                     if (!name.trim()) throw new Error('Enter an attribute name.');
-                    if (['__proto__', 'prototype', 'constructor'].includes(name) || (name === '_meta' && !row.getItem('locked'))) throw new Error('Unsupported attribute name.');
+                    if (['__proto__', 'prototype', 'constructor', '_meta', '_inspector'].includes(name)) throw new Error('Unsupported attribute name.');
                     if (Object.hasOwn(attrs, name)) throw new Error(`Duplicate attribute: ${name}`);
                 }
                 const initialName = row.getItem('initialName');
@@ -788,46 +790,43 @@ export class GramlotToolsInspector extends HTMLElement {
                 if (primary) value = parsed;
                 else attrs[name] = parsed;
             }
-            // Validate every draft cell before the first target write. Keep metadata and null attributes.
-            const target = this.#snapshot.node;
-            const changed = Object.keys(attrs).length !== Object.keys(this.#snapshot.attrs).length ||
-                Object.entries(attrs).some(([name, item]) => !Object.is(item, this.#snapshot.attrs[name]));
-            if (this.#connection) {
-                const connection = this.#connection;
-                const entry = this.#selected();
-                const command = {root: this.#ui.data.getItem('root'), path: entry.path.join('.'),
-                    nodeId: connection.nodeInfo(target).id, revision: this.#snapshot.revision,
-                    set: Object.entries(attrs).filter(([name, item]) => name !== '_meta' && !Object.is(item, this.#snapshot.attrs[name])).map(([name, item]) => [name, encodeScalar(item)]),
-                    remove: Object.keys(this.#snapshot.attrs).filter(name => name !== '_meta' && !Object.hasOwn(attrs, name))};
-                if (!Object.is(value, this.#snapshot.value)) command.value = encodeScalar(value);
-                this.#ui.data.setItem('busy', true);
-                this.#ui.data.setItem('editor.disabled', true);
-                const generation = this.#generation;
-                connection.request('edit', command).then(() => {
+            // Validate every draft cell before the agent writes. Null attributes are kept.
+            const connection = this.#connection;
+            const entry = this.#selected();
+            const command = {root: this.#ui.data.getItem('root'), path: entry.path.join('.'),
+                nodeId: this.#snapshot.nodeId, revision: this.#snapshot.revision,
+                set: Object.entries(attrs).filter(([name, item]) => !Object.is(item, this.#snapshot.attrs[name])),
+                remove: Object.keys(this.#snapshot.attrs).filter(name => !Object.hasOwn(attrs, name))};
+            if (!Object.is(value, this.#snapshot.value)) command.value = value;
+            this.#ui.data.setItem('busy', true);
+            this.#ui.data.setItem('editor.disabled', true);
+            const generation = this.#generation;
+            connection.request('edit', command).then(() => {
+                if (!this.#ui || generation !== this.#generation) return;
+                this.#refresh();
+                this.#acceptEdit();
+                this.#ui.data.setItem('busy', false);
+                this.#ui.data.setItem('editor.disabled', false);
+                if (focusTarget?.isConnected && !this.shadowRoot.activeElement) focusTarget.focus();
+                this.#refresh(); after();
+            }).catch(error => { if (this.#ui && generation === this.#generation) this.#ui.data.setItem('editor.status', error.message); })
+                .finally(() => {
                     if (!this.#ui || generation !== this.#generation) return;
-                    this.#acceptEdit(target);
                     this.#ui.data.setItem('busy', false);
-                    this.#ui.data.setItem('editor.disabled', false);
-                    if (focusTarget?.isConnected && !this.shadowRoot.activeElement) focusTarget.focus();
-                    this.#refresh(); after();
-                }).catch(error => { if (this.#ui && generation === this.#generation) this.#ui.data.setItem('editor.status', error.message); })
-                    .finally(() => { if (this.#ui && generation === this.#generation) { this.#ui.data.setItem('busy', false); this.#ui.data.setItem('editor.disabled', !this.#selected() || this.#state() === 'disposed'); } });
-                return false;
-            }
-            this.#history.edit(target, attrs, value, changed, !Object.is(value, this.#snapshot.value));
-            this.#acceptEdit(target);
-            this.#refresh();
-            this.#ui.data.setItem('editor.status', '');
-            after();
-            return true;
+                    this.#ui.data.setItem('editor.disabled', !this.#selected() || this.#state() === 'disposed');
+                    const again = this.#applyAgain;
+                    this.#applyAgain = null;
+                    if (again && this.#ui.data.getItem('editor.dirty')) this.#applyEdit(again.after, again.focusTarget);
+                    else again?.after();
+                });
+            return false;
         } catch (error) { this.#ui.data.setItem('editor.status', error.message); return false; }
     }
 
     #sourceCommand(path) {
-        const node = this.#targetBag('source').getNode(path);
-        if (!node) throw new Error('Source node no longer exists');
-        const info = this.#connection?.nodeInfo(node);
-        return {path, nodeId: info?.id, revision: info?.revision, ...(this.#connection ? {} : {node})};
+        const info = this.#info('source', path);
+        if (!info) throw new Error('Source node no longer exists');
+        return {path, nodeId: info.id, revision: info.revision};
     }
 
     async #openInsert(path) {
@@ -835,7 +834,7 @@ export class GramlotToolsInspector extends HTMLElement {
         const generation = this.#generation;
         try {
             this.#insertTarget = this.#sourceCommand(path);
-            this.#catalog = this.#connection ? (await this.#connection.request('catalog', {path})).catalog : this.#history.catalog(path);
+            this.#catalog = (await this.#connection.request('catalog', {path})).catalog;
             if (!this.#ui || generation !== this.#generation) return;
             this.#ui.data.setItem('insert.kind', 'html');
             this.#ui.data.setItem('insert.status', '');
@@ -871,17 +870,10 @@ export class GramlotToolsInspector extends HTMLElement {
         const generation = this.#generation;
         ui.data.setItem('busy', true);
         ui.data.setItem('status', ''); ui.data.setItem('insert.status', '');
+        // Undo and Redo are disabled until the agent replies: a command sent meanwhile would be dropped.
+        this.#refresh();
         try {
-            let selection;
-            if (this.#connection) ({selection} = await this.#connection.request(type, command));
-            else {
-                if (command.path && this.#targetBag('source').getNode(command.path) !== command.node) throw new Error('Source node changed. Select it again.');
-                if (type === 'insert') selection = this.#history.insert(command.path, command.tag, command.attrs);
-                if (type === 'remove') selection = this.#history.remove(command.path);
-                if (type === 'move') selection = this.#history.move(command.path, command.destination, command.placement);
-                if (type === 'undo') this.#history.undo();
-                if (type === 'redo') this.#history.redo();
-            }
+            const {selection} = await this.#connection.request(type, command);
             if (!this.#ui || generation !== this.#generation) return;
             if (type === 'insert') this.#dialog('insert').close();
             this.#snapshot = null;
@@ -927,37 +919,13 @@ export class GramlotToolsInspector extends HTMLElement {
         const {root, path} = where;
         const mode = ui.data.getItem('editor.mode');
         const condition = ui.data.getItem('editor.condition').trim();
-        const existing = this.#findBreakpoint(root, path);
-        if (this.#connection) {
-            const generation = this.#generation;
-            this.#connection.request('breakpoint', {root, path, mode, condition}).then(() => {
-                if (!this.#ui || generation !== this.#generation) return;
-                ui.data.setItem('breakpointDirty', false); ui.data.setItem('breakpointStatus', '');
-                this.#refresh(); after();
-            }).catch(error => { if (this.#ui && generation === this.#generation) ui.data.setItem('breakpointStatus', `Breakpoint not saved: ${error.message}`); });
-            return false;
-        }
-        try {
-            if (!['', 'debugger', 'console'].includes(mode)) throw new Error('Unknown breakpoint mode');
-            // Deliberately authored debug expressions, evaluated under the page's CSP.
-            const test = mode && condition ? new this.ownerDocument.defaultView.Function(
-                'evt', 'node', 'value', 'oldvalue', 'attrs_diff', 'reason', 'path', `"use strict"; return (${condition});`) : null;
-            if (existing) {
-                ui.data.getItem('breakpoints').popNode(existing.label);
-                this.#breakpointTests.delete(existing.label);
-            }
-            if (mode) {
-                const id = `b${++this.#nextBreakpoint}`;
-                ui.data.getItem('breakpoints').setItem(id, new Bag({root, path, mode, condition, hits: 0}));
-                if (test) this.#breakpointTests.set(id, test);
-            }
-            ui.data.setItem('breakpointDirty', false);
-            ui.data.setItem('breakpointError', '');
-            ui.data.setItem('breakpointStatus', mode ? `Breakpoint set on ${root}: ${path}` : 'Breakpoint removed');
-            this.#refresh();
-            after();
-            return true;
-        } catch (error) { ui.data.setItem('breakpointStatus', `Breakpoint not saved: ${error.message}`); return false; }
+        const generation = this.#generation;
+        this.#connection?.request('breakpoint', {root, path, mode, condition}).then(() => {
+            if (!this.#ui || generation !== this.#generation) return;
+            ui.data.setItem('breakpointDirty', false); ui.data.setItem('breakpointStatus', '');
+            this.#refresh(); after();
+        }).catch(error => { if (this.#ui && generation === this.#generation) ui.data.setItem('breakpointStatus', `Breakpoint not saved: ${error.message}`); });
+        return false;
     }
 
     #renderBreakpoints() {
@@ -970,45 +938,6 @@ export class GramlotToolsInspector extends HTMLElement {
                 'data-breakpoint': node.label, connect_onclick: 'inspector.removeBreakpoint'});
         }
         this.#ui.src.source.getNode('main.window.frame.center.palette.breakpoints.entries').setValue(this.#ui.src.prepareSource(builder.source));
-    }
-
-    #checkBreakpoints(root, event) {
-        if (!this.#ui) return;
-        const structural = event.evt === 'ins' || event.evt === 'del';
-        // Bag documents null for the parent path of a root deletion.
-        const pathlist = event.pathlist === null ? [] : event.pathlist;
-        for (const node of Array.isArray(event.node) ? event.node : [event.node]) {
-            const path = (structural ? [...pathlist, node.label] : pathlist).join('.');
-            const config = this.#findBreakpoint(root, path);
-            if (!config) continue;
-            const fields = {evt: event.evt, node, value: node.getValue(true), oldvalue: event.oldvalue,
-                attrs_diff: event.attrs_diff, reason: event.reason, path};
-            const test = this.#breakpointTests.get(config.label);
-            if (test) {
-                try { if (!test(fields.evt, node, fields.value, fields.oldvalue, fields.attrs_diff, fields.reason, path)) continue; }
-                catch (error) { this.#ui.data.setItem('breakpointStatus', `Condition failed on ${root}: ${path}: ${error.message}`); this.#ui.data.setItem('breakpointError', `Condition failed on ${root}: ${path}: ${error.message}`); continue; }
-            }
-            const value = config.getValue(true);
-            value.setItem('hits', value.getItem('hits') + 1);
-            this.#ui.data.setItem('breakpointStatus', `Hit ${root}: ${path} (${event.evt})`);
-            this.#hitBreakpoint(value.getItem('mode'), root, fields);
-        }
-    }
-
-    #hitBreakpoint(mode, root, fields) {
-        // Synchronous Bag subscription: the writer remains on the debugger stack.
-        if (mode === 'debugger') { debugger; } // eslint-disable-line no-debugger
-        else this.ownerDocument.defaultView.console.log('** Gramlot breakpoint **', root, fields);
-    }
-
-    #format(value) {
-        if (value instanceof Bag) return `${value.constructor.name} (${value.getNodes().length} nodes)`;
-        if (typeof value === 'string') return value;
-        if (value === undefined) return 'undefined';
-        if (typeof value === 'number' || typeof value === 'boolean' || value === null) return String(value);
-        if (typeof value === 'bigint') return `${value}n`;
-        if (value instanceof Date) return value.toISOString();
-        return JSON.stringify(value, null, 2);
     }
 }
 

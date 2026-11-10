@@ -9,7 +9,7 @@ test('geographic shapes and independent colored measure panels',()=>{
     const ring=[[0,0],[1,0],[1,1],[0,0]],geo={type:'FeatureCollection',features:[{type:'Feature',properties:{name:'A'},geometry:{type:'Polygon',coordinates:[ring]}}]};
     const data=new Bag(),rows=new Bag();data.setItem('rows',rows);data.setBackref();
     rows.setItem('a',null,{name:'A',sales:8,costs:3,path:[[0,0,2],[1,1,3]],polygon:[ring]});
-    const view=new BagCollectionView(new BagCollectionStore(rows,'attributes'));view.connect();
+    const view=new BagCollectionView(new BagCollectionStore(data,'rows','attributes'));view.connect();
     const make=(type,geometry)=>chartGeographicOptions(view,type,'name',geometry,['sales','costs'],[{color:'#123456'},{color:'#654321'}],'test',geo);
     try {
         const map=make('map3D','');assert.equal(map.series.length,2);assert.equal(map.series[0].data[0].height,8);assert.equal(map.series[1].left,'50%');

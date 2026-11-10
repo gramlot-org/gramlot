@@ -308,3 +308,18 @@ test('moving the uploader DOM retains queued files and the upload engine',async 
     assert.equal(f.sent,1);
     assert.equal(f.store.getNodes()[0].value.getItem('status'),'completed');
 });
+
+test('the queue is reached by address: a replacement at storepath receives the next files', async t => {
+    const f = setup(t, false);
+    f.host.input.dispatchEvent(new f.window.Event('change'));
+    assert.equal(f.store.getNodes().length, 1);
+    assert.deepEqual(Object.keys(f.store._updSubscribers), [], 'the uploader keeps no subscription on the queue Bag');
+    const replacement = new Bag();
+    f.app.data.setItem('form.queue', replacement); await tick();
+    assert.equal(f.host.list.children.length, 0, 'the list shows the queue at the address');
+    f.host.input.dispatchEvent(new f.window.Event('change'));
+    assert.equal(replacement.getNodes().length, 1, 'the engine writes into the queue at the address');
+    assert.equal(f.store.getNodes().length, 1);
+    f.host.startButton.click(); await tick(); await tick();
+    assert.equal(replacement.getNodes()[0].value.getItem('status'), 'completed');
+});

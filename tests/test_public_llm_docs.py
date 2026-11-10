@@ -11,8 +11,8 @@ ROOT = Path(__file__).parents[1]
 
 def test_only_collection_cards_and_discovery_index_are_downloadable():
     files = llm_downloads(ROOT)
-    assert len(PUBLIC_LLM_PAGES) == 14
-    assert {'docs_llm/public/480-charts.md', 'docs_llm/public/485-vizabi.md', 'docs_llm/public/490-audio.md', 'docs_llm/public/495-drawing.md'} <= set(PUBLIC_LLM_PAGES)
+    assert len(PUBLIC_LLM_PAGES) == 13
+    assert {'docs_llm/public/480-charts.md', 'docs_llm/public/490-audio.md', 'docs_llm/public/495-drawing.md'} <= set(PUBLIC_LLM_PAGES)
     assert set(files) == {'llms.txt', *(f'llm/{Path(path).name}' for path in PUBLIC_LLM_PAGES)}
     assert all(all(marker not in text for marker in ('/internal/', '/future/', '/Users/', '/private/'))
                for text in files.values())

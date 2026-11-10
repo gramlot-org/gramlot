@@ -190,7 +190,7 @@ BagNode with path/opened/selected context. A label callback returns exactly
 `{text: ...}` or `{html: ...}`; HTML is sanitized and cannot supply form controls
 or executable behavior. `getLabelClass`, `getIconClass` and `selectedLabelClass`
 control appearance without changing store identity. Callbacks are not asynchronous
-caption providers. Bag attributes can supply badges and checked state.
+caption providers. Bag attributes can supply badges.
 
 Bind `searchText` to an input for case-insensitive literal caption search. After
 a short debounce it may load unresolved branches, retaining matches and ancestors;
@@ -200,9 +200,11 @@ selection or replace the Bag. Nodes marked `loop=True` stop recursive search.
 See [search lifetime](105-components.md#gc-105-965).
 
 `checkedPaths` binds serialized checked paths; `checkedPaths_joiner` chooses the
-separator. The actual state is each node's `checked` attribute, including mixed
-and disabled states. `checkChildren=True` propagates through loaded descendants
-and is inherited as unresolved descendants load. A synchronous `onChecked`
+separator. The list is the only source of the checks, including mixed branches;
+`checked_<attribute>` binds the list of an attribute's values of the checked nodes.
+Only a node attribute `checked='disabled:on'` or `'disabled:off'` fixes a check.
+`checkChildren=True` propagates through loaded descendants and holds for
+descendants loaded later. A synchronous `onChecked`
 callback can veto a click by returning false; `onChecked=True` enables ordinary
 checks without that callback. Selection and checked paths are separate state.
 `favorites` is a Bag of references retaining `originalPath`, not copied tree data.
@@ -635,12 +637,6 @@ ring or the arc. presentation is needle, ring or arc; caption is a label under t
 value shows the information notice No value, never zero. The gauge follows the --gramlot-* theme
 colours and writes nothing back.
 """,
-    'vizabi': """### Specialized host integration
-
-The host provides the compatible library at libraryUrl and the configuration Bag. A session observes
-rows and writes supported configuration changes into Data. It releases subscriptions and the external
-view on removal. Do not treat this as an additional chartPane engine or infer database access.
-""",
 })
 
 COLLECTION_EXPLANATIONS.update({
@@ -656,11 +652,13 @@ This is not an audio recorder, and no persistence is implied.
 """,
     'drawing': """### Original annotation Bag
 
-annotations must resolve to a Bag. The component subscribes to that original Bag and writes
-shape records there. image changes the background without replacing the annotation store.
+annotations must point to a Bag in Data. The component reads the Bag at that address when it
+draws and writes shape records there; a change inside the Bag or a new Bag at the address
+redraws the surface. image changes the background without replacing the annotation store.
 Without an image, coordinates use a 1000 by 1000 surface; an image uses its natural dimensions.
-The toolbar is a shared menu, with tool state under _gramlot.drawing. Removing the component
-releases event handlers and Bag subscriptions. Save annotations through the application's own
-persistence contract; the drawing component does not perform a server save.
+The toolbar is a shared menu. Its tool, color and pen size are Data values in the private area of
+the drawingPane node (`_gramlot.workspace.<name>`, the `#WORKSPACE` naming rule). Removing the
+component releases event handlers and Data registrations. Save annotations through the
+application's own persistence contract; the drawing component does not perform a server save.
 """,
 })

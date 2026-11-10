@@ -132,19 +132,35 @@ test('a late preview cannot reappear after the selected attachment is removed',a
     assert.equal(f.host.preview.childNodes.length,0);assert.equal(f.host.list.children.length,0);
 });
 
-test('attachment state belongs to Source and survives DOM relocation',async t=>{
+test('attachment state lives in the private Data area of its node and survives DOM relocation',async t=>{
     const f=setup(t);f.attachments.set('a1',{caption:'note.txt',text:'retained preview'});
     f.app.data.setItem('form.context.recordId','saved');f.app.data.setItem('form.ready',true);await tick();
     f.host.list.querySelector('button').click();await tick();
     const source=f.app.src.renderer.elements.get(f.host).node;
-    const state=source.attachmentState;
-    assert.ok(state instanceof Bag);
-    assert.equal(state.getItem('selected'),'a1');
-    assert.equal(state.getItem('items').getNode('a1').getAttr('caption'),'note.txt');
-    assert.equal(state.getItem('preview.text'),'retained preview');
+    const path=source.workspaceDatapath;
+    assert.match(path,/^_gramlot\.workspace\.attachmentManager_/);
+    assert.equal(source.attachmentState,undefined);
+    assert.equal(f.app.data.getItem(`${path}.selected`),'a1');
+    assert.equal(f.app.data.getItem(`${path}.items`).getNode('a1').getAttr('caption'),'note.txt');
+    assert.equal(f.app.data.getItem(`${path}.preview.text`),'retained preview');
     const destination=f.window.document.createElement('section');f.window.document.body.append(destination);
     destination.append(f.host);await tick();
-    assert.equal(source.attachmentState,state);
+    assert.equal(f.app.data.getItem(`${path}.selected`),'a1');
     assert.equal(f.host.list.querySelector('button').getAttribute('aria-pressed'),'true');
     assert.equal(f.host.preview.querySelector('pre').textContent,'retained preview');
+});
+
+test('the shared context is observed at its contextPath address, not through the whole Data',async t=>{
+    const f=setup(t);f.attachments.set('a1',{caption:'one.txt',text:'one'});
+    const router=f.app.src.renderer.binding.router;
+    f.app.data.setItem('form.context.recordId','r1');f.app.data.setItem('form.ready',true);await tick();
+    assert.equal(f.host.list.children.length,1);
+    const lists=()=>f.calls.filter(call=>call.name==='list_attachments').length, before=lists();
+    f.app.data.setItem('unrelated.value',1);await tick();
+    assert.equal(lists(),before,'a change outside the context address does not reach the manager');
+    f.app.data.setItem('form.context.recordId','r2');await tick();
+    assert.equal(lists(),before+1);
+    assert.deepEqual(f.calls.filter(call=>call.name==='list_attachments').at(-1).params,{context:{recordId:'r2'}});
+    const size=router.size;f.host.remove();await tick();
+    assert.equal(router.size,size-1,'removal closes the context registration');
 });

@@ -495,12 +495,15 @@ the popup stays open for further choices. Escape closes it and returns focus to
 the button; outside click or focus closes it. Readonly/disabled lock both views.
 Changing presentation does not recreate the group or retained checkbox controls.
 
-`values` accepts `code:Caption` text or a Bag. For a Bag the node label is the
-code and default caption; `identifier` and `labelAttribute` select fields from a
-child Bag or attributes from a scalar row. Codes must be unique, nonempty,
-comma-free strings. The component observes the original Bag, including in-place
-changes, and releases subscriptions on replacement or disposal. Selected captions
-are written to `_displayedValue` on the bound value node (not an attribute binding).
+`values` accepts `code:Caption` text or a `^` pointer to a Bag in Data. For a Bag
+the node label is the code and default caption; `identifier` and `labelAttribute`
+select fields from a child Bag or attributes from a scalar row. Codes must be
+unique, nonempty, comma-free strings. The component reads the Bag at the pointer
+address at each projection: an in-place change and a new Bag at the address
+update the options; it keeps no subscription on the Bag. Selected captions
+are written to `_dv_displayedValue` on the bound value node (not an attribute binding).
+An attribute whose name starts with `_dv_` is a derived value: writing it never makes
+a form modified.
 
 For database options use `dbtable` with the configured DatabaseSelectors service,
 or `method` for an application endpoint. The method receives `_querystring=""`,
@@ -1267,9 +1270,8 @@ Caption precedence is `getLabel`, then `labelAttribute`, then `labelCb`, then th
 
 `resolveLazy=False` prevents resolver loading during expansion, search and
 selection; default `True`. Reactive `labelState` reaches label callbacks as `state`.
-`treeSourceNode.setTreeStore(bag)` observes an externally owned Bag without
-reparenting or copying it; replacement or Source removal unsubscribes.
-`setTreeStore(null)` returns to the declared `storepath`.
+The store is read only at `storepath`, a page Data address. A Bag owned by another
+instance is copied into the page Data by a `dataBinder` on a named `connection`.
 
 `labelCb`, `getLabel`, `getLabelClass` and `getIconClass` name synchronous browser Logic methods. Each receives `(sourceNode, {item, path, opened, selected, state})`; item is the real BagNode and state is `labelState`. Label callbacks return exactly one of `{text: string}` and `{html: string}`. HTML is sanitized with DOMPurify; scripts, event handlers, unsafe URLs, styles and form controls cannot supply application behavior. Use Gramlot commands for actions. There is no `innerHTML:` string sentinel.
 
@@ -1299,13 +1301,19 @@ pane.tree(storepath=".items", hideValues=True, searchText="^.search",
 ```
 
 `checkedPaths` enables checkboxes and binds the comma-separated checked paths
-(`checkedPaths_joiner` changes the separator). State lives in each Bag node's
-`checked` attribute: true, false, -1 (mixed), `disabled:on`, or `disabled:off`.
-An empty initial or updated `checkedPaths` clears editable checks only. Disabled
-checks retain their state, including when their paths appear in a new value.
-`checkChildren=True` propagates to loaded descendants; unresolved descendants
-inherit when loaded. A checked unresolved branch is represented by its own path
-until its checked descendants replace it. A synchronous named `onChecked` callback
+(`checkedPaths_joiner` changes the separator). The list is the only source of the
+checks: each draw computes them from the text at the address, so editing the text
+changes the checks and emptying it clears every editable check. A node is checked
+when the list names its path or, with `checkChildren=True` (the default), the path
+of an ancestor; a branch with checked and unchecked loaded children is mixed.
+Children loaded later by a resolver follow the list. With `checkChildren` the list
+holds the checked nodes without loaded children, so an unresolved branch stands for
+itself until its loaded descendants replace it. Only a node attribute
+`checked='disabled:on'` or `'disabled:off'` fixes a check that clicks and the list
+do not change. `checked_<attribute>='.ids'` (a bare Data path; the separator after `:`, as
+`'.ids:;'`) binds, with the same rule, the list of the values of that attribute
+of the checked nodes, as the legacy tree.
+A synchronous named `onChecked` callback
 receives `{item, path}` and can return false to veto a click; `onChecked=True`
 enables ordinary checks without a callback.
 
@@ -1314,7 +1322,7 @@ The experimental `tree.rowActions(position="start"|"end")` holds one shared
 Source action bar. Its buttons/controllers receive `{item, path, event}` for the
 hovered or focused row. Optional `actionState` is a named synchronous callback
 returning `{hidden, icon, title}` for each identified `rowAction`, with reactive
-`state` supplied by a binding. `favorites` is a Bag rendered as a collapsible
+`state` supplied by a binding. `favorites` points to a Bag in Data, rendered as a collapsible
 group; entries retain `originalPath` and selection loads that original path.
 Tree drop callbacks receive `placement`: `before`, `inside` or `after`.
 

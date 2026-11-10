@@ -120,15 +120,36 @@ test('selectionMode none selects nothing and exposes no aria-selected', async t 
 test('a sort keeps the selection; rows excluded by a filter leave it', async t => {
     const f = await mount(t, {grid:{selectedPkeys:'^.sel.pkeys'}});
     await f.click('r1'); await f.click('r3', {ctrlKey:true});
-    f.source.gridCollectionView.sort('amount:d');
+    f.source._internal.gridCollectionView.sort('amount:d');
     await f.settle();
     assert.deepEqual(f.data('sel.pkeys'), ['r1', 'r3'], 'a sort does not change the selection');
     assert.deepEqual(f.selected(), ['r3', 'r1']);
-    f.source.gridCollectionView.applyColumnFilter('kind', ['a']);
-    f.source.gridCollectionView.applyColumnFilter('name', ['Gamma']);
+    f.source._internal.gridCollectionView.applyColumnFilter('kind', ['a']);
+    f.source._internal.gridCollectionView.applyColumnFilter('name', ['Gamma']);
     await f.settle();
     assert.deepEqual(f.data('sel.pkeys'), ['r3']);
     assert.equal(f.data('selectionLength'), 1);
+});
+
+for (const mode of ['values', 'attributes']) test(`${mode}: a replacement at the store path keeps the selected keys still present, the sort and the filter`, async t => {
+    const f = await mount(t, {mode, grid:{selectedPkeys:'^.sel.pkeys', selectedId:'^.sel.id'}});
+    await f.click('r1'); await f.click('r3', {ctrlKey:true});
+    f.source._internal.gridCollectionView.sort('amount:d');
+    f.source._internal.gridCollectionView.applyColumnFilter('kind', ['a']);
+    await f.settle();
+    assert.deepEqual(f.selected(), ['r3', 'r1']);
+    const replacement = new Bag();
+    for (const [key, record] of [['r3', {name:'Gamma 2', kind:'a', amount:30}], ['r4', {name:'Delta', kind:'a', amount:40}], ['r2', {name:'Beta 2', kind:'b', amount:20}]]) {
+        replacement.setItem(key, mode === 'values' ? new Bag(record) : null, mode === 'values' ? {} : record);
+    }
+    f.app.data.setItem('model.rows', replacement);
+    await f.settle();
+    assert.deepEqual([...f.element.shadowRoot.querySelectorAll('tbody tr[data-row]')].map(row => row.dataset.row), ['r4', 'r3'],
+        'sort and filter apply to the replacement');
+    assert.deepEqual(f.selected(), ['r3'], 'the key r3 stays selected; r1 left the collection');
+    assert.deepEqual(f.data('sel.pkeys'), ['r3']);
+    assert.equal(f.data('sel.id'), 'r3');
+    assert.deepEqual(f.errors, []);
 });
 
 test('double-click still edits a selected row; arrows in an open editor move the editor, not the selection', async t => {
@@ -190,7 +211,7 @@ for (const frame of [null, {}]) test(`a ${frame ? 'frameGrid' : 'grid'} without 
     assert.deepEqual(f.selected(), ['r2', 'r3']);
     assert.deepEqual(f.data('sel.pkeys'), ['r2', 'r3']);
     assert.deepEqual(f.published.at(-1), {idx:2, selectedId:'r3', selectedPkeys:['r2', 'r3']});
-    f.source.gridCollectionView.applyColumnFilter('kind', ['a']);
+    f.source._internal.gridCollectionView.applyColumnFilter('kind', ['a']);
     await f.settle();
     assert.deepEqual(f.data('sel.pkeys'), ['r3']);
     assert.equal(f.app.data.getItem('selectionLength'), null);

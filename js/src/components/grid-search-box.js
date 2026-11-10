@@ -13,7 +13,7 @@ export const SearchBox = defineComponent({
         searchTime:{dtype:'R', nullable:true, default:null, binding:'write'}},
     implementation:Base => class extends Base {
         #context; #grid; #release; #releaseView; #view; #timer = null;
-        #input; #error; #info; #help; #helpText; #filterSignature; #bag;
+        #input; #error; #info; #help; #helpText; #filterSignature;
         constructor() {
             super();
             const doc = this.ownerDocument;
@@ -101,8 +101,8 @@ export const SearchBox = defineComponent({
         }
         #update() {
             if (!this.#grid.view) return;
-            if (this.#view !== this.#grid.view || this.#bag !== this.#grid.view.bag || !this.#releaseView) {
-                this.#cancel(); this.#releaseView?.(); this.#view = this.#grid.view; this.#bag = this.#view.bag;
+            if (this.#view !== this.#grid.view || !this.#releaseView) {
+                this.#cancel(); this.#releaseView?.(); this.#view = this.#grid.view;
                 this.#filterSignature = undefined;
                 this.#releaseView = this.#view.subscribe(() => this.#sync());
             }

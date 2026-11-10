@@ -60,7 +60,7 @@ test('container index creates Source on demand, deduplicates pending requests an
     const root = renderer.elements.get(document.getElementById('index')).node;
     const calls = [], gates = new Map();
     const state = app.data.getItem('index');
-    mountIndexPage(renderer, root, () => {}, () => {}, {state,
+    mountIndexPage(renderer, root, () => {}, () => {}, {state:'index',
         async createEntry({url, pane}) {
             calls.push(url);
             await new Promise(resolve => gates.set(url, resolve));
@@ -96,7 +96,7 @@ test('index page tabs close, release their entry, and reopen from navigation', a
     t.after(()=>{app.dispose();document.defaultView.close();});
     const renderer=app.src.renderer, root=renderer.elements.get(document.getElementById('index')).node,state=app.data.getItem('index');
     const calls=[];
-    const index=mountIndexPage(renderer,root,()=>{},()=>{},{state,async createEntry({url,pane}){
+    const index=mountIndexPage(renderer,root,()=>{},()=>{},{state:'index',async createEntry({url,pane}){
         calls.push(url);app.src.builder.wrapSource(pane).div({id:'content-'+url.slice(1)});
     }});
     const settle=()=>new Promise(resolve=>setTimeout(resolve,0));
@@ -129,7 +129,7 @@ test('invalid navigation and failed loads notify, clean up and allow a retry',as
     t.after(()=>{app.dispose();window.close();});
     const root=app.src.renderer.elements.get(document.getElementById('index')).node,state=app.data.getItem('index');
     let failing=true;
-    const index=mountIndexPage(app.src.renderer,root,()=>{},()=>{},{state,async createEntry(){if(failing)throw Error('Load failed');}});
+    const index=mountIndexPage(app.src.renderer,root,()=>{},()=>{},{state:'index',async createEntry(){if(failing)throw Error('Load failed');}});
     const settle=()=>new Promise(resolve=>setImmediate(resolve));
     for(const path of ['absent','bad','one']){state.setItem('navigationSelection',path);await settle();}
     const messages=document.querySelector('.gramlot-error-notifications').textContent;
@@ -153,7 +153,7 @@ test('a closed pending tab cannot report failure or delete a reopened replacemen
     t.after(()=>{app.dispose();window.close();});
     const state=app.data.getItem('index'),root=app.src.renderer.elements.get(window.document.getElementById('index')).node;
     const pending=[];
-    const index=mountIndexPage(app.src.renderer,root,()=>{},()=>{},{state,createEntry:()=>new Promise((resolve,reject)=>pending.push({resolve,reject}))});
+    const index=mountIndexPage(app.src.renderer,root,()=>{},()=>{},{state:'index',createEntry:()=>new Promise((resolve,reject)=>pending.push({resolve,reject}))});
     const settle=()=>new Promise(resolve=>setImmediate(resolve));
     state.setItem('navigationSelection','one');await settle();
     const old=index.entries.get('/one');old.pane.parentBag.popNode(old.pane.label);
@@ -161,4 +161,44 @@ test('a closed pending tab cannot report failure or delete a reopened replacemen
     assert.notEqual(replacement,old);pending[0].reject(Error('Old request failed'));await settle();
     assert.equal(index.entries.get('/one'),replacement);assert.equal(window.document.querySelector('[role=alert]'),null);
     pending[1].resolve();await settle();assert.equal(state.getItem('active'),'/one');assert.equal(state.getItem('opened').length,1);
+});
+
+test('the index coordinator reads its state at the Data path and keeps no Bag or node in its entries', async t => {
+    const {mountIndexPage} = await import('../src/index-page-runtime.js');
+    const {default:layout} = await import('../src/components/layout.js');
+    const {default:tree} = await import('../src/components/tree.js');
+    const {BagNode} = await import('@genrojs/bag');
+    const {document} = new JSDOM('<main id="gramlot-root"></main>', {url:'https://index.test/'}).window;
+    document.defaultView.ResizeObserver = class {observe(){}unobserve(){}disconnect(){}};
+    document.defaultView.HTMLElement.prototype.scrollIntoView = function(){};
+    const navigation = new Bag(); navigation.setItem('one', null, {title:'one', url:'/one'});
+    class Listing extends IndexPage {static navigation = navigation; behavior(){}}
+    const builder = new GramlotBuilder(null, {collections:[layout, tree]}); new Listing().main(builder.root);
+    const app = new Gramlot({document, transport:false, collections:[layout, tree]}).src.startSource(builder.source);
+    t.after(() => {app.dispose(); document.defaultView.close();});
+    const renderer = app.src.renderer, root = renderer.elements.get(document.getElementById('index')).node;
+    const router = renderer.binding.router, before = router.size;
+    assert.throws(() => mountIndexPage(renderer, root, () => {}, () => {}, {state:app.data.getItem('index')}),
+        /IndexPage state must be a Data path/);
+    const index = mountIndexPage(renderer, root, () => {}, () => {}, {async createEntry({pane}) {
+        app.src.builder.wrapSource(pane).div('content');
+    }});
+    assert.equal(router.size, before + 2);
+    const settle = () => new Promise(resolve => setTimeout(resolve, 0));
+    // A navigation Bag replaced at its address is the one the next selection reads.
+    const replaced = new Bag(); replaced.setItem('two', null, {title:'Two', url:'/two'});
+    app.data.setItem('index.navigation', replaced);
+    app.data.setItem('index.navigationSelection', 'two'); await settle();
+    const entry = index.entries.get('/two');
+    assert.equal(app.data.getItem('index.active'), '/two');
+    for (const {value} of Object.values(Object.getOwnPropertyDescriptors(entry))) assert.equal(value instanceof Bag || value instanceof BagNode, false);
+    assert.equal(entry.node, replaced.getNode('two'));
+    const tabs = root.value.getNode('frame.center.tabs');
+    assert.equal(entry.pane, tabs.value.getNode(entry.paneLabel));
+    // A panel removed from the tabs by the application closes its entry, matched by label.
+    tabs.value.popNode(entry.paneLabel); await settle();
+    assert.equal(index.entries.has('/two'), false);
+    assert.equal(app.data.getItem('index.active'), null);
+    index.dispose();
+    assert.equal(router.size, before);
 });
