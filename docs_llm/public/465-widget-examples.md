@@ -394,6 +394,24 @@ Both controls share one value. External Data updates use supported engine setter
 
 A serverless export opened from file must include the required engine resources in its exported module graph. Do not replace imports with CDN requests or assume a Python endpoint exists in a file-only page.
 
+`terminal` is an interactive terminal for programs that work key by key: a shell,
+`exec` into a container, a REPL, `top` or `vim`. Every key goes to the server at once.
+The server output is written to the screen as it arrives. The component knows no
+backend: the page's PageStore connects it to a process or a remote session.
+```python
+class Page(BasePage):
+    def main(self, root):
+        root.terminal(session="echo", connected="^.connected", rows="^.rows", columns="^.columns")
+
+
+class PageStore(BasePageStore):
+    @terminal
+    async def echo(self, session):
+        while data := await session.read():
+            await session.write(data)
+```
+
+
 
 <a id="gc-465-codemirror"></a>
 ### `codeMirror`
@@ -430,6 +448,14 @@ Editing and preview of a shared draft.
 Preview of a shared Markdown draft.
 
 - [04-markdown](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/06-editors/04-markdown.md)
+
+<a id="gc-465-terminal"></a>
+### `terminal`
+
+Keystroke sessions on the server.
+
+No dedicated lesson identified in the reviewed catalogue.
+
 
 <a id="gc-465-setup-typst"></a>
 ## Typst previews: setup

@@ -1,4 +1,5 @@
 import {controlElement} from './bases.js';
+import {loadLibrary} from '../libraries.js';
 import {defineComponent} from './registry.js';
 import {Labelbox} from './labelbox.js';
 import {FieldState} from './field-state.js';
@@ -26,7 +27,7 @@ function HtmlControl(HTMLElement) {
             const generation=++this.#generation;
             this.engine?.destroy();this.engine=null;
             this.control.textContent='Loading HTML editor…';
-            this.ready=(engineModule ??= import('./jodit-engine.js')).then(module=>{
+            this.ready=(engineModule ??= loadLibrary('jodit',this.ownerDocument,()=>import('./jodit-engine.js'))).then(module=>{
                 if (generation!==this.#generation || !this.isConnected) return;
                 this.control.textContent='';
                 this.engine=module.createHtmlEditor(this);

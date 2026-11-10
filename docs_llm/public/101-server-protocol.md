@@ -35,7 +35,8 @@ Block ID: **GC-101-010**.
 
 `open_page(path, *, owner=None, prefix="")`/`openPage(path, {owner, prefix})` registers the page (`pageId`,
 owner §135) and returns page ID, HTML, nonce. HTML: `<title>` from `Page.title`, import map
-`@gramlot/gramlot/page` → runtime URL, root `div` (`gramlot-root`), module script running `PageBootstrap` with
+`@gramlot/gramlot/page` → runtime URL (+ `@gramlot/gramlot/collections/<name>` → collection module for each
+declared core collection of the page, e.g. `typst`), root `div` (`gramlot-root`), module script running `PageBootstrap` with
 `{config, resources}`; import map and script share the nonce. `config` = `{pageId, rpcUrl, closeUrl, rootId,
 capabilities, nameSyntax}` (+ `devices`, `locale`, `timeZone` when declared); `nameSyntax` =
 `{kind: "regex", pattern, flags}`. `resources` = `{css: [url], js: [{url, group}]}` (+ `collections`,
@@ -260,6 +261,10 @@ The policy belongs to the application; a configured adapter sends it as the `Con
 each page response with `{nonce}` replaced by the bootstrap nonce. Profiles:
 [GC-090 035](090-classes-and-hosts.md#gc-090-035).
 
+Compose it with `GramlotServer.content_security_policy(policy, nonce)` (JS
+`contentSecurityPolicy`): `{nonce}` replaced, and with `library_source="cdn"` the CDN
+origin added to `script-src` and `connect-src` (else `default-src`).
+
 <a id="gc-101-145"></a>
 
 ### 145 · Themes and companion files
@@ -324,6 +329,21 @@ Block ID: **GC-101-305**.
 `websocket` capability: one text message per request envelope, one per response, any order, paired by `id`;
 server messages without `id` = push (`push`); close `{pageId}` without `id`; closing the socket closes the page.
 No current adapter offers it; the base runtime has no WebSocket transport.
+
+<a id="gc-101-325"></a>
+
+### 325 · Terminal socket
+
+Block ID: **GC-101-325**.
+
+Python hosts with WebSocket: `<prefix>/gramlot/terminal?pageId=…&session=…`, PageStore channel origin/owner checks;
+opens `@terminal` method `session`, closing an open one of the same name; unknown session, foreign owner,
+refused auth, missing parameter → close 1008.
+Binary messages, first byte = channel: 0 keys (browser→server), 1 output (server→browser),
+4 JSON `{"Width","Height"}` each 1–65535 (browser→server), 5 32-bit big-endian count of output bytes written
+(browser→server). 0/1/4 follow Kubernetes exec. Unacknowledged output never exceeds 1 MB (frames sized to fit);
+more than 1 MB of unread input refused; a frame renews the page at most once a minute. Close 1000 when the
+session ends, 1008 on an unreadable frame. JavaScript hosts do not offer the route.
 
 ## Part E · Application metadata
 

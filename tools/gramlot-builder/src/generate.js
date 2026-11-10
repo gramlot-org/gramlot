@@ -24,6 +24,75 @@ function absolute(value) {
 function packageName(value) {
     if (typeof value !== 'string' || !/^[A-Za-z_]\w*(\.[A-Za-z_]\w*)*$/.test(value)) throw new Error('Invalid Python package name');
 }
+/**
+ * Links collection imports to the modules the runtime shares (`sharedModules` of the core).
+ *
+ * `key` names the shared module an import reaches, `proxy` emits the module that reads it from
+ * `@gramlot/gramlot`, `verify` refuses a bundle that still contains a module of the runtime.
+ */
+async function sharedModuleLinks(coreEntry, sharedModules) {
+    if (!sharedModules) throw new Error(`The core at ${coreEntry} does not export sharedModules; the generator needs a core that does`);
+    const coreDirectory = path.dirname(coreEntry);
+    const libraries = new Set(Object.keys(sharedModules).filter(key => !key.startsWith('./')));
+    const packageOf = specifier => specifier.split('/').slice(0, specifier.startsWith('@') ? 2 : 1).join('/');
+    const sharedPackages = new Set([...libraries].map(packageOf));
+    // The runtime module graph: any of these files in a collection bundle is a second copy.
+    const runtime = await build({entryPoints:[coreEntry],absWorkingDir:coreDirectory,bundle:true,write:false,
+        metafile:true,format:'esm',platform:'browser',target:'es2022',logLevel:'silent',
+        external:['@gramlot/gramlot/markdown']});
+    const runtimeFiles = new Set(Object.keys(runtime.metafile.inputs).map(input => path.resolve(coreDirectory,input)));
+    return {
+        key(specifier, resolveDir) {
+            if (specifier.startsWith('.') || path.isAbsolute(specifier)) {
+                const relative = path.relative(coreDirectory, path.resolve(resolveDir, specifier)).split(path.sep).join('/');
+                return Object.hasOwn(sharedModules, './' + relative) ? './' + relative : null;
+            }
+            if (!sharedPackages.has(packageOf(specifier))) return null;
+            if (!libraries.has(specifier)) throw new Error(`The runtime does not share ${specifier}; import one of: ${[...libraries].join(', ')}`);
+            return specifier;
+        },
+        proxy(key) {
+            const names = Object.keys(sharedModules[key]);
+            const named = names.filter(name => name !== 'default' && /^[A-Za-z_$][\w$]*$/.test(name));
+            // A pure read per export lets esbuild drop the exports a collection does not use.
+            return `import {sharedModules} from '@gramlot/gramlot';\n` +
+                `const read = name => sharedModules[${JSON.stringify(key)}][name];\n` +
+                named.map(name => `export const ${name} = /* @__PURE__ */ read(${JSON.stringify(name)});\n`).join('') +
+                (names.includes('default') ? `export default /* @__PURE__ */ read('default');\n` : '');
+        },
+        verify(name, metafile, projectRoot) {
+            const copies = Object.entries(metafile.inputs)
+                .filter(([input]) => !input.includes(':') && runtimeFiles.has(path.resolve(projectRoot, input)))
+                .filter(([input]) => Object.values(metafile.outputs).some(output => output.inputs[input]?.bytesInOutput > 0))
+                .map(([input]) => path.relative(coreDirectory, path.resolve(projectRoot, input)).split(path.sep).join('/'));
+            if (copies.length) throw new Error(`Collection ${name} bundles runtime modules missing from sharedModules: ${copies.join(', ')}`);
+        },
+    };
+}
+
+/**
+ * Refuses a collection whose start-up graph (its entry module and the modules it imports statically) contains
+ * a third-party package. A third-party library loads on first use through `loadLibrary` of the core (GC-325
+ * §160), so it can only sit in a deferred module.
+ */
+function verifyStartup(name, metafile) {
+    const outputs = metafile.outputs;
+    const entry = Object.keys(outputs).find(file => outputs[file].entryPoint);
+    const seen = new Set(), pending = [entry];
+    while (pending.length) {
+        const file = pending.pop();
+        if (seen.has(file) || !outputs[file]) continue;
+        seen.add(file);
+        for (const item of outputs[file].imports) if (item.kind === 'import-statement' && !item.external) pending.push(item.path);
+    }
+    const packages = new Set();
+    for (const file of seen) for (const [input, {bytesInOutput}] of Object.entries(outputs[file].inputs)) {
+        const match = bytesInOutput > 0 && /(?:^|\/)node_modules\/((?:@[^/]+\/)?[^/]+)/.exec(input);
+        if (match) packages.add(match[1]);
+    }
+    if (packages.size) throw new Error(`Collection ${name} loads third-party packages at start: ${[...packages].sort().join(', ')}; load them on first use with loadLibrary`);
+}
+
 export async function generate(request) {
     keys(request,['protocolVersion','operation','configPath','projectRoot','stagingDirectory','config','externals']);
     if (request.protocolVersion !== 1 || !['build','check'].includes(request.operation)) throw new Error('Unsupported generator protocol/operation');
@@ -33,7 +102,13 @@ export async function generate(request) {
     const resolver = createRequire(path.join(request.projectRoot,'package.json'));
     const coreEntry = resolver.resolve('@gramlot/gramlot');
     const coreRegistry = path.join(path.dirname(coreEntry),'components/registry.js');
-    const {CommandRegistry, collectionBuildId} = await import(pathToFileURL(coreEntry));
+    const {CommandRegistry, collectionBuildId, sharedModules, libraries} = await import(pathToFileURL(coreEntry));
+    const shared = await sharedModuleLinks(coreEntry, sharedModules);
+    // The local copy of a UMD build is evaluated as a browser script, as the same file imported from the CDN:
+    // without CommonJS and AMD in scope it takes its window-global branch (GC-325 §160).
+    const coreResolver = createRequire(coreEntry);
+    const scriptFiles = new Set(Object.values(libraries).filter(library => library.format === 'script')
+        .map(library => coreResolver.resolve(library.local)));
     const base = path.dirname(request.configPath);
     const resolveEntry = entry => {
         if (typeof entry !== 'string' || !entry) throw new Error('Invalid collection entry');
@@ -126,18 +201,26 @@ export async function generate(request) {
             `return create({...options,css,assets});\n}\n`;
         // Keep component-declared import() boundaries in the artifact. Engines are
         // fetched on first use, not downloaded as part of collection activation.
-        await build({entryPoints:{collection:row.entry},outdir:assets,absWorkingDir:request.projectRoot,
+        const built = await build({entryPoints:{collection:row.entry},outdir:assets,metafile:true,absWorkingDir:request.projectRoot,
             bundle:true,splitting:true,chunkNames:'modules/[name]-[hash]',minify:true,
             format:'esm',platform:'browser',target:'es2022',logLevel:'silent',legalComments:'inline',loader:{'.css':'text'},
             plugins:[{name:'collection-linking',setup(b){
                 b.onResolve({filter:/^gramlot-collection-resources$/}, () => ({path:'resources',namespace:'collection-resources'}));
                 b.onLoad({filter:/.*/,namespace:'collection-resources'}, () => ({contents:resourceModule,loader:'js'}));
+                b.onLoad({filter:/\.[cm]?js$/,namespace:'file'}, async args => scriptFiles.has(args.path) ? {loader:'js',
+                    contents:`(function (exports, module, define, require) {\n${await readFile(args.path, 'utf8')}\n}).call(globalThis);\n`} : undefined);
                 b.onLoad({filter:/\.[cm]?js$/,namespace:'file'}, async args => {
                     const source = await readFile(args.path, 'utf8');
                     const contents = lowerResourceReferences(source, pathToFileURL(args.path), resources);
                     return contents === source ? undefined : {contents,loader:'js'};
                 });
+                b.onResolve({filter:/.*/,namespace:'shared-module'},args=>({path:args.path,external:true}));
+                b.onLoad({filter:/.*/,namespace:'shared-module'},args=>({contents:shared.proxy(args.path),loader:'js'}));
                 b.onResolve({filter:/.*/},async args=>{
+                    if(args.kind!=='entry-point' && args.namespace!=='collection-authoring') {
+                        const key=shared.key(args.path,args.resolveDir);
+                        if(key) return {path:key,namespace:'shared-module'};
+                    }
                     if(args.path==='markdown-it') return {path:'@gramlot/gramlot/markdown',external:true};
                     if(args.path==='@gramlot/gramlot/components' || (args.path.startsWith('.') && path.resolve(args.resolveDir,args.path)===coreRegistry)) return args.namespace==='collection-authoring'
                         ? {path:'@gramlot/gramlot/components',external:true} : {path:'@gramlot/gramlot/components',namespace:'collection-authoring'};
@@ -156,6 +239,8 @@ export async function generate(request) {
                 });
                 b.onLoad({filter:/.*/,namespace:'collection-authoring'},()=>({contents:lowered,loader:'js'}));
             }}]});
+        shared.verify(c.name,built.metafile,request.projectRoot);
+        verifyStartup(c.name,built.metafile);
         await writeFile(path.join(directory,'grammar.json'),json(c.toDocument()));
         await writeFile(path.join(directory,'commands.json'),json(row.catalogue));
         await writeFile(path.join(assets,'index.js'),wrapper('__GRAMLOT_BUILD_ID__'));

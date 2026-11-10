@@ -1,4 +1,4 @@
-import * as echarts from 'echarts/dist/echarts.js';
+import {loadLibrary} from '../libraries.js';
 import {defineComponent} from './registry.js';
 import {Container} from './container.js';
 import {gaugeOption, gaugeValue, parseThresholds} from './chart-gauge-options.js';
@@ -52,13 +52,17 @@ export const Gauge = defineComponent({
         }
         connectedCallback() {
             this.#active = true;
-            this.#chart = echarts.init(this.#surface, null, {renderer: 'svg'});
             // The node text is where the renderer writes the resolved node value.
             this.#text.observe(this, {childList: true, subtree: true, characterData: true});
             this.#theme.observe(this.ownerDocument.documentElement, {attributes: true, attributeFilter: ['data-theme', 'class']});
             this.#dark.addEventListener('change', this.#onTheme);
             this.#resize.observe(this.#surface);
-            this.#render();
+            // ECharts loads on first use; the chart starts when it arrives, if the gauge is still connected.
+            this.ready = loadLibrary('echarts', this.ownerDocument, () => import('echarts/dist/echarts.esm.min.mjs')).then(echarts => {
+                if (!this.#active || this.#chart) return;
+                this.#chart = echarts.init(this.#surface, null, {renderer: 'svg'});
+                this.#render();
+            });
         }
         #onTheme = () => this.#render();
         #palette() {

@@ -7,6 +7,10 @@ import {layoutWindow} from './helpers/layout-window.js';
 import {ChartDataView} from '../src/components/chart-data-view.js';
 import {ChartRenderer} from '../src/components/chart-renderer.js';
 import {optionsAddress} from './helpers/chart-options.js';
+import {EChartsAdapter} from '../src/components/chart-engines/echarts.js';
+
+// ECharts loads on first use (GC-325 §160): these tests draw without ChartRenderer.prepare.
+await EChartsAdapter.load('bar', new JSDOM('').window.document);
 
 const seriesOptions = new Bag({amount:new Bag({axis:'left',color:'#5470c6'}),revenue:new Bag({axis:'left',color:'#5470c6'}),margin:new Bag({axis:'right',color:'#ee6666'})});
 

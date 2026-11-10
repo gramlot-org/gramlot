@@ -227,7 +227,9 @@ class Page(GramlotPage):
 ```
 
 The base grammar and command buttons remain available. Prepared descriptors are
-also provided for `gramlot.collections.tree`, `editors` and `typst`. Importing a
+also provided for `gramlot.collections.tree`, `editors` and `typst`; `typst` is
+outside the standard set, so a page that uses it declares it
+([GC-340 §050](340-components-and-collections-guide.md#gc-340-050-typst)). Importing a
 package alone does not select it. Class-local `gramlots` selections accumulate
 through the Page inheritance hierarchy, with dependencies loaded first.
 
@@ -1528,7 +1530,9 @@ host filesystem provider. The components require no Markdown-specific server API
 Block ID: **GC-105-145**.
 
 Use CodeMirror from the `editors` collection and `typstPreview` from the optional
-`typst` collection. Both consume the same Data string:
+`typst` collection. `typst` is outside the standard set: the page declares it in
+`Page.gramlots` ([GC-340 §050](340-components-and-collections-guide.md#gc-340-050-typst)).
+Both consume the same Data string:
 
 ```python
 pane.codeMirror(value="^.content", language="typst", height="400px")
@@ -1561,8 +1565,8 @@ and PDF. Its Python and JavaScript pages author equivalent Source. Serverless
 directory export includes the collection modules as shared local assets, so the
 compiler is not duplicated per route. The current single-HTML export command
 does not accept optional collections. The optional Typst module is about 41 MiB
-uncompressed; compiler initialization is lazy, but enabling the collection still
-loads its module. Hosts that do not need Typst should omit that collection.
+uncompressed; compiler initialization is lazy. Only pages that declare `typst`
+receive the collection.
 
 
 Python Typst recipes use the compound extension `.typ.py` and export `class Recipe(TypstBuilder)`. In the IDE choose **Typst Python recipe** for a new draft, or open an existing `.typ.py`. The Code tab remains Python. **Generate preview** sends the current draft to the host, which calls `Recipe().create()` and `render()`. **Generated Typst** is read-only; **Preview** renders that output to SVG/PDF in the browser. Editing Python immediately hides the old preview and clears generated source; generation is explicit, independent of saving.

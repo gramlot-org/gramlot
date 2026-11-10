@@ -41,13 +41,14 @@ subscribed versus one-time reads.
 
 ## Read the manual
 
-1. [The Gramlot family](055-family.md) introduces the library and its repositories.
-2. [Your first page](018-quickstart.md) explains how to start a project.
-3. [Writing pages](095-writing-pages.md), [Data binding and controllers](097-data-binding.md)
+1. [Inside Gramlot](017-inside-gramlot.md) introduces Data, bindings and reusable interface declarations.
+2. [The Gramlot family](055-family.md) introduces the library and its repositories.
+3. [Your first page](018-quickstart.md) explains how to start a project.
+4. [Writing pages](095-writing-pages.md), [Data binding and controllers](097-data-binding.md)
    and [Components](105-components.md) explain application authoring.
-4. [Calling the server](098-server-calls.md) and [Remote content](099-remote-content.md)
+5. [Calling the server](098-server-calls.md) and [Remote content](099-remote-content.md)
    explain requests for values and interface fragments.
-5. [Menus, toolbars and windows](350-menus-toolbars-and-windows.md) covers larger
+6. [Menus, toolbars and windows](350-menus-toolbars-and-windows.md) covers larger
    interfaces. [Themes and CSS](096-themes-and-css.md) explains appearance.
 
 ## The library and the servers

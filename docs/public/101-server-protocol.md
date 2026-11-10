@@ -59,7 +59,10 @@ Block ID: **GC-101-010**.
   **owner** (§135) and returns the bootstrap: the page ID, the HTML document and its
   nonce.
 - The HTML document has a `<title>` from `Page.title`, an import map that maps
-  `@gramlot/gramlot/page` to the runtime URL, the root `div` (`gramlot-root` by
+  `@gramlot/gramlot/page` to the runtime URL (and, for each declared core collection
+  of the page such as `typst`, `@gramlot/gramlot/collections/<name>` to the
+  collection module, so a page module that imports it for `gramlots` loads in the
+  browser), the root `div` (`gramlot-root` by
   default) and a module script that imports `PageBootstrap` and runs it with
   `{config, resources}`. The import map and the module script carry the same nonce.
 - `config` is `{pageId, rpcUrl, closeUrl, rootId, capabilities, nameSyntax}`, plus
@@ -457,6 +460,12 @@ sends it as the `Content-Security-Policy` header of each page response, with
 bootstrap scripts (§115). The profiles are described in
 [Classes and server adapters](090-classes-and-hosts.md#gc-090-035).
 
+The adapter composes the header with `GramlotServer.content_security_policy(policy,
+nonce)` (JavaScript `contentSecurityPolicy`): it replaces `{nonce}` and, when the server
+takes the third-party libraries from the CDN (`library_source="cdn"`), adds the CDN
+origin to `script-src` and `connect-src`, or to `default-src` when one of them is
+missing.
+
 <a id="gc-101-145"></a>
 
 ### 145 · Themes and companion files
@@ -597,6 +606,31 @@ order; `id` pairs them. A message without `id` from the server is a push (`push`
 capability). The close message is `{pageId}` without `id`; closing the socket also
 closes the page. No current adapter offers this capability, and the base runtime has
 no WebSocket transport.
+
+<a id="gc-101-325"></a>
+
+### 325 · Terminal socket
+
+Block ID: **GC-101-325**.
+
+A Python host with WebSocket enabled accepts `<prefix>/gramlot/terminal?pageId=…&session=…`,
+with the origin and owner checks of the PageStore channel. It opens the `@terminal`
+method `session` of the page's store, closing an open session of the same name, and
+refuses an unknown session, a foreign owner, a refused auth rule or a missing parameter
+with close code 1008. Every message is binary; the first byte is the channel:
+
+| Channel | Direction | Payload |
+| --- | --- | --- |
+| 0 | browser → server | the bytes of the keys |
+| 1 | server → browser | the bytes to write |
+| 4 | browser → server | JSON `{"Width": columns, "Height": rows}`, each 1 to 65535 |
+| 5 | browser → server | 32-bit big-endian count of output bytes written |
+
+Channels 0, 1 and 4 follow the Kubernetes exec protocol. Output sent and not yet
+acknowledged never exceeds 1 MB: the server sizes each output frame to fit. More than 1 MB of
+input not yet read by the method is refused. A frame renews the page at most once a
+minute. The socket closes with 1000 when the session ends and with 1008 on a frame it
+cannot read. The JavaScript hosts do not offer this route.
 
 ## Part E · Application metadata
 

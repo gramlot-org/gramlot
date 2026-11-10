@@ -8,6 +8,10 @@ import {UPlotAdapter} from '../src/components/chart-engines/uplot.js';
 import {ChartRenderer, chartContext} from '../src/components/chart-renderer.js';
 import {chartData} from '../src/components/chart-data.js';
 import {optionsAddress} from './helpers/chart-options.js';
+import {EChartsAdapter} from '../src/components/chart-engines/echarts.js';
+
+// ECharts loads on first use (GC-325 §160): these tests draw without ChartRenderer.prepare.
+await EChartsAdapter.load('bar', new JSDOM('').window.document);
 
 const options = () => new Bag({amplitude:new Bag({axis:'left',color:'#5470c6'})});
 test('sample snapshots reuse the renderer and produce real SVG without sample Bag nodes', () => {

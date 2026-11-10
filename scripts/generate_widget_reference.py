@@ -5,6 +5,8 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+# Core collections outside the standard set: a page declares them in Page.gramlots (GC-340 §050).
+DECLARED = tuple(json.loads((ROOT / 'src/gramlot/collections/declared.json').read_text()))
 COLLECTIONS = ('inputs', 'buttons', 'layout', 'tree', 'editors', 'typst', 'uploads', 'grid', 'chat', 'grouplets', 'charts', 'vizabi', 'audio', 'drawing')
 from widget_reference_content import COLLECTION_GUIDES
 from widget_manual_content import COLLECTION_EXPLANATIONS
@@ -75,6 +77,7 @@ DESCRIPTIONS = {
  'imageUploader': 'Editable image value with local crop or an application-owned upload destination.',
  'uploader': 'Shared file queue with progress, preview, selected-file metadata and application-owned upload targets.',
  'codeMirror': 'Code/text editor with composed language and editor options.',
+ 'terminal': 'Interactive terminal connected to a @terminal session of the page store.',
  'htmlEditor': 'Rich HTML editing using the supported engine configuration.',
  'htmlPreview': 'Read-only HTML preview with the component sanitization contract.',
  'markdownEditor': 'Markdown editing with the supported editor modes.',
@@ -134,7 +137,7 @@ FAMILIES = {
     'Dialogs and floating windows': ('dialog', 'floatingPane'),
     'Trees': ('tree', 'rowActions'),
     'File uploads': ('uploader', 'imageUploader', 'attachmentManager'),
-    'Editors and document previews': ('codeMirror', 'htmlEditor', 'htmlPreview', 'markdownEditor', 'markdownPreview', 'typstPreview'),
+    'Editors and document previews': ('codeMirror', 'htmlEditor', 'htmlPreview', 'markdownEditor', 'markdownPreview', 'typstPreview', 'terminal'),
 }
 SHARED = {
     'value': ('Values and bindings', 'The value type and writeback behavior depend on the control. '
@@ -275,6 +278,7 @@ connects these controls to runnable lessons and screenshots.
     stable.update(grid='gc-345-365', searchBox='gc-345-370', chatMessages='gc-345-375',
                   grouplet='gc-345-380', groupletCard='gc-345-385')
     stable['gauge'] = 'gc-345-500'
+    stable['terminal'] = 'gc-345-270'
     stable.update({name: f'gc-345-{505 + index * 5}' for index, name in enumerate(chart_types)})
     stable.update({name: f'gc-345-{450 + index * 5}' for index, name in enumerate(('chartPane', 'chartView', 'chartFields', 'chartGeoJSON', 'chartTimeline', 'vizabiBubble', 'audioAnalyser', 'drawingPane'))})
     if not set(entries) <= set(stable):
@@ -400,8 +404,11 @@ connects these controls to runnable lessons and screenshots.
                               notes, flags=re.S)
         header = (f'# {title}\n\nDocument ID: **GC-{document_id}**.\n\n'
                   f'<a id="gc-{document_id}-start"></a>\n## Start here\n\n{introduction}\n\n'
-                  'The environment Page base supplies the collections used below. '
-                  '[Configure them once](340-components-and-collections-guide.md#gc-340-050). '
+                  + (f'`{name}` is outside the standard set: a page that uses it declares it in `Page.gramlots` '
+                     f'([declaring {name}](340-components-and-collections-guide.md#gc-340-050-{name})). '
+                     if name in DECLARED else
+                     'The environment Page base supplies the collections used below. '
+                     '[Configure them once](340-components-and-collections-guide.md#gc-340-050). ') +
                   f'[Setup examples are in the appendix](465-widget-examples.md#gc-465-setup-{name}).\n\n'
                   f'{manual_notes}\n\n'
                   '[All collections](345-widget-reference.md) · '

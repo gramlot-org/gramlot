@@ -1,4 +1,5 @@
 import {controlElement} from './bases.js';
+import {loadLibrary} from '../libraries.js';
 import {defineComponent} from './registry.js';
 import {Labelbox} from './labelbox.js';
 import {FieldState} from './field-state.js';
@@ -26,7 +27,7 @@ function MarkdownControl(MarkdownElement) {
             const generation=++this.#generation;
             this.engine?.destroy();this.engine=null;
             this.control.textContent='Loading Markdown editor…';
-            this.ready=(engineModule ??= import('./prose-mirror-engine.js')).then(module=>{
+            this.ready=(engineModule ??= loadLibrary('prosemirror',this.ownerDocument,()=>import('./prose-mirror-engine.js'))).then(module=>{
                 if (generation!==this.#generation || !this.isConnected) return;
                 this.control.textContent='';
                 this.engine=module.createMarkdownEditor(this);

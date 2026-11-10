@@ -1,4 +1,5 @@
 import {Bag} from '@gramlot/gramlot';
+import {loadLibrary} from '../libraries.js';
 import {isDecimal} from '@genrojs/tytx';
 import {GridRows} from './grid-rows.js';
 
@@ -126,7 +127,7 @@ export class GridTools {
     /** XLSX Blob of the visible rows: captions, then typed cells (numbers, dates, booleans, text). */
     async xlsx() {
         const {columns, rows} = this.#records();
-        const writeExcelFile = (await (excelEngine ??= import('write-excel-file/browser'))).default;
+        const writeExcelFile = (await (excelEngine ??= loadLibrary('writeExcelFile', this.#host.document, () => import('write-excel-file/browser')))).default;
         const cell = (value, column) => {
             if (value === null) return null;
             if (isDecimal(value)) return Number(value.toString());

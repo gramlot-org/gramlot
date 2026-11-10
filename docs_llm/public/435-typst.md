@@ -7,7 +7,7 @@ Document ID: **GC-435**.
 
 Render a Typst document using the preview component. Compiler/worker resources are separate from ordinary input and layout components.
 
-The environment Page base supplies the collections used below. [Configure them once](340-components-and-collections-guide.md#gc-340-050). [Setup examples are in the appendix](465-widget-examples.md#gc-465-setup-typst).
+`typst` is outside the standard set: a page that uses it declares it in `Page.gramlots` ([declaring typst](340-components-and-collections-guide.md#gc-340-050-typst)). [Setup examples are in the appendix](465-widget-examples.md#gc-465-setup-typst).
 
 Load `document.source` as text before rendering, or bind an editor to the same path. Compiler resources and document assets must be available to the configured preview engine. Do not infer a server endpoint from this component declaration. [Compilation and resource contract](105-components.md#gc-105-145).
 

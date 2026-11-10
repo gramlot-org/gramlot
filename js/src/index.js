@@ -61,3 +61,8 @@ export {VisualEditorLogic, visualEditorScope} from './visual-editor.js';
 export {VisualEditor} from './server/visual-editor.js';
 export {SourceImport} from './server/source-import.js';
 export {SourcePicker} from './source-picker.js';
+
+// Prepared collections read the shared libraries and runtime modules from this table (GC-325 §155).
+export {sharedModules} from './shared-modules.js';
+// Third-party libraries of components: the manifest and the loader on first use (GC-325 §160).
+export {libraries, loadLibrary} from './libraries.js';

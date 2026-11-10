@@ -25,7 +25,7 @@ export function chartContext(view,structure,seriesOptions) {
 export class ChartRenderer {
     #element; #view; #options; #adapter; #engine; #host; #revision=0;
     constructor(element,view,options={}) { this.#element=element;this.#view=view;this.#options=options; }
-    async prepare(engine,type) { await requireChartCapability(engine,type).load(type); }
+    async prepare(engine,type) { await requireChartCapability(engine,type).load(type,this.#element.ownerDocument); }
     invalidate() { this.#revision++; }
     /**
      * Draw. `structure` holds the parameter values of this draw; `seriesOptions` is the address of the

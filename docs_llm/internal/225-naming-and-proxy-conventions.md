@@ -295,6 +295,8 @@ Nessun nome deve essere bello, brutto o descrittivo e facile: deve rispettare de
 convenzioni e se per un naming mancano delle convenzioni si decidono, si scrivono e
 si applicano."
 
+Gallery source files — owner, 2026-11-09: the owner confirmed “Sì, usa sourceFiles” to declare additional example source paths in gallery catalogue metadata; the Code panel presents the Page and support files in separate read-only tabs (the existing Page editing contract is unchanged). This approves `sourceFiles` as the shared catalogue field, not a general filesystem or editor API.
+
 <a id="gc-225-010"></a>
 
 ## 010 · Conventions in force
@@ -3029,7 +3031,7 @@ packages. `standard_collections` (Python) and generated `standardCollections`
 `collections/standard.json` inventory drives both distributions. Experimental
 selection_trial is outside the standard set; no Invoice integration is included.
 
-`standardCollectionAssets()` exposes the packaged standard entry URL/file pairs
+`standardCollectionAssets()` (since 2026-11-08 `collectionAssets()`, below) exposes the packaged standard entry URL/file pairs
 through the existing server assets API; adapters retain artifact hash validation.
 The generated JavaScript inventory lives in `dist/standard-collections.js`.
 
@@ -3246,3 +3248,71 @@ pointer is rejected as "not a Data path".
   renewed when a Data change reaches the path, so the editor reloads its choices.
 - drawingPane `annotations`: already read by address since 2026-11-09 (`6ea03bde`);
   no projection read remained.
+
+<a id="gc-225-shared-modules-20261107"></a>
+### Shared modules of prepared collections — 2026-11-07
+
+Issue gramlot-org/gramlot#82, phase 1 (GC-325 §155). The core export
+`sharedModules` and its module `js/src/shared-modules.js` follow the "Helper
+modules" row of §010: the module is named after what it holds. Keys are import
+specifiers: the package name for a library, the `./` path relative to `js/src`
+for a runtime module. The generator's internal esbuild namespace
+`shared-module` follows the existing `collection-authoring` and
+`collection-resources` namespaces. Chosen in implementation; the export is
+public API and waits for owner confirmation.
+
+<a id="gc-225-third-party-libraries-20261107"></a>
+### Third-party libraries on first use — 2026-11-07
+
+Issue gramlot-org/gramlot#82, phase 2 (GC-325 §160). The module
+`js/src/libraries.js` and its export `libraries` follow the "Helper modules" row of
+§010: the module is named after what it holds, as `shared-modules.js`. `loadLibrary`
+follows the `load<Thing>` functions of the code (`loadServerAdapter`, `loadMarkdown`).
+Entry names follow the charts collection `<engine>License` asset names without the
+suffix: `echarts`, `echartsGl`, `uplot`, `plotly`, `vega`, `writeExcelFile`; `uplotStyle`
+names the CSS of uPlot; `jodit`, `codemirror`, `prosemirror`, `typst` name the engine
+libraries. The server option `library_source`/`librarySource` and its values `cdn` and
+`local` follow the snake/camel option convention of `css_theme`/`cssTheme`. The DOM
+marker `data-gramlot-library-source` follows the `data-gramlot-<name>` markers
+(`data-gramlot-touch`). `content_security_policy`/`contentSecurityPolicy` takes the name
+of the adapter option it serves; `library_origins`/`libraryOrigins` is a read-only
+property. No proxy is added: components read the source from their document. Chosen
+in implementation; the exports and the server option are public API and wait for
+owner confirmation.
+
+<a id="gc-225-runtime-size-20261108"></a>
+### Runtime size, issue #84 — 2026-11-08
+
+Owner decisions of 2026-11-08 on gramlot-org/gramlot#84 (decimal.js stays, no
+xmldom in the browser runtime, typst out of the standard set). Names applied:
+
+- The JS descriptor of the core collection `typst` is the default export of the
+  package export `@gramlot/gramlot/collections/typst` (file
+  `js/dist/collections/typst.js`). The path mirrors the Python module
+  `gramlot.collections.typst`, by the Python/JS spelling row of §010; the default
+  export takes the place of the Python attribute `mygramlot`, as the generated
+  `descriptor.js` files of gramlot-examples do.
+- The inventory `src/gramlot/collections/declared.json`, the Python function
+  `declared_collections()` (`gramlot.collection`), the build list `declaredNames`
+  (`js/scripts/build-runtime.mjs`) and the tuple `DECLARED`
+  (`scripts/generate_widget_reference.py`) name the core collections that a page
+  declares, after the Page attribute `gramlots`; they mirror `standard.json`,
+  `standard_collections()` and `standardNames`.
+- The bootstrap import map entry `@gramlot/gramlot/collections/<name>` repeats the
+  package export path of the descriptor; in the browser it points at the collection
+  module, as `@gramlot/gramlot/page` points at the runtime.
+- `collectionAssets()` (`@gramlot/gramlot/server`) replaces `standardCollectionAssets()`
+  without alias: it lists the entry files of every collection the core packages,
+  standard and declared, so a JS host serves a declared `typst` as Python reads it
+  from its package. The name drops the qualifier that no longer holds, following the
+  "Helper modules" row of §010 (named after what it holds). The generated inventory
+  `js/dist/declared-collections.js` with export `declaredCollections` follows
+  `dist/standard-collections.js` and `standardCollections`; it is internal.
+- The esbuild namespace `absent-package` and the table `absentPackages`
+  (`js/scripts/runtime-options.mjs`) follow the `shared-module` namespace and the
+  `sharedModules` table: named after what they hold.
+
+Chosen in implementation; the package export, `collectionAssets()`,
+`declared_collections()` and the import map entry are public API and wait for owner
+confirmation. gramlot-js-server applies the same
+`absentPackagePlugin` to the window runtime of its exports.

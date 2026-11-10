@@ -4,7 +4,8 @@
 standard collection to every site's Page base, in Python and JavaScript. Do not
 import `gramlot.collections.*` or repeat `gramlots = [...]` for these collections.
 Write component declarations directly. Explicit imports and collection declarations
-are for custom additions. A missing standard component is a server/package defect,
+are for custom additions and for `typst`, the core collection outside the standard
+set (§050). A missing standard component is a server/package defect,
 not a reason for a one-off page import. The packaged inventory drives grammar and
 bootstrap resources; it does not scan installed packages. External engines load on
 first use in hosted pages. File exports embed the required resource bytes.
@@ -116,6 +117,19 @@ does not activate it. Selection provides grammar and bootstrap resources; base
 Gramlot remains. The sample uses `searchbox(value='^.query', live=True)` and a
 paragraph sharing that Data path. A raw grammar document is not a prepared Page
 descriptor. Built-in prepared collections use the same selection shape.
+
+<a id="gc-340-050-typst"></a>
+`typst` (`typstPreview`, compiler WebAssembly about 41 MiB) is the core collection
+outside the standard set (owner, 2026-11-08, #84). A page declares it: Python
+`from gramlot.collections.typst import mygramlot as typst`, `gramlots = [typst]`;
+JS `import typst from '@gramlot/gramlot/collections/typst'`, `static gramlots =
+[typst]` (default export: the JS descriptor of the same artifact; in the browser the
+import map points the specifier at the collection module). Inventory:
+`collections/declared.json`; Python `declared_collections()` beside `standard_collections()`. Declarations
+accumulate along the class hierarchy. Python `IdePage` declares it. Hosts serve
+only the page graph: Python reads a declared collection from its package, JS hosts
+from `collectionAssets()` (`@gramlot/gramlot/server`, standard and declared core
+collections); exports carry the typst WebAssembly only for pages that declare it.
 
 `gramlot.getCollection(name)` returns the page's activated component collection,
 or `undefined`. Optional tools can pass that object to their own Gramlot instance

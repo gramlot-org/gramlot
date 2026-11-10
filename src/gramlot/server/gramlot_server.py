@@ -2,9 +2,13 @@
 
 from urllib.parse import quote
 from copy import deepcopy
-from ..collection import collection_graph, page_collections, standard_collections
+from ..collection import collection_graph, declared_collections, page_collections, standard_collections
 
+import asyncio
+import contextvars
+import functools
 import inspect
+import logging
 import json
 import math
 import secrets
@@ -20,9 +24,10 @@ from ..page.builder import GramlotBuilder
 from ..page.page_store import PageStore
 from ..page.name_syntax import NAME_SYNTAX
 from .assets import gramlot_dev
-from .files import THEMES, file_below
+from .files import LIBRARIES, THEMES, file_below
 from .resources import SEGMENT, InvalidResourceName, load_order
 from .upload import _UploadRegistry, _invoke
+from .terminal import TerminalSession
 
 
 class PageExpired(LookupError):
@@ -122,6 +127,11 @@ class GramlotServer:
 
     A page expires ``page_ttl`` seconds after its last use: opening it and every call that names
     it for its owner move the expiry to now plus ``page_ttl`` (GC-230 §010).
+
+    ``library_source`` says where the pages take the third-party libraries of the components:
+    ``"cdn"`` (jsDelivr, at the exact version of the manifest) or ``"local"`` (the copies served with the
+    collections). With ``"cdn"`` the import map of the bootstrap carries the integrity of each CDN module and
+    ``content_security_policy`` adds the CDN origin to the policy (GC-325 §160).
     """
 
     @property
@@ -132,7 +142,9 @@ class GramlotServer:
                  rpc_url="/gramlot/rpc", close_url="/gramlot/close",
                  root_id="gramlot-root",
                  page_ttl=1800, max_pages=1000, collections=(), css_theme="gramlot-base",
-                 websocket_url=None):
+                 websocket_url=None, library_source="cdn"):
+        if library_source not in ("cdn", "local"):
+            raise ValueError(f"The library source must be 'cdn' or 'local', not {library_source!r}")
         if css_theme is not False and not _theme_name(css_theme):
             raise ValueError(f"The base theme must be a theme name or False, not {css_theme!r}")
         try:
@@ -149,6 +161,7 @@ class GramlotServer:
         self._page_stores = {}
         self._database_access = None
         self._page_channels = {}
+        self._terminals = {}
         self.websocket_url = websocket_url
         self._uploads = None
         self.collections = collection_graph((*standard_collections(), *collections))
@@ -156,6 +169,31 @@ class GramlotServer:
         self._collection_documents = {}
         self._prepared_grammars = {}
         self.css_theme = css_theme
+        self.library_source = library_source
+        self.libraries = json.loads(LIBRARIES.read_text(encoding="utf-8"))
+
+    @property
+    def library_origins(self):
+        """The origins the pages load third-party libraries from: the CDN origin with ``"cdn"``, else none."""
+        if self.library_source == "local":
+            return ()
+        return tuple(dict.fromkeys("/".join(entry["url"].split("/")[:3])
+                                   for entry in self.libraries.values() if entry["url"] is not None))
+
+    def content_security_policy(self, policy, nonce):
+        """The ``Content-Security-Policy`` header of one page: ``policy`` with ``{nonce}`` replaced by the nonce
+        of its bootstrap and the library origins added to the directive that governs scripts (``script-src``,
+        else ``default-src``) and to the one that governs connections (``connect-src``, else ``default-src``);
+        a policy without such a directive leaves that kind unrestricted (GC-101 §140)."""
+        directives = [part.split() for part in policy.replace("{nonce}", nonce).split(";") if part.strip()]
+        names = [directive[0] for directive in directives]
+        for kind in ("script-src", "connect-src"):
+            name = kind if kind in names else "default-src" if "default-src" in names else None
+            if name is None:
+                continue
+            directive = directives[names.index(name)]
+            directive.extend(origin for origin in self.library_origins if origin not in directive)
+        return "; ".join(" ".join(directive) for directive in directives)
 
     def resolve_page(self, path):
         """Return the ``Page`` class of ``path``, or raise ``PageNotFound``."""
@@ -236,6 +274,70 @@ class GramlotServer:
         if page_id in self._page_channels:
             raise ValueError("Page already has a channel")
         self._page_channels[page_id] = send
+
+    async def open_terminal(self, page_id, session, *, send, owner, identity=None, host=None, client=None):
+        """Open the terminal session ``session`` of the page's store and run its ``@terminal`` method.
+
+        ``send`` is the adapter's async callable for output frames; ``host`` is the ``Host`` header of
+        the socket request and ``client`` the address of its peer. The returned ``TerminalSession`` takes the browser frames with ``receive``;
+        it closes when the method returns, when the page closes, or when the adapter calls
+        ``close_terminal``. The method runs in an empty context: the context variables of the caller
+        do not reach it. A page has one open session per name: opening the name again closes the
+        open one first.
+        """
+        store = self.page_store(page_id, owner=owner)
+        declared = resolve_declared(store, session, "__gramlot_terminal__") if self.name_syntax.matches(session) else None
+        if declared is None:
+            raise EndpointNotFound(f"Unknown terminal session: {session}")
+        instance, method = declared
+        if not inspect.iscoroutinefunction(method):
+            raise TypeError(f"Terminal session {session} must be an async method")
+        refused = self._auth_outcome(getattr(method, "__gramlot_terminal__")["auth"], owner, identity)
+        if refused is not None:
+            raise {OUTCOME_CODES[cls]: cls for cls in (NotAuthenticated, NotAuthorized)}[refused](
+                f"Access refused: {session}")
+        key = (page_id, session)
+        if key in self._terminals:
+            self.close_terminal(self._terminals[key][0])
+        terminal = TerminalSession(send, host=host, client=client)
+        # The method outlives the request that opens it: it runs in a context of its own, so context
+        # variables of the adapter's operation (a held lock, the current request) do not reach it.
+        task = asyncio.get_running_loop().create_task(
+            self._run_terminal(key, method.__get__(instance, type(instance)), terminal), context=contextvars.Context())
+        self._terminals[key] = (terminal, task)
+        return terminal
+
+    async def _run_terminal(self, key, function, terminal):
+        try:
+            await function(terminal)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logging.getLogger(__name__).exception("Terminal session %s failed", key[1])
+        finally:
+            terminal.close()
+            if self._terminals.get(key, (None,))[0] is terminal:
+                del self._terminals[key]
+
+    def close_terminal(self, terminal):
+        """Close ``terminal``, a session ``open_terminal`` returned, and cancel its method. A session
+        already closed is left as it is: its name may belong to a newer session of the page. It may be
+        called from another thread (``close_page`` from a worker): the close, the cancellation and
+        the removal of the name then run on the session's loop, the only thread that changes the
+        open sessions."""
+        terminal._on_loop(functools.partial(self._close_terminal, terminal))
+
+    def _close_terminal(self, terminal):
+        for key, record in list(self._terminals.items()):
+            if record[0] is terminal:
+                del self._terminals[key]
+                record[1].cancel()
+        terminal.close()
+
+    def _close_terminals(self, page_id=None):
+        for key, record in list(self._terminals.items()):
+            if page_id is None or key[0] == page_id:
+                self.close_terminal(record[0])
 
     def publish_to_page(self, topic, payload, *, source_page_id, page_id, owner):
         """Enqueue an event for a connected browser page of the source's owner."""
@@ -405,6 +507,7 @@ class GramlotServer:
         resources = load_order({**resolved, "css": [*self.theme_css(cls), *collection_css, *resolved["css"]]})
         collection_records = [{"name": c.name, "url": _prefixed(prefix, self.collection_url(c, c.module)),
                                "buildId": c.build_id} for c in selected]
+        declared = {c.name for c in declared_collections()}
         self._prune()
         if len(self._pages) >= self.max_pages:
             raise ServerCapacity("Page registry capacity reached")
@@ -444,7 +547,7 @@ class GramlotServer:
                                  if self.server_adapter is not None else {})}})
             runtime = _script_json(_prefixed(prefix, self.runtime_url))
             document = GramlotBuilder()
-            root = document.source.html()
+            root = document.source.html(**{"data-gramlot-library-source": self.library_source})
             head = root.head()
             head.meta(charset="utf-8")
             head.meta(name="viewport", content="width=device-width,initial-scale=1")
@@ -457,7 +560,13 @@ class GramlotServer:
                                                 "@gramlot/gramlot/components": _prefixed(prefix, self.runtime_url),
                                                 "@gramlot/gramlot/markdown": _prefixed(prefix, self.markdown_url),
                                                 **{"@gramlot/collections/" + quote(item["name"], safe="-_.!~*'()"):
-                                                   item["url"] for item in collection_records}}}),
+                                                   item["url"] for item in collection_records},
+                                                # A page module imports a declared core collection for gramlots.
+                                                **{"@gramlot/gramlot/collections/" + item["name"]: item["url"]
+                                                   for item in collection_records if item["name"] in declared}},
+                                    **({"integrity": {entry["url"]: entry["integrity"] for entry in self.libraries.values()
+                                                      if entry["url"] is not None and entry["format"] != "style"}}
+                                       if self.library_source == "cdn" else {})}),
                         type="importmap", nonce=nonce)
             body = root.body()
             body.div(id=self.root_id)
@@ -640,6 +749,7 @@ class GramlotServer:
         record = self._pages.get(page_id)
         if record is not None and record[2] == owner:
             del self._pages[page_id]
+            self._close_terminals(page_id)
             self._page_channels.pop(page_id, None)
             store = self._page_stores.pop(page_id, None)
             if store is not None:
@@ -648,6 +758,7 @@ class GramlotServer:
     def close_all(self):
         """Forget every registered page; adapters call it on shutdown."""
         self._pages = {}
+        self._close_terminals()
         self._page_channels.clear()
         for store in self._page_stores.values():
             store.close()
