@@ -199,6 +199,24 @@ test('seriesOptions travels as an address: the draw reads the options at the poi
     assert.equal(read(), replaced, 'a replacement at the address is read at the next draw');
 });
 
+test('chartPane configDefaults: a literal parentless Bag stays a parameter and fills the configuration', async t => {
+    const {window} = new JSDOM('<main id="gramlot-root"></main>');
+    layoutWindow(window);
+    window.ResizeObserver = class {observe() {} disconnect() {}};
+    t.mock.method(ChartRenderer.prototype, 'prepare', async () => {});
+    t.mock.method(ChartRenderer.prototype, 'resize', () => {});
+    t.mock.method(ChartRenderer.prototype, 'update', () => {});
+    const collections = [charts, inputs, layoutComponents, grid];
+    const app = new Gramlot({document:window.document, transport:false, collections, locale:'en-GB'});
+    t.after(() => {app.dispose(); window.close();});
+    const b = new GramlotBuilder(null, {collections});
+    b.root.div({height:'400px'}).chartPane({id:'literal', storepath:'sales', configpath:'literalConfig', rowMode:'attributes', configDefaults:new Bag({chartType:'pie'})});
+    app.src.startSource(b.toTytx()); await settle();
+    const literal = window.document.getElementById('literal');
+    assert.ok(literal.parameters.configDefaults instanceof Bag, 'a parentless Bag stays a parameter');
+    assert.equal(app.data.getItem('literalConfig.chartType'), 'pie');
+});
+
 test('chart fields and timeline leave an address without rows to the chart notice', async t => {
     const virtualConsole = new VirtualConsole(), uncaught = [];
     virtualConsole.on('jsdomError', error => uncaught.push(error.message));

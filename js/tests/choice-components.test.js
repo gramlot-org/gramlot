@@ -406,3 +406,14 @@ test('checkBoxText reads Bag values at the pointer address and keeps no subscrip
         assert.deepEqual(Object.keys(replacement._updSubscribers),[]);
     }
 });
+
+test('checkBoxText options bound to a Data Bag are never held: a replacement at the address is read', async t => {
+    const f=fixture(t,(r,a)=>{a.data.setItem('picked','a');a.data.setItem('lists.options',new Bag({a:null,b:null}));
+        r.checkBoxText({id:'bound',value:'^picked',values:'^lists.options'});});
+    await settle();const host=f.host('bound');
+    assert.equal(host.parameters.values,null,'a Data sub Bag is projected as null');
+    assert.deepEqual([...host.control.querySelectorAll('input')].map(input=>input.value),['a','b']);
+    f.app.data.setItem('lists.options',new Bag({a:null,c:null,d:null}));await settle();
+    assert.equal(host.parameters.values,null);
+    assert.deepEqual([...host.control.querySelectorAll('input')].map(input=>input.value),['a','c','d']);
+});

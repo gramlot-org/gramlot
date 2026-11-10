@@ -3213,6 +3213,14 @@ confirmed "ok". The name `_internal` is the owner's.
   node. SourcePicker receives the Source root and the path of the preview root
   (`source`, `path`) and resolves the root at each use; VisualEditorCanvas uses the
   design node only while mounting.
+- Held Bags (owner, 2026-11-10: "basta che non abbia parent. se ha parent significa
+  che sto passando una sub bag"): a parentless Bag, such as a Source-literal value
+  (chartPane `configDefaults`), may be held and copied. A dtype 'X' component
+  parameter whose value is a Bag with a parent is projected as null in the
+  renderer's resolved attributes, so `element.parameters`, the renderer record and
+  the ControlAdapter never hold it; the component reads it at its address. Grid
+  `edit` options follow the same rule with an explicit error. Python has no
+  runtime projection of component parameters.
 
 ### Derived values `_dv_` — owner, 2026-11-10
 
