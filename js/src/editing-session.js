@@ -193,7 +193,7 @@ export class EditingSession {
         delete node._internal.formDraft;
         // The record holds plain values and the component class; binding, context and checks are derived at each use.
         field = {component,run:new ValidationRun(),
-            path:fieldPath(node),rules:null,value:undefined,target:null,result:null,selection:null};
+            path:fieldPath(node),rules:null,value:undefined,result:null,selection:null};
         this.validations.set(fullpath,field);
         binding.editingSession = this;
         binding.track(() => this.forgetField(fullpath));
@@ -312,9 +312,11 @@ export class EditingSession {
         const resolved = this.validationParameters(node,field.component);
         const rules = Object.fromEntries(Object.entries(resolved).filter(([name]) => name.startsWith('validate_')));
         const configuration = toTytx(Object.fromEntries(Object.entries(resolved).filter(([name]) => name !== 'value')));
-        const path = fieldPath(node), target = this.runtime.gramlot.data.getNode(path.split('?')[0]);
+        // The field is compared by its Data path and value: a new node at the same path with the same value
+        // (a reloaded row) keeps the validation result and the draft.
+        const path = fieldPath(node);
         const value = node.getRelativeData(node.getAttr('value'));
-        const dataChanged = field.path !== path || field.target !== target || !same(field.value,value);
+        const dataChanged = field.path !== path || !same(field.value,value);
         if (!dataChanged && field.configuration === configuration) return;
         if (field.rules !== null) this.invalidateValidation();
         this.cancelValidation(node);
@@ -325,7 +327,7 @@ export class EditingSession {
             }
         }
         // A null selection is derived from the current parameters at validation time.
-        Object.assign(field,{path,target,value,rules,configuration,result:null,selection:null});
+        Object.assign(field,{path,value,rules,configuration,result:null,selection:null});
         if (dataChanged) this.clearDraft(node);
         if (schedule) this.scheduleField(node);
     }
@@ -342,7 +344,6 @@ export class EditingSession {
         const field = this.validations.get(node.fullpath);
         if (field) {
             field.value = node.getRelativeData(node.getAttr('value'));
-            field.target = this.runtime.gramlot.data.getNode(field.path.split('?')[0]);
         }
         for (const other of this.validations.keys()) if (other !== node.fullpath) this.refreshField(this.fieldNode(other));
     }
@@ -382,11 +383,11 @@ export class EditingSession {
         const component = field.component, context = validationContext(binding);
         const selection = field.selection ?? component.validationSelection(this.validationParameters(node,component),context);
         const checkValue = component.validationValueCheck(context);
-        const target = field.target;
+        const path = field.path;
         const current = context.validationCurrent();
         return field.run.start(value,field.rules,{...context,
             validationCurrent:() => () => !this.disposed && current() && this.validations.get(fullpath) === field
-                && this.runtime.gramlot.data.getNode(field.path.split('?')[0]) === target,
+                && field.path === path,
             selection
         },component.validationExecutor,outcome => {
             const node = this.fieldNode(fullpath);

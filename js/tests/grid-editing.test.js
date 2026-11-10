@@ -83,6 +83,18 @@ test('grid changes include attribute originals and returning to baseline removes
     assert.equal(change.getItem('currentAttributes.amount'),9);
     f.edit(editor,'1',true);await tick();assert.equal(session.status.dirty,false);
 });
+test('a row reloaded with a new node at the same path keeps its invalid draft and error',async t=>{
+    const f=await fixture(t);const editor=await f.open();
+    f.edit(editor,'-',true);await tick();const session=f.source.formState;
+    const path='record.rows.r0.amount', before=f.app.data.getNode(path);
+    assert.equal(session.fieldStatus(path).draft,'-');
+    f.rows.setItem('r0',new Bag({name:'Item 0',amount:1}));await tick();await tick();
+    assert.notEqual(f.app.data.getNode(path),before);
+    assert.equal(session.fieldStatus(path).draft,'-');
+    assert.equal(session.registers.getItem('drafts').length,1);
+    assert.equal(session.registers.getItem('errors').length,1);
+    assert.equal(session.status.valid,false);
+});
 test('removing a row clears its suspended drafts/errors, while restore resets the whole shared scope',async t=>{
     const f=await fixture(t,{form:true});const editor=await f.open();f.edit(editor,'-',true);await tick();await f.scroll(500);
     f.rows.popNode('r0');await tick();await tick();
