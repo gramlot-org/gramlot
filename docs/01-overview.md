@@ -81,7 +81,9 @@ framework implementation.
 The provisional example runner had a bounded owner-approved exception (constitution
 11.44): its local JavaScript attached behavior through ordinary HTML IDs and used
 existing Source/Bag/lifecycle APIs. The runner left the core with amendment 11.56;
-the example pages and their gallery live in `gramlot-examples`. Future web
+the general example pages and their gallery live in `gramlot-examples`. Small
+interactive examples owned by a core guide live beside that guide (owner,
+2026-11-10). Future web
 components require separate approval.
 
 ## 5. Server and database adapters
@@ -136,7 +138,8 @@ configure and try Gramlot:
   (Node.js and Bun), `@gramlot/gramlot-serverless` (browser/Worker standalone,
   without a server) and `@gramlot/create` (new projects).
 
-The example pages and their gallery are in `gramlot-examples`; each environment
+The general example pages and their gallery are in `gramlot-examples`; bounded
+interactive documentation examples stay with their guides. Each environment
 serves them with its gallery command. The earlier repositories `gramlot-uvicorn`,
 `gramlot-django`, `gramlot-fastapi`, `gramlot-flask`, `gramlot-kajenn` (formerly
 `gramlot-genro-asgi`), `gramlot-serverless` (the old repository; the current package `@gramlot/gramlot-serverless`
