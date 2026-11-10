@@ -59,6 +59,19 @@ test('strings remain literal, incoming Source stays in Data and removal releases
     button.control.click();assert.equal(app.data.getNode('chat.messageData.m_b'),null);
     app.dispose();
 });
+test('a message Source changed in place renders again; an unchanged one keeps its DOM',()=>{
+    const {app,log,messages}=fixture();
+    messages.setItem('m_a',fragment(),{role:'assistant',author:'Assistant'});
+    messages.setItem('m_b','two',{role:'user',author:'You'});
+    const [first,second]=log.querySelectorAll('article');
+    const source=messages.getItem('m_a');
+    source.getNodes().find(node=>node.attr['data-count']).setValue('changed in place');
+    const articles=log.querySelectorAll('article');
+    assert.notEqual(articles[0],first);assert.equal(articles[1],second);
+    assert.equal(articles[0].querySelector('[data-count]').textContent,'changed in place');
+    assert.equal(messages.getItem('m_a'),source);
+    app.dispose();
+});
 test('requests use Data only; completion correlates IDs and preserves a newer draft',()=>{
     const {app}=fixture();
     const node=app.src.source.getNode('main').value.getNodes()[0];
