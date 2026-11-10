@@ -97,15 +97,16 @@ export function chatCompleted(page,node,{response}) {
 }
 
 
-const composerLayouts = new WeakMap();
+// The composer layout lives on the composer body element it measures; the symbol is a constant key.
+const COMPOSER_LAYOUT = Symbol('chat composer layout');
 /** Shared geometry: grow with wrapped text and content, cap the editor, release observers. */
 export function chatResize(page,node) {
     const source=node.parentNode;
-    let layout=composerLayouts.get(source);
+    const body=page.dom.getDomNode(source);
+    // Data setters can notify before mounting; _onBuilt installs the layout.
+    if(!body)return;
+    let layout=body[COMPOSER_LAYOUT];
     if(!layout) {
-        const body=page.dom.getDomNode(source);
-        // Data setters can notify before mounting; _onBuilt installs the layout.
-        if(!body)return;
         const composer=body.closest('[data-chat-composer]');
         const editor=body.querySelector('textarea');
         const top=composer.querySelector('[data-chat-top]');
@@ -126,8 +127,8 @@ export function chatResize(page,node) {
         const schedule=()=>{if(active&&!frame)frame=win.requestAnimationFrame(measure);};
         const observer=new win.ResizeObserver(schedule);
         for(const element of [body,top,toolbar]) observer.observe(element);
-        page.src.renderer.onDispose(source,()=>{active=false;observer.disconnect();if(frame)win.cancelAnimationFrame(frame);composerLayouts.delete(source);});
-        layout={schedule};composerLayouts.set(source,layout);
+        page.src.renderer.onDispose(source,()=>{active=false;observer.disconnect();if(frame)win.cancelAnimationFrame(frame);delete body[COMPOSER_LAYOUT];});
+        layout=body[COMPOSER_LAYOUT]={schedule};
     }
     layout.schedule();
 }

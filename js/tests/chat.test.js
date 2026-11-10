@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
-import {Gramlot, GramlotBuilder, Bag, chatRender, chatSend, chatCompleted, chatReset, chatPickAttachments} from '../src/index.js';
+import {Gramlot, GramlotBuilder, Bag, chatRender, chatSend, chatCompleted, chatReset, chatResize, chatPickAttachments} from '../src/index.js';
 import chat from '../src/components/chat.js';
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
 function fixture() {
@@ -177,4 +177,32 @@ test('file chooser uses mounted Source lifecycle, validates text, handles cancel
     window.HTMLInputElement.prototype.click=function(){};
     const waiting=chatPickAttachments(app,controller);app.src.source.popNode('main');await waiting;
     assert.equal(window.document.querySelector('input[type=file]'),null);app.dispose();
+});
+
+test('composer resize keeps its layout on the composer body, measures on change and releases its observer',async()=>{
+    const {window}=new JSDOM('<main id="gramlot-root"></main>',{pretendToBeVisual:true});
+    const observers=[];
+    window.ResizeObserver=class {constructor(callback){this.callback=callback;this.observed=[];this.disconnected=false;observers.push(this);}
+        observe(element){this.observed.push(element);} disconnect(){this.disconnected=true;}};
+    const app=new Gramlot({document:window.document,transport:false,collections:[chat]});
+    class Logic { resize(node){chatResize(this.page,node);} }
+    app.src.logicRegistry.register(Logic,{resource:'chat-resize-test'});
+    const builder=new GramlotBuilder(null,{collections:[chat]});
+    const composer=builder.root.div({datapath:'chat','data-chat-composer':true});
+    composer.div({'data-chat-top':true});
+    const body=composer.div({node_label:'body',id:'body'});
+    body.textarea({value:'^.draft'});
+    body.dataController({func:'resize',draft:'^.draft',_onBuilt:true});
+    composer.div({'data-chat-toolbar':true});
+    app.src.startSource(builder.toTytx());
+    const frame=()=>new Promise(resolve=>window.requestAnimationFrame(()=>resolve()));
+    await frame();await frame();
+    assert.equal(observers.length,1);
+    assert.equal(observers[0].observed.length,3);
+    assert.equal(typeof app.data.getItem('chat.composerHeight'),'number');
+    app.data.setItem('chat.draft','more text');await frame();await frame();
+    assert.equal(observers.length,1,'one layout per composer body');
+    app.src.source.popNode('main');
+    assert.equal(observers[0].disconnected,true);
+    app.dispose();window.close();
 });
