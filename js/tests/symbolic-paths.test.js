@@ -16,7 +16,7 @@ function page() {
 }
 
 function build(parent, items) {
-    for (const item of items) build(parent.div({node_label: item.label, ...(item.attrs ?? {})}), item.children ?? []);
+    for (const item of items) build(parent[item.tag ?? 'div']({node_label: item.label, ...(item.attrs ?? {})}), item.children ?? []);
 }
 
 /** Paths registered by the NodeBinding of `node`. */

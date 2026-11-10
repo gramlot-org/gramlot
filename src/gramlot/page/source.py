@@ -66,6 +66,8 @@ class GramlotBuilderBagNode(SourceBagNode):
         if self.pointer_type(path):
             transform = pointer_transform(path)
             bare = (transform[0] if transform else path)[1:]
+        if bare.startswith("#") and bare.count("?") > 1:
+            raise ValueError(f"a symbolic path has one ?attr suffix at most: {path}")
         if bare == "#ROW" or bare.startswith(("#ROW.", "#ROW?")):
             return self._row_datapath(bare, row, path)
         return super().abs_datapath(path)
@@ -204,7 +206,8 @@ class GramlotBuilderBagNode(SourceBagNode):
             elif symbol == "ANCHOR":
                 node = self._find_marked_datapath_ancestor(form=False, anchor=True, raw=raw)
             else:
-                builder = self._resolve_builder()
+                # The whole page, as the JS runtime nodeId map: not the local dialect builder of an <svg> subtree.
+                builder = self.root_builder
                 if builder is None:
                     raise KeyError(f"#<id>: cannot resolve {raw} on a node without builder")
                 node = builder.source.get_node_by_attr("nodeId", symbol)

@@ -541,6 +541,7 @@ export class GramlotBuilderBagNode extends SourceBagNode {
     absDatapath(path, {row = null} = {}) {
         path = pointerTransform(path)?.pointer ?? path;
         const bare = this.pointerType(path) ? path.slice(1) : path;
+        if (bare.startsWith('#') && bare.indexOf('?') !== bare.lastIndexOf('?')) throw new Error(`a symbolic path has one ?attr suffix at most: ${path}`);
         if (bare === '#ROW' || bare.startsWith('#ROW.') || bare.startsWith('#ROW?')) return this.#rowDatapath(bare, row, path);
         if (bare.startsWith('#') && bare.includes('?')) {
             const [target, attr] = bare.split('?', 2);

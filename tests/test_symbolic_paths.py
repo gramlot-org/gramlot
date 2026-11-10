@@ -12,7 +12,7 @@ FIXTURE = json.loads((Path(__file__).parent / "fixtures" / "symbolic_paths.json"
 
 def build(parent, items):
     for item in items:
-        node = parent.div(node_label=item["label"], **item.get("attrs", {}))
+        node = getattr(parent, item.get("tag", "div"))(node_label=item["label"], **item.get("attrs", {}))
         build(node, item.get("children", []))
 
 

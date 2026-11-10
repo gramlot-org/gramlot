@@ -176,7 +176,8 @@ decisions from unified-plan §2.
   effect. Corrects the P15 clause. S05: existing, default-created, absent, pointer.
 - Symbolic paths (superseded 2026-11-08, plan symbolic-references d-symbols: all legacy symbols):
   GramlotBuilderBagNode JS and Python, shared cases tests/fixtures/symbolic_paths.json; order
-  #ROW, #WORKSPACE, #DATA, start node. #parent, #FORM, #ANCHOR, #<nodeId>, ?attr kept.
+  #ROW, #WORKSPACE, #DATA, start node. #parent, #FORM, #ANCHOR, #<nodeId> (whole page, also
+  from an <svg> subtree), ?attr kept, at most one (a second ? is an error).
   #WORKSPACE → _gramlot.workspace.<name> of nearest _workspace owner (string, else nodeId, else
   <tag>_<stringHash(fullpath)>); _workspace_path replaces the area. #ROW only with a row context
   (absDatapath(path,{row}) / abs_datapath(path,row=)): <storepath>.<key>[.field] or ?field in

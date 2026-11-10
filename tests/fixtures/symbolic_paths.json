@@ -1,5 +1,5 @@
 {
-  "doc": "Symbolic datapaths: one Source tree and one table of resolutions, run by tests/test_symbolic_paths.py and js/tests/symbolic-paths.test.js. Every node is a div; `node` is the label path of the resolving node; `row` is the #ROW context; a case has `expect` or `error` (a message fragment).",
+  "doc": "Symbolic datapaths: one Source tree and one table of resolutions, run by tests/test_symbolic_paths.py and js/tests/symbolic-paths.test.js. Every node is a div unless it has `tag`; `node` is the label path of the resolving node; `row` is the #ROW context; a case has `expect` or `error` (a message fragment).",
   "tree": [
     {"label": "page", "attrs": {"datapath": "pg", "nodeId": "pg"}, "children": [
       {"label": "form", "attrs": {"datapath": ".f1", "formId": "outer"}, "children": [
@@ -25,6 +25,7 @@
         {"label": "found", "attrs": {"childname": "nested", "datapath": ".nesteddata"}}
       ]}
     ]},
+    {"label": "pic", "children": [{"label": "svg", "tag": "svg", "children": [{"label": "dot", "tag": "circle"}]}]},
     {"label": "grid", "attrs": {"datapath": "gr", "storepath": ".rows", "rowMode": "values"}, "children": [{"label": "cell"}]},
     {"label": "agrid", "attrs": {"storepath": "arows", "rowMode": "attributes"}, "children": [{"label": "acell"}]},
     {"label": "nogrid", "attrs": {"storepath": "x"}, "children": [{"label": "ncell"}]}
@@ -51,6 +52,8 @@
     {"node": "box.region.bleaf", "path": "#panel/nested.v", "expect": "boxdata.nesteddata.v"},
     {"node": "box.region.bleaf", "path": "#panel/top/parent.v", "expect": "boxdata.v"},
     {"node": "box.region.bleaf", "path": "#panel/hidden.v", "error": "no child 'hidden'"},
+    {"node": "pic.svg.dot", "path": "#panel.x", "expect": "boxdata.x"},
+    {"node": "pic.svg.dot", "path": "#panel/top.v?x", "expect": "boxdata.topdata.v?x"},
     {"node": "box.region.bleaf", "path": "#/inner.v", "expect": "boxdata.topdata.innerdata.v"},
     {"node": "box.region.bleaf", "path": "#/inner.v?x", "expect": "boxdata.topdata.innerdata.v?x"},
     {"node": "anchor.a1.aleaf", "path": "#/top.v", "error": "#/: no ancestor with a nodeId"},
@@ -58,6 +61,9 @@
     {"node": "page.form.rec.field", "path": "^#DATA.a.b?x", "expect": "a.b?x"},
     {"node": "page.form.rec.field", "path": "#DATA", "error": "#DATA requires a path"},
     {"node": "grid.cell", "path": "#ROW.price", "row": "r1", "expect": "gr.rows.r1.price"},
+    {"node": "grid.cell", "path": "#ROW.price?a?b", "row": "r1", "error": "one ?attr suffix at most"},
+    {"node": "agrid.acell", "path": "#ROW?a?b", "row": "r1", "error": "one ?attr suffix at most"},
+    {"node": "page.form.rec.field", "path": "#DATA.a?b?c", "error": "one ?attr suffix at most"},
     {"node": "grid.cell", "path": "=#ROW", "row": "r1", "expect": "gr.rows.r1"},
     {"node": "grid.cell", "path": "=#ROW.price?fmt", "row": "r1", "expect": "gr.rows.r1.price?fmt"},
     {"node": "grid", "path": "#ROW.price", "row": "r2", "expect": "gr.rows.r2.price"},
