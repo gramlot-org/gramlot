@@ -8,6 +8,20 @@ const FORMULA_PARAMETER = /^formula_[A-Za-z_$][\w$]*$/;
 const GROUP_KEYS = new Set(['tag', 'code', 'name', 'background', 'color']);
 
 /**
+ * A Bag among the editor options of `edit` is used as is only when it is independent: a Bag with a parent
+ * is a sub Bag of other data, which a column reaches by its path (`storepath` or a `^` pointer), never by
+ * holding it. Plain objects and arrays among the options are checked through, Bags are not entered.
+ */
+function requireIndependentBags(value, key) {
+    if (value instanceof Bag) {
+        if (value.parent || value.parentNode) throw new TypeError(`grid edit option ${key} holds a Bag with a parent; pass its path (storepath or a ^ pointer) instead`);
+    } else if (Array.isArray(value)) value.forEach((item, index) => requireIndependentBags(item, `${key}[${index}]`));
+    else if (value !== null && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype) {
+        for (const [name, item] of Object.entries(value)) requireIndependentBags(item, `${key}.${name}`);
+    }
+}
+
+/**
  * Legacy Data contract: ordered cells and independent columnset definitions. The model keeps plain
  * values and the cell key (label) of each field, never struct nodes; with its Data address
  * (`data`, the page Data root, and `path`, the absolute struct path) it writes the struct by path.
@@ -57,6 +71,7 @@ export class GridStructure {
             if (attrs.white_space != null && !['normal','nowrap','pre-wrap'].includes(attrs.white_space)) throw new TypeError('grid white_space requires normal, nowrap or pre-wrap');
             for (const key of ['name', 'title', 'format']) if (attrs[key] != null && typeof attrs[key] !== 'string') throw new TypeError(`grid ${key} must be text`);
             if (attrs.edit != null && typeof attrs.edit !== 'boolean' && (typeof attrs.edit !== 'object' || Array.isArray(attrs.edit))) throw new TypeError('grid edit requires a boolean or editor options');
+            if (attrs.edit != null && typeof attrs.edit === 'object') for (const [key, value] of Object.entries(attrs.edit)) requireIndependentBags(value, key);
             if (attrs.check != null || attrs.checked != null || attrs.checkedField != null) {
                 if (!['multiple','single'].includes(attrs.check) || typeof attrs.checked !== 'string' ||
                     !attrs.checked.startsWith('^') || attrs.checked.length < 2 || attrs.checked.includes('?')) {

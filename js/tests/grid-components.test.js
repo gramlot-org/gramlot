@@ -422,6 +422,19 @@ test('struct rejects unknown attributes, duplicate fields and nested groups', ()
     assert.throws(() => new GridStructure(nested), /Unsupported|scalar declaration/);
 });
 
+test('a Bag among the edit options is accepted only without a parent', () => {
+    const independent = new Bag({a:'Alpha', b:'Beta'});
+    const accepted = struct(); accepted.getNode('view_0.rows_0.code').setAttr({edit:{tag:'filteringSelect', values:independent}});
+    const structure = new GridStructure(accepted);
+    assert.equal(structure.columns.find(column => column.field === 'code').edit.values, independent);
+    // Page Data keeps back references, so a sub Bag knows its parent.
+    const data = new Bag({choices:new Bag({a:'Alpha'})}); data.setBackref(); const sub = data.getItem('choices');
+    const owned = struct(); owned.getNode('view_0.rows_0.code').setAttr({edit:{tag:'filteringSelect', values:sub}});
+    assert.throws(() => new GridStructure(owned), /edit option values holds a Bag with a parent; pass its path/);
+    const nested = struct(); nested.getNode('view_0.rows_0.code').setAttr({edit:{config:{list:[sub]}}});
+    assert.throws(() => new GridStructure(nested), /edit option config\.list\[0\] holds a Bag with a parent/);
+});
+
 test('invalid inline structure is rejected before preceding Data setters run', t => {
     const {window} = new JSDOM('<main id="gramlot-root"></main>');
     const layout = layoutWindow(window);
