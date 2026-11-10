@@ -25,7 +25,7 @@ A Gramlot page has **Data**: the values the page works with.
 Use `^` to connect an interface element to a Data value:
 
 ```python
-root.input(value="^example.name", lbl="Name")
+root.input(value="^example.name", lbl="Name", lbl_position="L")
 root.div("^example.name", lbl="Your name", lbl_variant="card",
          font_size="24px", text_align="center")
 ```
@@ -44,9 +44,9 @@ A formula declares a value derived from other values. For example, the area of a
 
 ```python
 root.input(type="number", value="^triangle.base",
-           lbl="Base", default=8)
+           lbl="Base", lbl_position="L", default=8)
 root.input(type="number", value="^triangle.height",
-           lbl="Height", default=6)
+           lbl="Height", lbl_position="L", default=6)
 
 root.dataFormula(
     "triangle.area", "base * height / 2",
@@ -95,7 +95,7 @@ First, add a field for the color:
 
 ```python
 root.input(type="color", value="^triangle.color",
-           lbl="Color", default="#3366cc")
+           lbl="Color", lbl_position="L", default="#3366cc")
 ```
 
 Then describe the polygon. Here `panel` is the container used for the illustration:
@@ -211,11 +211,11 @@ class Page(BasePage):
 
 ```python
 def triangle(pane, base, height, color):
-    pane.input(type="number", value="^.base", lbl="Base",
+    pane.input(type="number", value="^.base", lbl="Base", lbl_position="L",
                default=base, min=0, max=10, step=1)
-    pane.input(type="number", value="^.height", lbl="Height",
+    pane.input(type="number", value="^.height", lbl="Height", lbl_position="L",
                default=height, min=0, max=10, step=1)
-    pane.input(type="color", value="^.color", lbl="Color", default=color)
+    pane.input(type="color", value="^.color", lbl="Color", lbl_position="L", default=color)
 
     pane.dataFormula(
         ".area", "base * height / 2",
