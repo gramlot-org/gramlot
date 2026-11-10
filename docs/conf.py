@@ -23,6 +23,10 @@ html_title = "Gramlot — developer guide"
 html_show_sourcelink = False
 html_static_path = ["docs/_static"]
 html_css_files = ["manual.css"]
+# Translations: English is the source; Read the Docs sets `language` per project.
+locale_dirs = ["locale/"]
+gettext_compact = False
+gettext_uuid = False
 
 
 def hide_reference_metadata(app, doctree):

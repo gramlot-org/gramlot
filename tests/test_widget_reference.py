@@ -141,3 +141,60 @@ def test_reviewed_behavior_covers_the_packaged_inventory_and_stays_out_of_exampl
                 assert f'**{label}.**' in section
         for evidence in (*record['sources'], *record['tests']):
             assert (ROOT / evidence).is_file(), (widget, evidence)
+
+
+# Ordinary Source and style attributes every element accepts (GC-097 §070, GC-096).
+SOURCE_ATTRIBUTES = {'datapath', 'nodeId', 'id', 'class', 'class_', 'style', 'hidden', 'visible', 'color',
+                     'width', 'height', 'margin', 'padding', 'border', 'display', 'rounded',
+                     'shadow', 'transform', 'filter', 'transition', 'zoom', 'gradient', 'overflow',
+                     'title', 'tabindex', 'role', 'lang', 'dir'}
+SOURCE_PREFIXES = ('box_', 'lbl_', 'style_', 'background_', 'font_', 'margin_', 'padding_',
+                   'border_', 'flex_', 'min_', 'max_', 'data_', 'data-', 'aria_', 'connect_on',
+                   'splitter_', 'drawer_')
+# Child attributes read by their parent but missing from its childParameters metadata:
+# border regions (border-container.js), selected panels (selected-container.js) and the
+# toolbar target (menu-command.js). Remove each name once the metadata declares it.
+UNDECLARED_CHILD_ATTRIBUTES = {'splitter', 'drawer', 'minSize', 'maxSize', 'closable', 'icon',
+                               'badge', 'badge_color', 'disabled', 'frameTarget'}
+
+
+@pytest.mark.parametrize('path', sorted(reference.GUIDES.glob('*.md')), ids=lambda path: path.stem)
+def test_authored_collection_pages_link_every_component_and_build_their_examples(path):
+    number, collection = path.stem.split('-', 1)
+    assert collection in reference.COLLECTIONS
+    text = path.read_text()
+    grammar = packaged_collections()[collection]
+    for name, element in grammar['elements'].items():
+        if (element.get('_meta') or {}).get('gramlot_component') is None:
+            continue
+        assert f'id="gc-{number}-{name.lower()}"' in text, name
+        assert f'345-widget-reference.md#gc-345-{name.lower()}' in text, name
+    grammars = [grammar for name, grammar in packaged_collections().items() if name != 'buttons']
+    for code in re.findall(r'```python\n(.*?)```', text, re.S):
+        builder = GramlotBuilder(collections=grammars)
+        scope = {'root': builder.root, 'form': builder.root.div(datapath='form')}
+        exec(compile(code, f'<{path.name}>', 'exec'), scope)
+        if 'main' in scope:
+            scope['main'](None, builder.root)
+        assert builder.to_tytx()
+        # The builder accepts any keyword: check each example against the component metadata,
+        # the child parameters its parent declares and the ordinary Source attributes (GC-097 §070).
+        # Only components the example calls itself: helpers such as ChatPane own their nodes.
+        called = set(re.findall(r'\.(\w+)\(', code))
+        nodes = dict(builder.root._iter_nodes_with_paths())
+        for path_, node in nodes.items():
+            meta = (node.attr.get('_meta') or {}).get('gramlot_component')
+            if meta is None or node.node_tag not in called:
+                continue
+            parent = nodes.get(path_.rpartition('.')[0])
+            parent_meta = ((parent.attr.get('_meta') or {}).get('gramlot_component') or {}) if parent else {}
+            child_parameters = parent_meta.get('childParameters', {})
+            for attribute, value in node.attr.items():
+                if (attribute in ('_meta', '_text') or attribute in child_parameters
+                        or attribute in SOURCE_ATTRIBUTES or attribute in UNDECLARED_CHILD_ATTRIBUTES
+                        or attribute.startswith(SOURCE_PREFIXES)):
+                    continue
+                spec = meta['parameters'].get(attribute)
+                assert spec is not None, (path.name, node.label, attribute)
+                if 'enum' in spec and not str(value).startswith('^'):
+                    assert value in spec['enum'], (path.name, node.label, attribute, value)

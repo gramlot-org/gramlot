@@ -1,0 +1,281 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, Gramlot contributors
+# This file is distributed under the same license as the Gramlot package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Gramlot\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-09 15:28+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: it <LL@li.org>\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../docs-source/docs/public/510-data-and-binding.md:1
+msgid "Data and binding"
+msgstr "Data e binding"
+
+#: ../docs-source/docs/public/510-data-and-binding.md:5
+msgid ""
+"Every page has one Data tree. Elements point at its values with short "
+"strings called **pointers**. This page covers what you need in every page; "
+"every option is in the [Data and logic reference](515-data-and-logic-"
+"reference.md)."
+msgstr ""
+"Ogni pagina ha un solo albero Data. Gli elementi puntano ai suoi valori con "
+"brevi stringhe chiamate **puntatori**. Qui trovi ciò che serve in ogni "
+"pagina; tutte le opzioni sono nella [reference di Data e logica](515-data-"
+"and-logic-reference.md) (in inglese)."
+
+#: ../docs-source/docs/public/510-data-and-binding.md:9
+msgid "<a id=\"gc-510-005\"></a>"
+msgstr ""
+
+#: ../docs-source/docs/public/510-data-and-binding.md:11
+msgid "005 · Paths and `datapath`"
+msgstr "005 · Percorsi e `datapath`"
+
+#: ../docs-source/docs/public/510-data-and-binding.md:15
+msgid ""
+"A Data path is a dotted name: `customer.name`. A path that starts with a dot"
+" is **relative** to the nearest `datapath` above it."
+msgstr ""
+"Un percorso Data è un nome puntato: `customer.name`. Un percorso che inizia "
+"con un punto è **relativo** al `datapath` più vicino sopra di lui."
+
+#: ../docs-source/docs/public/510-data-and-binding.md:24
+msgid ""
+"Give two panels different `datapath` values and they keep separate values."
+msgstr "Due pannelli con `datapath` diversi tengono valori separati."
+
+#: ../docs-source/docs/public/510-data-and-binding.md:26
+msgid "<a id=\"gc-510-010\"></a>"
+msgstr ""
+
+#: ../docs-source/docs/public/510-data-and-binding.md:28
+msgid "010 · Three kinds of pointer"
+msgstr "010 · Tre tipi di puntatore"
+
+#: ../docs-source/docs/public/510-data-and-binding.md
+msgid "You write"
+msgstr "Scrivi"
+
+#: ../docs-source/docs/public/510-data-and-binding.md
+msgid "It means"
+msgstr "Significa"
+
+#: ../docs-source/docs/public/510-data-and-binding.md
+msgid "`'^.name'`"
+msgstr ""
+
+#: ../docs-source/docs/public/510-data-and-binding.md
+msgid "Read `name` and **follow** it: update when it changes."
+msgstr "Legge `name` e lo **segue**: si aggiorna quando cambia."
+
+#: ../docs-source/docs/public/510-data-and-binding.md
+msgid "`'=.name'`"
+msgstr ""
+
+#: ../docs-source/docs/public/510-data-and-binding.md
+msgid "Read `name` once, when needed, without following it."
+msgstr "Legge `name` una volta, quando serve, senza seguirlo."
+
+#: ../docs-source/docs/public/510-data-and-binding.md
+msgid "`'==a + b'`"
+msgstr ""
+
+#: ../docs-source/docs/public/510-data-and-binding.md
+msgid "Compute a JavaScript expression in the browser."
+msgstr "Calcola un'espressione JavaScript nel browser."
+
+#: ../docs-source/docs/public/510-data-and-binding.md:38
+msgid ""
+"Use `^` almost everywhere. Use `=` to pass a value to code without "
+"triggering it."
+msgstr ""
+"Usa `^` quasi ovunque. Usa `=` per passare un valore al codice senza farlo "
+"scattare."
+
+#: ../docs-source/docs/public/510-data-and-binding.md:40
+msgid "<a id=\"gc-510-015\"></a>"
+msgstr ""
+
+#: ../docs-source/docs/public/510-data-and-binding.md:42
+msgid "015 · Fields write back"
+msgstr "015 · I campi riscrivono i valori"
+
+#: ../docs-source/docs/public/510-data-and-binding.md:46
+msgid ""
+"A field bound with `value='^.name'` shows the value **and** writes the "
+"user's edit into the Data."
+msgstr ""
+"Un campo legato con `value='^.name'` mostra il valore **e** scrive nei Data "
+"la modifica dell'utente."
+
+#: ../docs-source/docs/public/510-data-and-binding.md:49
+msgid "By default it writes when the field loses focus or the user confirms."
+msgstr "Di default scrive quando il campo perde il focus o l'utente conferma."
+
+#: ../docs-source/docs/public/510-data-and-binding.md:50
+msgid "`live=True` writes at every keystroke."
+msgstr "`live=True` scrive a ogni tasto."
+
+#: ../docs-source/docs/public/510-data-and-binding.md:51
+msgid ""
+"A checkbox writes `true` or `false`; a number field writes a number or null."
+msgstr ""
+"Una checkbox scrive `true` o `false`; un campo numerico scrive un numero o "
+"null."
+
+#: ../docs-source/docs/public/510-data-and-binding.md:53
+msgid "<a id=\"gc-510-020\"></a>"
+msgstr ""
+
+#: ../docs-source/docs/public/510-data-and-binding.md:55
+msgid "020 · Initial values"
+msgstr "020 · Valori iniziali"
+
+#: ../docs-source/docs/public/510-data-and-binding.md:59
+msgid "Most values arrive from the server. For the rest:"
+msgstr "La maggior parte dei valori arriva dal server. Per il resto:"
+
+#: ../docs-source/docs/public/510-data-and-binding.md:66
+msgid ""
+"A `default` never overwrites an existing value, not even `0`, `False` or "
+"`\"\"`."
+msgstr ""
+"Un `default` non sovrascrive mai un valore esistente, nemmeno `0`, `False` o"
+" `\"\"`."
+
+#: ../docs-source/docs/public/510-data-and-binding.md:68
+msgid "<a id=\"gc-510-025\"></a>"
+msgstr ""
+
+#: ../docs-source/docs/public/510-data-and-binding.md:70
+msgid "025 · Computing and reacting"
+msgstr "025 · Calcolare e reagire"
+
+#: ../docs-source/docs/public/510-data-and-binding.md
+msgid "Need"
+msgstr "Ti serve"
+
+#: ../docs-source/docs/public/510-data-and-binding.md
+msgid "Declaration"
+msgstr "Dichiarazione"
+
+#: ../docs-source/docs/public/510-data-and-binding.md
+msgid "A value computed from others"
+msgstr "Un valore calcolato da altri"
+
+#: ../docs-source/docs/public/510-data-and-binding.md
+msgid "`dataFormula`"
+msgstr ""
+
+#: ../docs-source/docs/public/510-data-and-binding.md
+msgid "Run code when a value changes"
+msgstr "Eseguire codice quando un valore cambia"
+
+#: ../docs-source/docs/public/510-data-and-binding.md
+msgid "`dataController`"
+msgstr ""
+
+#: ../docs-source/docs/public/510-data-and-binding.md
+msgid "Run code on a click"
+msgstr "Eseguire codice a un clic"
+
+#: ../docs-source/docs/public/510-data-and-binding.md
+msgid "a `dataController` inside a `button`"
+msgstr "un `dataController` dentro un `button`"
+
+#: ../docs-source/docs/public/510-data-and-binding.md:85
+msgid ""
+"Arguments with `^` trigger the declaration; arguments with `=` are only "
+"read."
+msgstr ""
+"Gli argomenti con `^` fanno scattare la dichiarazione; quelli con `=` "
+"vengono solo letti."
+
+#: ../docs-source/docs/public/510-data-and-binding.md:87
+msgid "<a id=\"gc-510-030\"></a>"
+msgstr ""
+
+#: ../docs-source/docs/public/510-data-and-binding.md:89
+msgid "030 · Where the code goes: `Logic`"
+msgstr "030 · Dove va il codice: `Logic`"
+
+#: ../docs-source/docs/public/510-data-and-binding.md:93
+msgid ""
+"`func=\"add\"` names a method of the `Logic` class in the JavaScript file "
+"with the page's name: `orders.js` beside `orders.py`."
+msgstr ""
+"`func=\"add\"` indica un metodo della classe `Logic` nel file JavaScript con"
+" il nome della pagina: `orders.js` accanto a `orders.py`."
+
+#: ../docs-source/docs/public/510-data-and-binding.md:104
+msgid ""
+"Inside a controller, `node.SET(path, value)` writes Data and "
+"`node.GET(path)` reads it. Inline code such as `formula=\"a + b\"` also "
+"works, but is discouraged: it needs a Content Security Policy that allows "
+"`'unsafe-eval'`."
+msgstr ""
+"In un controller, `node.SET(path, value)` scrive nei Data e `node.GET(path)`"
+" legge. Funziona anche il codice inline come `formula=\"a + b\"`, ma è "
+"sconsigliato: richiede una Content Security Policy che consenta `'unsafe-"
+"eval'`."
+
+#: ../docs-source/docs/public/510-data-and-binding.md:108
+msgid "<a id=\"gc-510-035\"></a>"
+msgstr ""
+
+#: ../docs-source/docs/public/510-data-and-binding.md:110
+msgid "035 · Formatting text"
+msgstr "035 · Formattare il testo"
+
+#: ../docs-source/docs/public/510-data-and-binding.md:119
+#, python-brace-format
+msgid ""
+"`mask` and `:` templates put the value where `{}` is. They never change the "
+"Data."
+msgstr ""
+"`mask` e i template con `:` mettono il valore al posto di `{}`. Non "
+"modificano mai i Data."
+
+#: ../docs-source/docs/public/510-data-and-binding.md:121
+msgid "<a id=\"gc-510-040\"></a>"
+msgstr ""
+
+#: ../docs-source/docs/public/510-data-and-binding.md:123
+msgid "040 · Next steps"
+msgstr "040 · Prossimi passi"
+
+#: ../docs-source/docs/public/510-data-and-binding.md:127
+msgid ""
+"[Data and logic reference](515-data-and-logic-reference.md): every pointer "
+"form, attribute and method."
+msgstr ""
+"[Reference di Data e logica](515-data-and-logic-reference.md) (in inglese): "
+"ogni forma di puntatore, attributo e metodo."
+
+#: ../docs-source/docs/public/510-data-and-binding.md:129
+msgid ""
+"[Calling the server](098-server-calls.md): load and save values with "
+"`dataRpc`."
+msgstr ""
+"[Chiamare il server](098-server-calls.md): caricare e salvare valori con "
+"`dataRpc`."
+
+#: ../docs-source/docs/public/510-data-and-binding.md:130
+msgid ""
+"The *Binding* and *Controllers* lessons of the [examples "
+"gallery](https://gramlot-examples.readthedocs.io/en/latest/)."
+msgstr ""
+"Le lezioni *Binding* e *Controllers* della [galleria di "
+"esempi](https://gramlot-examples.readthedocs.io/en/latest/)."

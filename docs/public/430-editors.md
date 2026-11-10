@@ -2,452 +2,152 @@
 
 Document ID: **GC-430**.
 
+The editors collection edits whole documents held in a Data string: source code,
+HTML and Markdown, each with a matching read-only preview. This page answers
+**which editor to use for a document, and how to show it beside its preview**. The
+complete list of parameters is in the [widget reference](345-widget-reference.md).
+
 <a id="gc-430-start"></a>
-## Start here
 
-Editors bind a retained editing instance to Data; previews display a value without editing it. Engine resources load when needed, independently of collection availability.
+## An editor and its preview
 
-The environment Page base supplies the collections used below. [Configure them once](340-components-and-collections-guide.md#gc-340-050). [Setup examples are in the appendix](465-widget-examples.md#gc-465-setup-editors).
+```python
+def main(self, root):
+    pane = root.div(datapath="draft")
+    pane.markdownEditor(value="^.text", lbl="Text")
+    pane.markdownPreview(value="^.text")
+```
 
-Both controls share one value. External Data updates use supported engine setters rather than recreating the editor. Editor instances are not application state. HTML/Markdown rendering uses the runtime sanitization/Markdown services, with component-specific policies; do not bypass them by inserting generated HTML yourself. [Modes and engine options](105-components.md#gc-105-125).
-
-A serverless export opened from file must include the required engine resources in its exported module graph. Do not replace imports with CDN requests or assume a Python endpoint exists in a file-only page.
-
-[All collections](345-widget-reference.md) · [Shared labels and validation](105-components.md#gc-105-020) · [Bindings](097-data-binding.md)
-
-## Keep the document in Data and the editing engine retained
-
-`codeMirror` edits source text, `htmlEditor` edits rich HTML and `markdownEditor`
-edits Markdown. All store a string with a two-way `value` binding. `htmlPreview`
-and `markdownPreview` read that value without editing it. Connect editor and
-preview to the same Data path rather than copying content between engine instances.
-Engines/resources are bundled in the optional editors collection and load when
-needed. Include that graph in a serverless export; no CDN or Python endpoint is
-implied. See [editor composition](105-components.md#gc-105-125).
-
-Editors write live by default; `live=False` commits on blur. `readonly` retains
-reading/selection while preventing edits, and `disabled` also prevents focus.
-Incoming Data still updates the existing engine through supported transactions or
-setters, preserving its configuration/history instead of rebuilding the widget.
-`undo()`, `redo()` and `historyChanged` expose editor history; Ctrl/Cmd+S publishes
-local `save` with the current value. The application owns persistence, permissions,
-server errors and a saved/dirty record baseline.
-
-Choose `codeMirror` when exact code/text editing is needed. `language` selects a
-supported language, while line numbers, wrapping, folding, indentation, completion
-and font settings affect editing/presentation without reformatting the document.
-Completion uses local language support rather than an LSP. Ctrl/Cmd+F opens
-search/replace; readonly disables replacement. Tab indents, Shift+Tab outdents,
-and Escape then Tab leaves the editor. After `ready`, diagnostics and position
-revelation use the documented engine API. Unknown language names fail explicitly.
-
-`htmlEditor` uses the supported Jodit engine and protects active/embedded document
-content outside the editable DOM. It edits the body while retaining head, doctype
-and document attributes. Removing or duplicating protected placeholders rejects
-the edit: use Code for those changes. Rich serialization can normalize markup;
-undo to the initial snapshot restores the original source. `htmlPreview` uses an
-empty-sandbox iframe where scripts do not run. The editor's document guard,
-sanitization and content policy are essential; these components are HTML views,
-not execution previews for Python applications. See
-[HTML behavior](105-components.md#gc-105-135).
-
-`markdownEditor` uses ProseMirror for the supported rich schema: paragraphs,
-headings, lists, quotes, fenced code, links/images and basic emphasis. Tables,
-embedded HTML, strikethrough and task lists remain preserved source blocks whose
-internals are edited in Code. Frontmatter/reference definitions preserve the
-whole document as a source block. This is not full GitHub-flavored Markdown visual
-editing, and rich edits may normalize supported syntax. `markdownPreview` renders
-Markdown in a sandboxed iframe. `allowHtml=False` shows embedded HTML as text;
-True sanitizes rendered HTML before insertion, without rewriting original Markdown.
-External image requests remain blocked by preview policy. See
-[Markdown behavior](105-components.md#gc-105-140).
-
-## Connect a terminal to a session of the PageStore
-
-`terminal` is an interactive terminal for programs that work key by key: a shell,
-`exec` into a container, a REPL, `top` or `vim`. Every key goes to the server at once.
-The server output is written to the screen as it arrives. The component knows no
-backend: the page's PageStore connects it to a process or a remote session.
-
-[Code for this composition is in the appendix](465-widget-examples.md#gc-465-setup-editors).
-
-`session` names an async PageStore method declared with `@terminal`
-(`from gramlot.page import terminal`). The method receives a `TerminalSession`:
-
-- `await session.read()` returns the next bytes of the keys, `b""` once the session is closed;
-- `await session.write(data)` sends output bytes, in frames of at most 1 MB; it waits
-  while 1 MB is not yet written by the screen, so a method that reads its process only
-  after `write` returns reads it no faster than the browser draws;
-- `await session.resized()` returns the next `(rows, columns)`; `session.size` holds the last one;
-- `session.host` is the `Host` header of the socket request.
-
-The session closes when the method returns, when the page closes or when the
-socket closes. `@terminal(auth="rule")` applies the same auth rules as `@endpoint`.
-A page has one open session per name: opening the name again, as a component
-attached again to the page does, closes the open one first. More than 1 MB of
-input not yet read closes the socket. `connected`, `rows` and `columns` are written to
-Data; the terminal bytes never pass through Data. `input(text)` sends text as if typed.
-
-The method runs beside the store's own operations, not inside them: it talks to its
-process or remote session and does not write the store's Data.
-
-The bytes travel on a WebSocket of their own, `/gramlot/terminal`, beside the PageStore
-channel: enable it with `websocket=True` on the Python host. A large output never
-reaches the PageStore channel. xterm.js loads on first use; a page without a terminal
-downloads none of it. The frames are in the
-[server protocol](101-server-protocol.md#gc-101-325).
-
-A local shell runs with the rights of the server process. The origin check of the
-socket compares `Origin` with `Host`, which DNS rebinding can make equal: a shell
-method checks `session.host` as well. The gramlot-examples terminal trial offers the
-shell only when `GRAMLOT_DEV` is set and the page was opened at `localhost` or `127.0.0.1`.
-
-## Choose a component
-
-- [`codeMirror`](#gc-430-codemirror): Code/text editor with composed language and editor options.
-- [`htmlEditor`](#gc-430-htmleditor): Rich HTML editing using the supported engine configuration.
-- [`htmlPreview`](#gc-430-htmlpreview): Read-only HTML preview with the component sanitization contract.
-- [`markdownEditor`](#gc-430-markdowneditor): Markdown editing with the supported editor modes.
-- [`markdownPreview`](#gc-430-markdownpreview): Rendered Markdown preview.
-- [`terminal`](#gc-430-terminal): Interactive terminal connected to a @terminal session of the page store.
-
+Both components point at the same path, `draft.text`. The editor writes the
+Markdown there as the user types; the preview reads it and redraws. Load or replace
+`draft.text` from your code and the editor shows the new text without being rebuilt.
+The page base of your environment already enables this collection; if it does not,
+[enable it once](340-components-and-collections-guide.md#gc-340-050).
 
 <a id="gc-430-005"></a>
 <a id="gc-430-010"></a>
-Types: T text, B Boolean, L integer, R real, X structured value; other codes are TYTX. Binding: read = Data to widget; write = widget to Data; twoWay = both. A dash means no declared default/binding. None is a declared value. Constraints include enum, qualification, target and annotations. Tables describe component contracts; ordinary Source/CSS attributes are shared.
 
+## Pick a component by the document
 
-## Shared parameter contracts
+| You want to | Use |
+| --- | --- |
+| Edit source code or plain text | [codeMirror](#gc-430-codemirror) |
+| Edit an HTML page with a rich toolbar | [htmlEditor](#gc-430-htmleditor) |
+| Show an HTML page | [htmlPreview](#gc-430-htmlpreview) |
+| Edit Markdown with a rich toolbar | [markdownEditor](#gc-430-markdowneditor) |
+| Show Markdown rendered | [markdownPreview](#gc-430-markdownpreview) |
+| Give the user a terminal on the server | [terminal](#gc-430-terminal) |
 
-Each widget below links only the shared contracts it supports. A shared name can have different types, defaults or bindings; separate rows preserve those differences.
-
+The editors and previews store and read a plain string. To edit a Typst document, use
+codeMirror with the [Typst preview](435-typst.md).
 
 <a id="gc-430-220"></a>
 <a id="gc-430-shared-value"></a>
-## Values and bindings
-
-The value type and writeback behavior depend on the control. Use a Data pointer for binding; see [Data binding](097-data-binding.md).
-
-Applies to: [codeMirror](#gc-430-codemirror), [htmlEditor](#gc-430-htmleditor), [htmlPreview](#gc-430-htmlpreview), [markdownEditor](#gc-430-markdowneditor), [markdownPreview](#gc-430-markdownpreview).
-
-| Parameter | Type | Default | Binding | Constraints | Applies to |
-| --- | --- | --- | --- | --- | --- |
-| `value` | T | '' | twoWay | — | [codeMirror](#gc-430-codemirror), [htmlEditor](#gc-430-htmleditor), [markdownEditor](#gc-430-markdowneditor) |
-| `value` | T | '' | read | — | [htmlPreview](#gc-430-htmlpreview), [markdownPreview](#gc-430-markdownpreview) |
-
 <a id="gc-430-225"></a>
 <a id="gc-430-shared-state"></a>
-## Disabled, readonly and live updates
-
-Disabled prevents interaction; readonly preserves reading without accepting edits. live controls when edits reach Data. See [Field behavior](105-components.md#gc-105-040).
-
-Applies to: [codeMirror](#gc-430-codemirror), [htmlEditor](#gc-430-htmleditor), [markdownEditor](#gc-430-markdowneditor).
-
-| Parameter | Type | Default | Binding | Constraints | Applies to |
-| --- | --- | --- | --- | --- | --- |
-| `disabled` | B | False | read | — | All listed above |
-| `readonly` | B | False | read | — | All listed above |
-| `live` | B | True | read | — | All listed above |
-
 <a id="gc-430-230"></a>
 <a id="gc-430-shared-labels"></a>
-## Labels and field presentation
-
-lbl supplies a field label; lbl_position places it. The lbl_* and box_* style families are described in [Themes and CSS](096-themes-and-css.md).
-
-Applies to: [codeMirror](#gc-430-codemirror), [htmlEditor](#gc-430-htmleditor), [markdownEditor](#gc-430-markdowneditor).
-
-| Parameter | Type | Default | Binding | Constraints | Applies to |
-| --- | --- | --- | --- | --- | --- |
-| `lbl` | T or None | — | read | qualification="intl_str" | All listed above |
-| `lbl_position` | T | 'TL' | read | enum=['TL', 'TC', 'TR', 'L', 'R', 'BL', 'BC', 'BR'] | All listed above |
-
 <a id="gc-430-240"></a>
 <a id="gc-430-shared-validation"></a>
-## Validation
 
-The validate_* family belongs to the shared validation contract, not to each widget. See [Validation rules, callbacks and messages](105-components.md#gc-105-076). Rule conditions and messages use the documented _if, _iswarning, _error and _warning suffixes. For example: root.textbox(value="^customer.email", lbl="Email", validate_email=True).
+## What every editor has
 
-Applies to: [codeMirror](#gc-430-codemirror), [htmlEditor](#gc-430-htmleditor), [markdownEditor](#gc-430-markdowneditor).
+```python
+form.codeMirror(value="^.source", lbl="Source", live=False,
+                readonly="^.locked", validate_notnull=True)
+```
 
-| Parameter | Type | Default | Binding | Constraints | Applies to |
-| --- | --- | --- | --- | --- | --- |
-| `validate_select` | B or None | — | read | — | All listed above |
-| `validate_notnull` | B or None | False | read | — | All listed above |
-| `validate_empty` | T / L / N / R / B / D / H / DH / DHZ or None | — | read | — | All listed above |
-| `validate_case` | T or None | — | read | enum=['upper', 'lower', 'title', 'capitalize', 'u', 'l', 't', 'c'] | All listed above |
-| `validate_len` | T or None | — | read | — | All listed above |
-| `validate_min` | T / L / N / R / B / D / H / DH / DHZ or None | — | read | — | All listed above |
-| `validate_max` | T / L / N / R / B / D / H / DH / DHZ or None | — | read | — | All listed above |
-| `validate_email` | B or None | — | read | — | All listed above |
-| `validate_regex` | T or None | — | read | — | All listed above |
-| `validate_call` | T or None | — | — | — | All listed above |
-| `validate_remote` | T or None | — | read | — | All listed above |
-| `validate_onAccept` | T or None | — | — | — | All listed above |
-| `validate_onReject` | T or None | — | — | — | All listed above |
-| `validate__onResult` | T or None | — | — | — | All listed above |
-| `validate_timeout` | L or None | — | read | — | All listed above |
-| `validate_select_if` | T / B or None | — | — | — | All listed above |
-| `validate_select_iswarning` | B or None | — | read | — | All listed above |
-| `validate_select_error` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_select_warning` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_notnull_if` | T / B or None | — | — | — | All listed above |
-| `validate_notnull_iswarning` | B or None | — | read | — | All listed above |
-| `validate_notnull_error` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_notnull_warning` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_empty_if` | T / B or None | — | — | — | All listed above |
-| `validate_empty_iswarning` | B or None | — | read | — | All listed above |
-| `validate_empty_error` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_empty_warning` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_case_if` | T / B or None | — | — | — | All listed above |
-| `validate_case_iswarning` | B or None | — | read | — | All listed above |
-| `validate_case_error` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_case_warning` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_len_if` | T / B or None | — | — | — | All listed above |
-| `validate_len_iswarning` | B or None | — | read | — | All listed above |
-| `validate_len_error` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_len_warning` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_min_if` | T / B or None | — | — | — | All listed above |
-| `validate_min_iswarning` | B or None | — | read | — | All listed above |
-| `validate_min_error` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_min_warning` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_max_if` | T / B or None | — | — | — | All listed above |
-| `validate_max_iswarning` | B or None | — | read | — | All listed above |
-| `validate_max_error` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_max_warning` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_email_if` | T / B or None | — | — | — | All listed above |
-| `validate_email_iswarning` | B or None | — | read | — | All listed above |
-| `validate_email_error` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_email_warning` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_regex_if` | T / B or None | — | — | — | All listed above |
-| `validate_regex_iswarning` | B or None | — | read | — | All listed above |
-| `validate_regex_error` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_regex_warning` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_call_if` | T / B or None | — | — | — | All listed above |
-| `validate_call_iswarning` | B or None | — | read | — | All listed above |
-| `validate_call_error` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_call_warning` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_remote_if` | T / B or None | — | — | — | All listed above |
-| `validate_remote_iswarning` | B or None | — | read | — | All listed above |
-| `validate_remote_error` | T or None | — | read | qualification="intl_str" | All listed above |
-| `validate_remote_warning` | T or None | — | read | qualification="intl_str" | All listed above |
+- **When it writes.** An editor writes at every change; `live=False` writes when
+  the user leaves it.
+- **Locking.** `readonly=True` lets the user read, select and copy but not change
+  the text; `disabled=True` also keeps the focus out. Data changes still reach the
+  editor in both states.
+- **A label and checks.** `lbl`, `lbl_position` and the `validate_*` attributes
+  work as on any field ([labels and validation](105-components.md#gc-105-020)).
+- **History and saving.** Each editor keeps its own undo history, which survives
+  Data changes. Ctrl/Cmd+S
+  publishes a local `save` topic with the current value: storing the document is
+  up to your application ([editor history](105-components.md#gc-105-125)).
+
+The previews only read `value`: they have none of these.
 
 <a id="gc-430-425"></a>
-## Editors and document previews
-
-
 <a id="gc-430-190"></a>
 <a id="gc-430-codemirror"></a>
-### `codeMirror`
 
-Code/text editor with composed language and editor options.
+## Source code
 
-Collection: **editors**. Browser element: `gramlot-code-mirror`.
+```python
+form.codeMirror(value="^.script", language="python", lineNumbers=True,
+                indentUnit=4, fontSize=14)
+```
 
-[Editor composition and document behavior](105-components.md#gc-105-125).
-
-
-[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-codemirror).
-
-
-**Data contract.** Bind value two ways to source text. Live writes are the default. Deferred edits commit when focus leaves the editor. External value and configuration changes update the retained CodeMirror state.
-
-
-**Interaction and events.** Undo, redo and historyChanged expose editor history. Ctrl/Cmd+S publishes local save while editable. Ctrl/Cmd+F opens search. Tab indents, Shift+Tab outdents and Escape followed by Tab exits.
-
-
-**Composition.** Leaf control. Place a toolbar or preview beside it. Wait for ready before using engine-dependent methods such as diagnostics and position revelation.
-
-
-**Limits and lifecycle.** Language names are enumerated and completion uses local language support. Readonly prevents changes and replacement. Disabled also prevents focus. The application owns persistence.
-
-Shared contracts: [Values and bindings](#gc-430-shared-value), [Disabled, readonly and live updates](#gc-430-shared-state), [Labels and field presentation](#gc-430-shared-labels), [Validation](#gc-430-shared-validation).
-
-| Specific parameter | Type | Default | Binding | Constraints |
-| --- | --- | --- | --- | --- |
-| `lbl_value` | T or None | — | twoWay | — |
-| `lbl_values` | T or None | — | read | — |
-| `language` | T | 'text' | read | enum=['text', 'python', 'javascript', 'typescript', 'json', 'html', 'css', 'xml', 'markdown', 'sql', 'typst'] |
-| `lineNumbers` | B | True | read | — |
-| `lineWrapping` | B | True | read | — |
-| `indentUnit` | L | 4 | read | — |
-| `fontSize` | L | 14 | read | — |
-| `fontFamily` | T | 'monospace' | read | — |
-| `folding` | B | True | read | — |
-| `bracketMatching` | B | True | read | — |
-| `autoCloseBrackets` | B | True | read | — |
-| `autoIndent` | B | True | read | — |
-| `autocompletion` | B | True | read | — |
-| `highlightActiveLine` | B | True | read | — |
-| `highlightSelectionMatches` | B | True | read | — |
-
-Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+[codeMirror](345-widget-reference.md#gc-345-codemirror) edits text exactly as
+written. `language` chooses the highlighting and completion: `text`, `python`,
+`javascript`, `typescript`, `json`, `html`, `css`, `xml`, `markdown`, `sql` or
+`typst`. The other options (line numbers, wrapping, folding, brackets, font) change
+how the editor behaves, never the text. Ctrl/Cmd+F opens search and replace; Tab
+indents, and Escape then Tab leaves the editor
+([CodeMirror options](105-components.md#gc-105-125)).
 
 <a id="gc-430-195"></a>
 <a id="gc-430-htmleditor"></a>
-### `htmlEditor`
-
-Rich HTML editing using the supported engine configuration.
-
-Collection: **editors**. Browser element: `gramlot-html-editor`.
-
-[Editor composition and document behavior](105-components.md#gc-105-125).
-
-
-[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-htmleditor).
-
-
-**Data contract.** Bind value two ways to HTML source. Live writes are the default and deferred edits commit on blur. Rich edits can normalize markup, while undo to the initial snapshot restores the original source.
-
-
-**Interaction and events.** The rich toolbar edits supported body content. Undo, redo and the local save shortcut follow the editor history contract.
-
-
-**Composition.** Leaf control. Pair it with a preview or source editor through the same Data string.
-
-
-**Limits and lifecycle.** The document head, doctype and protected body regions stay outside the editable content. Removing or duplicating a protected placeholder rejects the edit. Use source editing for protected regions.
-
-Shared contracts: [Values and bindings](#gc-430-shared-value), [Disabled, readonly and live updates](#gc-430-shared-state), [Labels and field presentation](#gc-430-shared-labels), [Validation](#gc-430-shared-validation).
-
-| Specific parameter | Type | Default | Binding | Constraints |
-| --- | --- | --- | --- | --- |
-| `lbl_value` | T or None | — | twoWay | — |
-| `lbl_values` | T or None | — | read | — |
-
-Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
-
 <a id="gc-430-200"></a>
 <a id="gc-430-htmlpreview"></a>
-### `htmlPreview`
 
-Read-only HTML preview with the component sanitization contract.
+## HTML
 
-Collection: **editors**. Browser element: `gramlot-html-preview`.
+```python
+form.htmlEditor(value="^.page")
+form.htmlPreview(value="^.page")
+```
 
-[Editor composition and document behavior](105-components.md#gc-105-125).
-
-
-[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-htmlpreview).
-
-
-**Data contract.** The read-bound value supplies the HTML string projected to the iframe document. A Data change replaces the displayed document.
-
-
-**Interaction and events.** Displays the iframe document without edit, save or completion callbacks.
-
-
-**Composition.** Leaf control. Bind it to the same Data path as a separate HTML editor.
-
-
-**Limits and lifecycle.** The iframe sandbox has no allow tokens, so scripts cannot execute. The Data string stays intact.
-
-Shared contracts: [Values and bindings](#gc-430-shared-value).
-
-No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
-
-
-Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+[htmlEditor](345-widget-reference.md#gc-345-htmleditor) edits the body of an HTML
+document and keeps its head untouched. Scripts, styles, embedded content and form
+controls appear as protected blocks: the editor refuses to remove them, so change
+them in a code editor. Rich editing can reformat the markup.
+[htmlPreview](345-widget-reference.md#gc-345-htmlpreview) shows the document in a
+sandbox where scripts do not run
+([HTML editor and preview](105-components.md#gc-105-135)).
 
 <a id="gc-430-205"></a>
 <a id="gc-430-markdowneditor"></a>
-### `markdownEditor`
-
-Markdown editing with the supported editor modes.
-
-Collection: **editors**. Browser element: `gramlot-markdown-editor`.
-
-[Editor composition and document behavior](105-components.md#gc-105-125).
-
-
-[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-markdowneditor).
-
-
-**Data contract.** Bind value two ways to Markdown. Live writes are the default and deferred edits commit on blur. Incoming Data updates retain the ProseMirror engine and plugins. Undo to the initial snapshot recovers the exact source.
-
-
-**Interaction and events.** The toolbar and native edits go through the same document model. Undo, redo and local save use the shared editor contract.
-
-
-**Composition.** Leaf control. Pair it with markdownPreview or a source editor through the same text path.
-
-
-**Limits and lifecycle.** Rich editing covers ordinary paragraphs, headings, lists, quotes and fenced code. Tables, embedded HTML, strikethrough and task lists remain opaque source blocks. Frontmatter and reference definitions preserve the whole document as a source block. Rich edits can normalize supported syntax.
-
-Shared contracts: [Values and bindings](#gc-430-shared-value), [Disabled, readonly and live updates](#gc-430-shared-state), [Labels and field presentation](#gc-430-shared-labels), [Validation](#gc-430-shared-validation).
-
-| Specific parameter | Type | Default | Binding | Constraints |
-| --- | --- | --- | --- | --- |
-| `lbl_value` | T or None | — | twoWay | — |
-| `lbl_values` | T or None | — | read | — |
-
-Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
-
 <a id="gc-430-210"></a>
 <a id="gc-430-markdownpreview"></a>
-### `markdownPreview`
 
-Rendered Markdown preview.
+## Markdown
 
-Collection: **editors**. Browser element: `gramlot-markdown-preview`.
+```python
+form.markdownEditor(value="^.notes")
+form.markdownPreview(value="^.notes", allowHtml="^.allowHtml")
+```
 
-[Editor composition and document behavior](105-components.md#gc-105-125).
-
-
-[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-markdownpreview).
-
-
-**Data contract.** Reads Markdown through value. Changing allowHtml alters rendering only. By default embedded HTML appears as text. With allowHtml enabled, rendered HTML is sanitized.
-
-
-**Interaction and events.** Updates as read inputs change. It declares no save, edit or render-completion callback.
-
-
-**Composition.** Leaf control. Pair it with a Markdown editor through the same Data string.
-
-
-**Limits and lifecycle.** The renderer loads on demand. The sandboxed preview policy blocks external image requests and rendering leaves the source intact.
-
-Shared contracts: [Values and bindings](#gc-430-shared-value).
-
-| Specific parameter | Type | Default | Binding | Constraints |
-| --- | --- | --- | --- | --- |
-| `allowHtml` | B | False | read | — |
-
-Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+[markdownEditor](345-widget-reference.md#gc-345-markdowneditor) edits headings,
+paragraphs, lists, quotes, code, links, images and emphasis with a toolbar. Tables,
+embedded HTML, strikethrough and task lists stay as source blocks, kept intact; edit
+their insides in a code editor.
+[markdownPreview](345-widget-reference.md#gc-345-markdownpreview) renders the text.
+Embedded HTML appears as plain text unless `allowHtml=True`, which renders it after
+removing scripts, frames and form controls
+([Markdown editor and preview](105-components.md#gc-105-140)).
 
 <a id="gc-430-270"></a>
 <a id="gc-430-terminal"></a>
-### `terminal`
 
-Interactive terminal connected to a @terminal session of the page store.
+## A terminal on the server
 
-Collection: **editors**. Browser element: `gramlot-terminal`.
+```python
+form.terminal(session="shell", connected="^.online", fontSize=13)
+```
 
-[Editor composition and document behavior](105-components.md#gc-105-125).
+[terminal](345-widget-reference.md#gc-345-terminal) opens an interactive terminal
+connected to a method of your page's PageStore marked `@terminal`; `session` names
+that method. What the user types goes to the server as typed, Ctrl-C and arrows
+included, and the output appears as it arrives. It never passes through the Data.
 
-
-[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-terminal).
-
-
-**Data contract.** Reads session, the name of an @terminal method of the page store. Writes connected, rows and columns when the socket opens, closes or the screen is resized. Terminal bytes never pass through Data.
-
-
-**Interaction and events.** Keys go to the session as typed, including arrows, Tab and Ctrl-C. Output is written to the screen as it arrives. input(text) sends text as if typed.
-
-
-**Composition.** Leaf control. It fills its box and resizes the server terminal with it.
-
-
-**Limits and lifecycle.** Requires a server with a PageStore channel (websocket). A page has one open session per name: opening it again closes the open one. The server stops sending output while 1 MB is unacknowledged by the screen.
-
-| Specific parameter | Type | Default | Binding | Constraints |
-| --- | --- | --- | --- | --- |
-| `session` | T | '' | read | — |
-| `fontSize` | L | 14 | read | — |
-| `fontFamily` | T | 'monospace' | read | — |
-| `connected` | B | False | write | — |
-| `rows` | L | 0 | write | — |
-| `columns` | L | 0 | write | — |
-
-Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+- `connected`, `rows` and `columns` are written by the terminal: whether the session
+  is open and the size of the screen, which follows the size of its box.
+- A page has one open session per name: opening it again closes the previous one.
+- It needs a host that runs PageStore over WebSocket
+  ([terminal socket](101-server-protocol.md#gc-101-325)). What the session may run
+  on the server is your application's decision.

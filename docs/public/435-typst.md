@@ -2,91 +2,57 @@
 
 Document ID: **GC-435**.
 
+The typst collection turns a Typst document held in a Data string into a page
+preview and a PDF, inside the browser. This page answers **how to show a Typst
+document and let the user download it**. The complete list of parameters is in the
+[widget reference](345-widget-reference.md).
+
 <a id="gc-435-start"></a>
-## Start here
 
-Render a Typst document using the preview component. Compiler/worker resources are separate from ordinary input and layout components.
+## Declaring the collection
 
-`typst` is outside the standard set: a page that uses it declares it in `Page.gramlots` ([declaring typst](340-components-and-collections-guide.md#gc-340-050-typst)). [Setup examples are in the appendix](465-widget-examples.md#gc-465-setup-typst).
+```python
+from gramlot import Page as GramlotPage
+from gramlot.collections.typst import mygramlot as typst
 
-Load `document.source` as text before rendering, or bind an editor to the same path. Compiler resources and document assets must be available to the configured preview engine. Do not infer a server endpoint from this component declaration. [Compilation and resource contract](105-components.md#gc-105-145).
 
-[All collections](345-widget-reference.md) · [Shared labels and validation](105-components.md#gc-105-020) · [Bindings](097-data-binding.md)
+class Page(GramlotPage):
+    gramlots = [typst]
 
-## Choosing and using the preview
+    def main(self, root):
+        root.typstPreview(value="^document.source", filename="report.pdf")
+```
 
-`typstPreview` is a document reader/compiler surface, rather than a text editor. Use it when a Data string already contains Typst source and the user needs to inspect the document or download its PDF. To edit that string, place `codeMirror` from the separate `editors` collection beside the preview and bind both to the same Data path. The editor writes the draft; `typstPreview.value` reads it. `filename` controls the download name and can also read a binding; downloading does not save the source document.
-
-[Code for this composition is in the appendix](465-widget-examples.md#gc-465-setup-typst).
-
-Initialize `.content` as text. `editors` is a standard collection; `typst` is not, so the page declares it in `Page.gramlots` (`from gramlot.collections.typst import mygramlot as typst`, then `gramlots = [typst]`). See [declaring typst](340-components-and-collections-guide.md#gc-340-050-typst) and [the Typst contract](105-components.md#gc-105-145).
-
-### Updates, diagnostics and resource limits
-
-Changes to the Typst text schedule browser compilation after a short pause. The current Worker compiles both SVG and PDF for every successful revision; downloading retrieves that PDF rather than starting a separate compilation. The widget immediately hides the previous SVG and disables the previous PDF link, so a user cannot download an apparently current document while a newer draft is compiling. Diagnostics appear in the widget. Late compilation results cannot replace a newer revision. There is no declared completion callback or Data writeback parameter: use the bound source as application state, rather than treating the downloaded PDF as a saved Data value.
-
-The collection bundles its compiler, renderer and five fonts, and shares a browser Worker between previews. Self-contained documents can compile offline; the initial component does not supply includes, custom assets or external packages. Missing resources produce diagnostics. Removing the last preview releases the Worker. The module is large, so select this optional collection only where needed. A browser preview declaration does not create a server compilation endpoint or execute Python recipes. Compiler-version differences and export restrictions are documented in [compiler and resource ownership](105-components.md#gc-105-145).
-
-## Choose a component
-
-- [`typstPreview`](#gc-435-typstpreview): Typst document preview with client SVG and PDF compilation; compiler resources are separate from ordinary forms.
-
+typst is not part of the standard set, because its compiler is large: a page that
+uses it declares it in `gramlots`, and a base class can declare it once for all its
+pages ([declaring typst](340-components-and-collections-guide.md#gc-340-050-typst)).
 
 <a id="gc-435-005"></a>
 <a id="gc-435-010"></a>
-Types: T text, B Boolean, L integer, R real, X structured value; other codes are TYTX. Binding: read = Data to widget; write = widget to Data; twoWay = both. A dash means no declared default/binding. None is a declared value. Constraints include enum, qualification, target and annotations. Tables describe component contracts; ordinary Source/CSS attributes are shared.
-
-
-## Shared parameter contracts
-
-Each widget below links only the shared contracts it supports. A shared name can have different types, defaults or bindings; separate rows preserve those differences.
-
-
 <a id="gc-435-220"></a>
 <a id="gc-435-shared-value"></a>
-## Values and bindings
-
-The value type and writeback behavior depend on the control. Use a Data pointer for binding; see [Data binding](097-data-binding.md).
-
-Applies to: [typstPreview](#gc-435-typstpreview).
-
-| Parameter | Type | Default | Binding | Constraints | Applies to |
-| --- | --- | --- | --- | --- | --- |
-| `value` | T | '' | read | — | All listed above |
-
 <a id="gc-435-425"></a>
-## Editors and document previews
-
-
 <a id="gc-435-215"></a>
 <a id="gc-435-typstpreview"></a>
-### `typstPreview`
 
-Typst document preview with client SVG and PDF compilation; compiler resources are separate from ordinary forms.
+## Editing beside the preview
 
-Collection: **typst**. Browser element: `gramlot-typst-preview`.
+```python
+form.codeMirror(value="^.content", language="typst")
+form.typstPreview(value="^.content", filename="report.pdf")
+```
 
-[Typst compiler and resource ownership](105-components.md#gc-105-145).
+[typstPreview](345-widget-reference.md#gc-345-typstpreview) only reads `value`. To
+let the user write the document, bind a [codeMirror](430-editors.md#gc-430-codemirror)
+from the editors collection to the same path.
 
-
-[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-typstpreview).
-
-
-**Data contract.** Reads the Typst source from value and the download name from filename. SVG, PDF and diagnostics stay inside the browser preview. The current Worker produces SVG and PDF for each successful preview revision.
-
-
-**Interaction and events.** Changes schedule compilation after a short pause. The current result enables download and diagnostics appear in the widget. It declares no completion callback.
-
-
-**Composition.** Leaf control. Pair it with codeMirror from the separate editors collection to edit the same draft.
-
-
-**Limits and lifecycle.** The browser Worker uses a bundled compiler and fonts. Includes, custom assets and external packages are outside the browser preview contract. Source changes invalidate prior output immediately. Removing the last preview releases the shared Worker.
-
-Shared contracts: [Values and bindings](#gc-435-shared-value).
-
-| Specific parameter | Type | Default | Binding | Constraints |
-| --- | --- | --- | --- | --- |
-| `filename` | T | 'document.pdf' | read | — |
-
-Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+- **Updates.** The preview compiles after a short pause in typing. While a new
+  version compiles, the old one is hidden and its download disabled, so the user
+  never downloads a stale document. Errors appear inside the preview.
+- **Download.** The Download PDF link saves the compiled document under
+  `filename`. It does not save the Typst source: storing that is up to your
+  application.
+- **Resources.** The compiler and five fonts are bundled, so self-contained
+  documents compile offline with no server. Includes, custom assets and external
+  packages are not available
+  ([compiler and resources](105-components.md#gc-105-145)).

@@ -2,72 +2,58 @@
 
 Document ID: **GC-485**.
 
+The vizabi collection shows an animated bubble chart drawn by the Vizabi library.
+This page answers **how do I show rows as moving bubbles over the years, and what
+must my application provide for it?** The parameters are in the
+[widget reference](345-widget-reference.md).
+
 <a id="gc-485-start"></a>
-## Start here
 
-Host-provided Vizabi bubble integration; separate from chartPane engines.
+## A bubble chart
 
-The environment Page base supplies the collections used below. [Configure them once](340-components-and-collections-guide.md#gc-340-050). [Setup examples are in the appendix](465-widget-examples.md#gc-465-setup-vizabi).
+```python
+from genro_bag import Bag
 
-Supply a configuration Bag and the compatible external library URL. The host owns library delivery. This specialized integration is not a chartPane engine and is not enabled by the common gallery environment.
+def main(self, root):
+    pane = root.div(height="500px")
+    pane.dataSetter("vizabi", Bag(dict(
+        entityField="country", timeField="year", xField="income",
+        yField="life", sizeField="population", colorField="region",
+        year=2000, playing=False, speed=300)))
+    pane.vizabiBubble(storepath="world.rows", configuration="^vizabi",
+                      libraryUrl="/assets/vizabi.js")
+```
 
-[All collections](345-widget-reference.md) · [Shared labels and validation](105-components.md#gc-105-020) · [Bindings](097-data-binding.md)
-
-### Specialized host integration
-
-The host provides the compatible library at libraryUrl and the configuration Bag. A session observes
-rows and writes supported configuration changes into Data. It releases subscriptions and the external
-view on removal. Do not treat this as an additional chartPane engine or infer database access.
-
-## Choose a component
-
-- [`vizabiBubble`](#gc-485-vizabibubble): Specialized host-provided Vizabi bubble session observing Data Bags.
-
+The page base of your environment already enables this collection; if it does not,
+[enable it once](340-components-and-collections-guide.md#gc-340-050).
 
 <a id="gc-485-005"></a>
 <a id="gc-485-010"></a>
-Types: T text, B Boolean, L integer, R real, X structured value; other codes are TYTX. Binding: read = Data to widget; write = widget to Data; twoWay = both. A dash means no declared default/binding. None is a declared value. Constraints include enum, qualification, target and annotations. Tables describe component contracts; ordinary Source/CSS attributes are shared.
-
-
-## Shared parameter contracts
-
-Each widget below links only the shared contracts it supports. A shared name can have different types, defaults or bindings; separate rows preserve those differences.
-
-
 <a id="gc-485-445"></a>
-## Charts
-
-
 <a id="gc-485-475"></a>
 <a id="gc-485-vizabibubble"></a>
-### `vizabiBubble`
 
-Specialized host-provided Vizabi bubble session observing Data Bags.
+## What the chart needs
 
-Collection: **vizabi**. Browser element: `gramlot-vizabi-bubble`.
+[vizabiBubble](345-widget-reference.md#gc-345-vizabibubble) is the only component of
+the collection. It takes three things from you.
 
-[Host-provided bubble charts](485-vizabi.md#gc-485-start).
+**The library.** `libraryUrl` is the address of a JavaScript module that provides
+Vizabi and its bubble chart. Gramlot does not ship it: your host serves it. Without
+it, the chart shows an error message instead of the bubbles.
 
+**The rows.** `storepath` points to a Bag with one row per entity and year; by default
+(`rowMode="attributes"`) the fields are attributes of the row nodes, `values` reads
+row Bags instead. The entity is text, the year an integer, the x, y and size fields
+are numbers (size not negative) and the color field is a text category. The field
+name `name` is reserved for the entity.
 
-[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-vizabibubble).
+**The configuration.** `configuration` is a Bag that says which field plays each
+role (`entityField`, `timeField`, `xField`, `yField`, `sizeField`, `colorField`) and
+holds the animation: `year` (an integer), `playing` (true or false) and `speed`
+(milliseconds per step). The chart writes the current year, the playing state and the
+fields it shows back into this Bag, and follows your changes to it: bind other
+controls to it to drive the animation.
 
-
-**Data contract.** Reads the original rows and configuration Bag.
-
-
-**Interaction and events.** Retains supported session configuration and releases engine resources on removal.
-
-
-**Composition.** Specialized external bubble view.
-
-
-**Limits and lifecycle.** Requires host-supplied libraryUrl; not a chartPane engine.
-
-| Specific parameter | Type | Default | Binding | Constraints |
-| --- | --- | --- | --- | --- |
-| `storepath` | T | — | — | — |
-| `rowMode` | T | 'attributes' | — | — |
-| `configuration` | X | — | read | — |
-| `libraryUrl` | T | — | — | — |
-
-Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+The chart follows changes of the rows and of the configuration. It is separate from
+the [charts](480-charts.md) collection and never reads a database.

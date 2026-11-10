@@ -1,0 +1,215 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, Gramlot contributors
+# This file is distributed under the same license as the Gramlot package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Gramlot\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-09 15:28+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: it <LL@li.org>\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:1
+msgid "How Gramlot works"
+msgstr "Come funziona Gramlot"
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:5
+msgid ""
+"You write a page as a Python class. Gramlot turns it into a live interface "
+"in the browser and keeps it in step with the page's values. JavaScript pages"
+" work the same way."
+msgstr ""
+"Scrivi una pagina come classe Python. Gramlot la trasforma in un'interfaccia"
+" viva nel browser e la tiene allineata ai valori della pagina. Le pagine "
+"JavaScript funzionano allo stesso modo."
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:9
+msgid "<a id=\"gc-505-005\"></a>"
+msgstr ""
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:11
+msgid "005 · Four ideas"
+msgstr "005 · Quattro idee"
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md
+msgid "Idea"
+msgstr "Idea"
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md
+msgid "In one sentence"
+msgstr "In una frase"
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md
+msgid "**Page**"
+msgstr ""
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md
+msgid "The class you write. Its `main(root)` method builds the interface."
+msgstr ""
+"La classe che scrivi. Il suo metodo `main(root)` costruisce l'interfaccia."
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md
+msgid "**Source**"
+msgstr ""
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md
+msgid "The tree of elements that `main` builds: HTML, SVG and components."
+msgstr "L'albero di elementi costruito da `main`: HTML, SVG e componenti."
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md
+msgid "**Data**"
+msgstr ""
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md
+msgid "The values the interface shows and edits, kept in a separate tree."
+msgstr ""
+"I valori che l'interfaccia mostra e modifica, tenuti in un albero separato."
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md
+msgid "**Logic**"
+msgstr ""
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md
+msgid "The code that runs when a value changes or the user clicks."
+msgstr "Il codice che gira quando un valore cambia o l'utente fa clic."
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:22
+msgid ""
+"A fifth piece, the **server**, delivers the page to the browser. You rarely "
+"touch it: an adapter plugs it into Django, Flask, FastAPI or Uvicorn, or "
+"exports the page as a file that needs no server at all."
+msgstr ""
+"Un quinto pezzo, il **server**, consegna la pagina al browser. Raramente lo "
+"tocchi: un adapter lo collega a Django, Flask, FastAPI o Uvicorn, oppure "
+"esporta la pagina come file che non richiede alcun server."
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:26
+msgid "<a id=\"gc-505-010\"></a>"
+msgstr ""
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:28
+msgid "010 · A complete page"
+msgstr "010 · Una pagina completa"
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:44
+msgid "Type `Ada` in the field and the paragraph shows `Hello, Ada`."
+msgstr "Scrivi `Ada` nel campo e il paragrafo mostra `Hello, Ada`."
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:46
+msgid ""
+"`root.div`, `pane.input` and `pane.p` build the **Source**: one method per "
+"element."
+msgstr ""
+"`root.div`, `pane.input` e `pane.p` costruiscono la **Source**: un metodo "
+"per elemento."
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:47
+msgid ""
+"`person.name` lives in the **Data**. The field writes it, the paragraph "
+"reads it."
+msgstr ""
+"`person.name` sta nei **Data**. Il campo lo scrive, il paragrafo lo legge."
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:48
+msgid ""
+"`^.name` means \"follow `name`\": when it changes, the paragraph updates by "
+"itself. You never look up or edit DOM elements."
+msgstr ""
+"`^.name` significa \"segui `name`\": quando cambia, il paragrafo si aggiorna"
+" da solo. Non cerchi né modifichi mai elementi del DOM."
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:51
+msgid "<a id=\"gc-505-015\"></a>"
+msgstr ""
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:53
+msgid "015 · Why Source and Data are separate"
+msgstr "015 · Perché Source e Data sono separati"
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:57
+msgid ""
+"Source says **what is on screen**; Data says **which values it works with**."
+" The same value can appear in many places, and each place updates when the "
+"value changes. Loading a record means writing Data, not rebuilding the "
+"interface."
+msgstr ""
+"La Source dice **cosa c'è sullo schermo**; i Data dicono **con quali valori "
+"lavora**. Lo stesso valore può comparire in più punti, e ognuno si aggiorna "
+"quando il valore cambia. Caricare un record significa scrivere nei Data, non"
+" ricostruire l'interfaccia."
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:61
+msgid "<a id=\"gc-505-020\"></a>"
+msgstr ""
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:63
+msgid "020 · Where code runs"
+msgstr "020 · Dove gira il codice"
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:67
+msgid ""
+"**In Python, on the server:** `main` builds the Source, and methods you "
+"expose answer calls from the browser."
+msgstr ""
+"**In Python, sul server:** `main` costruisce la Source, e i metodi che "
+"esponi rispondono alle chiamate del browser."
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:69
+msgid ""
+"**In the browser:** bindings, formulas, controllers and the `Logic` class "
+"react to Data changes and user events."
+msgstr ""
+"**Nel browser:** binding, formule, controller e la classe `Logic` reagiscono"
+" ai cambiamenti dei Data e alle azioni dell'utente."
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:72
+msgid ""
+"A page exported without a server has no Python: everything runs in the "
+"browser."
+msgstr ""
+"Una pagina esportata senza server non ha Python: tutto gira nel browser."
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:74
+msgid "<a id=\"gc-505-025\"></a>"
+msgstr ""
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:76
+msgid "025 · Next steps"
+msgstr "025 · Prossimi passi"
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:80
+msgid "[Run a page](018-quickstart.md)."
+msgstr "[Esegui una pagina](018-quickstart.md)."
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:81
+msgid ""
+"[Data and binding](510-data-and-binding.md): the syntax you use in every "
+"page."
+msgstr ""
+"[Data e binding](510-data-and-binding.md): la sintassi che usi in ogni "
+"pagina."
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:82
+msgid "[Components](105-components.md): fields, layouts, trees and grids."
+msgstr "[Componenti](105-components.md): campi, layout, alberi e griglie."
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:83
+msgid "[Calling the server](098-server-calls.md)."
+msgstr "[Chiamare il server](098-server-calls.md)."
+
+#: ../docs-source/docs/public/505-how-gramlot-works.md:85
+msgid ""
+"The [Gramlot family](055-family.md) lists the repositories and which one to "
+"install."
+msgstr ""
+"La [famiglia Gramlot](055-family.md) elenca i repository e quale installare."
