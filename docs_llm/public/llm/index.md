@@ -44,7 +44,6 @@ are identical; a missing default is different from `None`.
 - [chat](../../../docs_llm/public/450-chat.md): Conversation composition.
 - [grouplets](../../../docs_llm/public/455-grouplets.md): Reusable remote fragments.
 - [charts](../../../docs_llm/public/480-charts.md): Shared charts, lazy engines and temporal snapshots.
-- [vizabi](../../../docs_llm/public/485-vizabi.md): Specialized host-provided bubble integration.
 - [audio](../../../docs_llm/public/490-audio.md): Microphone waveform and spectrum in Data.
 - [drawing](../../../docs_llm/public/495-drawing.md): Image annotations stored in a Bag.
 

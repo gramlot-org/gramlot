@@ -637,12 +637,6 @@ ring or the arc. presentation is needle, ring or arc; caption is a label under t
 value shows the information notice No value, never zero. The gauge follows the --gramlot-* theme
 colours and writes nothing back.
 """,
-    'vizabi': """### Specialized host integration
-
-The host provides the compatible library at libraryUrl and the configuration Bag. A session observes
-rows and writes supported configuration changes into Data. It releases subscriptions and the external
-view on removal. Do not treat this as an additional chartPane engine or infer database access.
-""",
 })
 
 COLLECTION_EXPLANATIONS.update({

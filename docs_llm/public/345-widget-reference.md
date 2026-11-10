@@ -419,36 +419,6 @@ Collection: charts. One value of the node on a needle dial, a progress ring or a
 
 Child grammar: `''`; parent grammar: `None`.
 
-<a id="gc-345-475"></a>
-<a id="gc-345-vizabibubble"></a>
-### `vizabiBubble`
-
-Collection: vizabi. Specialized host-provided Vizabi bubble session observing Data Bags.
-
-
-[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-vizabibubble).
-
-
-**Data contract.** Reads the original rows and configuration Bag.
-
-
-**Interaction and events.** Retains supported session configuration and releases engine resources on removal.
-
-
-**Composition.** Specialized external bubble view.
-
-
-**Limits and lifecycle.** Requires host-supplied libraryUrl; not a chartPane engine.
-
-
-| Parameters | Contract |
-| --- | --- |
-| `storepath, libraryUrl` | `{"dtype":"T"}` |
-| `rowMode` | `{"default":"attributes","dtype":"T"}` |
-| `configuration` | `{"binding":"read","dtype":"X"}` |
-
-Child grammar: `''`; parent grammar: `None`.
-
 <a id="gc-345-430"></a>
 ## Grids and search
 

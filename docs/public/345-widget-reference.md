@@ -2,7 +2,7 @@
 
 Document ID: **GC-345**.
 
-This reference covers all **90 component declarations** in the 14 packaged
+This reference covers all **89 component declarations** in the 13 packaged
 component collections covered here. It is regenerated from their effective
 metadata. Widgets are grouped by purpose; inherited and shared parameters are
 documented once and linked from each applicable widget. Use the manual matching your installed packages when comparing available features.
@@ -62,7 +62,6 @@ connects these controls to runnable lessons and screenshots.
 | [chat](450-chat.md) | [chatMessages](#gc-345-chatmessages) |
 | [grouplets](455-grouplets.md) | [grouplet](#gc-345-grouplet), [groupletCard](#gc-345-groupletcard) |
 | [charts](480-charts.md) | [chartPane](#gc-345-chartpane), [chartView](#gc-345-chartview), [chartFields](#gc-345-chartfields), [chartGeoJSON](#gc-345-chartgeojson), [chartTimeline](#gc-345-charttimeline), [gauge](#gc-345-gauge), [chartBar](#gc-345-chartbar), [chartLine](#gc-345-chartline), [chartArea](#gc-345-chartarea), [chartStackedBar](#gc-345-chartstackedbar), [chartStackedArea](#gc-345-chartstackedarea), [chartHorizontalBar](#gc-345-charthorizontalbar), [chartPie](#gc-345-chartpie), [chartDonut](#gc-345-chartdonut), [chartScatter](#gc-345-chartscatter), [chartBar3D](#gc-345-chartbar3d), [chartLine3D](#gc-345-chartline3d), [chartScatter3D](#gc-345-chartscatter3d), [chartSurface](#gc-345-chartsurface), [chartMap](#gc-345-chartmap), [chartMapBar3D](#gc-345-chartmapbar3d), [chartMap3D](#gc-345-chartmap3d), [chartLines3D](#gc-345-chartlines3d), [chartPolygons3D](#gc-345-chartpolygons3d), [chartFunnel](#gc-345-chartfunnel), [chartRadar](#gc-345-chartradar), [chartParallel](#gc-345-chartparallel), [chartHeatmap](#gc-345-chartheatmap), [chartSankey](#gc-345-chartsankey), [chartCandlestick](#gc-345-chartcandlestick), [chartBoxplot](#gc-345-chartboxplot), [chartTreemap](#gc-345-charttreemap), [chartSunburst](#gc-345-chartsunburst) |
-| [vizabi](485-vizabi.md) | [vizabiBubble](#gc-345-vizabibubble) |
 | [audio](490-audio.md) | [audioAnalyser](#gc-345-audioanalyser) |
 | [drawing](495-drawing.md) | [drawingPane](#gc-345-drawingpane) |
 
@@ -605,40 +604,6 @@ Collection: **charts**. Browser element: `gramlot-gauge`.
 | `thresholds` | T or None | '' | read | — |
 | `presentation` | T | 'needle' | read | — |
 | `caption` | T or None | '' | read | — |
-
-Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
-
-<a id="gc-345-475"></a>
-<a id="gc-345-vizabibubble"></a>
-### `vizabiBubble`
-
-Specialized host-provided Vizabi bubble session observing Data Bags.
-
-Collection: **vizabi**. Browser element: `gramlot-vizabi-bubble`.
-
-[Host-provided bubble charts](485-vizabi.md#gc-485-start).
-
-
-[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-vizabibubble).
-
-
-**Data contract.** Reads the original rows and configuration Bag.
-
-
-**Interaction and events.** Retains supported session configuration and releases engine resources on removal.
-
-
-**Composition.** Specialized external bubble view.
-
-
-**Limits and lifecycle.** Requires host-supplied libraryUrl; not a chartPane engine.
-
-| Specific parameter | Type | Default | Binding | Constraints |
-| --- | --- | --- | --- | --- |
-| `storepath` | T | — | — | — |
-| `rowMode` | T | 'attributes' | — | — |
-| `configuration` | X | — | read | — |
-| `libraryUrl` | T | — | — | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
