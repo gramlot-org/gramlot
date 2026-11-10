@@ -2754,7 +2754,8 @@ Shared icon-only commands — 2026-11-04: internal `icon-only` control class and
 
 Owner: "ok allora completiamolo" after the legacy/PoC comparison; complete remote
 lists confirmed with "Sì, elenco completo come nel legacy". Reuse `popup`,
-`identifier`, `labelAttribute` and `_displayedValue` from the inspected legacy,
+`identifier`, `labelAttribute` and `_displayedValue` (renamed `_dv_displayedValue` on
+2026-11-10, see "Derived values `_dv_`") from the inspected legacy,
 and `dbtable`, `method`, `caption_field`, `order_by`, `condition_*` from current
 selectors. `limit=None` denotes the complete option list. Internal camelCase
 helpers `choiceOptions` and `selectionDisplay` follow existing component/context
@@ -3217,6 +3218,22 @@ confirmed "ok". The name `_internal` is the owner's.
   node. SourcePicker receives the Source root and the path of the preview root
   (`source`, `path`) and resolves the root at each use; VisualEditorCanvas uses the
   design node only while mounting.
+
+### Derived values `_dv_` — owner, 2026-11-10
+
+Owner: "usare una regola sui nomi che sono derivati: _dv_displayedValue ad esempio e
+tutti i _dv_ sono esclusi"; confirmed "si".
+
+- Every Data attribute whose name starts with `_dv_` is a derived value. It never
+  counts as a change of an EditingSession, without any registration: `isDerived`
+  returns true for `<path>?<attribute>` when the attribute starts with `_dv_`.
+  `registerDerived` stays for path-based derived values (grid formulas, totals).
+- Reserved name rule: underscore followed by the owner word, as `_meta` and
+  `_inspector`; the owner word is `dv` (derived value).
+- Rename: the choice-field caption attribute `_displayedValue` becomes
+  `_dv_displayedValue` (written by `selectionDisplay` in `js/src/view/controls.js`).
+- Legacy: GenroPy excluded `_displayedValue` by name in `genro_frm.js:1952`
+  (`kw.changedAttr!='_displayedValue'`); the prefix generalises that exclusion.
 
 ### Non-component runtimes by address — 2026-11-09
 

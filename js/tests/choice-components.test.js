@@ -203,11 +203,11 @@ test('checkBoxText popup commits repeatedly, displays captions, locks and restor
     const f=fixture(t,(r,a)=>{a.data.setItem('selection','a');r.checkBoxText({id:'multi',value:'^selection',values:'a:Alpha,b:Beta',popup:'^popup',disabled:'^locked'});a.data.setItem('popup',true);});
     const host=f.host('multi'), control=host.control, first=control.querySelector('input');
     assert.equal(host.summary.value,'Alpha');
-    assert.equal(f.app.data.getItem('selection?_displayedValue'),'Alpha');
+    assert.equal(f.app.data.getItem('selection?_dv_displayedValue'),'Alpha');
     host.summary.click();assert.equal(host.panel.hidden,false);
     control.querySelector('input[value=b]').click();
     assert.equal(f.app.data.getItem('selection'),'a,b');
-    assert.equal(f.app.data.getItem('selection?_displayedValue'),'Alpha,Beta');
+    assert.equal(f.app.data.getItem('selection?_dv_displayedValue'),'Alpha,Beta');
     assert.equal(host.panel.hidden,false);
     control.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
     assert.equal(host.panel.hidden,true);assert.equal(host.shadowRoot.activeElement,host.summary);
@@ -261,7 +261,7 @@ test('checkBoxText remote failures stay visible, keep Data and do not replace va
     assert.equal(f.app.data.getItem('selection'),'a');
     f.app.src.source.getNode('main.multi').setAttr({value:'^selection',popup:true,method:null,values:'a:^secret'});
     assert.equal(host.summary.disabled,false);assert.equal(host.summary.value,'^secret');
-    assert.equal(host.optionsMessage.textContent,'');assert.equal(f.app.data.getItem('selection?_displayedValue'),'^secret');
+    assert.equal(host.optionsMessage.textContent,'');assert.equal(f.app.data.getItem('selection?_dv_displayedValue'),'^secret');
 });
 
 test('hierarchical checkBoxText reuses the tree and original Bag, propagates and preserves disabled nodes', async t => {
@@ -347,7 +347,7 @@ test('checkBoxText edits descriptions, suggests additions and keeps only codes i
     assert.deepEqual([...host.shadowRoot.querySelectorAll('datalist option')].map(n=>n.value),['Milano,Torino,Como,Pavia']);
     host.summary.value='Milano,Torino,Como,pavia';f.event(host.summary,'input');f.event(host.summary,'change');
     assert.equal(f.app.data.getItem('cities'),'MI,TO,CO,PV');
-    assert.equal(f.app.data.getItem('cities?_displayedValue'),'Milano,Torino,Como,Pavia');
+    assert.equal(f.app.data.getItem('cities?_dv_displayedValue'),'Milano,Torino,Como,Pavia');
     assert.equal(host.control.querySelector('input[value=PV]').checked,true);
     host.summary.value='Como,Pavia';f.event(host.summary,'input');f.event(host.summary,'change');
     assert.equal(f.app.data.getItem('cities'),'CO,PV');

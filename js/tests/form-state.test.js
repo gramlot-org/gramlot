@@ -278,3 +278,21 @@ test('checkBoxText description drafts block saving and restore/commit keep the c
     host.summary.value='Milano,Pavia';f.fire(host.summary,'input');f.fire(host.summary,'change');await tick();
     assert.equal(f.app.data.getItem('record.cities'),'MI,PV');assert.equal(f.state.accept(),true);
 });
+
+test('a _dv_ caption written on load is derived; a user edit still makes the form changed',async t => {
+    const f=fixture(t,(form,app) => {
+        app.data.setItem('record.tags','a');
+        form.checkBoxText({node_label:'tags',id:'tags',value:'^.tags',values:'a:Alpha,b:Beta'});
+    });
+    await tick();
+    assert.equal(f.app.data.getItem('record.tags?_dv_displayedValue'),'Alpha');
+    assert.equal(f.state.status.status,'ok');
+    assert.equal(f.state.changeEntries.length,0);
+    assert.equal(f.state.isDerived('tags?_dv_other'),true);
+    assert.equal(f.state.isDerived('tags?caption'),false);
+    f.host('tags').control.querySelector('input[value=b]').click(); await tick();
+    assert.equal(f.app.data.getItem('record.tags'),'a,b');
+    assert.equal(f.app.data.getItem('record.tags?_dv_displayedValue'),'Alpha,Beta');
+    assert.equal(f.state.status.status,'changed');
+    assert.deepEqual(f.state.changeEntries.map(entry => entry.path),['record.tags']);
+});

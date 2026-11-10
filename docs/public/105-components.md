@@ -501,7 +501,9 @@ select fields from a child Bag or attributes from a scalar row. Codes must be
 unique, nonempty, comma-free strings. The component reads the Bag at the pointer
 address at each projection: an in-place change and a new Bag at the address
 update the options; it keeps no subscription on the Bag. Selected captions
-are written to `_displayedValue` on the bound value node (not an attribute binding).
+are written to `_dv_displayedValue` on the bound value node (not an attribute binding).
+An attribute whose name starts with `_dv_` is a derived value: writing it never makes
+a form modified.
 
 For database options use `dbtable` with the configured DatabaseSelectors service,
 or `method` for an application endpoint. The method receives `_querystring=""`,

@@ -69,7 +69,7 @@ export class EditingSession {
     /**
      * Declare derived values (grid formula results, published totals): `match(path)` receives a path
      * relative to the session, `<path>?<attribute>` for an attribute. Derived values are never changes.
-     * Returns the release.
+     * Returns the release. An attribute whose name starts with `_dv_` is derived without registration (GC-225).
      */
     registerDerived(match) {
         this.derived.add(match);
@@ -78,6 +78,8 @@ export class EditingSession {
         return () => { this.derived.delete(match); };
     }
     isDerived(path) {
+        const separator = path.indexOf('?');
+        if (separator !== -1 && path.startsWith('_dv_', separator + 1)) return true;
         for (const match of this.derived) if (match(path)) return true;
         return false;
     }
