@@ -539,7 +539,8 @@ export class GramlotToolsInspector extends HTMLElement {
         ui.data.setItem('styles.noDownload', true);
         ui.data.setItem('styles.status', '');
         try {
-            if (this.#state() !== 'started') throw new Error('Select a connected page before editing CSS variables');
+            // A connection still starting queues the request: the agent answers after its first state.
+            if (!this.#connection || this.#state() === 'disposed') throw new Error('Select a connected page before editing CSS variables');
             const connection = this.#connection;
             await connection.request(type, command);
             const rows = connection.styles;

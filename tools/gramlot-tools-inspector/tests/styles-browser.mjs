@@ -75,6 +75,8 @@ if (process.argv.includes('--serve')) {
                     for (const end = Date.now() + 5000; await read() !== expected && Date.now() < end;) await page.waitForTimeout(20);
                     assert.equal(await read(), expected);
                 };
+                // The Refresh button stays disabled until the agent answers the last style command.
+                const settled = () => tool.getByRole('button', {name: 'Refresh', exact: true, disabled: false}).waitFor();
                 const exportLink = tool.getByText('Download CSS', {exact: true});
                 await field('--gramlot-action').waitFor();
                 assert.equal(await exportLink.getAttribute('href'), null);
@@ -111,6 +113,7 @@ if (process.argv.includes('--serve')) {
                 await field('--gramlot-action').fill('var(--gramlot-brand-yellow)'); await field('--gramlot-action').press('Enter');
                 await page.waitForFunction(() => getComputedStyle(document.querySelector('main button')).backgroundColor === 'rgb(255, 196, 0)');
                 assert.equal(await field('--gramlot-action').inputValue(), 'var(--gramlot-brand-yellow)');
+                await settled();
                 const downloaded = page.waitForEvent('download');
                 await exportLink.click();
                 const download = await downloaded;
@@ -124,10 +127,12 @@ if (process.argv.includes('--serve')) {
                 assert.equal(await restored.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--gramlot-space-4').trim()), '2rem');
                 await restored.close();
                 await tool.getByRole('button', {name: 'Reset all', exact: true}).click();
-                await until(() => exportLink.getAttribute('href'), null);
+                await settled();
+                assert.equal(await exportLink.getAttribute('href'), null);
                 await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
                 await tool.getByRole('button', {name: 'Refresh', exact: true}).click();
-                await until(() => field('--gramlot-action').inputValue(), '#91adf4');
+                await settled();
+                assert.equal(await field('--gramlot-action').inputValue(), '#91adf4');
                 await field('--gramlot-action').fill('#112233'); await field('--gramlot-action').press('Enter');
                 await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
                 await tool.getByLabel('Reset --gramlot-action', {exact: true}).click();

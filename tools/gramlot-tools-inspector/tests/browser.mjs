@@ -78,7 +78,8 @@ try {
             assert.equal(await add.evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(255, 255, 255)');
             assert.equal(await palette.getByRole('tab', {name:'Data',exact:true}).getAttribute('aria-selected'), 'true');
             assert.equal(await palette.getByRole('tab', {name:'Data',exact:true}).evaluate(el => getComputedStyle(el.parentElement, '::after').content), '""');
-            assert.equal(await palette.locator('.error').textContent(), '');
+            // The palette shows 'Connecting…' until the agent's first state message arrives.
+            await page.waitForFunction(() => window.inspector.shadowRoot.querySelector('.error')?.textContent === '');
             await palette.locator('gramlot-tree[data-root=data] [data-path=name]').click();
             assert.equal(await palette.getByLabel('Value', {exact:true}).inputValue(), 'Ada');
             const remove = palette.getByRole('button', {name: 'Remove description', exact: true});
