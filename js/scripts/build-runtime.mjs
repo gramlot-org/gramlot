@@ -93,9 +93,10 @@ try {
         throw new Error(`bundledCollections ${bundledNames} differ from standard.json ${standardNames}`);
     }
     await writeFile(path('dist/standard-collections.js'), '// Generated from the shipped collection inventory; do not edit.\nexport const standardCollections = '+JSON.stringify(standardDescriptors)+';\n');
+    await writeFile(path('dist/declared-collections.js'), '// Generated from the shipped collection inventory; do not edit.\nexport const declaredCollections = '+JSON.stringify(declaredDescriptors)+';\n');
     // The grammar of the standard collections composed once, in the order of the collection graph of the
     // servers: a page loads it in one step instead of composing the grammar of each collection (GC-325 §165).
-    // The server module reads dist/standard-collections.js, written just above.
+    // The server module reads dist/standard-collections.js and dist/declared-collections.js, written just above.
     const {GramlotServer} = await import('../src/server/gramlot-server.js');
     const order = new GramlotServer().collections.map(collection => collection.name);
     const byName = new Map(bundledCollections.map(collection => [collection.name, collection]));
@@ -105,7 +106,6 @@ try {
         // A JSON text read by JSON.parse starts faster than an object literal of the same size.
         'export const standardGrammar = JSON.parse(' + JSON.stringify(JSON.stringify({collections: order,
             document: prepared._collection.toDocument()})) + ');\n');
-    await writeFile(path('dist/declared-collections.js'), '// Generated from the shipped collection inventory; do not edit.\nexport const declaredCollections = '+JSON.stringify(declaredDescriptors)+';\n');
 } finally { await rm(staging,{recursive:true,force:true}); }
 // The runtime is built after the collections, from the same sources.
 const hosted = await build({...runtimeOptions['gramlot.js'], outfile: path('dist/gramlot.js')});
