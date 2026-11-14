@@ -42,6 +42,19 @@ import * as labelbox from './components/labelbox.js';
 import * as parameters from './components/parameters.js';
 import * as popup from './components/popup.js';
 import * as validation from './components/validation.js';
+import * as inputs from './components/inputs.js';
+import * as layout from './components/layout.js';
+import * as tree from './components/tree.js';
+import * as grid from './components/grid.js';
+import * as editors from './components/editors.js';
+import * as grouplets from './components/grouplets.js';
+import * as chat from './components/chat.js';
+import * as charts from './components/charts.js';
+import * as audio from './components/audio.js';
+import * as drawing from './components/drawing.js';
+import * as uploads from './components/uploads.js';
+import * as containerModule from './components/container.js';
+import * as gridSearchModule from './components/grid-search.js';
 
 export const sharedModules = Object.freeze({
     '@genrojs/bag': genrojsBag,
@@ -73,4 +86,18 @@ export const sharedModules = Object.freeze({
     './components/parameters.js': parameters,
     './components/popup.js': popup,
     './components/validation.js': validation,
+    // The collections of the runtime bundle (bundled-collections.js) and the modules they share.
+    './components/inputs.js': inputs,
+    './components/layout.js': layout,
+    './components/tree.js': tree,
+    './components/grid.js': grid,
+    './components/editors.js': editors,
+    './components/grouplets.js': grouplets,
+    './components/chat.js': chat,
+    './components/charts.js': charts,
+    './components/audio.js': audio,
+    './components/drawing.js': drawing,
+    './components/uploads.js': uploads,
+    './components/container.js': containerModule,
+    './components/grid-search.js': gridSearchModule,
 });

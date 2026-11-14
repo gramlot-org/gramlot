@@ -1,4 +1,4 @@
-import {Bag} from '@gramlot/gramlot';
+import {Bag} from '@genrojs/bag';
 
 /** Cell and caption reading shared by the funnel, radar, parallel, heatmap, sankey, candlestick, boxplot, treemap and sunburst builders. */
 

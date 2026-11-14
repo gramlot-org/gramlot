@@ -1,5 +1,5 @@
 /** Source-bound JSONL loader for the local resident-selection examples. */
-import {Bag} from '@gramlot/gramlot';
+import {Bag} from '@genrojs/bag';
 import {defineComponent, ComponentCollection} from '../components/registry.js';
 import {Container} from '../components/container.js';
 import {WindowSelection} from './window-selection.js';

@@ -443,7 +443,9 @@ existing binding machinery, and the paragraph displays the same value. The Pytho
 page contains no JS registration code and does not need to know the asset URL.
 
 Prepared built-in collections are automatic for every GramlotServer site: pages
-import only `Page`, not `inputs`, `layout` or `grid`. The host integration serves
+import only `Page`, not `inputs`, `layout` or `grid`. The runtime bundle carries
+every standard collection (`bundledCollections`, GC-325 §165): a page loads no file of
+a standard collection, and a third-party library loads on first use. The host integration serves
 the matching verified prepared artifacts. A grammar-only JSON file
 is not a substitute for this package descriptor in `Page.gramlots`.
 

@@ -2,7 +2,7 @@ import {NativeControl} from './bases.js';
 import {parseChoices} from './choices.js';
 import {choiceFieldStyles} from './choice-field-styles.js';
 import {positionPopup} from './popup.js';
-import {Bag} from '@gramlot/gramlot';
+import {Bag} from '@genrojs/bag';
 
 /** Shared suggestions: constrained controls commit codes; comboBox commits text. */
 export function ChoiceEditor(HTMLElement) {

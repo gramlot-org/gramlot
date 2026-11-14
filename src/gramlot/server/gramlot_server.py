@@ -10,6 +10,7 @@ import functools
 import inspect
 import logging
 import json
+import re
 import math
 import secrets
 import time
@@ -210,6 +211,21 @@ class GramlotServer:
 
     def page_collections(self, cls):
         return collection_graph((*self.collections, *page_collections(cls)))
+
+    def library_modules(self, collections, prefix=""):
+        """The URL of the local copy of each third-party library the collections ship (GC-325 §160).
+
+        A collection ships the module of a library it loads on first use as ``assets/libraries/<name>.js``;
+        ``loadLibrary`` imports it as ``@gramlot/libraries/<name>`` through the import map. The first
+        collection of the graph that ships a library provides it.
+        """
+        modules = {}
+        for collection in collections:
+            for path in collection.files:
+                match = re.fullmatch(r"assets/libraries/([A-Za-z]\w*)\.js", path)
+                if match:
+                    modules.setdefault(match[1], _prefixed(prefix, self.collection_url(collection, path)))
+        return modules
 
     def _environment_page(self, cls):
         """Bind the environment's collections without mutating the imported Page class."""
@@ -508,6 +524,7 @@ class GramlotServer:
         collection_records = [{"name": c.name, "url": _prefixed(prefix, self.collection_url(c, c.module)),
                                "buildId": c.build_id} for c in selected]
         declared = {c.name for c in declared_collections()}
+        libraries = self.library_modules(selected, prefix)
         self._prune()
         if len(self._pages) >= self.max_pages:
             raise ServerCapacity("Page registry capacity reached")
@@ -563,7 +580,9 @@ class GramlotServer:
                                                    item["url"] for item in collection_records},
                                                 # A page module imports a declared core collection for gramlots.
                                                 **{"@gramlot/gramlot/collections/" + item["name"]: item["url"]
-                                                   for item in collection_records if item["name"] in declared}},
+                                                   for item in collection_records if item["name"] in declared},
+                                                # loadLibrary imports the local copy of a library from its collection.
+                                                **{"@gramlot/libraries/" + name: url for name, url in libraries.items()}},
                                     **({"integrity": {entry["url"]: entry["integrity"] for entry in self.libraries.values()
                                                       if entry["url"] is not None and entry["format"] != "style"}}
                                        if self.library_source == "cdn" else {})}),

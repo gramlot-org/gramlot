@@ -22188,3 +22188,12 @@ both variants. No publication.
 ### 2026-11-08 — Datapath aliases excluded
 
 Datapath aliases (`_aliasDatapaths`) are excluded from the symbolic paths by owner decision (2026-11-08); an unknown `#name` resolves as a `#<nodeId>`.
+
+### 2026-11-14 — One runtime bundle with the standard collections
+
+Every standard collection is in `gramlot.min.js` (GC-325 §165, owner direction of
+gramlot-org/gramlot#82, confirmed 2026-11-14). A page loads 3 files instead of 29;
+third-party libraries load on first use from `@gramlot/libraries/<name>`. Start time
+with a warm cache is unchanged: about 250 of 330 ms go to `loadGrammar` of the
+`GramlotBuilder` constructor. Open: that cost; gramlot-js-server serverless export must
+resolve `@gramlot/libraries/<name>`. No release.

@@ -1,4 +1,5 @@
-import {Bag, sourceTarget} from '@gramlot/gramlot';
+import {sourceTarget} from '@genrojs/builders';
+import {Bag} from '@genrojs/bag';
 import {positionPopup} from './popup.js';
 import {cellText} from './grid-rows.js';
 import {SVG_NS} from '../renderer/attributes.js';

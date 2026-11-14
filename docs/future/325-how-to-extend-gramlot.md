@@ -2647,3 +2647,80 @@ Uvicorn (gramlot-py-server) with `cdn` and `local`: inputs, frameGrid with Excel
 CodeMirror, ECharts chart and gauge, ECharts GL bar3D, uPlot; ECharts and uPlot come from
 jsDelivr only with `cdn` and only on first use; a changed CDN file is blocked by its
 integrity.
+
+<a id="gc-325-165"></a>
+## 165 · One runtime bundle with the standard collections (2026-11-14)
+
+Block ID: **GC-325-165**. Last part of gramlot-org/gramlot#82 ("the JS of every Gramlot
+component lives in one bundle that is always available"; "Gramlot collections are
+always loaded; only third-party libraries load on first use", owner, 2026-11-07). The
+owner confirmed on 2026-11-14 that every standard collection goes into the runtime,
+with no collection loaded on demand.
+
+A page loads the runtime file and no file of a standard collection. Before, every page
+imported 11 collection modules, their wrappers and their static chunks: 26 files.
+
+- `bundledCollections` (`js/src/bundled-collections.js`, exported by
+  `@gramlot/gramlot`) lists the collections of the runtime. The build refuses a list
+  that differs from `collections/standard.json`.
+- Each collection module is in `sharedModules` under its path (`./components/grid.js`).
+  The prepared artifact of a bundled collection is a module that reads the collection
+  from `sharedModules`: a page holds one copy, also when a page module or the inspector
+  imports `@gramlot/collections/<name>`. The descriptors, grammars, build IDs and
+  routes of the artifacts do not change their shape.
+- `PageBootstrap` does not import the record of a bundled collection: it activates the
+  collection of the runtime. A declared collection (`typst`) and a custom collection are
+  imported as before.
+- Core components import `Bag`, `sourceTarget`, the TYTX functions and DOMPurify from
+  their packages, not from `@gramlot/gramlot`: the runtime entry imports the
+  components, and an import of the entry from a component is a cycle.
+
+### Third-party libraries in the bundle
+
+The runtime holds no third-party library of a component. This supersedes "the
+collection generator emits the local copy as a deferred module of the collection"
+of §160:
+
+- A dynamic import of the `local` of a manifest entry becomes the import of
+  `@gramlot/libraries/<name>`, in the runtime build (`js/scripts/runtime-options.mjs`)
+  and in the generator.
+- The generator writes the local copy as `assets/libraries/<name>.js` (shared chunks in
+  `assets/libraries/chunks/`) in the artifact of the collection that loads it.
+- The Python and JavaScript `GramlotServer` add `@gramlot/libraries/<name>` to the
+  import map, pointing at that file (`library_modules` / `libraryModules`; the JS
+  descriptor carries `libraries: {name: url}`). The first collection of the graph that
+  ships a library provides it. The adapters serve these files as any other artifact
+  file: gramlot-py-server and gramlot-js-server need no change.
+- With `cdn` and an entry with a `url`, `loadLibrary` still imports the CDN file and
+  never the local copy.
+- The manifest gains `markdownIt`: the Markdown renderer (`./components/markdown-document.js`)
+  imports markdown-it statically; inside the runtime it would load markdown-it at start.
+- A file-origin export resolves `@gramlot/libraries/<name>` to the file of the
+  artifact itself (`js/tests/third-party-libraries.test.js`). The serverless export of
+  gramlot-js-server needs this resolution.
+
+### Measures
+
+Chromium headless, localhost, gramlot-py-server 0.3.31 on Uvicorn, 2026-11-14. Page:
+tabContainer, formlet with four inputs, grid with 20 rows. Times are medians of 8 to 20
+loads, in ms from navigation start to the answer of `main`.
+
+| | 0.3.37 | this change |
+|---|---:|---:|
+| files at start (HTML included) | 29 (26 of collections) | 3 (none of collections) |
+| bytes at start, uncompressed | 1,383,787 | 1,358,137 |
+| `gramlot.min.js`, minified / brotli | 813,017 / 176,994 | 1,319,787 / 281,244 |
+| `main` answered, warm cache | 294 | 300 |
+| `main` answered, no cache | 332 | 353 |
+| `main` answered, no cache, 40 ms round trip | 638 | 469 |
+
+The change removes the requests and their round trips: it shortens a load without a
+cache over a real network. With a warm cache the collection files come from the
+browser cache and the time does not change. A CPU profile of the warm load (this
+change) gives about 250 of 330 ms to `loadGrammar`, called by the `GramlotBuilder`
+constructor once per collection (`loadCollection`); the grammar of `charts` alone is
+435 KB of JSON. That cost is the same in 0.3.37 and is the next target for the start
+time.
+
+Verification: `js/tests/bootstrap.test.js` (a page imports no file of a standard
+collection), `js/tests/third-party-libraries.test.js`, `tests/test_third_party_libraries.py`.

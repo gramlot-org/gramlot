@@ -64,6 +64,9 @@ export const libraries = Object.freeze({
         'prosemirror-markdown': '1.13.1', 'prosemirror-model': '1.25.12', 'prosemirror-state': '1.4.3',
         'prosemirror-view': '1.42.6'},
         local: './components/prose-mirror-engine.js', url: null, integrity: null, format: 'module'}),
+    // The Markdown renderer of Gramlot; markdown-it itself is the runtime file gramlot-markdown.js.
+    markdownIt: Object.freeze({packages: {'markdown-it': '14.3.3'}, local: './components/markdown-document.js',
+        url: null, integrity: null, format: 'module'}),
     typst: Object.freeze({packages: {'@myriaddreamin/typst.ts': '0.7.0', '@myriaddreamin/typst-ts-web-compiler': '0.7.0',
         '@myriaddreamin/typst-ts-renderer': '0.7.0'},
         local: './components/typst-client.js', url: null, integrity: null, format: 'module'}),

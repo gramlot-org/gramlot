@@ -173,6 +173,18 @@ export class GramlotServer {
         return this.collectionGraph([...this.collections, ...classes.flatMap(cls => Object.hasOwn(cls, 'gramlots') ? cls.gramlots : [])]);
     }
 
+    /** The URL of the local copy of each third-party library the collections ship (GC-325 §160): the
+     * `libraries` of a prepared descriptor name the modules `assets/libraries/<name>.js` of its artifact, which
+     * `loadLibrary` imports as `@gramlot/libraries/<name>` through the import map. The first collection of the
+     * graph that ships a library provides it; a descriptor without `libraries` ships none. */
+    libraryModules(collections) {
+        const modules = {};
+        for (const collection of collections) {
+            for (const [name, url] of Object.entries(collection.libraries ?? {})) if (!Object.hasOwn(modules, name)) modules[name] = url;
+        }
+        return modules;
+    }
+
     /** Bind this environment without modifying a module shared by other hosts. */
     environmentPage(PageClass) {
         if (!this.collections.length) return PageClass;
@@ -330,6 +342,7 @@ export class GramlotServer {
             if (typeof name!=='string' || !name || typeof module!=='string' || !/^sha256:[0-9a-f]{64}$/.test(buildId)) throw new TypeError('Invalid prepared collection identity');
             return {name,url:module,buildId};
         });
+        resources.libraries = this.libraryModules(selected);
         if (this.serverAdapter !== null) resources.serverAdapter = this.serverAdapter;
         this.prune();
         if (this.pages.size >= this.maxPages) throw new ServerCapacity('Page registry capacity reached');
@@ -377,7 +390,9 @@ export class GramlotServer {
                 ...Object.fromEntries((resources.collections ?? []).map(({name,url})=>[`@gramlot/collections/${encodeURIComponent(name)}`,prefixed(prefix,url)])),
                 // A page module imports a declared core collection for gramlots.
                 ...Object.fromEntries((resources.collections ?? []).filter(({name})=>declared.has(name))
-                    .map(({name,url})=>[`@gramlot/gramlot/collections/${name}`,prefixed(prefix,url)]))},
+                    .map(({name,url})=>[`@gramlot/gramlot/collections/${name}`,prefixed(prefix,url)])),
+                // loadLibrary imports the local copy of a library from its collection.
+                ...Object.fromEntries(Object.entries(resources.libraries).map(([name,url])=>[`@gramlot/libraries/${name}`,prefixed(prefix,url)]))},
                 ...(this.librarySource === 'cdn' ? {integrity: Object.fromEntries(Object.values(this.libraries)
                     .filter(entry => entry.url !== null && entry.format !== 'style').map(entry => [entry.url, entry.integrity]))} : {})}),
                 {type: 'importmap', nonce});

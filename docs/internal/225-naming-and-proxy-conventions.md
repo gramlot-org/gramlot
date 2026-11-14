@@ -3356,3 +3356,21 @@ Chosen in implementation; the package export, `collectionAssets()`,
 `declared_collections()` and the import map entry are public API and wait for owner
 confirmation. gramlot-js-server applies the same
 `absentPackagePlugin` to the window runtime of its exports.
+
+<a id="gc-225-runtime-bundle-20261114"></a>
+### One runtime bundle with the standard collections — 2026-11-14
+
+Issue gramlot-org/gramlot#82 (GC-325 §165). Names applied:
+
+- `bundledCollections` and its module `js/src/bundled-collections.js` follow
+  `standardCollections`/`declaredCollections`: named after what they hold.
+- The import specifier `@gramlot/libraries/<name>` follows `@gramlot/collections/<name>`;
+  `<name>` is the key of the `libraries` manifest. The artifact folder
+  `assets/libraries/` follows `assets/modules/` and `assets/files/`.
+- `library_modules` / `libraryModules` of `GramlotServer` and the descriptor field
+  `libraries` follow the snake/camel convention and the `libraries` manifest.
+- The manifest entry `markdownIt` follows `writeExcelFile`: the npm package name in
+  camelCase. The esbuild plugin `library-module` follows `absent-package`.
+
+Chosen in implementation; the export, the import map entry and the descriptor field
+are public API and wait for owner confirmation.

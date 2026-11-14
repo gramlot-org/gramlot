@@ -1,4 +1,4 @@
-import {Bag} from '@gramlot/gramlot';
+import {Bag} from '@genrojs/bag';
 import {parseChoices} from './choices.js';
 import {positionPopup} from './popup.js';
 import {CheckBoxTree} from './check-box-tree.js';

@@ -118,6 +118,9 @@ Gramlot remains. The sample uses `searchbox(value='^.query', live=True)` and a
 paragraph sharing that Data path. A raw grammar document is not a prepared Page
 descriptor. Built-in prepared collections use the same selection shape.
 
+The runtime bundle carries every standard collection (`bundledCollections`, GC-325 §165): a page loads no
+file of a standard collection; a third-party library loads on first use.
+
 <a id="gc-340-050-typst"></a>
 `typst` (`typstPreview`, compiler WebAssembly about 41 MiB) is the core collection
 outside the standard set (owner, 2026-11-08, #84). A page declares it: Python

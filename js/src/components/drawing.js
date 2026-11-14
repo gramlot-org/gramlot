@@ -1,4 +1,5 @@
-import {Bag, sourceTarget} from '@gramlot/gramlot';
+import {sourceTarget} from '@genrojs/builders';
+import {Bag} from '@genrojs/bag';
 import inputs from './inputs.js';
 import layout from './layout.js';
 import {defineCollection, defineComponent} from './registry.js';

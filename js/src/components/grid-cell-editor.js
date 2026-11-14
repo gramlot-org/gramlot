@@ -1,4 +1,6 @@
-import {Bag, sourceTarget, toTytx} from '@gramlot/gramlot';
+import {toTytx} from '@genrojs/tytx';
+import {sourceTarget} from '@genrojs/builders';
+import {Bag} from '@genrojs/bag';
 import {pointerTransform} from '@genrojs/builders';
 
 /**
