@@ -1,7 +1,7 @@
 import {ChartTimeView,timeLabel} from './chart-time.js';
 import {ChartTimeline} from './chart-timeline.js';
 import {ChartPane} from './chart-pane.js';
-import {Bag} from '@gramlot/gramlot';
+import {Bag} from '@genrojs/bag';
 import {collectionKey} from '../stores/bag-collection-store.js';
 import {defineCollection, defineComponent} from '@gramlot/gramlot/components';
 import {Container} from './container.js';

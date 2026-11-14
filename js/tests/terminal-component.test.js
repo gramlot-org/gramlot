@@ -3,6 +3,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {build} from 'esbuild';
 import {JSDOM} from 'jsdom';
+import {mkdtemp, rm, writeFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {pathToFileURL} from 'node:url';
 
 // The real xterm.js in JSDOM; esbuild turns the xterm style import into text, as the published bundle does.
 const bundle = await build({stdin: {contents: `
@@ -11,8 +15,11 @@ const bundle = await build({stdin: {contents: `
     export {default as layout} from './src/components/layout.js';
     export {ACK, OUTPUT, RESIZE} from './src/components/terminal.js';`, resolveDir: new URL('..', import.meta.url).pathname},
     bundle: true, write: false, format: 'esm', platform: 'node', loader: {'.css': 'text'}});
-const {Gramlot, GramlotBuilder, editors, layout, ACK, OUTPUT, RESIZE} =
-    await import('data:text/javascript;base64,' + Buffer.from(bundle.outputFiles[0].text).toString('base64'));
+// A file URL: the runtime carries grid, whose collection assets are URLs relative to the module.
+const folder = await mkdtemp(join(tmpdir(), 'gramlot-terminal-'));
+await writeFile(join(folder, 'bundle.mjs'), bundle.outputFiles[0].text);
+const {Gramlot, GramlotBuilder, editors, layout, ACK, OUTPUT, RESIZE} = await import(pathToFileURL(join(folder, 'bundle.mjs')).href);
+await rm(folder, {recursive: true, force: true});
 
 const {window} = new JSDOM('<body></body>', {pretendToBeVisual: true});
 for (const name of ['window', 'document', 'MutationObserver', 'Window', 'HTMLElement', 'Node', 'getComputedStyle']) globalThis[name] = window[name];

@@ -12,6 +12,7 @@ import {fileURLToPath} from 'node:url';
 import {moduleDoc} from './bundle-banner.mjs';
 import {runtimeOptions} from './runtime-options.mjs';
 import {libraries} from '../src/libraries.js';
+import {bundledCollections} from '../src/bundled-collections.js';
 const root = new URL('../', import.meta.url);
 const path = value => fileURLToPath(new URL(value, root));
 const compactStyle = await readFile(path('../themes/gramlot-compact/theme.css'), 'utf8');
@@ -44,9 +45,6 @@ await build({entryPoints: [path('../tools/gramlot-tools-inspector/src/inspector-
 await build({entryPoints: [path('../tools/gramlot-tools-inspector/src/gramlot-tools-inspector.js')],
     outfile: path('tools/gramlot-tools-inspector.js'), bundle: true, format: 'esm',
     target: 'es2022', external: ['@gramlot/gramlot', '@gramlot/collections/layout', '@gramlot/collections/tree'], loader: {'.css': 'text'}});
-const hosted = await build({...runtimeOptions['gramlot.js'], outfile: path('dist/gramlot.js')});
-const markdown = await build({absWorkingDir:path(''), entryPoints:[path('src/markdown.js')], outfile:path('dist/gramlot-markdown.js'),
-    bundle:true, minify:true, format:'esm', platform:'browser', target:'es2022', legalComments:'inline', metafile:true});
 // Both distributions ship the same prepared collection artifacts and fingerprint.
 const staging = await mkdtemp(join(tmpdir(),'gramlot-core-collections-'));
 try {
@@ -74,7 +72,10 @@ try {
         const descriptor = {name:record.name,
             grammar:JSON.parse(await readFile(join(prepared,record.grammar),'utf8')),
             buildId:record.buildId, module:url+record.module, dependencies:record.dependencies,
-            css:record.css.map(file=>url+file)};
+            css:record.css.map(file=>url+file),
+            // The local copy of each library the collection loads on first use (GC-325 §160).
+            libraries:Object.fromEntries(record.files.map(file=>/^assets\/libraries\/([A-Za-z]\w*)\.js$/.exec(file))
+                .filter(Boolean).map(([file,name])=>[name,url+file]))};
         if (standardNames.includes(record.name)) { standardDescriptors.push(descriptor); continue; }
         declaredDescriptors.push(descriptor);
         // The JavaScript counterpart of the Python descriptor gramlot.collections.<name>.mygramlot: the same object
@@ -82,9 +83,18 @@ try {
         await writeFile(path(`dist/collections/${record.name}.js`), '// Generated from the shipped collection inventory; do not edit.\n' +
             `import {declaredCollections} from '../declared-collections.js';\nexport default declaredCollections.find(collection => collection.name === ${JSON.stringify(record.name)});\n`);
     }
+    // The runtime bundle carries every standard collection (bundled-collections.js).
+    const bundledNames = bundledCollections.map(collection => collection.name).sort();
+    if (JSON.stringify(bundledNames) !== JSON.stringify([...standardNames].sort())) {
+        throw new Error(`bundledCollections ${bundledNames} differ from standard.json ${standardNames}`);
+    }
     await writeFile(path('dist/standard-collections.js'), '// Generated from the shipped collection inventory; do not edit.\nexport const standardCollections = '+JSON.stringify(standardDescriptors)+';\n');
     await writeFile(path('dist/declared-collections.js'), '// Generated from the shipped collection inventory; do not edit.\nexport const declaredCollections = '+JSON.stringify(declaredDescriptors)+';\n');
 } finally { await rm(staging,{recursive:true,force:true}); }
+// The runtime is built after the collections, from the same sources.
+const hosted = await build({...runtimeOptions['gramlot.js'], outfile: path('dist/gramlot.js')});
+const markdown = await build({absWorkingDir:path(''), entryPoints:[path('src/markdown.js')], outfile:path('dist/gramlot-markdown.js'),
+    bundle:true, minify:true, format:'esm', platform:'browser', target:'es2022', legalComments:'inline', metafile:true});
 // The minified runtime is served in deploy and in development without GRAMLOT_DEV=DEBUG.
 await build({...runtimeOptions['gramlot.min.js'], outfile: path('dist/gramlot.min.js')});
 await writeFile(path('dist/gramlot.d.ts'), `${moduleDoc}\nexport * from '../src/index.d.ts';\n`);

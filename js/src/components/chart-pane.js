@@ -1,4 +1,5 @@
-import {Bag,fromTytx,toTytx} from '@gramlot/gramlot';
+import {fromTytx, toTytx} from '@genrojs/tytx';
+import {Bag} from '@genrojs/bag';
 import {defineComponent} from './registry.js';
 import {Container} from './container.js';
 import {randomId} from '../random-id.js';

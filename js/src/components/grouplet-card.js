@@ -3,6 +3,7 @@ import {defineComponent} from './registry.js';
 import {Container} from './container.js';
 import {labelboxContent} from '../view/labelbox.js';
 import {positionPopup} from './popup.js';
+import {loadLibrary} from '../libraries.js';
 
 export const GroupletCard = defineComponent({
     name: 'groupletCard', tag: 'gramlot-grouplet-card', base: Container,
@@ -360,7 +361,7 @@ export const GroupletCard = defineComponent({
             this.docButton.setAttribute('aria-label', `Guide for ${this.parameters.title || 'card'}`);
             this.docTitle.textContent = this.parameters.title || 'Card guide';
             if (this.#docEvents && !this.#markdown && !this.docReady) {
-                this.docReady = import('./markdown-document.js').then(module => {
+                this.docReady = loadLibrary('markdownIt', this.ownerDocument, () => import('./markdown-document.js')).then(module => {
                     this.#markdown = module.markdownRenderer;
                     if (this.isConnected && this.#docEvents) this.refreshDoc();
                 });

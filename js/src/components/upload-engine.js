@@ -1,5 +1,5 @@
 /** One browser queue, independent of its presentation. Files and grants stay private. */
-import {Bag} from '@gramlot/gramlot';
+import {Bag} from '@genrojs/bag';
 import {fromTytx} from '@genrojs/tytx';
 import {randomId} from '../random-id.js';
 

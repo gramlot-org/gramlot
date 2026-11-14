@@ -71,6 +71,8 @@ export {SourcePicker} from './source-picker.js';
 
 /** The libraries and runtime modules shared with prepared collections, keyed by import specifier. */
 export declare const sharedModules: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
+/** The standard collections, carried by the runtime bundle (GC-325 §165). */
+export declare const bundledCollections: ReadonlyArray<{readonly name: string; register(window: Window): void}>;
 /** One third-party library of the manifest (GC-325 §160). */
 export interface LibraryEntry {
     readonly packages: Readonly<Record<string, string>>;

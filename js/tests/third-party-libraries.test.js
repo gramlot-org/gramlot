@@ -21,7 +21,8 @@ const packageOf = specifier => specifier.split('/').slice(0, specifier.startsWit
 /** A string of each library, present in its local copy and absent from Gramlot code. */
 const markers = {echarts: 'registerPreprocessor', echartsGl: 'Geo3D', uplot: 'pxRatio', plotly: 'newPlot',
     vega: 'Dataflow', writeExcelFile: 'xl/worksheets', jodit: 'jodit-wysiwyg', codemirror: 'EditorView',
-    prosemirror: 'NodeSelection', typst: 'WebAssembly', xterm: 'registerCsiHandler', xtermFit: 'proposeDimensions'};
+    prosemirror: 'NodeSelection', typst: 'WebAssembly', xterm: 'registerCsiHandler', xtermFit: 'proposeDimensions',
+    markdownIt: 'renderMarkdownDocument'};
 
 test('the manifest names the installed versions, the same file on jsDelivr and its SRI hash', async () => {
     for (const [name, library] of Object.entries(libraries)) {
@@ -101,6 +102,27 @@ test('the bootstrap carries the library source, the import map the integrity of 
     assert.throws(() => new Server({librarySource: 'unpkg'}), /library source must be 'cdn' or 'local'/);
 });
 
+test('the import map names the local copy of each library in the artifact of its collection', async () => {
+    class Hello extends (await import('../src/server/page.js')).Page { main(root) { root.div('hi'); } }
+    class Server extends GramlotServer {
+        async resolvePage() { return Hello; }
+        async resolveResources() { return {css: [], js: []}; }
+    }
+    const server = new Server();
+    const {html} = await server.openPage('/');
+    const imports = JSON.parse(html.match(/<script type="importmap"[^>]*>(.*?)<\/script>/s)[1]).imports;
+    const owners = {writeExcelFile: 'grid', markdownIt: 'editors', codemirror: 'editors', jodit: 'editors', prosemirror: 'editors',
+        xterm: 'editors', xtermFit: 'editors', xtermStyle: 'editors', echarts: 'charts', echartsGl: 'charts', uplot: 'charts',
+        uplotStyle: 'charts', plotly: 'charts', vega: 'charts'};
+    const libraries = Object.fromEntries(Object.entries(imports).filter(([key]) => key.startsWith('@gramlot/libraries/'))
+        .map(([key, url]) => [key.slice('@gramlot/libraries/'.length), url]));
+    assert.deepEqual(Object.keys(libraries).sort(), Object.keys(owners).sort());
+    for (const [name, owner] of Object.entries(owners)) {
+        const collection = server.collections.find(item => item.name === owner);
+        assert.equal(libraries[name], collection.module.replace(/assets\/index\.js$/, `assets/libraries/${name}.js`), name);
+    }
+});
+
 test('contentSecurityPolicy adds the CDN origin to the directives of scripts and connections', () => {
     const server = new GramlotServer();
     const origin = 'https://cdn.jsdelivr.net';
@@ -134,21 +156,41 @@ test('shipped standard collections hold no third-party library in their start-up
             assert.doesNotMatch(text, /\bimport\(\s*["']https?:/, `${name}: CDN URL in ${file}`);
             for (const [library, marker] of Object.entries(markers)) assert.ok(!text.includes(marker), `${name}: ${library} at start`);
         }
-        for (const file of await readdir(join(assets, 'modules')).catch(() => [])) {
-            if (!start.has(join(assets, 'modules', file))) deferred.add(await readFile(join(assets, 'modules', file), 'utf8'));
+        for (const folder of ['modules', 'libraries', 'libraries/chunks']) {
+            for (const file of await readdir(join(assets, folder)).catch(() => [])) {
+                if (file.endsWith('.js') && !start.has(join(assets, folder, file))) deferred.add(await readFile(join(assets, folder, file), 'utf8'));
+            }
         }
     }
-    // The local copy of every library ships as a deferred module: the serverless and file exports need no network.
+    // The local copy of every library ships as a deferred module (`assets/libraries/<name>.js`): the serverless and
+    // file exports need no network.
     for (const [library, marker] of Object.entries(markers)) assert.ok([...deferred].some(text => text.includes(marker)), library);
 });
 
-test('a file-origin bundle of the charts collection resolves every library locally', async () => {
-    const assets = join(repository, 'src/gramlot/collections/charts/assets');
-    const result = await build({entryPoints: [join(assets, 'index.js')], bundle: true, write: false, format: 'esm',
-        platform: 'browser', target: 'es2022', logLevel: 'silent', metafile: true,
+test('a file-origin bundle of the runtime resolves every library to the artifact of its collection', async () => {
+    // A hosted page reads `@gramlot/libraries/<name>` from the import map; a file-origin bundle resolves it to the
+    // module of the library in the artifact of the standard collection that ships it.
+    const names = JSON.parse(await readFile(join(repository, 'src/gramlot/collections/standard.json'), 'utf8'));
+    const files = new Map();
+    for (const name of names) {
+        for (const file of await readdir(join(repository, 'src/gramlot/collections', name, 'assets/libraries')).catch(() => [])) {
+            if (file.endsWith('.js') && !files.has(file.slice(0, -3))) {
+                files.set(file.slice(0, -3), join(repository, 'src/gramlot/collections', name, 'assets/libraries', file));
+            }
+        }
+    }
+    const libraryModules = {name: 'library-modules', setup(b) {
+        b.onResolve({filter: /^@gramlot\/libraries\//}, args => {
+            const file = files.get(args.path.slice('@gramlot/libraries/'.length));
+            assert.ok(file, args.path);
+            return {path: file};
+        });
+    }};
+    const result = await build({entryPoints: [join(js, 'dist/gramlot.js')], bundle: true, write: false, format: 'esm',
+        platform: 'browser', target: 'es2022', logLevel: 'silent', plugins: [libraryModules],
         external: ['@gramlot/gramlot', '@gramlot/gramlot/*', '@gramlot/collections/*']});
     const text = result.outputFiles[0].text;
-    for (const library of ['echarts', 'echartsGl', 'uplot', 'plotly', 'vega']) assert.ok(text.includes(markers[library]), library);
+    for (const library of Object.keys(markers).filter(name => name !== 'typst')) assert.ok(text.includes(markers[library]), library);
     assert.doesNotMatch(text, /\bimport\(\s*["']https?:/);
 });
 

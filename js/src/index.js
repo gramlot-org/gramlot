@@ -64,5 +64,7 @@ export {SourcePicker} from './source-picker.js';
 
 // Prepared collections read the shared libraries and runtime modules from this table (GC-325 §155).
 export {sharedModules} from './shared-modules.js';
+// The standard collections of the runtime bundle: no collection file loads for them.
+export {bundledCollections} from './bundled-collections.js';
 // Third-party libraries of components: the manifest and the loader on first use (GC-325 §160).
 export {libraries, loadLibrary} from './libraries.js';

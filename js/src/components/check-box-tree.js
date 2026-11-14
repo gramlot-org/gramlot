@@ -1,4 +1,4 @@
-import {Bag} from '@gramlot/gramlot';
+import {Bag} from '@genrojs/bag';
 
 /** Identity/caption projection only. The shared tree owns checks and lazy propagation. */
 export class CheckBoxTree {

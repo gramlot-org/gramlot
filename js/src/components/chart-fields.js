@@ -1,4 +1,4 @@
-import {Bag} from '@gramlot/gramlot';
+import {Bag} from '@genrojs/bag';
 import {defineComponent} from '@gramlot/gramlot/components';
 import {randomId} from '../random-id.js';
 import {Container} from './container.js';

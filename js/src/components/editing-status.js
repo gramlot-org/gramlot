@@ -1,4 +1,4 @@
-import {Bag} from '@gramlot/gramlot';
+import {Bag} from '@genrojs/bag';
 import {defineComponent} from './registry.js';
 import {Container} from './container.js';
 import {SVG_NS} from '../renderer/attributes.js';

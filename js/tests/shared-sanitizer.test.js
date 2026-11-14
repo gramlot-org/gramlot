@@ -4,7 +4,7 @@ import {readFile, readdir} from 'node:fs/promises';
 import {JSDOM} from 'jsdom';
 import {build} from 'esbuild';
 import originalFactory from 'dompurify';
-import {createDOMPurify} from '../src/index.js';
+import {createDOMPurify, sharedModules} from '../src/index.js';
 import {runtimeOptions} from '../scripts/runtime-options.mjs';
 
 test('shared factory keeps component configuration, hooks and document ownership isolated', t => {
@@ -35,17 +35,14 @@ test('shared factory keeps component configuration, hooks and document ownership
     assert.match(otherFrame.sanitize(value), /title="kept"/);
 });
 
-test('runtime owns DOMPurify and component build graphs reuse its export', async () => {
+test('runtime owns DOMPurify, with the collections it carries; prepared collections read it from sharedModules', async () => {
     const runtime = await build({...runtimeOptions['gramlot.min.js'], write:false, metafile:true, logLevel:'silent'});
     const purifierInputs = meta => Object.keys(meta.inputs).filter(name => name.includes('/dompurify/'));
     assert.equal(purifierInputs(runtime.metafile).length, 1);
     for (const name of ['inputs','layout','tree','editors','grouplets']) {
-        const result = await build({entryPoints:[new URL(`../src/components/${name}.js`, import.meta.url).pathname],
-            bundle:true, write:false, metafile:true, format:'esm', platform:'browser', loader:{'.css':'text'},
-            external:['@gramlot/gramlot'], logLevel:'silent'});
-        assert.deepEqual(purifierInputs(result.metafile), [], name);
-        assert.match(result.outputFiles[0].text, /createDOMPurify/);
+        assert.ok(Object.keys(runtime.metafile.inputs).includes(`src/components/${name}.js`), name);
     }
+    assert.equal(sharedModules.dompurify.default, createDOMPurify);
 });
 
 test('prepared collection chunks contain no private DOMPurify implementation', async () => {

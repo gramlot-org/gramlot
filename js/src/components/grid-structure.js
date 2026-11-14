@@ -1,4 +1,4 @@
-import {Bag} from '@gramlot/gramlot';
+import {Bag} from '@genrojs/bag';
 import {formulaDefinitions} from './grid-formulas.js';
 
 const TYPES = new Set(['T', 'B', 'L', 'R', 'N', 'D', 'H', 'DHZ']);
