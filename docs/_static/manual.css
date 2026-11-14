@@ -30,7 +30,13 @@
 
 /* GC-017: examples are interactive pages supplied by the documentation gallery. */
 .inside-example { display: block; width: 100%; border: 1px solid #cdd6df; border-radius: 6px; margin: 1.5em 0; }
-.inside-name { height: 175px; }
+.inside-name { height: 210px; }
 .inside-triangle { height: 330px; }
 .inside-many { height: 610px; }
 @media (max-width: 600px) { .inside-many { height: 1250px; } }
+
+/* Keep the introductory examples readable at narrow widths. */
+#inside-gramlot .highlight pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}

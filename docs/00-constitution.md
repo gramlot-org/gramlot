@@ -116,7 +116,8 @@ and database technology; an integration may depend on core, never the reverse.
 | `gramlot-py-server` | Python pages: one PyPI package, `gramlot-py-server`, with five adapters as extras: `uvicorn` (Uvicorn or any ASGI server), `django`, `flask`, `fastapi` and `kajenn` (Kajenn, the new product name for Genro ASGI) |
 | `gramlot-js-server` | JavaScript pages: `@gramlot/gramlot-js-server` (Node.js and Bun), `@gramlot/gramlot-serverless` (JavaScript in a browser Worker without a server, standalone; amendments 11.50 and 11.52) and `@gramlot/create` (new projects) |
 
-`gramlot-examples` holds the example pages, their READMEs and the gallery; each
+`gramlot-examples` holds the general example pages, their READMEs and the gallery;
+bounded interactive documentation examples stay with their guides (owner, 2026-11-10). Each
 integration serves them with its gallery command (amendment 11.56). Standalone remains
 the browser/Worker profile name. Core retains shared Host/Page execution and
 rendering. Kajenn is published on PyPI as `kajenn`; the `kajenn` adapter depends only
@@ -1448,6 +1449,8 @@ Rules: [GC-090 §030](public/090-classes-and-hosts.md#gc-090-030),
 [GC-095 §095](public/095-writing-pages.md#gc-095-095). Record: GC-070 §670.
 
 ### Amendment 11.56 — The examples and their runner leave the core — 2026-10-04
+
+**Superseded in part:** documentation-owned interactive examples are permitted beside their guides by the owner decision of 2026-11-10 below.
 
 Owner decisions: "tutti gli esempi vanno messi nel repo esempi e collegati opportunamente"
 (2026-10-02); the gallery model of 2026-10-02: examples without a runner, a gallery command
@@ -5634,6 +5637,18 @@ possible, from a vendored copy we ship. One manifest describes them." This super
 third-party library of the standard components (GC-325 §160). Servers choose `cdn`
 (default) or `local`; serverless and file exports use the local copies. The names and
 the public API wait for owner confirmation (GC-225, 2026-11-07).
+
+
+### Documentation-owned interactive examples — owner, 2026-11-10
+
+Owner: “Ok, tieni gli esempi Python accanto alla documentazione e integra la
+generazione TYTX nella build di Read the Docs, senza dipendere da gramlot-examples.”
+This supersedes amendment 11.56 only for bounded interactive examples that teach
+the accompanying core documentation: their Python source and styles live beside
+the guide, and the documentation build generates TYTX and browser assets from the
+core. The general example pages, their gallery and runner remain in gramlot-examples;
+core does not depend on gramlot-examples or an adapter. This decision does not
+authorize package publication or an application deployment.
 
 ### Data and structure by address only — owner, 2026-11-10
 
