@@ -3366,6 +3366,9 @@ Issue gramlot-org/gramlot#82 (GC-325 §165). Names applied:
   `libraries` follow the snake/camel convention and the `libraries` manifest.
 - The manifest entry `markdownIt` follows `writeExcelFile`: the npm package name in
   camelCase. The esbuild plugin `library-module` follows `absent-package`.
+- The generated module `js/dist/standard-grammar.js` and its export `standardGrammar`
+  follow `dist/standard-collections.js` / `standardCollections`. The static
+  `SourceHandler.pageBuilder` names what it returns, as `GramlotServer.environmentPage`.
 
 Chosen in implementation; the export, the import map entry and the descriptor field
 are public API and wait for owner confirmation.

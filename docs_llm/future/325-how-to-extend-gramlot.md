@@ -1968,24 +1968,35 @@ of §160:
 
 Chromium headless, localhost, gramlot-py-server 0.3.31 on Uvicorn, 2026-11-14. Page:
 tabContainer, formlet with four inputs, grid with 20 rows. Times are medians of 8 to 20
-loads, in ms from navigation start to the answer of `main`.
+loads, in ms from navigation start to the answer of `main`, with the prepared grammar below.
 
 | | 0.3.37 | this change |
 |---|---:|---:|
 | files at start (HTML included) | 29 (26 of collections) | 3 (none of collections) |
-| bytes at start, uncompressed | 1,383,787 | 1,358,137 |
-| `gramlot.min.js`, minified / brotli | 813,017 / 176,994 | 1,319,787 / 281,244 |
-| `main` answered, warm cache | 294 | 300 |
-| `main` answered, no cache | 332 | 353 |
-| `main` answered, no cache, 40 ms round trip | 638 | 469 |
+| `gramlot.min.js`, minified / brotli | 813,017 / 176,994 | 2,187,108 / 290,399 |
+| `main` answered, warm cache | 296 | 82 |
+| `main` answered, no cache, 40 ms round trip | 630 | 256 |
 
-The change removes the requests and their round trips: it shortens a load without a
-cache over a real network. With a warm cache the collection files come from the
-browser cache and the time does not change. A CPU profile of the warm load (this
-change) gives about 250 of 330 ms to `loadGrammar`, called by the `GramlotBuilder`
-constructor once per collection (`loadCollection`); the grammar of `charts` alone is
-435 KB of JSON. That cost is the same in 0.3.37 and is the next target for the start
-time.
+### The prepared grammar of the standard collections
+
+A CPU profile of the warm load showed about 250 of 330 ms in `loadGrammar`: the
+`GramlotBuilder` constructor composed the grammar of each collection on the grammar of
+the previous ones, copying and parsing the whole document at every collection. The
+same work repeated at every page.
+
+- The build composes the grammar of the standard collections once, in the order of the
+  collection graph of the servers, and writes it to `js/dist/standard-grammar.js`
+  (`standardGrammar = {collections, document}`, a JSON text read by `JSON.parse`).
+  The runtime carries it: 865 KB of JSON, about 6 KB more in brotli.
+- `SourceHandler.pageBuilder(collections, nameSyntax)` loads that document in one step
+  (`loadGrammar(document, {replace: true})`) when the collections of the page start
+  with the standard ones in that order, then composes the collections after them
+  (declared and custom). Any other list composes each collection, as before.
+- The servers already reuse a prepared grammar per process (`preparedGrammars`,
+  2026-10-30); this is the same rule for the browser, prepared at build time.
+- In Node, composing the 11 standard collections takes about 400 ms; loading the
+  prepared document takes about 27 ms.
 
 Verification: `js/tests/bootstrap.test.js` (a page imports no file of a standard
-collection), `js/tests/third-party-libraries.test.js`, `tests/test_third_party_libraries.py`.
+collection), `js/tests/standard-grammar.test.js`, `js/tests/third-party-libraries.test.js`,
+`tests/test_third_party_libraries.py`.

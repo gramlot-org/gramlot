@@ -22193,7 +22193,7 @@ Datapath aliases (`_aliasDatapaths`) are excluded from the symbolic paths by own
 
 Every standard collection is in `gramlot.min.js` (GC-325 §165, owner direction of
 gramlot-org/gramlot#82, confirmed 2026-11-14). A page loads 3 files instead of 29;
-third-party libraries load on first use from `@gramlot/libraries/<name>`. Start time
-with a warm cache is unchanged: about 250 of 330 ms go to `loadGrammar` of the
-`GramlotBuilder` constructor. Open: that cost; gramlot-js-server serverless export must
-resolve `@gramlot/libraries/<name>`. No release.
+third-party libraries load on first use from `@gramlot/libraries/<name>`. The browser
+loads the grammar of the standard collections prepared by the build in one step: `main`
+answered at 82 ms instead of 296 with a warm cache. Open: gramlot-js-server serverless
+export must resolve `@gramlot/libraries/<name>`. No release.

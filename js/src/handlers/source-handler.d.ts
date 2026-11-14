@@ -33,6 +33,9 @@ export class SourceHandler extends Handler {
      */
     constructor(gramlot: Gramlot, options: {collections: unknown[]; destination: DomElement | null; subscriptions: unknown;
         nameSyntax: NameSyntax});
+    /** The builder of a page: the prepared grammar of the standard collections in one step when `collections`
+     * start with them in its order, then the other collections one by one (GC-325 §165). */
+    static pageBuilder(collections: unknown[], nameSyntax: NameSyntax | undefined): GramlotBuilder;
     /** Start from an embedded typed Source, with the same observed insertion as `main`. */
     startSource(wire: SourceBag | string): Gramlot;
     /** Validate and insert `main` in the Source. */
