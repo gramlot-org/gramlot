@@ -2,14 +2,16 @@ import {SVG_NS} from '../renderer/attributes.js';
 
 // Shared presentation only; Source ownership remains with the caller.
 const surfaces = new WeakMap();
+// Pointer travel in px that turns a press on the move handle of a docked detachable window into a detach.
+const DETACH_DISTANCE = 6;
 export class WindowSurface {
         #context; #observer; #scheduled = false; #live = false;
         #open = false; #collapsed = false; #maximized = false; #pending = null; #generation = 0;
-        #geometry = null; #gesture = null; #previousFocus = null;
-        #resize = () => { if (this.#open && !this.parameters.docked) this.#fit(); };
-        constructor(host, root, {modal, validateContent}) {
+        #geometry = null; #gesture = null; #previousFocus = null; #written = new Map();
+        #resize = () => { if (this.#open && !this.#docked) this.#fit(); };
+        constructor(host, root, {modal, validateContent, content = null}) {
             this.host = host; this.root = root; this.modal = modal;
-            this.validateContent = validateContent;
+            this.validateContent = validateContent; this.content = content;
             const doc = this.ownerDocument;
             const shadow = this.root; shadow.classList.add('window-surface');
             const style = doc.createElement('style');
@@ -20,7 +22,7 @@ export class WindowSurface {
                   background:var(--gramlot-surface,Canvas);box-shadow:0 2px 6px #00000014,0 16px 36px #00000029;overflow:hidden;
                   max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}
                 .window-surface dialog[open]{display:flex;flex-direction:column}
-                .window-surface dialog[data-docked]{position:relative!important;inset:0!important;width:100%!important;height:100%!important;
+                .window-surface dialog[data-docked]{position:relative!important;inset:0!important;width:100%!important;height:var(--collapsed-height,100%)!important;
                   min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;
                   border:0;border-radius:0;box-shadow:none;z-index:auto!important}
                 .window-surface dialog[data-docked] .titlebar,.window-surface dialog[data-docked] .resize{display:none!important}
@@ -79,11 +81,38 @@ export class WindowSurface {
                 handle.addEventListener('lostpointercapture',event=>this.#endGesture(event,false));
                 handle.addEventListener('keydown',event=>this.#keyGeometry(event,kind));
             }
+            this.titlebar.addEventListener('dblclick',event=>this.#toggleDocked(event));
+            // Without the title bar, the top region of the framePane child (content) moves the window.
+            if(content) {
+                this.host.addEventListener('pointerdown',event=>{
+                    const handle=this.#frameTopHandle(event);
+                    if(handle)this.#startGesture(event,'move',handle);
+                });
+                const frameGesture=()=>this.#gesture&&this.#gesture.handle!==this.titlebar&&this.#gesture.handle!==this.resizeButton;
+                this.host.addEventListener('pointermove',event=>{if(frameGesture())this.#moveGesture(event);});
+                this.host.addEventListener('pointerup',event=>{if(frameGesture())this.#endGesture(event,true);});
+                for(const type of ['pointercancel','lostpointercapture'])this.host.addEventListener(type,event=>{if(frameGesture())this.#endGesture(event,false);});
+                this.host.addEventListener('dblclick',event=>{if(this.#frameTopHandle(event))this.#toggleDocked(event);});
+            }
             this.#observer=new doc.defaultView.MutationObserver(()=>this.#schedule());
         }
         #button(label,text) { const b=this.ownerDocument.createElement('button');b.type='button';b.textContent=text;b.setAttribute('aria-label',label);b.title=label;return b; }
         get ownerDocument() { return this.host.ownerDocument; }
         get opened() { return this.#open; }
+        // Docked presentation applies unless maximized: a maximized docked window fills the viewport as when floating.
+        get #docked() { return this.parameters.docked===true&&!this.#maximized; }
+        // The window's own title bar is not displayed: docked, or omitted with titlebar=false.
+        get #barless() { return this.#docked||this.parameters.titlebar===false; }
+        #frameTop() { return this.content?.().querySelector(':scope>[slot="top"]')??null; }
+        // The framePane top region moves the window without its own title bar, and while docked (the title bar is hidden).
+        #frameTopHandle(event) {
+            if(this.parameters.titlebar!==false&&!this.#docked)return null;
+            const top=this.#frameTop();if(!top)return null;
+            const path=event.composedPath(),index=path.indexOf(top);
+            if(index<0)return null;
+            const interactive='button,input,select,textarea,a[href],[contenteditable],[role=button],[role=menuitem],[role=menubar],[role=toolbar]';
+            return path.slice(0,index+1).some(node=>node.matches?.(interactive))?null:top;
+        }
         focus() { this.#raise(); this.closeButton.focus(); }
         setSourceContext(context) { this.#context=context; }
         connect() {
@@ -104,11 +133,14 @@ export class WindowSurface {
             const previous=this.parameters;
             this.parameters=parameters;
             if(previous) {
-                if(['width','height','left','top','minWidth','minHeight'].some(name=>previous[name]!==this.parameters[name])) {
+                // A geometry value this window wrote itself comes back through Data: it is not a new placement.
+                const changed=name=>previous[name]!==this.parameters[name]&&!(this.#written.has(name)&&this.#written.get(name)===this.parameters[name]);
+                if(['width','height','left','top','minWidth','minHeight'].some(changed)) {
                     this.#cancelGesture();this.#geometry=null;this.#collapsed=false;this.#maximized=false;
                 }
+                for(const [name,value] of this.#written)if(value!==this.parameters[name])this.#written.delete(name);
                 if(previous.open!==this.parameters.open) { this.#generation++;this.#pending=null; }
-                if(previous.movable!==this.parameters.movable || previous.resizable!==this.parameters.resizable || previous.docked!==this.parameters.docked)this.#cancelGesture();
+                if(previous.movable!==this.parameters.movable || previous.resizable!==this.parameters.resizable || previous.docked!==this.parameters.docked || previous.titlebar!==this.parameters.titlebar)this.#cancelGesture();
             }
             this.#schedule();
         }
@@ -122,7 +154,9 @@ export class WindowSurface {
             this.heading.textContent=p.title;this.shell.setAttribute('aria-label',p.title);
             this.closeButton.hidden=!p.closable;this.closeButton.disabled=Boolean(this.#pending);
             this.collapseButton.hidden=!p.collapsible;this.maximizeButton.hidden=!p.maximizable;
-            this.shell.toggleAttribute('data-docked', p.docked === true);
+            this.titlebar.hidden=p.titlebar===false;
+            // Before any measurement: an undocked window is measured with its floating size.
+            this.shell.toggleAttribute('data-docked',this.#docked);
             if(!p.open) { this.#close(false);return; }
             if(!this.#open) {
                 this.#previousFocus=this.#activeElement();
@@ -131,7 +165,6 @@ export class WindowSurface {
                 this.#open=true;if(!p.docked){this.#applySize();this.#fit();this.#raise();}
                 this.#context.publish('opened',{});
             } else if(!p.docked && !this.#geometry) { this.#applySize();this.#fit(); }
-            if(p.docked) { this.body.hidden=false;this.resizeButton.hidden=true;return; }
             this.#setMaximized(p.maximizable&&p.maximized,false);
             this.#setCollapsed(p.collapsible&&p.collapsed,false);
             if(!p.maximizable && p.maximized)this.#context.writeParameter('maximized',false);
@@ -153,6 +186,7 @@ export class WindowSurface {
             }
         }
         #fit() {
+            if(this.#docked)return;
             if(this.#maximized){this.#renderGeometry();return;}
             const r=this.shell.getBoundingClientRect(),w=this.ownerDocument.defaultView;
             const width=Math.min(r.width,Math.max(0,w.document.documentElement.clientWidth-16)),height=Math.min(r.height,Math.max(0,w.document.documentElement.clientHeight-16));
@@ -162,7 +196,7 @@ export class WindowSurface {
         }
         #paint(rect) { for(const key of ['left','top','width','height'])this.shell.style[key]=`${rect[key]}px`; }
         #raise() {
-            if(this.modal||!this.#open||this.parameters.docked)return;
+            if(this.modal||!this.#open||this.#docked)return;
             // Reserve the page's low stacking levels for layout chrome (splitters/drawers).
             // Modal dialogs and menu popovers remain above these nonmodal windows in the top layer.
             const base=100;
@@ -171,11 +205,28 @@ export class WindowSurface {
             this.shell.style.zIndex=String(base+peers.length);
         }
         // #geometry always holds the normal expanded rectangle, never viewport size.
+        // Collapsed without its own title bar, the window keeps only the framePane top region.
         #renderGeometry() {
+            const docked=this.#docked,barless=this.#barless;
+            this.shell.toggleAttribute('data-docked',docked);
+            this.shell.toggleAttribute('data-maximized',this.#maximized);
+            this.body.hidden=this.#collapsed&&!barless;
+            const collapsedHeight=barless?(this.#frameTop()?.getBoundingClientRect().height??0):this.titlebar.getBoundingClientRect().height;
+            if(docked) {
+                if(this.#collapsed)this.shell.style.setProperty('--collapsed-height',`${collapsedHeight}px`);
+                else this.shell.style.removeProperty('--collapsed-height');
+                this.titlebar.removeAttribute('data-movable');this.titlebar.tabIndex=-1;this.resizeButton.hidden=true;
+                return;
+            }
+            this.shell.style.removeProperty('--collapsed-height');
+            if(!this.#maximized&&!this.#geometry) {
+                // First floating presentation of a window opened docked.
+                this.#applySize();const r=this.shell.getBoundingClientRect();
+                this.#geometry={left:r.left,top:r.top,width:r.width,height:r.height};
+            }
             const viewport=this.ownerDocument.documentElement;
             const rect=this.#maximized?{left:0,top:0,width:viewport.clientWidth,height:viewport.clientHeight}:{...this.#geometry};
-            if(this.#collapsed)rect.height=this.titlebar.getBoundingClientRect().height+2;
-            this.shell.toggleAttribute('data-maximized',this.#maximized);
+            if(this.#collapsed)rect.height=collapsedHeight+2;
             this.shell.style.minWidth=this.#maximized?'0':this.parameters.minWidth??'min(220px, calc(100vw - 16px))';
             this.shell.style.minHeight=this.#collapsed||this.#maximized?'0':this.parameters.minHeight??'min(140px, calc(100dvh - 16px))';
             this.#paint(rect);
@@ -186,7 +237,7 @@ export class WindowSurface {
         }
         #setMaximized(value,write) {
             if(!this.#open)return;
-            if(value!==this.#maximized){this.#cancelGesture();this.#maximized=value;}
+            if(value!==this.#maximized){this.#cancelGesture();this.#maximized=value;if(value)this.#raise();}
             this.#renderGeometry();
             if(!value)this.#fit();
             this.maximizeButton.textContent=value?'❐':'□';
@@ -202,7 +253,6 @@ export class WindowSurface {
                 if(value && this.body.contains(this.#activeElement()))this.collapseButton.focus();
                 this.#collapsed=value;
             }
-            this.body.hidden=value;
             this.shell.toggleAttribute('data-collapsed',value);this.collapseButton.textContent=value?'＋':'−';
             this.collapseButton.setAttribute('aria-label',value?'Expand window':'Collapse window');
             this.collapseButton.title=value?'Expand window':'Collapse window';
@@ -238,16 +288,26 @@ export class WindowSurface {
             if(write){this.parameters.open=false;this.#context.writeParameter('open',false);}
             this.#context.publish('closed',{});
         }
-        #startGesture(event,kind) {
+        #startGesture(event,kind,handle=event.currentTarget) {
+            if(kind==='move'&&this.#detachable&&this.#docked&&event.button===0&&this.#open) {
+                // A docked detachable window: the move becomes a detach once the pointer passes DETACH_DISTANCE.
+                event.preventDefault();this.#cancelGesture();
+                this.#gesture={kind:'detach',id:event.pointerId,handle,x:event.clientX,y:event.clientY,rect:null};
+                handle.setPointerCapture(event.pointerId);return;
+            }
             if(event.button!==0||!this.#open||this.parameters.docked||this.#maximized||kind==='move'&&!this.parameters.movable||kind==='resize'&&(!this.parameters.resizable||this.#collapsed))return;
             if(kind==='move'&&event.target.closest('button'))return;
             event.preventDefault();this.#cancelGesture();
             const r=this.shell.getBoundingClientRect();
-            this.#gesture={kind,id:event.pointerId,handle:event.currentTarget,x:event.clientX,y:event.clientY,rect:{left:r.left,top:r.top,width:r.width,height:r.height}};
-            event.currentTarget.setPointerCapture(event.pointerId);event.currentTarget.focus();
+            this.#gesture={kind,id:event.pointerId,handle,x:event.clientX,y:event.clientY,rect:{left:r.left,top:r.top,width:r.width,height:r.height}};
+            handle.setPointerCapture(event.pointerId);if(handle===event.currentTarget)handle.focus();
         }
         #moveGesture(event) {
             const g=this.#gesture;if(!g||g.id!==event.pointerId)return;
+            if(g.kind==='detach') {
+                if(Math.hypot(event.clientX-g.x,event.clientY-g.y)<DETACH_DISTANCE)return;
+                this.#detachUnder(g,event);
+            }
             this.#adjust(g.rect,event.clientX-g.x,event.clientY-g.y,g.kind);
         }
         #adjust(start,dx,dy,kind) {
@@ -267,13 +327,57 @@ export class WindowSurface {
         #endGesture(event,commit) {
             const g=this.#gesture;if(!g||g.id!==event.pointerId)return;
             this.#gesture=null;if(g.handle.hasPointerCapture(g.id))g.handle.releasePointerCapture(g.id);
+            if(g.kind==='detach')return;
             if(commit)this.#commitGeometry(g.kind);else {this.#paint(g.rect);if(!this.#collapsed)this.#geometry=g.rect;else this.#geometry={...this.#geometry,left:g.rect.left,top:g.rect.top,width:g.rect.width};}
         }
         #cancelGesture() { if(this.#gesture)this.#endGesture({pointerId:this.#gesture.id},false); }
+        get #detachable() { return this.parameters.detachable===true; }
+        /**
+         * Undock under the pointer, keeping the docked size and the grab point inside the window, then go on as a move:
+         * the window follows the pointer as a tab pulled out of a browser strip.
+         */
+        #detachUnder(g,event) {
+            const r=this.#dockedRect();
+            const offsetX=Math.min(Math.max(0,g.x-r.left),r.width),offsetY=Math.min(Math.max(0,g.y-r.top),r.height);
+            this.#geometry={...r,left:event.clientX-offsetX,top:event.clientY-offsetY};
+            this.#writeDocked(false);
+            const s=this.shell.getBoundingClientRect();
+            Object.assign(g,{kind:'move',x:event.clientX,y:event.clientY,rect:{left:s.left,top:s.top,width:s.width,height:s.height}});
+        }
+        /** Double click on the move handle of a detachable window: dock a floating window, detach a docked one in place. */
+        #toggleDocked(event) {
+            if(!this.#detachable||!this.#open||event.target.closest?.('button'))return;
+            event.preventDefault();this.#cancelGesture();
+            if(this.parameters.docked===true&&!this.#maximized) {
+                if(!this.#geometry)this.#geometry=this.#dockedRect();
+                this.#writeDocked(false);
+            } else {
+                if(this.#maximized)this.#setMaximized(false,true);
+                this.#writeDocked(true);
+            }
+        }
+        // The rectangle of the docked window as its floating geometry; collapsed, the expanded height is not on screen.
+        #dockedRect() {
+            const r=this.shell.getBoundingClientRect();
+            const height=this.#collapsed?this.#geometry?.height??Math.max(r.width*9/16,140):r.height;
+            return {left:r.left,top:r.top,width:r.width,height};
+        }
+        /**
+         * The local parameter changes first: the projection of the written value then finds nothing to cancel.
+         * Undocking also writes the floating size.
+         */
+        #writeDocked(value) {
+            this.parameters.docked=value;
+            this.#renderGeometry();
+            if(!value){this.#fit();this.#raise();}
+            this.#context.writeParameter('docked',value);
+            if(!value)for(const name of ['width','height'])this.#writeGeometry(name,`${this.#geometry[name]}px`);
+        }
+        #writeGeometry(name,value) { this.#written.set(name,value);this.#context.writeParameter(name,value); }
         #commitGeometry(kind) {
             const r=this.shell.getBoundingClientRect();
             for(const key of kind==='move'?['left','top']:['width','height']) {
-                const value=`${r[key]}px`;this.#context.writeParameter(key,value);
+                this.#writeGeometry(key,`${r[key]}px`);
             }
         }
         #keyGeometry(event,kind) {

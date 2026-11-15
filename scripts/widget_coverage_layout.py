@@ -210,18 +210,22 @@ COVERAGE = {
         'Shows tab navigation and selection. Detachment and closure are covered by the component tests.',
     ),
     'trayPane': _record(
-        'storepath resolves to a Bag keyed by direct child Source labels. Each position Bag holds x, y, '
-        'width, height, rotation, scale, selected and layer. Gesture changes write geometry and '
-        'selection to those rows while the existing controls stay mounted.',
+        'storepath resolves to a Bag keyed by direct child Source labels. Each position Bag holds left, '
+        'top, width, height, rotation, scale, selected and layer. Gesture changes write geometry and '
+        'selection to those rows while the existing controls stay mounted. With autoArrange, the tray '
+        'writes an even grid into the rows when children are added or removed and when the pane is '
+        'resized; autoSize also writes width and height to fill the visible pane.',
         'Drag, resize and rotation handles edit geometry. Shift applies configured snapping. Click '
         'and marquee gestures select blocks, and selected blocks can move together. Opt-in close '
-        'removes the block Source and its geometry row.',
-        'Give each direct child a Labelbox with lbl. Child options include minWidth, minHeight and '
-        'closable. A tray can contain interactive fields and nested trays.',
+        'removes the block Source and its geometry row. A user move or resize writes autoArrange '
+        'false, keeping the user arrangement; setting it true again rearranges immediately.',
+        'Give each direct child a Labelbox with lbl. Child options include minWidth, minHeight, '
+        'aspectRatio and closable. A tray can contain interactive fields and nested trays.',
         'Bounds and same-layer contact constrain edits. Lock hides editing chrome while external Data '
         'still projects. Cancellation restores the gesture state, and store replacement ends the old '
-        'gesture without overwriting the replacement.',
-        (_JS + 'tray-pane.js', _JS + 'tray-geometry.js'), ('tray-pane',),
+        'gesture without overwriting the replacement. Automatic arrangement ignores rotation and scale; '
+        'minimum dimensions take precedence over the visible area.',
+        (_JS + 'tray-pane.js', _JS + 'tray-geometry.js'), ('tray-pane', 'tray-geometry'),
         (_CONTAINERS + '07-tray', _CONTAINERS + '08-gallery_tray'),
         'Shows geometry Data, editable cards and a larger gallery composition.',
     ),

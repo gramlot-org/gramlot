@@ -15,11 +15,22 @@
               "binding": "read",
               "dtype": "X"
             },
+            "aspectRatio": {
+              "binding": "read",
+              "default": null,
+              "dtype": "R",
+              "nullable": true
+            },
             "image": {
               "binding": "read",
               "default": null,
               "dtype": "T",
               "nullable": true
+            },
+            "toolbar": {
+              "binding": "read",
+              "default": true,
+              "dtype": "B"
             }
           },
           "presentationDefaults": [],
@@ -79,6 +90,70 @@
             "has_default": true,
             "kind": "keyword_only",
             "name": "annotations",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "R",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "aspectRatio",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "B",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": true,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "toolbar",
             "role": "attribute"
           },
           {

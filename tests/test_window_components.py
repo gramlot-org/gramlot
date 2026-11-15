@@ -14,3 +14,10 @@ def test_python_window_frame_and_native_dialog_are_distinct():
     floating = b.root.floatingPane(open="^floating", maximizable=True, maximized="^float_maximized")
     floating.frame.center.div("Tools")
     assert floating.node_tag == "floatingPane"
+
+
+def test_python_floating_pane_accepts_titlebar_like_javascript():
+    b = GramlotBuilder(collections=[json.loads(files('gramlot').joinpath('collections/layout.json').read_text())])
+    floating = b.root.floatingPane(open=True, docked="^docked", titlebar=False)
+    floating.frame.top.div("Name")
+    assert floating.attr["titlebar"] is False

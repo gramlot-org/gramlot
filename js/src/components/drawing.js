@@ -11,7 +11,9 @@ import {SVG_NS} from '../renderer/attributes.js';
 export const DrawingPane = defineComponent({
     name:'drawingPane', tag:'gramlot-drawing-pane', base:Container, sourceContext:true, subTags:'*',
     parameters:{image:{dtype:'T',nullable:true,default:null,binding:'read'},
-        annotations:{dtype:'X',binding:'read'}},
+        annotations:{dtype:'X',binding:'read'},
+        // Without an image: the surface ratio (width/height) of a 1000 units high surface; toolbar=false omits the tool menu.
+        aspectRatio:{dtype:'R',nullable:true,default:null,binding:'read'},toolbar:{dtype:'B',default:true,binding:'read'}},
     implementation:Base => class extends Base {
         // The annotations are read at the address of the `annotations` pointer at each use; the
         // tool state lives in the node's private Data area and is observed through a router registration.
@@ -23,7 +25,7 @@ export const DrawingPane = defineComponent({
             const style=d.createElement('style');
             style.textContent=`:host{display:block;height:100%;min-height:0}.control-box{height:100%;display:flex;flex-direction:row;min-height:0;position:relative}
                 slot{display:contents} ::slotted(gramlot-menu){flex:0 0 56px;box-sizing:border-box;padding:6px;background:var(--gramlot-surface,Canvas);border-right:1px solid var(--gramlot-border-control,#a8b2bf);overflow:hidden}
-                .canvas{display:block;flex:1;width:0;height:100%;min-width:0;min-height:0;background:var(--gramlot-surface-subtle,#eee);touch-action:none;user-select:none}
+                .canvas{display:block;flex:1;width:0;height:100%;min-width:0;min-height:0;background:var(--gramlot-drawing-background,var(--gramlot-surface-subtle,#eee));touch-action:none;user-select:none}
                 .text-editor{position:absolute;z-index:2;min-width:120px;padding:2px 4px;border:1px solid #3977bc;border-radius:3px;background:white;color:#222;box-shadow:0 2px 8px #0003}
                 .text-editor[hidden]{display:none}.shape{cursor:pointer}.selected{stroke:#1683ff}.selected [data-text-hit]{stroke:#3977bc;stroke-width:1;stroke-dasharray:4 3}`;
             this.shadowRoot.append(style);this.control.replaceChildren();
@@ -75,7 +77,7 @@ export const DrawingPane = defineComponent({
             const url=this.parameters.image;
             if(url!==this.#url){
                 this.#url=url;this.#gesture=null;
-                if(!url){this.#dimensions=[1000,1000];this.#render();}
+                if(!url){this.#dimensions=this.#surface();this.#render();}
                 else {
                     this.#dimensions=null;this.#render();
                     this.#image.onload=()=>{if(this.#url!==url)return;this.#dimensions=[this.#image.naturalWidth,this.#image.naturalHeight];this.#render();};
@@ -83,8 +85,10 @@ export const DrawingPane = defineComponent({
                     this.#image.src=url;
                 }
             }
+            else if(!url)this.#dimensions=this.#surface();
             this.#render();
         }
+        #surface(){const ratio=this.parameters.aspectRatio;return ratio>0?[1000*ratio,1000]:[1000,1000];}
         #makeToolbar(){
             if(this.#built)return;
             const node=this.context.sourceNode,builder=node.rootBuilder;
@@ -94,6 +98,7 @@ export const DrawingPane = defineComponent({
             if(!(this.#state('tool')&&this.#state('color')&&this.#state('size')))
                 node.data.setItem(this.#statePath,new Bag({tool:'select',color:'#dd2222',size:3}));
             this.#tool=this.#state('tool');this.#lastColor=this.#state('color');this.#lastSize=this.#state('size');
+            if(this.parameters.toolbar===false){this.#built=true;return;}
             const fragment=new builder.source.constructor(null,builder),root=builder.wrapSource(fragment);
             const bar=root.menu({node_label:'bar',presentation:'bar',orientation:'vertical',labelPosition:'tooltip',iconSize:20,aria_label:'Image annotations'});
             sourceTarget(bar)._internal.drawingController=this;
