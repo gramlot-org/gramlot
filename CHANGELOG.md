@@ -7,6 +7,8 @@ in `.github/release-notes/`.
 
 ## [Unreleased]
 
+## [0.3.39] — 2026-11-15
+
 ### Added
 
 - `@gramlot/gramlot/build-plugins` (Node only): `absentPackagePlugin` and
