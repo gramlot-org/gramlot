@@ -445,23 +445,27 @@ test('getDomNode and getBaseSourceNode give null for a node removed under freeze
 test('R06: #<nodeId> is translated by the map; insertion, removal and in-place nodeId change', () => {
     const {app, builder, data, byId} = page();
     data.setItem('t.x', 'target x');
+    data.setItem('u.x', 'other x');
     const target = sourceTarget(builder.root.div({datapath: 't', nodeId: 'target'}));
     const sibling = builder.root.p('^#target.x', {id: 'p'});
     assert.equal(app.src.binding.nodeIds.get('target'), target);
     assert.deepEqual(registered(app, sibling), ['t.x']);
     assert.equal(byId('p').textContent, 'target x');
     assert.equal(sourceTarget(builder.nodeById('target')), target);
-    target.setAttr({nodeId: 'renamed'});
+    // The rename moves the start of the sibling's pointer: it resolves again at once, and fails explicitly.
+    assert.throws(() => target.setAttr({nodeId: 'renamed'}), {message: '#<id>: cannot resolve ^#target.x'});
     assert.equal(app.src.binding.nodeIds.has('target'), false);
     assert.equal(app.src.binding.nodeIds.get('renamed'), target);
-    assert.deepEqual(registered(app, sibling), ['t.x']);
-    assert.equal(app.src.binding.router.size, 1);
-    // As legacy: the next projection of the sibling reads its Source pointer and the old id no longer resolves.
-    assert.throws(() => data.setItem('t.x', 'after rename'), {message: '#<id>: cannot resolve ^#target.x'});
+    assert.deepEqual(registered(app, sibling), []);
+    assert.equal(app.src.binding.router.size, 0);
+    data.setItem('t.x', 'after rename');
     assert.equal(byId('p').textContent, 'target x');
-    assert.deepEqual(registered(app, sibling), ['t.x']);
     assert.throws(() => builder.root.span('^#target.x'), /#<id>: cannot resolve \^#target\.x/);
     assert.throws(() => builder.nodeById('target'), /nodeId not found: target/);
+    // A node that brings the nodeId back is the new start of the waiting pointer.
+    builder.root.div({datapath: 'u', nodeId: 'target'});
+    assert.deepEqual(registered(app, sibling), ['u.x']);
+    assert.equal(byId('p').textContent, 'other x');
     app.src.source.popNode(target.label);
     assert.equal(app.src.binding.nodeIds.has('renamed'), false);
 });

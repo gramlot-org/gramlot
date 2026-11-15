@@ -167,3 +167,22 @@ test('typed transport retains Source tags, scalar values and builder ownership',
     assert.equal(app.src.renderer.destination.textContent, 'changed');
     app.dispose();
 });
+
+test('_internal holds a node internal state that fires no Source event and is not serialized', () => {
+    const builder = new GramlotBuilder();
+    builder.root.div('homer', {id: 'panel'});
+    builder.root.div('marge');
+    const [node, other] = builder.source.getNodes();
+    const before = builder.toTytx();
+    const observed = [];
+    builder.source.subscribe('test', {any: event => observed.push(event.evt)});
+    assert.equal(node._internal, node._internal);
+    node._internal.draft = {text: 'bart', value: 'B'};
+    node._internal.draft.text = 'lisa';
+    assert.deepEqual(node._internal, {draft: {text: 'lisa', value: 'B'}});
+    assert.deepEqual(observed, []);
+    assert.equal(Object.hasOwn(node, '_internal'), false);
+    assert.equal(node.getAttr('_internal'), null);
+    assert.deepEqual(other._internal, {});
+    assert.equal(builder.toTytx(), before);
+});

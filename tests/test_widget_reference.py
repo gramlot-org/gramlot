@@ -17,8 +17,8 @@ from widget_reference_content import COLLECTION_GUIDES
 def packaged_collections():
     result = {}
     for path in (ROOT / 'src/gramlot/collections').glob('*.json'):
-        if path.name == 'standard.json':
-            continue  # Environment collection inventory, not a component grammar.
+        if path.name in ('standard.json', 'declared.json'):
+            continue  # Collection inventories, not component grammars.
         grammar = json.loads(path.read_text())
         elements = grammar.get('elements') or {}
         if any((element.get('_meta') or {}).get('gramlot_component') is not None

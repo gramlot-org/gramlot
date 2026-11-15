@@ -254,7 +254,7 @@ npm, including `./themes/*` and `./assets/branding/*` for packaged files:
 | `/runtime` | Bundled runtime served at the runtime URL | One ES module, exports of `@gramlot/gramlot` |
 | `/components` | Component authoring ([Components](105-components.md#gc-105-025)) | `defineComponent`, `defineCollection`, `ComponentCollection`, `NativeControl`, `ChoiceGroup`, `Labelbox`, `FieldState` |
 | `/components/inputs`, `/components/layout` | Collections ([Components](105-components.md#gc-105-035)) | Default export; `toDocument()` = grammar |
-| `/index-page-runtime` | `IndexPage` browser behavior alone ([Writing pages](095-writing-pages.md#gc-095-110)) | `IndexLogic` (export as `Logic`), `mountIndexPage(renderer, root, onSelection, prepareEntry, options)` → `{dispose()}`, `THEME_READY`/`THEME_SET` (theme message types index ↔ iframes), `THEMES` (`light`, `dark`), `APPEARANCES` (`base`, `compact`, `mimi`, `joanna`) |
+| `/index-page-runtime` | `IndexPage` browser behavior alone ([Writing pages](095-writing-pages.md#gc-095-110)) | `IndexLogic` (export as `Logic`), `mountIndexPage(renderer, root, onSelection, prepareEntry, options)` → `{dispose()}` (`options.state`: Data path of the index state), `THEME_READY`/`THEME_SET` (theme message types index ↔ iframes), `THEMES` (`light`, `dark`), `APPEARANCES` (`base`, `compact`, `mimi`, `joanna`) |
 | `/tools/inspector` | Optional inspector palette: Data/Source trees, styles, property editor, path breakpoints | Defines `gramlot-tools-inspector` (`GramlotToolsInspector`); `InspectorConnection`, `attachInspectorAgent` |
 | `/tools/inspector-agent` | Page side of an inspector connection, no runtime or palette | `attachInspectorAgent(gramlot, port)` → `{dispose()}` |
 

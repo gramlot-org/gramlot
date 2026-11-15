@@ -1,5 +1,6 @@
 /* @ts-self-types="./assets.d.ts" */
 import {standardCollections} from '../../dist/standard-collections.js';
+import {declaredCollections} from '../../dist/declared-collections.js';
 /**
  * Development mode and the runtime file to serve. `gramlotDev` imports nothing from Node.js, so the
  * neutral `GramlotServer` can read it in a serverless Worker, where it is null without `process`.
@@ -30,9 +31,11 @@ export function runtimeAsset(name = null) {
     return new URL(`../../dist/${name}`, import.meta.url);
 }
 
-/** Standard collection entry points; hosts verify their complete artifact inventories. */
-export function standardCollectionAssets() {
-    return standardCollections.map(collection => ({
+/** The entry points of every collection the core packages: the standard set, which every page receives, and the
+ * collections a page declares in `Page.gramlots` (`typst`). A host serves the collections of its page graph from
+ * them, as Python reads a declared collection from its package; hosts verify the complete artifact inventories. */
+export function collectionAssets() {
+    return [...standardCollections, ...declaredCollections].map(collection => ({
         url: collection.module,
         file: new URL(`../../dist/components/${collection.name}/assets/index.js`, import.meta.url),
     }));

@@ -20,8 +20,8 @@ test('an upload only refreshes and opens its own still-active workspace', async 
     const state = new Bag({browser:new Bag({root:'/first'}),upload:new Bag({open:true})});
     const calls=[];
     const controller={open:async root=>{calls.push(['refresh',root]);return root;}};
-    const scope={getRelativeData:()=>state,value:{getNode:()=>({fileSystemController:controller})}};
-    scope.ideContext={scope,documents:{disposed:false}};
+    const scope={getRelativeData:()=>state,_internal:{},value:{getNode:()=>({_internal:{fileSystemController:controller}})}};
+    scope._internal.ideContext={scope,documents:{disposed:false}};
     const logic={ideOpenDocument:async(node,root,path)=>calls.push(['open',root,path])};
     await IdeLogic.prototype.ideUploadCompleted.call(logic,scope,{result:{root:'/second',path:'image.png'}});
     assert.deepEqual(calls,[]);assert.equal(state.getItem('upload.open'),true);
@@ -76,7 +76,12 @@ print(b.to_tytx())
     const first = one.getRelativeData('.'), second = two.getRelativeData('.');
     assert.equal(first, app.data.getItem('workbench.one'));
     assert.equal(second, app.data.getItem('workbench.two'));
-    assert.notEqual(one.ideContext, two.ideContext);
+    assert.notEqual(one._internal.ideContext, two._internal.ideContext);
+    for (const [name, node] of [['ideContext', one], ['fileSystemController', one.value.getNode('frame.left.browser')]]) {
+        assert.equal(Object.hasOwn(node, name), false, ` is not a property of the node`);
+        assert.ok(node._internal[name], ` is under _internal`);
+        assert.equal(node.getAttr(name), null, ` is not an attribute`);
+    }
     for (const name of ['ideState','ideRoot','ideDocuments','idePanels','ideRequested','fileSystems']) assert.equal(app.logic[name], undefined, name);
     const ids = [...window.document.querySelectorAll('[id]')].map(node => node.id);
     assert.equal(new Set(ids).size, ids.length, 'two composed IDEs do not duplicate DOM IDs');
@@ -146,6 +151,58 @@ print(b.to_tytx())
     await Promise.all([lateOne,lateTwo]);
     assert.equal(first.getItem(`documents.${documentKey('/shared','late.py')}`),null);
     assert.equal(second.getItem(`documents.${documentKey('/shared','later.py')}.content`),'retained');
-    assert.equal(two.ideContext.documents.disposed,false);
+    assert.equal(two._internal.ideContext.documents.disposed,false);
     assert.deepEqual(errors,[]);
+});
+
+test('the IDE observes browser and documents at their Data paths and releases the registrations', async t => {
+    const source = execFileSync(process.env.GRAMLOT_TEST_PYTHON ?? 'python3', ['-c', `
+import json
+from pathlib import Path
+from gramlot import GramlotBuilder
+from gramlot.page import IdePage
+b = GramlotBuilder(collections=[json.loads(Path(f'src/gramlot/collections/{name}.json').read_text()) for name in ['inputs','layout','tree','editors','uploads']])
+pane = b.root.div(node_label='host', datapath='workbench')
+page = IdePage()
+page.shell_id = 'ide-one'
+page.datapath = '.one'
+page.main(pane)
+print(b.to_tytx())
+`], {cwd:fileURLToPath(new URL('../..',import.meta.url)),encoding:'utf8'}).trim();
+    const {window} = new JSDOM('<main id="gramlot-root"></main>', {url:'https://gallery.test/',pretendToBeVisual:true});
+    for (const name of ['window','document','MutationObserver','Window','HTMLElement','Node','getComputedStyle']) globalThis[name] = window[name];
+    window.ResizeObserver = class {observe(){}unobserve(){}disconnect(){}};
+    window.Range.prototype.getClientRects = () => [];
+    window.Range.prototype.getBoundingClientRect = () => ({left:0,right:0,top:0,bottom:0,width:0,height:0});
+    window.HTMLElement.prototype.showPopover = function(){};
+    const app = new Gramlot({document:window.document,transport:false,collections:[layout,inputs,tree,editors,uploads]});
+    t.after(() => {app.dispose();window.close();});
+    app.src.logicRegistry.register(IdeLogic, {resource:'test:ide-paths'});
+    app.rpc.call = async (type,method,args) => {
+        if (method === 'document_read') return {path:args.path,content:'x = 1',revision:'r1',writable:true,language:'python'};
+        if (method === 'workspace_open') return new Promise(() => {});
+        throw Error(`Unexpected RPC: ${method}`);
+    };
+    const router = app.src.binding.router;
+    app.src.startSource(source);
+    await settle();
+    const host = app.src.source.getNode('main.host');
+    const scope = host.value.getNodes()[0];
+    const mounted = router.size;
+    // A browser Bag replaced at its address is observed: the closure no longer holds the old Bag.
+    app.data.setItem('workbench.one.browser', new Bag({root:'/replaced', selectedPath:null, store:new Bag()}));
+    assert.equal(app.data.getItem('workbench.one.workspace'),'/replaced');
+    assert.equal(app.data.getItem('workbench.one.status'),'Workspace: /replaced');
+    await app.logic.ideOpenDocument(scope,'/replaced','a.py');
+    const key = documentKey('/replaced','a.py');
+    const pane = scope.value.getNode('frame.center.tabs').value.getNode(key);
+    // After the documents Bag is replaced at its address, a change inside the new Bag reaches the IDE.
+    app.data.setItem('workbench.one.documents', Bag.fromTytx(app.data.getItem('workbench.one.documents').toTytx()));
+    app.data.setItem(`workbench.one.documents.${key}.content`,'x = 2');
+    assert.equal(pane.getAttr('title'),'● a.py');
+    host.value.popNode(scope.label);
+    await settle();
+    assert.equal(router.size < mounted, true);
+    app.data.setItem('workbench.one.browser.root','/after');
+    assert.equal(app.data.getItem('workbench.one.workspace'),'/replaced','a disposed IDE no longer observes its Data');
 });

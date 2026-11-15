@@ -174,8 +174,27 @@ decisions from unified-plan §2.
   sets <name> on the existing Data node of the control's value/src; v may be a pointer.
   Applied after the node's own defaults, without an emptiness check; no Data node, no
   effect. Corrects the P15 clause. S05: existing, default-created, absent, pointer.
-- Symbolic paths: only Builder's #parent, #FORM (formId or form=True), #ANCHOR (_anchor),
-  #<node_id> (source-bag.js:109-190). #WORKSPACE/#ROW/#DATA and aliases are out. S01/S04.
+- Symbolic paths (superseded 2026-11-08, plan symbolic-references d-symbols: all legacy symbols):
+  GramlotBuilderBagNode JS and Python, shared cases tests/fixtures/symbolic_paths.json; order
+  #ROW, #WORKSPACE, #DATA, start node. #parent, #FORM, #ANCHOR, #<nodeId> (whole page, also
+  from an <svg> subtree), ?attr kept, at most one (a second ? is an error).
+  #WORKSPACE → _gramlot.workspace.<name> of nearest _workspace owner (string, else nodeId, else
+  <tag>_<stringHash(fullpath)>); _workspace_path replaces the area. #ROW only with a row context
+  (absDatapath(path,{row}) / abs_datapath(path,row=)): <storepath>.<key>[.field] or ?field in
+  rowMode 'attributes'; otherwise an error, never registered. #DATA.a.b → a.b. Datapath aliases
+  are excluded by owner decision (2026-11-08); an unknown #name is a #<nodeId>. #<head>/<childpath> and #/<childpath>
+  via childname (legacy getChild, parent, #symbol). The three attributes are metadata and context
+  attributes. JS rebinds NodeBindings whose start moved (node, id:, childname: keys);
+  failure = explicit error, no stale registration. Not ported: _fakeform, .*S. S01/S04/p3b.
+  p4 (grid): workspaceDatapath / workspace_datapath = the private area of a node, also without
+  _workspace (name as for _workspace=true); the grid keeps its nested struct at
+  <workspaceDatapath>.struct and the column filter popup Data at <workspaceDatapath>.columnFilter.
+  rowField(path) / row_field(path) = inverse of #ROW.<field>: {row, field} / (row, field) or null.
+  Grid row paths are #ROW.<field> with the row key (cell editor, tools, focus, derived paths);
+  formula_<name>='=#ROW.<field>' reads that field of the evaluated row; ^#ROW is an error.
+  p7 (components): drawingPane tool/color/size, attachmentManager contextKey/selected/items/
+  preview/message and imageUploader crop initial/transform live at the node's workspaceDatapath,
+  read and observed by path (router registration), never as a held Bag.
 - action (legacy _ButtonLogic._clickHandlerDo): inline click code, this = button node,
   receives current button attributes plus event/_counter/modifiers; D7 inline rules.
 - fire='.path': FIRE with modifier string (eventToString, gnrlang.js:1757) or true;

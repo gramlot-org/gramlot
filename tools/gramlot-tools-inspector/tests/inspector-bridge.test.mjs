@@ -4,7 +4,7 @@ import {MessageChannel} from 'node:worker_threads';
 import {createRequire} from 'node:module';
 import {JSDOM} from 'jsdom';
 import {Bag, Gramlot, GramlotBuilder} from '@gramlot/gramlot';
-import {attachInspectorAgent, InspectorConnection, encodeScalar} from '../src/inspector-bridge.js';
+import {attachInspectorAgent, InspectorConnection} from '../src/inspector-bridge.js';
 const require = createRequire(import.meta.url);
 const coreRequire = createRequire(require.resolve('@gramlot/gramlot'));
 const {BagResolver} = await import(coreRequire.resolve('@genrojs/bag'));
@@ -12,6 +12,18 @@ const wait = async predicate => {
     const end = Date.now() + 3000;
     while (!predicate()) { if (Date.now() > end) throw new Error('Bridge update timeout'); await new Promise(resolve => setTimeout(resolve, 5)); }
 };
+/** A panel page whose dataBinders keep the copies of `connection` at `target.data` and `target.source`. */
+function panel(window, connection) {
+    const element = window.document.createElement('section');
+    window.document.body.append(element);
+    const ui = new Gramlot({document: window.document, element, transport: false});
+    const builder = new GramlotBuilder();
+    for (const root of ['data', 'source']) builder.root.dataBinder({destination_path: `target.${root}`, server_path: root, connection: 'target'});
+    ui.src.startSource(builder.source);
+    ui.rpc.registerConnection('target', connection.port);
+    return {ui,
+        copy: root => ui.data.getItem(`target.${root}`), info: (root, path) => ui.data.getNode(`target.${root}.${path}`)?.getAttr('_inspector')};
+}
 function setup() {
     const {window} = new JSDOM('<main></main>');
     const app = new Gramlot({document: window.document, element: window.document.querySelector('main'), transport: false});
@@ -20,11 +32,12 @@ function setup() {
     app.data.setItem('nested', new Bag({count:42})); app.src.startSource(builder.source);
     const channel = new MessageChannel();
     const agent = attachInspectorAgent(app, channel.port1), client = new InspectorConnection(channel.port2);
-    return {window, app, client, agent, close() {client.close(); agent.dispose(); app.dispose(); window.close();}};
+    const view = panel(window, client);
+    return {window, app, client, agent, ...view, close() {client.close(); agent.dispose(); view.ui.dispose(); app.dispose(); window.close();}};
 }
-function edit(client, root, path, changes) {
-    const node = client[root].getNode(path), info = client.nodeInfo(node);
-    return client.request('edit', {root, path, nodeId:info.id, revision:info.revision, set:[], remove:[], ...changes});
+function edit(f, root, path, changes) {
+    const info = f.info(root, path);
+    return f.client.request('edit', {root, path, nodeId:info.id, revision:info.revision, set:[], remove:[], ...changes});
 }
 test('port snapshots preserve supported types, cached reads, node identity and real target ownership', async () => {
     const f = setup(); let calls = 0;
@@ -32,18 +45,19 @@ test('port snapshots preserve supported types, cached reads, node identity and r
     const date = new Date('2026-10-14T00:00:00Z');
     f.app.data.setItem('date', date); f.app.data.setItem('deferred', new Deferred());
     try {
-        await wait(() => f.client.state === 'started');
-        assert.equal(f.client.data.getItem('date').toISOString(), date.toISOString());
-        assert.equal(f.client.source.getItem('main.greeting'), '^name');
-        assert.equal(f.client.source.getNode('main.greeting').getAttr('_meta'), null);
-        assert.equal(f.client.source.getNode('main.setter'), null);
+        await wait(() => f.client.state === 'started' && f.copy('data')?.getItem('date'));
+        assert.equal(f.copy('data').getItem('date').toISOString(), date.toISOString());
+        assert.equal(f.copy('source').getItem('main.greeting'), '^name');
+        assert.equal(f.copy('source').getNode('main.greeting').getAttr('_meta'), null);
+        assert.equal(f.copy('source').getNode('main.setter'), null);
         assert.equal(f.app.src.source.getNode('main.setter'), null);
-        assert.equal(f.client.data.getItem('initial'), 'x');
-        assert.equal(f.client.nodeInfo(f.client.data.getNode('deferred')).readonly, true);
-        const before = f.client.data.getNode('nested.count');
+        assert.equal(f.copy('data').getItem('initial'), 'x');
+        assert.equal(f.info('data', 'deferred').readonly, true);
+        assert.equal(f.copy('data').getItem('deferred'), null);
+        const before = f.copy('data').getNode('nested.count');
         f.app.data.setItem('nested.count', 43);
-        await wait(() => f.client.data.getItem('nested.count') === 43);
-        assert.equal(f.client.data.getNode('nested.count'), before);
+        await wait(() => f.copy('data').getItem('nested.count') === 43);
+        assert.equal(f.copy('data').getNode('nested.count'), before);
         assert.equal(calls, 0); assert.equal(f.app.data.getItem('date'), date);
     } finally { f.close(); }
 });
@@ -51,19 +65,21 @@ test('agent validates revisions and all scalar patches before writing; metadata 
     const f = setup();
     const date = new Date('2026-10-14T00:00:00Z'); f.app.data.setItem('when', date, {caption:'Day'});
     try {
-        await wait(() => f.client.state === 'started');
-        await edit(f.client, 'data', 'when', {set:[['nullable',encodeScalar(null)]],remove:['caption']});
+        await wait(() => f.client.state === 'started' && f.info('data', 'when'));
+        await edit(f, 'data', 'when', {set:[['nullable',null]],remove:['caption']});
         assert.equal(f.app.data.getItem('when'),date);
         assert.deepEqual(f.app.data.getNode('when').getAttr(),{nullable:null});
         const source = f.app.src.source.getNode('main.greeting'), meta = source.getAttr('_meta');
-        await edit(f.client,'source','main.greeting',{value:encodeScalar('Changed'),set:[['title',encodeScalar('Title')]]});
+        await edit(f,'source','main.greeting',{value:'Changed',set:[['title','Title']]});
         assert.equal(source.getAttr('_meta'),meta);
         assert.equal(f.app.src.renderer.destination.querySelector('p').textContent,'Changed');
-        await assert.rejects(edit(f.client,'data','name',{value:encodeScalar('Invalid'),set:[['_meta',encodeScalar('invalid')]]}),/Cannot edit/);
+        await assert.rejects(edit(f,'data','name',{value:'Invalid',set:[['_meta','invalid']]}),/Cannot edit/);
+        await assert.rejects(edit(f,'data','name',{set:[['_inspector','invalid']]}),/Cannot edit/);
+        await assert.rejects(edit(f,'data','name',{value:{object:true}}),/scalar values only/);
         assert.equal(f.app.data.getItem('name'),'Ada');
-        const info = f.client.nodeInfo(f.client.data.getNode('name'));
+        const info = f.info('data', 'name');
         f.app.data.setItem('name','External');
-        await assert.rejects(f.client.request('edit',{root:'data',path:'name',nodeId:info.id,revision:info.revision,value:encodeScalar('Stale'),set:[],remove:[]}),/Node changed/);
+        await assert.rejects(f.client.request('edit',{root:'data',path:'name',nodeId:info.id,revision:info.revision,value:'Stale',set:[],remove:[]}),/Node changed/);
         assert.equal(f.app.data.getItem('name'),'External');
     } finally {f.close();}
 });
@@ -87,18 +103,18 @@ test('breakpoints run synchronously in the owning page, preserve old config on e
 test('snapshot reconciliation preserves sibling order and identity after insertion and moves', async () => {
     const f = setup();
     try {
-        await wait(() => f.client.state === 'started');
-        const retained = f.client.data.getNode('name');
+        await wait(() => f.client.state === 'started' && f.info('data', 'name'));
+        const retained = f.info('data', 'name').id;
         f.app.data.setItem('first', 1, null, '<');
-        await wait(() => f.client.data.getItem('first') === 1);
-        assert.deepEqual(f.client.data.getNodes().map(node => node.label), f.app.data.getNodes().map(node => node.label));
+        await wait(() => f.copy('data').getItem('first') === 1);
+        assert.deepEqual(f.copy('data').getNodes().map(node => node.label), f.app.data.getNodes().map(node => node.label));
         f.app.data.move(0, 2);
         await f.client.request('refresh');
-        assert.deepEqual(f.client.data.getNodes().map(node => node.label), f.app.data.getNodes().map(node => node.label));
-        assert.equal(f.client.data.getNode('name'), retained);
+        assert.deepEqual(f.copy('data').getNodes().map(node => node.label), f.app.data.getNodes().map(node => node.label));
+        assert.equal(f.info('data', 'name').id, retained);
         f.app.data.clear();
         await f.client.request('refresh');
-        assert.equal(f.client.data.getNodes().length, 0);
+        assert.equal(f.copy('data').getNodes().length, 0);
     } finally { f.close(); }
 });
 
@@ -108,25 +124,28 @@ test('separately bundled agents coexist without replacing each other’s subscri
     const channel = new MessageChannel();
     const agent = separate.attachInspectorAgent(f.app, channel.port1);
     const second = new InspectorConnection(channel.port2);
+    const view = panel(f.window, second);
     try {
         await wait(() => f.client.state === 'started' && second.state === 'started');
         f.app.data.setItem('name', 'Both');
-        await wait(() => f.client.data.getItem('name') === 'Both' && second.data.getItem('name') === 'Both');
+        await wait(() => f.copy('data')?.getItem('name') === 'Both' && view.copy('data')?.getItem('name') === 'Both');
         agent.dispose();
         f.app.data.setItem('name', 'First remains');
-        await wait(() => f.client.data.getItem('name') === 'First remains');
+        await wait(() => f.copy('data').getItem('name') === 'First remains');
+        await wait(() => view.ui.rpc.connection('target').state === 'closed');
+        assert.equal(view.copy('data').getItem('name'), 'Both');
         assert.equal(Object.keys(f.app.data._updSubscribers).filter(key => key.startsWith('inspector-bridge-')).length, 1);
-    } finally {second.close(); agent.dispose(); f.close();}
+    } finally {second.close(); agent.dispose(); view.ui.dispose(); f.close();}
 });
 
 test('structural commands and history execute in the target, reject stale nodes and retain bindings', async () => {
     const f = setup();
     const command = path => {
-        const info = f.client.nodeInfo(f.client.source.getNode(path));
+        const info = f.info('source', path);
         return {path, nodeId: info.id, revision: info.revision};
     };
     try {
-        await wait(() => f.client.state === 'started');
+        await wait(() => f.client.state === 'started' && f.info('source', 'main'));
         const catalog = (await f.client.request('catalog', {path:'main'})).catalog;
         assert.ok(catalog.some(item => item.tag === 'div' && item.kind === 'html'));
         assert.ok(!catalog.some(item => item.tag === 'dataSetter'));
@@ -134,7 +153,7 @@ test('structural commands and history execute in the target, reject stale nodes 
         assert.ok(f.app.src.source.getNode(added.selection));
         assert.equal(f.client.history.undo, 'Add element');
         const stale = command('main.greeting');
-        await edit(f.client, 'source', 'main.greeting', {set:[['title', encodeScalar('Edited')]]});
+        await edit(f, 'source', 'main.greeting', {set:[['title', 'Edited']]});
         await assert.rejects(f.client.request('remove', stale), /changed/);
         const target = command(added.selection);
         const moved = await f.client.request('move', {...command('main.greeting'), destination:added.selection,

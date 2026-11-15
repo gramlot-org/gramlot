@@ -4,17 +4,13 @@ import {positionPopup} from './popup.js';
 import {CheckBoxTree} from './check-box-tree.js';
 import {CheckBoxTextEditor} from './check-box-text-editor.js';
 import {choiceFieldStyles} from './choice-field-styles.js';
-import {randomId} from '../random-id.js';
 
 /** Multiple choices keep the existing group's commit and validation lifecycle. */
 export function checkBoxChoices(Base) {
     return class extends Base {
-        #store;
         #text;
         #sourceContext;
         #tree;
-        #refreshScheduled = false;
-        #subscription = `checkbox-options-${randomId()}`;
         #attrs;
         #request;
         #configuration;
@@ -58,9 +54,11 @@ export function checkBoxChoices(Base) {
             if (hierarchical) return [];
             if (dbtable || method) return this.#rows;
             if (typeof values === 'string') return parseChoices(values);
-            if (!(values instanceof Bag)) throw new TypeError('values must be text or a Bag');
+            // Bag options are read at the address of the `values` pointer, never from the projected value.
+            const options = this.#sourceContext.getStaticData(this.#sourceContext.attrDatapath('values'));
+            if (!(options instanceof Bag)) throw new TypeError('values must be text or a Bag');
             const ids = new Set();
-            return values.getNodes().map(node => {
+            return options.getNodes().map(node => {
                 const read = key => node.staticValue instanceof Bag ? node.staticValue.getItem(key) : node.getAttr(key);
                 const id = identifier ? read(identifier) : node.label;
                 const caption = labelAttribute ? read(labelAttribute) : node.label;
@@ -77,21 +75,8 @@ export function checkBoxChoices(Base) {
             if (hierarchical && !this.#tree) this.#tree = new CheckBoxTree(this, this.#sourceContext);
             if (!hierarchical && this.#tree) { this.#tree.dispose(); this.#tree = null; }
             if ((dbtable || method) && values !== '') throw new TypeError('Remote choices and values are mutually exclusive');
-            const store = values instanceof Bag ? values : null;
-            if (store !== this.#store) {
-                this.#store?.unsubscribe(this.#subscription, {any:true}); this.#store = store;
-                store?.subscribe(this.#subscription, {any:() => {
-                    if (!this.parameters.hierarchical) {
-                        this.projectAttributes(this.#attrs); this.writeControlValue(this.readControlValue());
-                    } else if (!this.#refreshScheduled) {
-                        this.#refreshScheduled = true;
-                        queueMicrotask(() => {
-                            this.#refreshScheduled = false;
-                            if (this.isConnected && this.pageContext?.isActive()) this.projectAttributes(this.#attrs);
-                        });
-                    }
-                }});
-            }
+            // `values` is a `^` parameter of dtype 'X': a change inside the options Bag or a replacement at
+            // its address projects the control again, and the options are read at that address.
             this.summary.hidden = !popup; this.summary.disabled = Boolean(disabled || readonly || !this.#available);
             for (const input of this.control.querySelectorAll("input")) input.disabled = this.summary.disabled;
             if (!popup || this.summary.disabled) this.closeChoices();
@@ -185,7 +170,7 @@ export function checkBoxChoices(Base) {
         }
         focus(options) { if (this.parameters.popup) this.summary.focus(options); else if (this.#tree) this.#tree.focus(); else super.focus(options); }
         releaseControl() {
-            this.closeChoices(); this.#request?.abort(); this.#store?.unsubscribe(this.#subscription,{any:true}); this.#store = null;
+            this.closeChoices(); this.#request?.abort();
             this.#tree?.dispose(); this.#tree = null;
             super.releaseControl();
         }

@@ -21,7 +21,6 @@ export const WindowSelection = defineComponent({
         #context;
         #key;
         #viewport;
-        #last;
         #request;
         #timer;
         #changingSelection = false;
@@ -48,7 +47,6 @@ export const WindowSelection = defineComponent({
                 const previous = this.#key ? JSON.parse(this.#key) : null;
                 this.#key = key;
                 this.#viewport = JSON.stringify(p.viewport);
-                this.#last = p.inbox;
                 clearTimeout(this.#timer);
                 this.#request = null;
                 this.#changingSelection = true;
@@ -66,11 +64,11 @@ export const WindowSelection = defineComponent({
                     this.#timer = setTimeout(() => this.#send(p.viewport.start, p.viewport.count, 'scroll', performance.now()), 0);
                 }
             }
-            const frame = p.inbox;
-            if (!frame || frame === this.#last) return;
-            this.#last = frame;
+            // The reply is read at the inbox address; its request_id, not the Bag, marks its arrival.
             const request = this.#request;
-            if (!request || frame.getItem('request_id') !== request.id) return;
+            if (!request) return;
+            const frame = this.#context.getStaticData(this.#context.attrDatapath('inbox'));
+            if (!frame || frame.getItem('request_id') !== request.id) return;
             this.#request = null;
             this.#changingSelection = false;
             if (frame.getItem('error')) {

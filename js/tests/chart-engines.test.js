@@ -20,7 +20,7 @@ for(const mode of ['attributes','values'])test(`Plotly translates the same filte
     const root=new Bag(),rows=new Bag();root.setItem('rows',rows);root.setBackref();
     const put=(id,values)=>rows.setItem(id,mode==='values'?new Bag(values):null,mode==='attributes'?values:{});
     put('a',{name:'A',amount:10,units:2});put('b',{name:'B',amount:25,units:3});
-    const view=new BagCollectionView(new BagCollectionStore(rows,mode));view.connect();
+    const view=new BagCollectionView(new BagCollectionStore(root,'rows',mode));view.connect();
     const config=new Bag({engine:'plotly',chartType:'bar',captionField:'name',valueFields:'amount,units'});
     const options=new Bag({amount:new Bag({axis:'left',color:'#123456'}),units:new Bag({axis:'right',color:'#654321'})});
     const adapter=new PlotlyAdapter(null);

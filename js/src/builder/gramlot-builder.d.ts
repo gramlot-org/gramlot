@@ -4,18 +4,15 @@
  * @module
  */
 import {HtmlBuilder} from '@genrojs/builders';
-import type {Bag} from '@genrojs/bag';
 import type {SourceAttributes, SourceBag, SourceBagNode, ValidateNodeOptions} from '@genrojs/builders';
 import type {GramlotHtmlRenderer} from '../renderer/gramlot-html-renderer.js';
 import type {SourceReference} from '../references.js';
 import type {NameSyntax} from './name-syntax.js';
 
-/** Gramlot Source node, with a non-serialized external Bag reference for a tree. */
+/** Gramlot Source node. */
 export interface GramlotSourceNode extends SourceBagNode {
     /** Existing shared top toolbar of a frameGrid; never creates a second bar. */
     readonly toolbar: GramlotSourceNode;
-    readonly treeStore: Bag | null;
-    setTreeStore(bag: Bag | null): void;
 }
 
 export interface GramlotSourceBag extends SourceBag {

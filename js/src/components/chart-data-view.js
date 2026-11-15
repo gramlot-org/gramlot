@@ -13,17 +13,14 @@ export class ChartDataView {
         this.#view.connect();
     }
 
-    bindStore(store) {
-        this.detach();
-        this.#view.bindStore(store);
-    }
-
     get view() { return this.#view; }
 
+    /** Follow the filter of `gridView`, a view over the same store key; following the same view again changes nothing. */
     follow(gridView) {
-        if (gridView.bag !== this.#view.bag || gridView.rowMode !== this.#view.rowMode) {
-            throw new TypeError('Chart and grid must use the same collection');
+        if (gridView.storeKey !== this.#view.storeKey) {
+            throw new TypeError(`Chart and grid must use the same collection: the grid reads ${gridView.storeKey}, the chart ${this.#view.storeKey}`);
         }
+        if (gridView === this.#gridView) return;
         this.#releaseGrid?.();
         this.#gridView = gridView;
         this.#filterSignature = undefined;

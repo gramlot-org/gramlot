@@ -8,6 +8,7 @@ Python's ``__getattr__`` uses ``GramlotBuilder.schema_tag`` for authoring dispat
 JavaScript uses Builder's Source proxy and ``GramlotBuilder.schemaTag``.
 """
 
+import re
 from typing import Any
 
 from genro_builders.builder import SourceBag, SourceBagNode
@@ -18,6 +19,30 @@ from genro_builders.builder.pointers import pointer_transform
 
 # The control attributes of ``remote``, written on the node as they are; every other parameter becomes ``remote_<k>``.
 REMOTE_CONTROLS = ("_cachedRemote", "_if", "_else", "_onRemote", "_onCalling", "_delay", "_timing", "_userChanges")
+# Source attributes of the symbolic resolution, never rendered: the metadata of a node like ``_anchor``.
+SYMBOLIC_ATTRIBUTES = frozenset({"_workspace", "_workspace_path", "childname"})
+
+
+def string_hash(text):
+    """The legacy ``stringHash`` of a text: 32-bit ``h * 31 + code`` over its UTF-16 units, as a positive number."""
+    data = text.encode("utf-16-le")
+    value = 0
+    for index in range(0, len(data), 2):
+        value = (((value << 5) - value) + (data[index] | data[index + 1] << 8)) & 0xFFFFFFFF
+    return abs(value - 0x100000000 if value >= 0x80000000 else value)
+
+
+def _named_child(bag, name):
+    """The nearest node of ``bag`` whose ``childname`` is ``name``: direct children first, then unnamed children's descendants."""
+    for node in bag:
+        if node.attr.get("childname") == name:
+            return node
+    for node in bag:
+        if node.attr.get("childname") is None and isinstance(node.static_value, SourceBag):
+            found = _named_child(node.static_value, name)
+            if found is not None:
+                return found
+    return None
 
 
 class GramlotBuilderBagNode(SourceBagNode):
@@ -30,6 +55,170 @@ class GramlotBuilderBagNode(SourceBagNode):
                 if name is None:
                     raise ValueError("Pointer suffixes belong to attributes; use format/mask for node text")
         return items
+
+    def abs_datapath(self, path: str, row: str | None = None) -> str:
+        """Builder's ``abs_datapath`` with the legacy symbols; ``row`` is the row context of ``#ROW``.
+
+        ``row`` is the key (label) of the row inside the collection at the ``storepath`` of the nearest
+        node that declares one; any other path ignores it. ``#ROW`` without a row context is an error.
+        """
+        bare = path
+        if self.pointer_type(path):
+            transform = pointer_transform(path)
+            bare = (transform[0] if transform else path)[1:]
+        if bare.startswith("#") and bare.count("?") > 1:
+            raise ValueError(f"a symbolic path has one ?attr suffix at most: {path}")
+        if bare == "#ROW" or bare.startswith(("#ROW.", "#ROW?")):
+            return self._row_datapath(bare, row, path)
+        return super().abs_datapath(path)
+
+    def _compose_relative_datapath(self, path: str, raw: str) -> str:
+        """Builder's datapath climb; a datapath that makes the path symbolic is resolved from the parent of its node."""
+        current = self
+        while current is not None and path.startswith("."):
+            datapath = current.attr.get("datapath")
+            if datapath is not None:
+                path = datapath if path == "." else datapath + path
+            if path.startswith("#"):
+                return current.parent_node._resolve_symbolic_datapath(path, raw)
+            current = current.parent_node
+        if path.startswith("."):
+            raise ValueError(f"unresolved relative datapath: {raw!r}")
+        return path
+
+    def _resolve_symbolic_datapath(self, path: str, raw: str) -> str:
+        """Symbolic resolution of ``#<head>[.relpath]``, in the legacy order: ``#ROW``, ``#WORKSPACE``,
+        ``#DATA``, then a start node (``#FORM``, ``#ANCHOR``, ``#<nodeId>``, ``#/<childpath>``, each with an
+        optional ``/<childpath>``), from which ``relpath`` is resolved relatively."""
+        head, _, relpath = path[1:].partition(".")
+        if head == "ROW":
+            raise KeyError(f"#ROW: no row context for {raw}")
+        if head == "WORKSPACE":
+            base = self._workspace_datapath(raw)
+            return f"{base}.{relpath}" if relpath else base
+        if head == "DATA":
+            if not relpath:
+                raise KeyError(f"#DATA requires a path: {raw}")
+            return relpath
+        return self._symbolic_node(head, raw).abs_datapath(f".{relpath}" if relpath else ".")
+
+    def get_child(self, childpath: str) -> "GramlotBuilderBagNode | None":
+        """The node reached by a child path from this node, as legacy ``getChild``.
+
+        The segments are separated by ``/``: ``parent`` moves to the parent node, ``#<nodeId>`` (also
+        ``#FORM``, ``#ANCHOR``) to the node of that symbol seen from the current node, any other segment
+        to the nearest descendant whose ``childname`` is the segment (direct children first; a named node
+        hides its descendants). None when a step finds no node.
+        """
+        node = self
+        for segment in childpath.split("/"):
+            if segment == "parent":
+                node = node.parent_node
+            elif segment.startswith("#"):
+                node = node._symbolic_node(segment[1:], childpath)
+            else:
+                value = node.static_value
+                node = _named_child(value, segment) if isinstance(value, SourceBag) else None
+            if node is None:
+                return None
+        return node
+
+    @property
+    def workspace_name(self) -> str:
+        """The name of the private Data area of this node: the ``_workspace`` string value, or for ``True``
+        the nodeId, else the tag followed by a hash of the node's Source path, as legacy. A node that
+        declares no ``_workspace`` has the name it would have with ``_workspace=True``."""
+        value = self.attr.get("_workspace")
+        if value is None:
+            value = True
+        if value is True:
+            node_id = self.attr.get("nodeId")
+            return node_id if node_id is not None else f"{self.node_tag}_{string_hash(self.fullpath)}"
+        if isinstance(value, str) and value:
+            return value
+        raise TypeError(f"{self.node_tag} '{self.label}': _workspace must be true or a name, not {value!r}")
+
+    @property
+    def workspace_datapath(self) -> str:
+        """The private Data area of this node, as ``#WORKSPACE`` sees it from the node that owns it:
+        ``_workspace_path`` resolved from this node, else ``_gramlot.workspace.<workspace_name>``. A component
+        keeps its private states under the area of its own node, addressed by path."""
+        explicit = self.attr.get("_workspace_path")
+        return f"_gramlot.workspace.{self.workspace_name}" if explicit is None else self.abs_datapath(explicit)
+
+    def _workspace_datapath(self, raw: str) -> str:
+        """``#WORKSPACE``: the private Data area of the nearest node with ``_workspace``."""
+        owner = self.attribute_owner_node("_workspace")
+        if owner is None:
+            raise KeyError(f"#WORKSPACE: no ancestor with _workspace for {raw}")
+        return owner.workspace_datapath
+
+    def row_field(self, path: str) -> tuple[str, str] | None:
+        """The inverse of ``#ROW.<field>``: ``(row, field)`` when the absolute Data path ``path`` is a direct
+        field of a row of the collection at the ``storepath`` of the nearest node that declares one, as
+        ``#ROW.<field>`` gives it for that row key and ``rowMode``; None for any other path."""
+        owner = self.attribute_owner_node("storepath")
+        if owner is None:
+            raise KeyError(f"#ROW: no ancestor with storepath for {path}")
+        prefix = f"{owner.abs_datapath(owner.attr['storepath'])}."
+        match = re.fullmatch(r"([^.?]+)[.?]([^.?]+)", path[len(prefix):]) if path.startswith(prefix) else None
+        if match is None:
+            return None
+        row, field = match.groups()
+        return (row, field) if self.abs_datapath(f"#ROW.{field}", row=row) == path else None
+
+    def _row_datapath(self, bare: str, row: str | None, raw: str) -> str:
+        """``#ROW[.field][?attr]`` for the row ``row`` of the nearest node with ``storepath``, following its ``rowMode``."""
+        if row is None:
+            raise KeyError(f"#ROW: no row context for {raw}")
+        owner = self.attribute_owner_node("storepath")
+        if owner is None:
+            raise KeyError(f"#ROW: no ancestor with storepath for {raw}")
+        mode = owner.attr.get("rowMode")
+        if mode not in ("values", "attributes"):
+            raise ValueError(f"#ROW: rowMode must be 'values' or 'attributes' for {raw}")
+        rowpath = f"{owner.abs_datapath(owner.attr['storepath'])}.{row}"
+        rest, separator, attr = bare[len("#ROW"):].partition("?")
+        if mode == "attributes" and rest:
+            field = rest[1:]
+            if "." in field or separator:
+                raise ValueError(f"#ROW: a row in rowMode 'attributes' has only attribute fields: {raw}")
+            return f"{rowpath}?{field}"
+        return f"{rowpath}{rest}{'?' + attr if separator else ''}"
+
+    def _symbolic_node(self, head: str, raw: str) -> "GramlotBuilderBagNode":
+        """The start node of a symbolic head, as legacy ``nodeById``: ``/<childpath>`` from the nearest
+        ancestor with a nodeId, through the ``childname`` of the nodes in between; otherwise
+        ``<symbol>[/<childpath>]`` where the symbol is ``FORM``, ``ANCHOR`` or a nodeId of the page."""
+        if head.startswith("/"):
+            childpath = head[1:]
+            node = self
+            while node is not None and node.attr.get("nodeId") is None:
+                if node.attr.get("childname") is not None:
+                    childpath = f"{node.attr['childname']}/{childpath}"
+                node = node.parent_node
+            if node is None:
+                raise KeyError(f"#/: no ancestor with a nodeId for {raw}")
+        else:
+            symbol, _, childpath = head.partition("/")
+            if symbol == "FORM":
+                node = self._find_marked_datapath_ancestor(form=True, anchor=False, raw=raw)
+            elif symbol == "ANCHOR":
+                node = self._find_marked_datapath_ancestor(form=False, anchor=True, raw=raw)
+            else:
+                # The whole page, as the JS runtime nodeId map: not the local dialect builder of an <svg> subtree.
+                builder = self.root_builder
+                if builder is None:
+                    raise KeyError(f"#<id>: cannot resolve {raw} on a node without builder")
+                node = builder.source.get_node_by_attr("nodeId", symbol)
+                if node is None:
+                    raise KeyError(f"#<id>: cannot resolve {raw}")
+        if not childpath:
+            return node
+        child = node.get_child(childpath)
+        if child is None:
+            raise KeyError(f"#<id>: no child '{childpath}' for {raw}")
+        return child
 
     def remote(self, name: str, /, **params: Any) -> "GramlotBuilderBagNode":
         """Declare the content of this element as the fragment ``name`` of a ``@source`` method.

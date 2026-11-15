@@ -36,8 +36,9 @@ Before changing this repository, read `docs/00-constitution.md`,
   and badge. Historical documents keep their dated text under a "Historical record"
   banner. The resource host for `css_requires`/`js_requires` is genro-kajenn, part
   of Genro; FileHost and the current adapters have none.
+- Owner 2026-11-10: small interactive documentation examples and their Python sources live beside their guides; the Sphinx build generates TYTX without gramlot-examples. General examples and their gallery remain in gramlot-examples.
 - Owner 2026-10-04, constitution amendment 11.56 (supersedes the runner placement
-  of 11.44): the example pages, their READMEs and the gallery live in
+  of 11.44): the general example pages, their READMEs and the gallery live in
   `gramlot-examples`; the core has no `examples/` and no runner. Dependencies run
   one way, core ← gramlot-examples ← environments: the core does not depend on
   gramlot-examples or on any adapter, also in CI and tests, and tests itself on

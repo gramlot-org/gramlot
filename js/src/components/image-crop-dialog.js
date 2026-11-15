@@ -9,13 +9,13 @@ import {ImageRectangleSelection, RECTANGLE_SELECTION_STYLE} from './image-rectan
 export class ImageCropDialog {
     #document; #image; #session; #options; #dialog; #frameImage; #minZoom; #maxZoom;
     #resolve; #settled = false; #events; #frame; #points = new Map(); #gesture; #trackpadGesture; #selection = null;
-    constructor({state, document, original, image, sourceWidth, sourceHeight, width, height,
+    constructor({data, path, document, original, image, sourceWidth, sourceHeight, width, height,
         x = 0, y = 0, zoom = 1, rotate = 0, outputWidth, outputHeight, type, quality}) {
         this.#document = document;
         this.#image = image;
         this.#options = {width,height,sourceWidth,sourceHeight,outputWidth,outputHeight,type,quality};
         this.#minZoom = zoom/5; this.#maxZoom = zoom*5;
-        this.#session = new ImageCropSession({state,document,original,image,sourceWidth,sourceHeight,width,height,x,y,zoom,rotate});
+        this.#session = new ImageCropSession({data,path,document,original,image,sourceWidth,sourceHeight,width,height,x,y,zoom,rotate});
         const dialog = this.#dialog = document.createElement('dialog');
         dialog.setAttribute('aria-label', 'Edit image');
         dialog.className = 'gramlot-image-crop-dialog';

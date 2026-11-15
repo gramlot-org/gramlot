@@ -2,7 +2,7 @@ import {randomId} from '../random-id.js';
 
 const REMOTE = 'gramlot-page-store-remote';
 
-/** One Source node's subscription between client Data and its page's server Bag. */
+/** One Source node's subscription between client Data and its page's server Bag, or the Bag of a named connection. */
 export class DataBinder {
     constructor(binding) {
         this.binding = binding;
@@ -12,8 +12,16 @@ export class DataBinder {
 
     register() {
         const {runtime, node} = this.binding;
-        this.connection = runtime.gramlot._pageStore;
-        if (!this.connection) throw new Error('dataBinder requires a PageStore WebSocket');
+        const name = node.getAttr('connection');
+        if (name == null) {
+            this.connection = runtime.gramlot._pageStore;
+            if (!this.connection) throw new Error('dataBinder requires a PageStore WebSocket');
+        } else {
+            if (typeof name !== 'string' || !/^[A-Za-z_][\w-]*$/.test(name)) {
+                throw new TypeError('dataBinder connection requires a literal name');
+            }
+            this.connection = runtime.gramlot.rpc.connection(name);
+        }
         this.clientPath = node.absDatapath(node.pathAttribute('destination_path'));
         this.serverPath = node.getAttr('server_path');
         if (typeof this.clientPath !== 'string' || !this.clientPath || this.clientPath.includes('?')) {

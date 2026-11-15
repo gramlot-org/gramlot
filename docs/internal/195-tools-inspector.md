@@ -408,3 +408,36 @@ Qualification uses `tests/history.test.mjs`, `tests/inspector-bridge.test.mjs` a
 local and connected targets, native drag, HTML/widget/container insertion, deletion,
 attribute edits, restored bindings and conflict handling. See GC-070 for actual runs;
 Playwright WebKit is not a branded Safari qualification.
+
+
+<a id="gc-195-060"></a>
+
+## 060 · Copies kept by dataBinder; one mode — 2026-11-08
+
+Block ID: **GC-195-060**. Plan symbolic-references p6; owner 2026-11-08: "potrei
+fare il bind anche sul client con altra istanza attraverso post messages?", then
+"ok"; one mode: "non so se vale la pena di avere doppia modalità", then "concordo".
+This block supersedes the passive `data`/`source` copies of `InspectorConnection`
+(§040) and, in the earlier blocks, the local tree observing the original Bag and the
+separate local history, styles and breakpoint paths.
+
+- The agent keeps a projection Bag of the inspected Data and Source (same labels
+  and order; scalar values and attributes as they are; other values as read-only
+  display strings; `_meta` omitted) and serves it with `MessagePortStore` on the
+  port. Only differences travel, as TYTX text.
+- Each projection node carries the reserved attribute `_inspector`: agent identity
+  `id`, `revision`, `readonly`, `readonlyAttrs`, `parameterEnums`. The property
+  editor omits it as it omits `_meta`; an edit of `_inspector` is refused.
+- The palette's own Data holds the copies at `target.data` and `target.source`,
+  kept by two `dataBinder` nodes on the connection `target`; the trees use those
+  storepaths. `InspectorConnection` holds no Bag: it carries commands, replies,
+  breakpoint records and history labels, and shares its port with the palette's
+  `target` connection (`InspectorConnection.port`).
+- A local target (`inspector.gramlot = instance`) runs the same path on a
+  `MessageChannel`: `attachInspectorAgent(instance, port1)` and
+  `new InspectorConnection(port2)`. Edits, Undo/Redo, Styles and breakpoints are
+  commands in both cases. A command reply follows the projection changes it caused
+  on the same port. A draft applied while another edit travels is applied again
+  after the reply.
+- Edit commands carry typed values (`set: [[name, value]]`, `value`); the scalar
+  check stays in the agent. `encodeScalar` is removed.

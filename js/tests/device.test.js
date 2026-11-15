@@ -901,3 +901,21 @@ test('database opened after page disposal closes without a late Data write', asy
     pending.resolve({async close(){closes++;}});
     await assert.rejects(result,/closed/i);await f.app.dvc.cleanup;assert.equal(closes,1);
 });
+
+test('device commands are recognized by path: a node replaced at its device path receives the next command',async t=>{
+ const pending=deferred();let pastes=0;
+ const f=fixture(t,{capabilities:['clipboard','location'],async pasteText(){pastes++;return pending.promise;}});
+ const old=f.node('clipboard'),attrs={...old.attr};
+ f.data.getItem('_gramlot.device').popNode('clipboard');
+ f.data.setItem('_gramlot.device.clipboard',null,attrs);
+ assert.notEqual(f.node('clipboard'),old);
+ clipboardCommand(f,'paste');await flush();assert.equal(pastes,1);
+ // The completion is written to the node found at the path when the provider answers.
+ f.data.getItem('_gramlot.device').popNode('clipboard');
+ f.data.setItem('_gramlot.device.clipboard',null,attrs);
+ const current=f.node('clipboard');
+ pending.resolve({text:'late'});await flush();
+ assert.equal(current.staticValue.getItem('text'),'late');assert.equal(old.staticValue,null);
+ // Settings follow the same rule: enabled on location reaches the handler at its path.
+ f.node('location').setAttr({enabled:true});await flush();assert.equal(f.starts,1);
+});

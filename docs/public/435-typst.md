@@ -7,7 +7,7 @@ Document ID: **GC-435**.
 
 Render a Typst document using the preview component. Compiler/worker resources are separate from ordinary input and layout components.
 
-The environment Page base supplies the collections used below. [Configure them once](340-components-and-collections-guide.md#gc-340-050). [Setup examples are in the appendix](465-widget-examples.md#gc-465-setup-typst).
+`typst` is outside the standard set: a page that uses it declares it in `Page.gramlots` ([declaring typst](340-components-and-collections-guide.md#gc-340-050-typst)). [Setup examples are in the appendix](465-widget-examples.md#gc-465-setup-typst).
 
 Load `document.source` as text before rendering, or bind an editor to the same path. Compiler resources and document assets must be available to the configured preview engine. Do not infer a server endpoint from this component declaration. [Compilation and resource contract](105-components.md#gc-105-145).
 
@@ -19,7 +19,7 @@ Load `document.source` as text before rendering, or bind an editor to the same p
 
 [Code for this composition is in the appendix](465-widget-examples.md#gc-465-setup-typst).
 
-Initialize `.content` as text. Include both collections in the environment Page when using this pair; importing a collection descriptor alone does not activate it. See [collection setup](340-components-and-collections-guide.md#gc-340-050) and [the Typst contract](105-components.md#gc-105-145).
+Initialize `.content` as text. `editors` is a standard collection; `typst` is not, so the page declares it in `Page.gramlots` (`from gramlot.collections.typst import mygramlot as typst`, then `gramlots = [typst]`). See [declaring typst](340-components-and-collections-guide.md#gc-340-050-typst) and [the Typst contract](105-components.md#gc-105-145).
 
 ### Updates, diagnostics and resource limits
 

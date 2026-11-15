@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 import {Bag, Gramlot, GramlotBuilder} from '../src/index.js';
 import inputs from '../src/components/inputs.js';
+import {assertFieldMapsByAddress} from './helpers/editing-session-addresses.js';
 
 const tick = () => new Promise(resolve => setTimeout(resolve,0));
 function fixture(t, extra = () => {}) {
@@ -41,12 +42,12 @@ test('form baseline, previous values, invalid current Data and return to clean',
 test('unparseable number/date drafts live on Source; typed invalid numbers live in Data',async t => {
     const f=fixture(t); await tick();
     const input=f.host('amount');
-    f.edit('amount','-'); assert.equal(f.owner.value.getNode('amount').formDraft,'-');
+    f.edit('amount','-'); assert.equal(f.owner.value.getNode('amount')._internal.formDraft,'-');
     assert.equal(f.app.data.getItem('record.amount'),12); assert.equal(f.state.accept(),false);
     f.edit('amount','-3'); assert.equal(f.app.data.getItem('record.amount'),-3);
-    assert.equal(f.state.status.valid,false); assert.equal(Object.hasOwn(f.owner.value.getNode('amount'),'formDraft'),false);
+    assert.equal(f.state.status.valid,false); assert.equal(Object.hasOwn(f.owner.value.getNode('amount')._internal,'formDraft'),false);
     f.edit('amount','15'); f.edit('date','not a date');
-    assert.equal(f.owner.value.getNode('date').formDraft,'not a date'); assert.equal(f.state.accept(),false);
+    assert.equal(f.owner.value.getNode('date')._internal.formDraft,'not a date'); assert.equal(f.state.accept(),false);
     f.state.restore(); await tick();
     assert.equal(f.app.data.getItem('record.amount'),12); assert.equal(f.state.status.status,'ok');
     assert.equal(f.host('amount'),input); assert.equal(f.host('amount').control.value,'12');
@@ -77,7 +78,7 @@ test('external edits, removal and separate scopes preserve registers and instanc
     f.app.data.setItem('record.amount',23);await tick();assert.equal(f.state.status.dirty,true);
     const node=f.owner.value.getNode('amount'),host=f.host('amount');
     const mount=host.parentNode;host.remove();mount.append(host);await tick();
-    assert.equal(f.host('amount'),host);assert.equal(f.state.fields.has(node),true);
+    assert.equal(f.host('amount'),host);assert.equal(f.state.fields.has(node.fullpath),true);
     f.state.restore();await tick();assert.equal(f.state.status.status,'ok');
 });
 
@@ -201,6 +202,23 @@ test('two controls on one Data field keep independent validation contributions',
     f.edit('name','Ada');await tick();assert.equal(f.state.status.valid,true);
 });
 
+test('form field maps reference Source nodes by fullpath, also with two fields on one Data path',async t=>{
+    const f=fixture(t,(form)=>{form.textbox({node_label:'mirror',id:'mirror',value:'^.name',validate_len:'3:'});});await tick();
+    assertFieldMapsByAddress(f.state);
+    const name=f.owner.value.getNode('name'),mirror=f.owner.value.getNode('mirror');
+    assert.equal(f.state.fieldNode(name.fullpath),name);assert.equal(f.state.fieldNode(mirror.fullpath),mirror);
+    assert.equal(f.state.validations.get(name.fullpath).path,f.state.validations.get(mirror.fullpath).path);
+    f.edit('mirror','Al');await tick();
+    assert.equal(f.state.status.valid,false);assertFieldMapsByAddress(f.state);
+    f.edit('amount','-');assertFieldMapsByAddress(f.state);
+    f.edit('amount','5');f.edit('name','Alice');await tick();
+    assert.equal(f.state.status.valid,true);assert.equal(f.state.accept(),true);
+    const mirrorPath=mirror.fullpath;f.owner.value.popNode('mirror');await tick();
+    assert.equal(f.state.validations.has(mirrorPath),false);
+    assert.throws(()=>f.state.fieldNode(mirrorPath),/missing from the Source/);
+    assertFieldMapsByAddress(f.state);
+});
+
 
 test('form validation survives renderer unmount and completes without a replacement control',async t=>{
     let resolve,signal,calls=0;
@@ -259,4 +277,22 @@ test('checkBoxText description drafts block saving and restore/commit keep the c
     f.state.restore();await tick();assert.equal(host.summary.value,'Milano');
     host.summary.value='Milano,Pavia';f.fire(host.summary,'input');f.fire(host.summary,'change');await tick();
     assert.equal(f.app.data.getItem('record.cities'),'MI,PV');assert.equal(f.state.accept(),true);
+});
+
+test('a _dv_ caption written on load is derived; a user edit still makes the form changed',async t => {
+    const f=fixture(t,(form,app) => {
+        app.data.setItem('record.tags','a');
+        form.checkBoxText({node_label:'tags',id:'tags',value:'^.tags',values:'a:Alpha,b:Beta'});
+    });
+    await tick();
+    assert.equal(f.app.data.getItem('record.tags?_dv_displayedValue'),'Alpha');
+    assert.equal(f.state.status.status,'ok');
+    assert.equal(f.state.changeEntries.length,0);
+    assert.equal(f.state.isDerived('tags?_dv_other'),true);
+    assert.equal(f.state.isDerived('tags?caption'),false);
+    f.host('tags').control.querySelector('input[value=b]').click(); await tick();
+    assert.equal(f.app.data.getItem('record.tags'),'a,b');
+    assert.equal(f.app.data.getItem('record.tags?_dv_displayedValue'),'Alpha,Beta');
+    assert.equal(f.state.status.status,'changed');
+    assert.deepEqual(f.state.changeEntries.map(entry => entry.path),['record.tags']);
 });

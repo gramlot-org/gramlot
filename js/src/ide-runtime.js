@@ -7,7 +7,7 @@ import {codeMirrorWithOptions} from './components/editor-options.js';
 /** Resolve the owner through Source ancestry, independently of DOM placement. */
 function ideContext(node) {
     for (let scope = node; scope; scope = scope.parentNode) {
-        const context = scope.ideContext;
+        const context = scope._internal.ideContext;
         if (context) return context;
     }
     throw new Error('IDE operation requires a node inside a mounted IDE');
@@ -21,41 +21,43 @@ export class IdeLogic {
         const scope = node.parentNode;
         const context = {scope, documents:new IdeDocuments(this.page,scope), requested:0,
             editorPrefix:`ide_${randomId()}`, recent:new RecentWorkspaces(this.page.src.renderer.destination.ownerDocument.defaultView.sessionStorage)};
-        Object.defineProperty(scope,'ideContext',{value:context,configurable:true});
+        scope._internal.ideContext = context;
         const {documents, recent} = context;
-        const state = scope.getRelativeData('.');
+        const state = () => scope.getRelativeData('.');
         const roots = recent.read();
-        state.setItem('recent',recent.choices(roots));
-        state.setItem('workspace',roots[0] ?? '');
-        const browser = state.getItem('browser');
-        browser.subscribe('ide-browser',{any:event => {
-            if (event.node === browser.getNode('root')) {
-                const root = browser.getItem('root');
-                state.setItem('workspace',root);
-                state.setItem('recent',recent.choices(recent.remember(root)));
-                state.setItem('status',`Workspace: ${root}`);
-            } else if (event.node === browser.getNode('selectedPath')) {
+        state().setItem('recent',recent.choices(roots));
+        state().setItem('workspace',roots[0] ?? '');
+        // Data is observed at its paths; the Bags are read when a change arrives.
+        const router = this.page.src.binding.router;
+        const statePath = scope.absDatapath('.');
+        const documentsPath = `${statePath}.documents`;
+        const registrations = [
+            router.register({path:`${statePath}.browser.root`, recipient:{receive:() => {
+                const root = state().getItem('browser.root');
+                state().setItem('workspace',root);
+                state().setItem('recent',recent.choices(recent.remember(root)));
+                state().setItem('status',`Workspace: ${root}`);
+            }}}),
+            router.register({path:`${statePath}.browser.selectedPath`, recipient:{receive:() => {
+                const browser = state().getItem('browser');
                 const path = browser.getItem('selectedPath');
                 const item = path === null ? null : browser.getItem('store').getNode(path);
                 if (item && !item.attr.is_directory) void this.ideOpenDocument(scope,browser.getItem('root'),item.attr.path);
-            }
-        }});
-        const documentBag = documents.documents;
-        documentBag.subscribe('ide-documents',{any:event => {
-            if (!['content','saved','busy','writable','view','isNew','path','root'].includes(event.node.label)) return;
-            for (const pane of scope.value.getNode('frame.center.tabs').value?.getNodes() ?? []) {
-                const key = pane.getAttr('documentKey');
-                const doc = documents.documents.getItem(key);
-                if (doc) {
-                    if (event.node === doc.getNode('content')) documents.invalidateRecipe(key);
-                    this.ideDocumentState(scope,key);
-                    pane.setAttr({title:`${documents.dirty(key) ? '● ' : ''}${doc.getItem('path')}`});
+            }}}),
+            router.register({path:documentsPath, subtree:true, recipient:{receive:change => {
+                if (!['content','saved','busy','writable','view','isNew','path','root'].includes(change.node.label)) return;
+                for (const pane of scope.value.getNode('frame.center.tabs').value?.getNodes() ?? []) {
+                    const key = pane.getAttr('documentKey');
+                    const doc = documents.documents.getItem(key);
+                    if (doc) {
+                        if (change.path === `${documentsPath}.${key}.content`) documents.invalidateRecipe(key);
+                        this.ideDocumentState(scope,key);
+                        pane.setAttr({title:`${documents.dirty(key) ? '● ' : ''}${doc.getItem('path')}`});
+                    }
                 }
-            }
-        }});
+            }}})];
         this.page.src.renderer.onDispose(context.scope,() => {
-            browser.unsubscribe('ide-browser',{any:true});
-            documentBag.unsubscribe('ide-documents',{any:true});
+            for (const registration of registrations) registration.close();
             documents.dispose();
         });
     }
@@ -69,7 +71,7 @@ export class IdeLogic {
         const context=ideContext(node), state=context.scope.getRelativeData('.');
         if (state.getItem('browser.root') !== result.root) return;
         state.setItem('upload.open',false);
-        const controller=context.scope.value.getNode('frame.left.browser').fileSystemController;
+        const controller=context.scope.value.getNode('frame.left.browser')._internal.fileSystemController;
         if (controller.request) return;
         const opened=await controller.open(result.root);
         if (opened === result.root && !context.documents.disposed && state.getItem('browser.root') === result.root)
@@ -215,7 +217,7 @@ export class IdeLogic {
             if (!documents.disposed && saved) {
                 state.setItem('status','File created.');
                 const browser = state.getItem('browser');
-                if (browser.getItem('root')) await context.scope.value.getNode('frame.left.browser').fileSystemController.open(browser.getItem('root'));
+                if (browser.getItem('root')) await context.scope.value.getNode('frame.left.browser')._internal.fileSystemController.open(browser.getItem('root'));
             }
         } catch (error) { if (!documents.disposed) state.setItem('status',error.message); }
     }

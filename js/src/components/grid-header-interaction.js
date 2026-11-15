@@ -55,7 +55,7 @@ export class GridHeaderInteraction {
         const header = event.target.closest('th[data-field]');
         if (!header || this.#gesture) { event.preventDefault(); return; }
         this.#suppressClick = true;
-        this.#drag = {field:header.dataset.field, node:this.#structure().columnNode(header.dataset.field)};
+        this.#drag = {field:header.dataset.field};
         event.dataTransfer.effectAllowed = 'move';
         event.dataTransfer.setData('text/plain', header.textContent);
         header.classList.add('column-dragging');
@@ -63,9 +63,8 @@ export class GridHeaderInteraction {
     #dropTarget(event) {
         const header = event.target.closest('th[data-field]');
         if (!this.#drag || !header) return null;
-        const target = this.#structure().columnNode(header.dataset.field);
-        if (this.#structure().columnNode(this.#drag.field) !== this.#drag.node ||
-            target === this.#drag.node || target.parentBag !== this.#drag.node.parentBag) return null;
+        // Columns are matched by field: a field that left the structure during the drag has no drop.
+        if (header.dataset.field === this.#drag.field || !this.#structure().fields.includes(this.#drag.field)) return null;
         return {header, field:header.dataset.field,
             after:event.clientX > header.getBoundingClientRect().left + header.getBoundingClientRect().width / 2};
     }
@@ -99,8 +98,8 @@ export class GridHeaderInteraction {
                 layout.setHeaderWidth(width); this.#layoutChanged();
             }};
         }
-        const structure = this.#structure(), node = structure.columnNode(field);
-        return {identity:node, width:node.getAttr('width'), setWidth:width => structure.setColumnWidth(field, width)};
+        const structure = this.#structure();
+        return {identity:field, width:structure.columnWidth(field), setWidth:width => structure.setColumnWidth(field, width)};
     }
     #minimum(header) {
         if (header.classList.contains('row-heading')) {
@@ -144,7 +143,7 @@ export class GridHeaderInteraction {
         const current = this.#target(gesture.header);
         this.#suppressClick = true;
         this.cancel();
-        // A retargeted/replaced struct or concurrent width edit must win over this gesture.
+        // A concurrent width edit, also by a replaced struct, wins over this gesture.
         if (current.identity !== gesture.identity || current.width !== gesture.originalWidth) return;
         current.setWidth(gesture.width);
         this.#focus(gesture.field);
@@ -165,10 +164,9 @@ export class GridHeaderInteraction {
             const header = event.target.closest('th[data-field]');
             if (!header || !event.altKey) return;
             const field = header.dataset.field, structure = this.#structure();
-            const node = structure.columnNode(field), siblings = node.parentBag.getNodes();
-            const target = siblings[siblings.indexOf(node) + (event.key === 'ArrowRight' ? 1 : -1)];
-            if (target?.getAttr('tag') === 'cell') {
-                structure.moveColumn(field, target.getAttr('field'), event.key === 'ArrowRight');
+            const target = structure.adjacentField(field, event.key === 'ArrowRight' ? 1 : -1);
+            if (target !== null) {
+                structure.moveColumn(field, target, event.key === 'ArrowRight');
                 this.#head.querySelector(`th[data-field="${field}"]`).focus({preventScroll:true});
             }
             event.preventDefault(); return;

@@ -21,7 +21,7 @@ const packageOf = specifier => specifier.split('/').slice(0, specifier.startsWit
 /** A string of each library, present in its local copy and absent from Gramlot code. */
 const markers = {echarts: 'registerPreprocessor', echartsGl: 'Geo3D', uplot: 'pxRatio', plotly: 'newPlot',
     vega: 'Dataflow', writeExcelFile: 'xl/worksheets', jodit: 'jodit-wysiwyg', codemirror: 'EditorView',
-    prosemirror: 'NodeSelection', typst: 'WebAssembly'};
+    prosemirror: 'NodeSelection', typst: 'WebAssembly', xterm: 'registerCsiHandler', xtermFit: 'proposeDimensions'};
 
 test('the manifest names the installed versions, the same file on jsDelivr and its SRI hash', async () => {
     for (const [name, library] of Object.entries(libraries)) {
@@ -93,7 +93,8 @@ test('the bootstrap carries the library source, the import map the integrity of 
     assert.match(cdn.html, /<html data-gramlot-library-source="cdn">/);
     const map = JSON.parse(/<script type="importmap"[^>]*>(.*?)<\/script>/.exec(cdn.html)[1]);
     assert.deepEqual(map.integrity, {[libraries.echarts.url]: libraries.echarts.integrity,
-        [libraries.uplot.url]: libraries.uplot.integrity});
+        [libraries.uplot.url]: libraries.uplot.integrity, [libraries.xterm.url]: libraries.xterm.integrity,
+        [libraries.xtermFit.url]: libraries.xtermFit.integrity});
     const local = await new Server({librarySource: 'local'}).openPage('/');
     assert.match(local.html, /<html data-gramlot-library-source="local">/);
     assert.ok(!local.html.includes('integrity') && !local.html.includes('jsdelivr'));

@@ -2,7 +2,7 @@
 
 Document ID: **GC-345**.
 
-This reference covers all **89 component declarations** in the 14 packaged
+This reference covers all **89 component declarations** in the 13 packaged
 component collections covered here. It is regenerated from their effective
 metadata. Widgets are grouped by purpose; inherited and shared parameters are
 documented once and linked from each applicable widget. Use the manual matching your installed packages when comparing available features.
@@ -55,14 +55,13 @@ connects these controls to runnable lessons and screenshots.
 | [buttons](415-buttons.md) | [button](#gc-345-button), [toggleButton](#gc-345-togglebutton), [dropDownButton](#gc-345-dropdownbutton), [menu](#gc-345-menu), [menuline](#gc-345-menuline), [spacer](#gc-345-spacer) |
 | [layout](420-layout.md) | [transformPane](#gc-345-transformpane), [dialog](#gc-345-dialog), [floatingPane](#gc-345-floatingpane), [framePane](#gc-345-framepane), [trayPane](#gc-345-traypane), [formlet](#gc-345-formlet), [groupBox](#gc-345-groupbox), [contentPane](#gc-345-contentpane), [borderContainer](#gc-345-bordercontainer), [stackContainer](#gc-345-stackcontainer), [tabContainer](#gc-345-tabcontainer) |
 | [tree](425-tree.md) | [tree](#gc-345-tree), [rowActions](#gc-345-rowactions) |
-| [editors](430-editors.md) | [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [htmlPreview](#gc-345-htmlpreview), [markdownEditor](#gc-345-markdowneditor), [markdownPreview](#gc-345-markdownpreview) |
+| [editors](430-editors.md) | [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [htmlPreview](#gc-345-htmlpreview), [markdownEditor](#gc-345-markdowneditor), [markdownPreview](#gc-345-markdownpreview), [terminal](#gc-345-terminal) |
 | [typst](435-typst.md) | [typstPreview](#gc-345-typstpreview) |
 | [uploads](440-uploads.md) | [uploader](#gc-345-uploader), [imageUploader](#gc-345-imageuploader), [attachmentManager](#gc-345-attachmentmanager) |
 | [grid](445-grid.md) | [grid](#gc-345-grid), [searchBox](#gc-345-searchbox) |
 | [chat](450-chat.md) | [chatMessages](#gc-345-chatmessages) |
 | [grouplets](455-grouplets.md) | [grouplet](#gc-345-grouplet), [groupletCard](#gc-345-groupletcard) |
 | [charts](480-charts.md) | [chartPane](#gc-345-chartpane), [chartView](#gc-345-chartview), [chartFields](#gc-345-chartfields), [chartGeoJSON](#gc-345-chartgeojson), [chartTimeline](#gc-345-charttimeline), [gauge](#gc-345-gauge), [chartBar](#gc-345-chartbar), [chartLine](#gc-345-chartline), [chartArea](#gc-345-chartarea), [chartStackedBar](#gc-345-chartstackedbar), [chartStackedArea](#gc-345-chartstackedarea), [chartHorizontalBar](#gc-345-charthorizontalbar), [chartPie](#gc-345-chartpie), [chartDonut](#gc-345-chartdonut), [chartScatter](#gc-345-chartscatter), [chartBar3D](#gc-345-chartbar3d), [chartLine3D](#gc-345-chartline3d), [chartScatter3D](#gc-345-chartscatter3d), [chartSurface](#gc-345-chartsurface), [chartMap](#gc-345-chartmap), [chartMapBar3D](#gc-345-chartmapbar3d), [chartMap3D](#gc-345-chartmap3d), [chartLines3D](#gc-345-chartlines3d), [chartPolygons3D](#gc-345-chartpolygons3d), [chartFunnel](#gc-345-chartfunnel), [chartRadar](#gc-345-chartradar), [chartParallel](#gc-345-chartparallel), [chartHeatmap](#gc-345-chartheatmap), [chartSankey](#gc-345-chartsankey), [chartCandlestick](#gc-345-chartcandlestick), [chartBoxplot](#gc-345-chartboxplot), [chartTreemap](#gc-345-charttreemap), [chartSunburst](#gc-345-chartsunburst) |
-| [vizabi](485-vizabi.md) | [vizabiBubble](#gc-345-vizabibubble) |
 | [audio](490-audio.md) | [audioAnalyser](#gc-345-audioanalyser) |
 | [drawing](495-drawing.md) | [drawingPane](#gc-345-drawingpane) |
 
@@ -353,7 +352,7 @@ Collection: **drawing**. Browser element: `gramlot-drawing-pane`.
 [Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-drawingpane).
 
 
-**Data contract.** annotations reads and mutates the original Data Bag; image reads an optional background URL.
+**Data contract.** annotations reads and mutates the Data Bag at its pointer address; image reads an optional background URL.
 
 
 **Interaction and events.** Shared toolbar actions select, draw, edit text and delete shapes. Bag changes redraw the surface.
@@ -362,7 +361,7 @@ Collection: **drawing**. Browser element: `gramlot-drawing-pane`.
 **Composition.** Composes a shared Source menu and an SVG drawing surface.
 
 
-**Limits and lifecycle.** Requires an initialized annotation Bag. Coordinates follow image dimensions or a 1000 by 1000 empty surface. Disposal releases subscriptions; persistence belongs to the application.
+**Limits and lifecycle.** Requires an initialized annotation Bag. Coordinates follow image dimensions or a 1000 by 1000 empty surface. Disposal releases Data registrations; persistence belongs to the application.
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
@@ -609,40 +608,6 @@ Collection: **charts**. Browser element: `gramlot-gauge`.
 | `thresholds` | T or None | '' | read | — |
 | `presentation` | T | 'needle' | read | — |
 | `caption` | T or None | '' | read | — |
-
-Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
-
-<a id="gc-345-475"></a>
-<a id="gc-345-vizabibubble"></a>
-### `vizabiBubble`
-
-Specialized host-provided Vizabi bubble session observing Data Bags.
-
-Collection: **vizabi**. Browser element: `gramlot-vizabi-bubble`.
-
-[Host-provided bubble charts](485-vizabi.md#gc-485-start).
-
-
-[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-vizabibubble).
-
-
-**Data contract.** Reads the original rows and configuration Bag.
-
-
-**Interaction and events.** Retains supported session configuration and releases engine resources on removal.
-
-
-**Composition.** Specialized external bubble view.
-
-
-**Limits and lifecycle.** Requires host-supplied libraryUrl; not a chartPane engine.
-
-| Specific parameter | Type | Default | Binding | Constraints |
-| --- | --- | --- | --- | --- |
-| `storepath` | T | — | — | — |
-| `rowMode` | T | 'attributes' | — | — |
-| `configuration` | X | — | read | — |
-| `libraryUrl` | T | — | — | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
@@ -2680,6 +2645,42 @@ Shared contracts: [Values and bindings](#gc-345-shared-value).
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `filename` | T | 'document.pdf' | read | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
+<a id="gc-345-270"></a>
+<a id="gc-345-terminal"></a>
+### `terminal`
+
+Interactive terminal connected to a @terminal session of the page store.
+
+Collection: **editors**. Browser element: `gramlot-terminal`.
+
+[Editor composition and document behavior](105-components.md#gc-105-125).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-terminal).
+
+
+**Data contract.** Reads session, the name of an @terminal method of the page store. Writes connected, rows and columns when the socket opens, closes or the screen is resized. Terminal bytes never pass through Data.
+
+
+**Interaction and events.** Keys go to the session as typed, including arrows, Tab and Ctrl-C. Output is written to the screen as it arrives. input(text) sends text as if typed.
+
+
+**Composition.** Leaf control. It fills its box and resizes the server terminal with it.
+
+
+**Limits and lifecycle.** Requires a server with a PageStore channel (websocket). A page has one open session per name: opening it again closes the open one. The server stops sending output while 1 MB is unacknowledged by the screen.
+
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `session` | T | '' | read | — |
+| `fontSize` | L | 14 | read | — |
+| `fontFamily` | T | 'monospace' | read | — |
+| `connected` | B | False | write | — |
+| `rows` | L | 0 | write | — |
+| `columns` | L | 0 | write | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 

@@ -19,7 +19,10 @@ export class EditingSession {
     readonly changeEntries: ReadonlyArray<{path: string; previous: unknown; current: unknown; existed: boolean; exists: boolean}>;
     focusField(path: string): boolean;
     registerNavigator(navigate: (path: string) => boolean): () => void;
-    /** Declare derived values (grid formula results, totals) that are never changes; returns the release. */
+    /**
+     * Declare derived values (grid formula results, totals) that are never changes; returns the release.
+     * An attribute whose name starts with `_dv_` is derived without registration.
+     */
     registerDerived(match: (path: string) => boolean): () => void;
     load(data: Bag): void;
     validate(): Promise<boolean>;

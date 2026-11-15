@@ -15,10 +15,14 @@ const repository = resolve(js, '..');
 const markers = {
     '@genrojs/bag': 'BagSerializationError',
     '@genrojs/builders': 'Cyclic attribute dependency',
-    '@xmldom/xmldom': 'INUSE_ATTRIBUTE_ERR',
     'decimal.js': '[DecimalError]',
-    'big.js': '[big.js]',
     '@msgpack/msgpack': 'ExtensionCodec',
+};
+
+/** One marker string per library that the libraries import and the browser runtime does not ship (#84). */
+const absentMarkers = {
+    '@xmldom/xmldom': 'INUSE_ATTRIBUTE_ERR',
+    'big.js': '[big.js]',
 };
 
 async function project(t, source) {
@@ -51,7 +55,7 @@ export default defineCollection({name:'sharedprobe',components:[]});
     const assets = join(staging, 'sample/widgets/assets');
     const emitted = await readFile(join(assets, 'collection.js'), 'utf8');
     assert.match(emitted, /sharedModules/);
-    for (const [library, marker] of Object.entries(markers)) assert.ok(!emitted.includes(marker), library);
+    for (const [library, marker] of Object.entries({...markers, ...absentMarkers})) assert.ok(!emitted.includes(marker), library);
     const collection = await import(pathToFileURL(join(assets, 'index.js')).href);
     assert.ok(collection.collectionBag() instanceof core.Bag);
     assert.equal(collection.collectionDecimal('1.5').constructor, core.sharedModules['decimal.js'].default);
@@ -79,6 +83,7 @@ export default defineCollection({name:'subpathprobe',components:[]});
 test('shipped standard collections contain no copy of the shared libraries', async () => {
     const runtime = await readFile(join(repository, 'src/gramlot/resources/gramlot.min.js'), 'utf8');
     for (const [library, marker] of Object.entries(markers)) assert.ok(runtime.includes(marker), `runtime ${library}`);
+    for (const [library, marker] of Object.entries(absentMarkers)) assert.ok(!runtime.includes(marker), `runtime ${library}`);
     const names = JSON.parse(await readFile(join(repository, 'src/gramlot/collections/standard.json'), 'utf8'));
     for (const name of names) {
         const assets = join(repository, 'src/gramlot/collections', name, 'assets');
@@ -87,7 +92,7 @@ test('shipped standard collections contain no copy of the shared libraries', asy
         for (const file of await readdir(modules).catch(() => [])) if (file.endsWith('.js')) files.push(join(modules, file));
         for (const file of files) {
             const text = await readFile(file, 'utf8');
-            for (const [library, marker] of Object.entries(markers)) {
+            for (const [library, marker] of Object.entries({...markers, ...absentMarkers})) {
                 assert.ok(!text.includes(marker), `${name}: ${library} in ${file.slice(dirname(assets).length + 1)}`);
             }
         }

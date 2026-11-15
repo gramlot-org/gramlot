@@ -3,7 +3,7 @@ import {chartType} from './chart-types/index.js';
 import {requireChartCapability} from './chart-engines/index.js';
 import {checkChartSyntax} from './chart-syntax.js';
 
-/** Engine-independent context. Reading it never rewrites either Data Bag. */
+/** Engine-independent context of one draw, built from values read at the draw. Reading it never rewrites Data. */
 export function chartContext(view,structure,seriesOptions) {
         if (!(seriesOptions instanceof Bag)) throw new TypeError('seriesOptions requires a Bag');
         const type = chartType(structure.getItem('chartType'));
@@ -27,9 +27,16 @@ export class ChartRenderer {
     constructor(element,view,options={}) { this.#element=element;this.#view=view;this.#options=options; }
     async prepare(engine,type) { await requireChartCapability(engine,type).load(type,this.#element.ownerDocument); }
     invalidate() { this.#revision++; }
-    update(structure,seriesOptions) {
+    /**
+     * Draw. `structure` holds the parameter values of this draw; `seriesOptions` is the address of the
+     * options Bag in Data, `{data, path}` with `data` the page's Data root. The options are read here,
+     * without resolvers, where the context goes to the adapter that hands the values to the engine;
+     * nothing keeps the Bag after the draw.
+     */
+    update(structure,{data,path}) {
+        if (typeof path !== 'string' || !path) throw new TypeError(`seriesOptions requires a Data path: ${path}`);
         const engine=structure.getItem('engine') ?? 'echarts';
-        const context=chartContext(this.#view,structure,seriesOptions);
+        const context=chartContext(this.#view,structure,data.getItem(path,null,true));
         context.domains=this.#options.domains ? this.#options.domains(context) : null;
         const Adapter=requireChartCapability(engine,context.type.id);
         const revision=++this.#revision;

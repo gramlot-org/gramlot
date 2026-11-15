@@ -1,25 +1,32 @@
 /* @ts-self-types="./index-page-runtime.d.ts" */
 import {Bag} from '@genrojs/bag';
-import {sourceTarget} from '@genrojs/builders';
 
 /** Coordinate a declared navigation Bag and tabContainer through Source and Data.
  * Region contents, drawer presentation, themes and application controls belong to the Page.
  */
 export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEntry = () => {},
-    {state = root.getRelativeData('.'), createEntry = null,
+    {state = root.absDatapath('.'), createEntry = null,
         onLoad = () => {}} = {}) {
-    const navigation = state.getItem('navigation');
-    if (!(navigation instanceof Bag)) throw new TypeError('IndexPage navigation must be a Bag');
-    const tabs = root.value.getNode('frame.center.tabs');
+    // The coordinator keeps the Data path of its state and its own Source node; every Bag and every
+    // other node is read at its address when it is used.
+    if (typeof state !== 'string' || !state) throw new TypeError('IndexPage state must be a Data path');
+    const data = renderer.binding.gramlot.data;
+    const read = name => data.getItem(`${state}.${name}`);
+    const write = (name, value) => data.setItem(`${state}.${name}`, value);
+    const navigation = () => read('navigation');
+    if (!(navigation() instanceof Bag)) throw new TypeError('IndexPage navigation must be a Bag');
+    const tabs = () => root.value.getNode('frame.center.tabs');
     const builder = root.builder;
     const entries = new Map();
     const context = {entries, disposed: false, selecting: false, sequence: 0, requested: null};
-    Object.defineProperty(root, 'indexContext', {value: context, configurable: true});
-    const opened = state.getItem('opened');
-    for (const record of opened.getNodes()) {
+    root._internal.indexContext = context;
+    // `pane` and `node` resolve the tab panel and the navigation node by label and path on each access.
+    const createRecord = ({url, path, title, paneLabel, loading}) => ({url, path, title, paneLabel, loading,
+        get pane() { return tabs().value?.getNode(this.paneLabel) ?? null; },
+        get node() { return navigation().getNode(this.path); }});
+    for (const record of read('opened').getNodes()) {
         const {url, path, title} = record.attr;
-        const pane = tabs.value.getNode(record.label);
-        const entry = {url, path, title, pane, node: navigation.getNode(path), loading: false};
+        const entry = createRecord({url, path, title, paneLabel: record.label, loading: false});
         prepareEntry(entry);
         entries.set(url, entry);
         context.sequence++;
@@ -37,10 +44,13 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
         if (context.disposed) return;
         context.selecting = true;
         try {
-            state.setItem('active', entry.url);
-            state.setItem('navigationSelection', entry.path);
+            write('active', entry.url);
+            write('navigationSelection', entry.path);
             onSelection(entries, entry.url);
         } finally { context.selecting = false; }
+    };
+    const forget = paneLabel => {
+        if (read('opened').getNode(paneLabel)) read('opened').popNode(paneLabel);
     };
     // Includes validation and preparation errors before the asynchronous load starts.
     function requestSelection(path) {
@@ -49,7 +59,7 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
         });
     }
     async function select(path) {
-        const node = navigation.getNode(path);
+        const node = navigation().getNode(path);
         if (!node) throw new Error(`Unknown index navigation path: ${path}`);
         const url = node.attr.url;
         if (url == null) return; // A folder may have children without its own page.
@@ -61,11 +71,13 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
             activate(entry);
             return;
         }
-        while (tabs.value !== null && tabs.value.getNode(`page${context.sequence}`)) context.sequence++;
-        const pane = sourceTarget(builder.wrapSource(tabs).contentPane({node_label: `page${context.sequence++}`,
-            title: node.attr.title ?? node.label, pageName: url, height: '100%', closable: true}));
-        const previous = state.getItem('active');
-        entry = {url, path, node, pane, title: node.attr.title ?? node.label, loading: true};
+        while (tabs().value !== null && tabs().value.getNode(`page${context.sequence}`)) context.sequence++;
+        const paneLabel = `page${context.sequence++}`;
+        const title = node.attr.title ?? node.label;
+        builder.wrapSource(tabs()).contentPane({node_label: paneLabel,
+            title, pageName: url, height: '100%', closable: true});
+        const previous = read('active');
+        entry = createRecord({url, path, title, paneLabel, loading: true});
         entries.set(url, entry);
         try {
             notifyLoad(entry, 'loading');
@@ -75,20 +87,21 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
             if (createEntry) await createEntry(entry);
             else {
                 const selection = new Bag();
-                selection.setItem(node.label, null, {...node.attr});
-                const mounted = await renderer.binding.gramlot.src.remoteSource(pane, 'index_panel', {selection});
+                const selected = entry.node;
+                selection.setItem(selected.label, null, {...selected.attr});
+                const mounted = await renderer.binding.gramlot.src.remoteSource(entry.pane, 'index_panel', {selection});
                 if (!mounted) throw new Error('Panel loading was cancelled');
             }
             if (context.disposed || entries.get(url) !== entry) return;
-            opened.setItem(pane.label, null, {url, path: entry.path, title: entry.title});
+            read('opened').setItem(paneLabel, null, {url, path: entry.path, title: entry.title});
             prepareEntry(entry);
         } catch (error) {
             if (context.disposed || entries.get(url) !== entry) return;
             try {
                 renderer.binding.reportError(error, 'Page could not be opened');
                 entries.delete(url);
-                if (opened.getNode(pane.label)) opened.popNode(pane.label);
-                if (pane.parentBag) pane.parentBag.popNode(pane.label);
+                forget(paneLabel);
+                if (entry.pane) tabs().value.popNode(paneLabel);
                 if (!context.disposed && context.requested === url) {
                     const restored = entries.get(previous);
                     context.requested = restored?.url ?? null;
@@ -96,8 +109,8 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
                     else {
                         context.selecting = true;
                         try {
-                            state.setItem('active', null);
-                            state.setItem('navigationSelection', null);
+                            write('active', null);
+                            write('navigationSelection', null);
                             onSelection(entries, null);
                         } finally { context.selecting = false; }
                     }
@@ -109,56 +122,62 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
         finishLoad(entry, 'ready');
         if (!context.disposed && entries.get(url) === entry && context.requested === url) activate(entry);
     }
+    // Source structure: a panel removed from the tabs, by the user or by the application, closes its entry.
+    // The subscription is on the Source root; the tabs are recognised by their path below the coordinator.
     const sourceSubscription = `${root.getAttr('id')}-page-close`;
-    root.value.subscribe(sourceSubscription, {any: event => {
-        if (event.evt !== 'del') return;
-        const entry = [...entries.values()].find(candidate => candidate.pane === event.node);
+    const source = builder.source;
+    const tabsPath = [...root.fullpath.split('.').slice(1), 'frame', 'center', 'tabs'].join('.');
+    source.subscribe(sourceSubscription, {any: event => {
+        if (event.evt !== 'del' || (event.pathlist ?? []).join('.') !== tabsPath) return;
+        const entry = [...entries.values()].find(candidate => candidate.paneLabel === event.node.label);
         if (!entry) return;
-        const {url, pane} = entry;
+        const {url, paneLabel} = entry;
         if (context.disposed || renderer.disposed || entries.get(url) !== entry) return;
         entries.delete(url);
-        if (opened.getNode(pane.label)) opened.popNode(pane.label);
+        forget(paneLabel);
         try {
-            if (state.getItem('active') === url) {
+            if (read('active') === url) {
                 const next = [...entries.values()].at(-1);
                 context.requested = next?.url ?? null;
                 if (next) activate(next);
                 else {
                     context.selecting = true;
-                    try { state.setItem('active', null); state.setItem('navigationSelection', null); onSelection(entries, null); }
+                    try { write('active', null); write('navigationSelection', null); onSelection(entries, null); }
                     finally { context.selecting = false; }
                 }
-            } else onSelection(entries, state.getItem('active'));
+            } else onSelection(entries, read('active'));
         } finally { finishLoad(entry, 'cancelled'); }
     }});
-    const subscription = `${root.getAttr('id')}-selection`;
-    state.subscribe(subscription, {any: event => {
-        if (context.selecting || context.disposed) return;
-        if (event.node === state.getNode('navigationSelection')) {
-            const path = state.getItem('navigationSelection');
+    // Data: a change at navigationSelection or active, written by the tree or the tabs, selects a page.
+    const router = renderer.binding.router;
+    const registrations = [
+        router.register({path: `${state}.navigationSelection`, recipient: {receive: () => {
+            if (context.selecting || context.disposed) return;
+            const path = read('navigationSelection');
             if (path !== null) requestSelection(path);
-        } else if (event.node === state.getNode('active')) {
-            const entry = entries.get(state.getItem('active'));
+        }}}),
+        router.register({path: `${state}.active`, recipient: {receive: () => {
+            if (context.selecting || context.disposed) return;
+            const entry = entries.get(read('active'));
             if (entry) { context.requested = entry.url; activate(entry); }
-        }
-    }});
+        }}})];
     const dispose = () => {
         if (context.disposed) return;
         context.disposed = true;
-        state.unsubscribe(subscription, {any: true});
-        root.value.unsubscribe(sourceSubscription, {any: true});
+        for (const registration of registrations) registration.close();
+        source.unsubscribe(sourceSubscription, {any: true});
         for (const entry of entries.values()) if (entry.loading) {
-            if (entry.pane.parentBag) entry.pane.parentBag.popNode(entry.pane.label);
+            if (entry.pane) tabs().value.popNode(entry.paneLabel);
             finishLoad(entry, 'cancelled');
         }
         entries.clear();
-        if (root.indexContext === context) delete root.indexContext;
+        if (root._internal.indexContext === context) delete root._internal.indexContext;
     };
     context.dispose = dispose;
     renderer.onDispose(root, dispose);
-    const active = entries.get(state.getItem('active'));
+    const active = entries.get(read('active'));
     if (active) activate(active);
-    else if (state.getItem('navigationSelection') !== null) requestSelection(state.getItem('navigationSelection'));
+    else if (read('navigationSelection') !== null) requestSelection(read('navigationSelection'));
     return context;
 }
 

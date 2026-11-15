@@ -116,7 +116,8 @@ and database technology; an integration may depend on core, never the reverse.
 | `gramlot-py-server` | Python pages: one PyPI package, `gramlot-py-server`, with five adapters as extras: `uvicorn` (Uvicorn or any ASGI server), `django`, `flask`, `fastapi` and `kajenn` (Kajenn, the new product name for Genro ASGI) |
 | `gramlot-js-server` | JavaScript pages: `@gramlot/gramlot-js-server` (Node.js and Bun), `@gramlot/gramlot-serverless` (JavaScript in a browser Worker without a server, standalone; amendments 11.50 and 11.52) and `@gramlot/create` (new projects) |
 
-`gramlot-examples` holds the example pages, their READMEs and the gallery; each
+`gramlot-examples` holds the general example pages, their READMEs and the gallery;
+bounded interactive documentation examples stay with their guides (owner, 2026-11-10). Each
 integration serves them with its gallery command (amendment 11.56). Standalone remains
 the browser/Worker profile name. Core retains shared Host/Page execution and
 rendering. Kajenn is published on PyPI as `kajenn`; the `kajenn` adapter depends only
@@ -1448,6 +1449,8 @@ Rules: [GC-090 §030](public/090-classes-and-hosts.md#gc-090-030),
 [GC-095 §095](public/095-writing-pages.md#gc-095-095). Record: GC-070 §670.
 
 ### Amendment 11.56 — The examples and their runner leave the core — 2026-10-04
+
+**Superseded in part:** documentation-owned interactive examples are permitted beside their guides by the owner decision of 2026-11-10 below.
 
 Owner decisions: "tutti gli esempi vanno messi nel repo esempi e collegati opportunamente"
 (2026-10-02); the gallery model of 2026-10-02: examples without a runner, a gallery command
@@ -5634,3 +5637,46 @@ possible, from a vendored copy we ship. One manifest describes them." This super
 third-party library of the standard components (GC-325 §160). Servers choose `cdn`
 (default) or `local`; serverless and file exports use the local copies. The names and
 the public API wait for owner confirmation (GC-225, 2026-11-07).
+
+
+### Documentation-owned interactive examples — owner, 2026-11-10
+
+Owner: “Ok, tieni gli esempi Python accanto alla documentazione e integra la
+generazione TYTX nella build di Read the Docs, senza dipendere da gramlot-examples.”
+This supersedes amendment 11.56 only for bounded interactive examples that teach
+the accompanying core documentation: their Python source and styles live beside
+the guide, and the documentation build generates TYTX and browser assets from the
+core. The general example pages, their gallery and runner remain in gramlot-examples;
+core does not depend on gramlot-examples or an adapter. This decision does not
+authorize package publication or an application deployment.
+
+### Data and structure by address only — owner, 2026-11-10
+
+Owner decisions of plan symbolic-references (d-rule, d-scope, d-exception, 2026-11-07),
+completed on 2026-11-09 and 2026-11-10.
+
+1. Data and structure are referenced only by address in the page Data or Source, never by
+   holding a Bag or a BagNode. Only the root Data and the Source root are held; only the
+   final consumer reads values; the data Bag is never replaced.
+2. Passing a node or a Bag to a synchronous call that does not keep it is allowed.
+3. A Bag without a parent may be held: a Bag created internally (also a copy) or a literal
+   Bag in Source. A Bag with a parent is a sub-Bag of Data or Source and is passed by path
+   (owner, 2026-11-10: "basta che non abbia parent. se ha parent significa che sto passando
+   una sub bag"). An internal Bag inserted into a store gets a parent and is no longer held.
+4. Non-reactive state of a Source node goes to `node._internal`: plain values, or helpers
+   that hold no Bag or node except their own Source node. State an author may read or bind
+   goes to `#WORKSPACE` in Data.
+5. Attributes whose name starts with `_dv_` are derived values and never count as a change
+   of an editing session (owner, 2026-11-10). The choice caption is `_dv_displayedValue`.
+6. The legacy symbolic paths are resolved in Python and JavaScript with the same cases:
+   `#ROW`, `#WORKSPACE`, `#DATA`, `#FORM`, `#ANCHOR`, `#<nodeId>`, `#parent`, `?attr`,
+   named children (GC-210, "Symbolic paths").
+7. Exceptions only with the owner's explicit authorization, case by case (d-exception).
+   Recorded exception: the inspector history holds nodes of the inspected page until the
+   inspector is redesigned as two synchronized pages (owner, 2026-11-10).
+
+This supersedes, in "Reserved system Data namespace" (2026-11-05), the generated drawing
+state at `_gramlot.drawing` and the grid state at `_gramlot.grid`: component state now lives
+in the component's private area `#WORKSPACE` (`_gramlot.workspace.<name>`). It also
+supersedes the inspector tree's `storeBag` (Amendment 11.62, 2026-10-14): a tree reads its store only at
+`storepath`, and the inspector keeps its copies through a named connection.

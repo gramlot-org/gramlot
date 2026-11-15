@@ -22,7 +22,7 @@ function fixture(t) {
     window.HTMLCanvasElement.prototype.toBlob = callback => callback(new window.Blob(['crop'], {type: 'image/png'}));
     const image = window.document.createElement('img'); image.src = 'data:image/png;base64,AA==';
     // zoom 0.5 on a 100 x 100 frame: the 200 x 200 area centered on the image.
-    const editor = new ImageCropDialog({state: new Bag(), document: window.document, original: new window.Blob(['original']), image,
+    const editor = new ImageCropDialog({data: new Bag(), path: 'crop', document: window.document, original: new window.Blob(['original']), image,
         sourceWidth: 400, sourceHeight: 200, width: 100, height: 100, x: 0, y: 0, zoom: 0.5, rotate: 30,
         outputWidth: 64, outputHeight: 64, type: 'image/png'});
     const $ = selector => window.document.querySelector(selector);

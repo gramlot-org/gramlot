@@ -118,6 +118,7 @@ export class Gramlot {
             finally { this.src.renderer.dispose(); }
         } finally {
             this._pageStore?.close();
+            for (const name of [...this.rpc.connections.keys()]) this.rpc.unregisterConnection(name);
             this._frames.dispose();
             if (this.rpc.transport) {
                 try { this.rpc.transport.close(this.pageId); }

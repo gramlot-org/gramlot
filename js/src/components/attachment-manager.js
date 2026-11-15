@@ -4,23 +4,26 @@ import {toTytx} from '@genrojs/tytx';
 import {defineComponent} from './registry.js';
 import {Container} from './container.js';
 import {readUploadContext} from './upload-engine.js';
-import {randomId} from '../random-id.js';
 
 export const AttachmentManager = defineComponent({
-    name:'attachmentManager', tag:'gramlot-attachment-manager', base:Container, sourceContext:true, bagStore:true,
+    name:'attachmentManager', tag:'gramlot-attachment-manager', base:Container, sourceContext:true,
     parameters:{operation:{dtype:'T'},storepath:{dtype:'T'},contextPath:{dtype:'T'},
         ready:{dtype:'B',default:false,binding:'read'},listMethod:{dtype:'T'},readMethod:{dtype:'T'},removeMethod:{dtype:'T'},
         accept:{dtype:'T',default:'',binding:'read'},disabled:{dtype:'B',default:false,binding:'read'},
         selectedPath:{dtype:'T',nullable:true,default:null,binding:'twoWay'}},
     implementation: Base => class extends Base {
-        #context; #store; #subscription; #generation=0; #listSequence=0; #previewSequence=0; #disposed=false; #removeToken=null;
-        get #state() { return this.#context.sourceNode.attachmentState; }
-        get #contextKey() { return this.#state.getItem('contextKey'); }
-        set #contextKey(value) { this.#state.setItem('contextKey', value); }
-        get #selected() { return this.#state.getItem('selected'); }
-        set #selected(value) { this.#state.setItem('selected', value); }
-        get #list() { return this.#state.getItem('items'); }
-        set #list(value) { this.#state.setItem('items', value); }
+        // The router registration on the contextPath address: a change of the shared context reaches the manager by path.
+        #context; #contextRegistration=null; #generation=0; #listSequence=0; #previewSequence=0; #disposed=false; #removeToken=null;
+        /** The manager state lives in the private Data area of its node (`workspaceDatapath`), read and written by path. */
+        get #statePath() { return this.#context.sourceNode.workspaceDatapath; }
+        #state(key) { return this.#context.getStaticData(`${this.#statePath}.${key}`); }
+        #setState(key, value) { this.#context.sourceNode.data.setItem(`${this.#statePath}.${key}`, value); }
+        get #contextKey() { return this.#state('contextKey'); }
+        set #contextKey(value) { this.#setState('contextKey', value); }
+        get #selected() { return this.#state('selected'); }
+        set #selected(value) { this.#setState('selected', value); }
+        get #list() { return this.#state('items'); }
+        set #list(value) { this.#setState('items', value); }
         constructor() {
             super(); this.control.replaceChildren(); const doc=this.ownerDocument;
             const style=doc.createElement('style');
@@ -37,18 +40,13 @@ export const AttachmentManager = defineComponent({
         }
         setSourceContext(context) {
             this.#context=context;
-            if (!context.sourceNode.attachmentState) {
-                Object.defineProperty(context.sourceNode, 'attachmentState', {value:new Bag({
-                    contextKey:null, selected:null, items:new Bag(), preview:null, message:''
-                }), configurable:true});
-            }
-            this.#message(this.#state.getItem('message'));
+            // The private area keeps the state of an earlier element of the same node (DOM relocation, rebuild).
+            if (!(this.#list instanceof Bag)) context.sourceNode.data.setItem(this.#statePath, new Bag({
+                contextKey:null, selected:null, items:new Bag(), preview:null, message:''
+            }));
+            this.#message(this.#state('message'));
             this.#renderPreview();
             this.uploader.setSourceContext({...context,callLogic:()=>this.#refresh()});
-        }
-        setStoreBag(store) {
-            if (!(store instanceof Bag)) throw new TypeError('attachmentManager storepath must resolve to a Bag');
-            this.#store=store; this.uploader.setStoreBag(store);
         }
         projectAttributes(attrs,adapt) {
             const rest=super.projectAttributes(attrs,adapt), p=this.parameters;
@@ -58,28 +56,34 @@ export const AttachmentManager = defineComponent({
             this.uploader.projectAttributes({operation:p.operation,storepath:p.storepath,contextPath:p.contextPath,
                 accept:p.accept,multiple:true,autoUpload:Boolean(p.ready),manualUpload:false,disabled:p.disabled,
                 selectedPath:p.selectedPath,onComplete:'attachmentComplete'},adapt);
+            if (this.isConnected) this.#observeContext();
             this.#syncContext(); this.#render(); return rest;
         }
         connectedCallback() {
             this.#disposed=false;
-            if (this.#context && !this.#subscription) {
-                const {gramlot}=this.#context.upload(); this.#subscription=`attachment-manager-${randomId()}`;
-                gramlot.data.subscribe(this.#subscription,{any:()=>this.#syncContext()});
-            }
+            if (this.#context && this.parameters) this.#observeContext();
             this.#syncContext();
+        }
+        /** Observe the shared context at the contextPath address; a new address moves the registration. */
+        #observeContext() {
+            const path=this.#context.attrDatapath('contextPath');
+            if (this.#contextRegistration?.path === path) return;
+            this.#contextRegistration?.close();
+            this.#contextRegistration=this.#context.sourceNode.rootBuilder.binding.router.register({path,subtree:true,
+                recipient:{receive:()=>this.#syncContext()}});
         }
         disconnectedCallback() {
             // DOM relocation into a floating keeps the same Source owner and resources.
             this.ownerDocument.defaultView.queueMicrotask(() => {
                 if (this.isConnected) return;
                 this.#disposed=true; this.#generation++;
-                if (this.#subscription) { this.#context.upload().gramlot.data.unsubscribe(this.#subscription,{any:true}); this.#subscription=null; }
+                this.#contextRegistration?.close(); this.#contextRegistration=null;
             });
         }
-        #message(value) { this.#state.setItem('message',value); this.message.textContent=value; }
+        #message(value) { this.#setState('message',value); this.message.textContent=value; }
         #renderPreview() {
             this.preview.replaceChildren();
-            const result=this.#state.getItem('preview');
+            const result=this.#state('preview');
             if (!result) return;
             if (result.getItem('kind') === 'image') {
                 const image=this.ownerDocument.createElement('img'); image.src=result.getItem('src');
@@ -92,16 +96,16 @@ export const AttachmentManager = defineComponent({
         #syncContext() {
             if (!this.parameters || !this.#context || !this.isConnected || this.#disposed) return;
             if (!this.parameters.ready) {
-                if (this.#contextKey !== null) { this.#contextKey=null; this.#generation++; this.#removeToken=null; this.#selected=null; this.#list=new Bag(); this.#state.setItem('preview',null); this.#renderPreview(); this.#render(); }
+                if (this.#contextKey !== null) { this.#contextKey=null; this.#generation++; this.#removeToken=null; this.#selected=null; this.#list=new Bag(); this.#setState('preview',null); this.#renderPreview(); this.#render(); }
                 return;
             }
             try {
                 const context=this.#value(), key=toTytx(context);
-                if (key !== this.#contextKey) { this.#contextKey=key; this.#generation++; this.#removeToken=null; this.#selected=null; this.#list=new Bag(); this.#state.setItem('preview',null); this.#renderPreview(); this.#render(); void this.#refresh(); }
+                if (key !== this.#contextKey) { this.#contextKey=key; this.#generation++; this.#removeToken=null; this.#selected=null; this.#list=new Bag(); this.#setState('preview',null); this.#renderPreview(); this.#render(); void this.#refresh(); }
             } catch (error) {
                 if (this.#contextKey !== null) {
                     this.#contextKey=null; this.#generation++; this.#removeToken=null; this.#selected=null;
-                    this.#list=new Bag(); this.#state.setItem('preview',null); this.#renderPreview(); this.#render();
+                    this.#list=new Bag(); this.#setState('preview',null); this.#renderPreview(); this.#render();
                 }
                 this.#message(error.message);
             }
@@ -115,7 +119,7 @@ export const AttachmentManager = defineComponent({
                 if (!(result instanceof Bag)) throw new TypeError('Attachment list must be a Bag');
                 for (const node of result.getNodes()) if (typeof node.getAttr('caption') !== 'string') throw new TypeError('Attachment caption must be text');
                 this.#list=result;
-                if (this.#selected && !this.#list.getNode(this.#selected)) { this.#selected=null; this.#previewSequence++; this.#state.setItem('preview',null); this.#renderPreview(); }
+                if (this.#selected && !this.#list.getNode(this.#selected)) { this.#selected=null; this.#previewSequence++; this.#setState('preview',null); this.#renderPreview(); }
                 this.#message(''); this.#render();
             } catch (error) { if (generation === this.#generation && sequence === this.#listSequence && !this.#disposed) this.#message(`Attachments: ${error.message}`); }
         }
@@ -132,7 +136,7 @@ export const AttachmentManager = defineComponent({
         }
         async #read(selected) {
             if (!this.parameters.ready || this.parameters.disabled) return;
-            this.#selected=selected; this.#render(); this.#state.setItem('preview',null); this.#renderPreview(); const generation=this.#generation, sequence=++this.#previewSequence;
+            this.#selected=selected; this.#render(); this.#setState('preview',null); this.#renderPreview(); const generation=this.#generation, sequence=++this.#previewSequence;
             try {
                 const result=await this.#context.upload().gramlot.rpc.call('data',this.parameters.readMethod,{context:this.#value(),selected});
                 if (generation !== this.#generation || sequence !== this.#previewSequence || this.#disposed) return;
@@ -140,7 +144,7 @@ export const AttachmentManager = defineComponent({
                 const kind=result.getItem('kind'), text=result.getItem('text'), src=result.getItem('src');
                 if (!((kind === 'image' && typeof src === 'string' && src) ||
                     (['text','message'].includes(kind) && typeof text === 'string'))) throw new TypeError('Invalid attachment preview');
-                this.#state.setItem('preview',result); this.#renderPreview();
+                this.#setState('preview',result); this.#renderPreview();
                 this.#message('');
             } catch (error) { if (generation === this.#generation && sequence === this.#previewSequence && !this.#disposed) this.#message(`Preview: ${error.message}`); }
         }
@@ -152,7 +156,7 @@ export const AttachmentManager = defineComponent({
                 const removed=await this.#context.upload().gramlot.rpc.call('data',this.parameters.removeMethod,{context:this.#value(),selected});
                 if (generation !== this.#generation || this.#disposed) return;
                 if (removed !== true) throw new Error('Attachment was not removed');
-                this.#selected=null; this.#state.setItem('preview',null); this.#renderPreview(); await this.#refresh();
+                this.#selected=null; this.#setState('preview',null); this.#renderPreview(); await this.#refresh();
             } catch (error) { if (generation === this.#generation && !this.#disposed) this.#message(`Remove: ${error.message}`); }
             finally { if (this.#removeToken === token) { this.#removeToken=null; this.#render(); } }
         }

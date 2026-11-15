@@ -200,11 +200,6 @@ COLLECTION_GUIDES.update({
         'chart type, such as chartCandlestick, declares its columns as attributes. '
         'Temporal playback selects prepared rows; it does not calculate business aggregates. '
         'Map territories must match GeoJSON names. Geographic 3D bars are ECharts-only.'),
-    'vizabi': ('Vizabi', 'Host-provided Vizabi bubble integration; separate from chartPane engines.',
-        'root.vizabiBubble(storepath="rows", configuration="^vizabi", libraryUrl="/assets/vizabi.js", height="500px")',
-        'Supply a configuration Bag and the compatible external library URL. '
-        'The host owns library delivery. This specialized integration is not a chartPane engine '
-        'and is not enabled by the common gallery environment.'),
 })
 
 COLLECTION_GUIDES.update({

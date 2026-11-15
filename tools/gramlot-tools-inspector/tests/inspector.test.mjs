@@ -14,10 +14,20 @@ layoutWindow(window);
 Object.assign(globalThis, {HTMLElement: window.HTMLElement, customElements: window.customElements});
 register(new URL('./layout-loader.mjs', import.meta.url), import.meta.url);
 const {InspectorConnection, attachInspectorAgent} = await import('../dist/gramlot-tools-inspector.js');
+// jsdom has no MessageChannel; a local target is inspected over Node's.
+window.MessageChannel = MessageChannel;
 window.HTMLDialogElement.prototype.showModal = function () {this.open = true;};
 window.HTMLDialogElement.prototype.show = function () {this.open = true;};
 window.HTMLDialogElement.prototype.close = function () {this.open = false;};
-const tick = () => new Promise(resolve => queueMicrotask(resolve));
+// Port messages are tasks: a tick lets the copies and replies of the agent arrive.
+const tick = () => new Promise(resolve => setTimeout(resolve, 20));
+const wait = async (predicate, message = 'Inspector update timeout') => {
+    const end = Date.now() + 3000;
+    while (!predicate()) {
+        if (Date.now() > end) throw new Error(message);
+        await new Promise(resolve => setTimeout(resolve, 5));
+    }
+};
 function target() {
     const mount = window.document.createElement('main');
     window.document.body.append(mount);
@@ -29,11 +39,12 @@ function target() {
     app.src.startSource(builder.source);
     return app;
 }
-function inspector(app) {
+async function inspector(app) {
     const element = window.document.createElement('gramlot-tools-inspector');
     element.gramlot = app;
     window.document.body.append(element);
-    if (app) assert.equal(element.shadowRoot.querySelector('[role=alert]').textContent, '');
+    if (app) await wait(() => element.shadowRoot.querySelector('[role=alert]').textContent === ''
+        && tree(element)?.shadowRoot.querySelector('[role="treeitem"]'));
     return element;
 }
 function button(element, text) {
@@ -44,8 +55,10 @@ function tree(element) { return element.shadowRoot.querySelector('gramlot-tree:n
 function row(element, path) { return tree(element).shadowRoot.querySelector(`[role="treeitem"][data-path="${path}"]`); }
 async function select(element, path) { await tick(); const node = row(element, path); assert.ok(node, path); node.querySelector('.row').click(); await tick(); }
 function field(element, label = 'Value') { return element.shadowRoot.querySelector(`[aria-label="${label}"]`); }
-function save(element, label = 'Value') { field(element, label).dispatchEvent(new window.KeyboardEvent('keydown', {key: 'Enter', bubbles: true})); }
-function revert(element) { field(element).dispatchEvent(new window.KeyboardEvent('keydown', {key: 'Escape', bubbles: true})); }
+// A keyboard keydown bubbles and is cancelable, as the browser dispatches it.
+function press(element, key, label = 'Value') { field(element, label).dispatchEvent(new window.KeyboardEvent('keydown', {key, bubbles: true, cancelable: true})); }
+function save(element, label = 'Value') { press(element, 'Enter', label); }
+function revert(element) { press(element, 'Escape'); }
 async function openBreakpoint(element, path) { await tick(); row(element, path).querySelector('.row').dispatchEvent(new window.Event('pointerenter')); tree(element).querySelector('[rowaction=breakpoint]').control.click(); await tick(); }
 function subscriberCount(bag) {
     return Object.keys(bag._updSubscribers).length + Object.keys(bag._insSubscribers).length + Object.keys(bag._delSubscribers).length;
@@ -55,7 +68,7 @@ test('clearing connected targets detaches the view; local assignment removes the
     const app = target(), local = target();
     const channel = new MessageChannel();
     const agent = attachInspectorAgent(app, channel.port1), connection = new InspectorConnection(channel.port2);
-    const element = inspector(null);
+    const element = await inspector(null);
     try {
         element.targets = [{id:'page', title:'Page', connection}];
         element.targets = [];
@@ -66,13 +79,14 @@ test('clearing connected targets detaches the view; local assignment removes the
         element.gramlot = local;
         assert.deepEqual(element.targets, []);
         assert.equal(element.selectedTarget, null);
-        assert.equal(tree(element).storeBag, local.data);
+        await wait(() => tree(element).storeBag.getItem('name') === 'Ada');
+        assert.notEqual(tree(element).storeBag, local.data);
     } finally {element.remove(); connection.close(); agent.dispose(); app.dispose(); local.dispose();}
 });
 
 test('Data and Source are live; literal pointer and markup values remain text', async () => {
     const app = target();
-    const element = inspector(app);
+    const element = await inspector(app);
     await select(element, 'name');
     assert.equal(field(element)?.value ?? '', 'Ada');
     assert.equal(field(element, 'description value').value, 'Name');
@@ -93,15 +107,19 @@ test('Data and Source are live; literal pointer and markup values remain text', 
 test('retargeting, closing, reconnecting and multiple palettes release independent subscriptions', async () => {
     const app = target(); const second = target();
     const baseline = subscriberCount(app.data) + subscriberCount(app.src.source);
-    const first = inspector(app); const other = inspector(app);
-    assert.equal(subscriberCount(app.data) + subscriberCount(app.src.source), baseline + 24);
+    const first = await inspector(app); const other = await inspector(app);
+    // Each palette's agent and history subscribe the two roots of the target.
+    const perPalette = (subscriberCount(app.data) + subscriberCount(app.src.source) - baseline) / 2;
+    assert.ok(Number.isInteger(perPalette) && perPalette > 0);
     app.data.setItem('name', 'Queued');
     first.gramlot = second;
-    await tick();
+    assert.equal(subscriberCount(app.data) + subscriberCount(app.src.source), baseline + perPalette);
+    await wait(() => row(first, 'name'));
     await select(first, 'name'); assert.equal(field(first).value, 'Ada');
     first.shadowRoot.querySelector('gramlot-floating-pane').closeButton.click(); await tick();
     assert.equal(first.isConnected, false);
     window.document.body.append(first);
+    await wait(() => row(first, 'name'));
     await select(first, 'name'); assert.equal(field(first).value, 'Ada');
     first.remove(); other.remove();
     assert.equal(subscriberCount(app.data) + subscriberCount(app.src.source), baseline);
@@ -116,7 +134,7 @@ test('inspection reads resolver caches without running resolvers and does not mu
     const before = app.data.getNodes().map(node => [node, node.getValue(true), node.resolver]);
     const changes = [];
     app.data.subscribe('inspection-proof', {any: event => changes.push(event)});
-    const element = inspector(app);
+    const element = await inspector(app);
     await select(element, 'deferred');
     assert.equal(calls, 0);
     assert.deepEqual(app.data.getNodes().map(node => [node, node.getValue(true), node.resolver]), before);
@@ -126,7 +144,7 @@ test('inspection reads resolver caches without running resolvers and does not mu
 });
 
 test('the target is explicit and rejects lookalikes and disposed instances', async () => {
-    const element = inspector(null);
+    const element = await inspector(null);
     assert.match(element.shadowRoot.textContent, /No Gramlot instance selected/);
     assert.throws(() => { element.gramlot = {data: new Bag(), src: {source: new Bag()}}; }, /live Gramlot/);
     const app = target(); app.dispose();
@@ -137,7 +155,7 @@ test('the target is explicit and rejects lookalikes and disposed instances', asy
 
 test('selection follows node identity across siblings and clears when that node is deleted', async () => {
     const app = target();
-    const element = inspector(app);
+    const element = await inspector(app);
     await select(element, 'name');
     app.data.popNode('nested');
     app.data.setItem('new', 'Another');
@@ -152,7 +170,7 @@ test('selection follows node identity across siblings and clears when that node 
 
 test('a collapsed branch stays collapsed after a target update', async () => {
     const app = target();
-    const element = inspector(app);
+    const element = await inspector(app);
     await tick();
     const branch = row(element, 'nested');
     assert.equal(branch.getAttribute('aria-expanded'), 'false');
@@ -171,33 +189,40 @@ function edit(element, label, value) {
     input.dispatchEvent(new window.Event(input.tagName === 'SELECT' ? 'change' : 'input', {bubbles: true}));
 }
 const status = element => element.shadowRoot.querySelector('.edit-status').textContent;
+const breakpointError = element => element.shadowRoot.querySelector('.properties .breakpoint-status').textContent;
+const dialog = element => element.shadowRoot.querySelector('dialog.breakpoint-dialog');
+/** The palette is idle: no command waits for the agent's reply. */
+const idle = element => wait(() => !element.shadowRoot.querySelector('fieldset').disabled);
 const breakpointStatus = element => element.shadowRoot.querySelector('.breakpoint-dialog .breakpoint-status').textContent;
 
 test('grid edits cells on leaving the row; names stay fixed; new attributes are typed and removable', async () => {
-    const app = target(); const element = inspector(app);
+    const app = target(); const element = await inspector(app);
     await select(element, 'name');
     assert.equal(field(element, 'description name'), null);
     assert.equal(field(element, 'description type'), null);
     edit(element, 'Value', '^literal');
     field(element).closest('.property-row').dispatchEvent(new window.FocusEvent('focusout', {bubbles:true}));
-    assert.equal(app.data.getItem('name'), '^literal');
+    await wait(() => app.data.getItem('name') === '^literal'); await idle(element);
     button(element, 'Add attribute').click();
     edit(element, 'New attribute name', 'count');
     edit(element, 'New attribute type', 'integer');
     edit(element, 'New attribute value', '42');
     save(element, 'New attribute value');
+    await wait(() => app.data.getNode('name').getAttr('count') === 42); await idle(element);
     button(element, 'Add attribute').click();
     edit(element, 'New attribute name', 'nullable');
     edit(element, 'New attribute type', 'null');
     save(element, 'New attribute value');
+    await wait(() => Object.hasOwn(app.data.getNode('name').getAttr(), 'nullable')); await idle(element);
     assert.deepEqual(app.data.getNode('name').getAttr(), {description: 'Name', count: 42, nullable: null});
     button(element, 'Remove description').click();
+    await wait(() => !Object.hasOwn(app.data.getNode('name').getAttr(), 'description'));
     assert.deepEqual(app.data.getNode('name').getAttr(), {count: 42, nullable: null});
     element.remove(); app.dispose();
 });
 
 test('invalid typed cells and conflicts never overwrite the target', async () => {
-    const app = target(); const element = inspector(app);
+    const app = target(); const element = await inspector(app);
     await select(element, 'nested.count');
     edit(element, 'Value', '4.5'); save(element);
     assert.match(status(element), /Invalid integer/);
@@ -206,17 +231,20 @@ test('invalid typed cells and conflicts never overwrite the target', async () =>
     app.data.setItem('nested.count', 99); await tick();
     assert.match(status(element), /outside this draft/);
     save(element);
+    await wait(() => /Escape/.test(status(element)));
     assert.equal(app.data.getItem('nested.count'), 99);
-    assert.match(status(element), /Escape/);
-    revert(element); edit(element, 'Value', '6'); save(element);
-    assert.equal(app.data.getItem('nested.count'), 6);
+    await idle(element);
+    // The cell handles Escape and prevents its default: the floating window keeps the palette open.
+    revert(element);
+    edit(element, 'Value', '6'); save(element);
+    await wait(() => app.data.getItem('nested.count') === 6);
     app.data.popNode('nested.count'); await tick();
     assert.equal(field(element), null);
     element.remove(); app.dispose();
 });
 
 test('shared tabs retain an invalid draft and switch after a valid edit', async () => {
-    const app = target(); const element = inspector(app);
+    const app = target(); const element = await inspector(app);
     await select(element, 'nested.count');
     edit(element, 'Value', '4.5');
     button(element, 'Source').click(); await tick();
@@ -224,22 +252,23 @@ test('shared tabs retain an invalid draft and switch after a valid edit', async 
     assert.equal(app.data.getItem('nested.count'), 42);
     assert.match(status(element), /Invalid integer/);
     edit(element, 'Value', '6');
-    button(element, 'Source').click(); await tick();
-    assert.equal(button(element, 'Source').getAttribute('aria-selected'), 'true');
-    assert.equal(app.data.getItem('nested.count'), 6);
+    button(element, 'Source').click();
+    await wait(() => app.data.getItem('nested.count') === 6 && button(element, 'Source').getAttribute('aria-selected') === 'true');
     element.remove(); app.dispose();
 });
 
 test('Source editing updates the rendered page and preserves schema metadata', async () => {
-    const app = target(); const element = inspector(app);
+    const app = target(); const element = await inspector(app);
     await tick(); button(element, 'Source').click(); await select(element, 'main.greeting');
     const node = app.src.source.getNode('main.greeting');
     const metadata = node.getAttr('_meta');
     edit(element, 'Value', 'Changed in inspector');
     button(element, 'Add attribute').click();
+    await wait(() => field(element, 'New attribute name'));
     edit(element, 'New attribute name', 'title');
     edit(element, 'New attribute value', 'Edited title');
     save(element);
+    await wait(() => app.src.renderer.destination.querySelector('p').title === 'Edited title');
     assert.equal(app.src.renderer.destination.querySelector('p').textContent, 'Changed in inspector');
     assert.equal(app.src.renderer.destination.querySelector('p').title, 'Edited title');
     assert.equal(node.getAttr('_meta'), metadata);
@@ -250,11 +279,12 @@ test('resolver values and containers are not replaced by editing; inspection nev
     const app = target(); let calls = 0;
     class Deferred extends BagResolver { load() { calls++; return 99; } }
     const resolver = new Deferred(); app.data.setItem('deferred', resolver);
-    const element = inspector(app); await select(element, 'deferred');
+    const element = await inspector(app); await select(element, 'deferred');
     assert.equal(field(element).disabled, true);
     button(element, 'Add attribute').click();
     edit(element, 'New attribute name', 'hint'); edit(element, 'New attribute value', 'Lazy');
     save(element);
+    await wait(() => app.data.getNode('deferred').getAttr('hint') === 'Lazy');
     assert.equal(calls, 0);
     assert.equal(app.data.getNode('deferred').resolver, resolver);
     await select(element, 'nested');
@@ -263,7 +293,7 @@ test('resolver values and containers are not replaced by editing; inspection nev
 });
 
 test('path breakpoints are synchronous, conditional, root-specific and removed on disconnect', async () => {
-    const app = target(); const element = inspector(app);
+    const app = target(); const element = await inspector(app);
     const hits = []; const log = window.console.log;
     window.console.log = (...args) => hits.push(args);
     try {
@@ -272,6 +302,7 @@ test('path breakpoints are synchronous, conditional, root-specific and removed o
         edit(element, 'Breakpoint mode', 'console');
         edit(element, 'Breakpoint condition', 'value === "Grace"');
         button(element, 'Save').click();
+        await wait(() => !dialog(element).open);
         app.data.setItem('name', 'Ada'); assert.equal(hits.length, 0);
         app.data.setItem('name', 'Grace'); assert.equal(hits.length, 1);
         assert.equal(hits[0][1], 'data');
@@ -281,10 +312,11 @@ test('path breakpoints are synchronous, conditional, root-specific and removed o
         await openBreakpoint(element, 'name');
         edit(element, 'Breakpoint condition', '(()');
         button(element, 'Save').click();
-        assert.match(breakpointStatus(element), /not saved/);
+        await wait(() => /not saved/.test(breakpointStatus(element)));
         app.data.setItem('name', 'Again'); app.data.setItem('name', 'Grace');
         assert.equal(hits.length, 2); // Failed compilation leaves the old breakpoint intact.
         edit(element, 'Breakpoint condition', ''); button(element, 'Save').click();
+        await wait(() => !dialog(element).open);
         app.data.popNode('name'); assert.equal(hits.length, 3);
         assert.equal(hits[2][2].evt, 'del');
         app.data.setItem('name', 'Inserted'); assert.equal(hits.length, 4);
@@ -295,20 +327,23 @@ test('path breakpoints are synchronous, conditional, root-specific and removed o
 });
 
 test('Source attribute breakpoints and condition errors stay in their inspected instance', async () => {
-    const app = target(); const second = target(); const element = inspector(app);
+    const app = target(); const second = target(); const element = await inspector(app);
     const hits = []; const log = window.console.log; window.console.log = (...args) => hits.push(args);
     try {
         await tick(); button(element, 'Source').click(); await select(element, 'main.greeting');
         await openBreakpoint(element, 'main.greeting');
         edit(element, 'Breakpoint mode', 'console');
         edit(element, 'Breakpoint condition', 'evt === "upd_attrs"'); button(element, 'Save').click();
+        await wait(() => !dialog(element).open);
         app.src.source.getNode('main.greeting').setAttr({title: 'Hit'});
         assert.equal(hits.length, 1); assert.equal(hits[0][2].path, 'main.greeting');
         await tick();
         await openBreakpoint(element, 'main.greeting');
         edit(element, 'Breakpoint condition', 'missingName.value'); button(element, 'Save').click();
+        await wait(() => !dialog(element).open);
         assert.doesNotThrow(() => app.src.source.getNode('main.greeting').setAttr({title: 'Error'}));
-        assert.match(breakpointStatus(element), /Condition failed/);
+        // The agent records the failed condition; the palette shows it beside the properties.
+        await wait(() => /main\.greeting: missingName/.test(breakpointError(element)));
         assert.equal(hits.length, 1);
         element.gramlot = second;
         app.src.source.getNode('main.greeting').setAttr({title: 'Old target'});
@@ -320,14 +355,17 @@ test('Source attribute breakpoints and condition errors stay in their inspected 
 test('attribute edits preserve an unedited Date identity and reject internal metadata injection', async () => {
     const app = target(); const date = new Date('2026-09-30T00:00:00.000Z');
     app.data.setItem('when', date);
-    const element = inspector(app); await select(element, 'when');
+    const element = await inspector(app); await select(element, 'when');
     button(element, 'Add attribute').click();
     edit(element, 'New attribute name', '_meta'); edit(element, 'New attribute value', 'invalid');
     save(element);
     assert.match(status(element), /Unsupported attribute/);
     assert.equal(app.data.getNode('when').getAttr('_meta'), null);
+    edit(element, 'New attribute name', '_inspector'); save(element);
+    assert.match(status(element), /Unsupported attribute/);
     edit(element, 'New attribute name', 'caption'); edit(element, 'New attribute value', 'Day');
     save(element);
+    await wait(() => app.data.getNode('when').getAttr('caption') === 'Day');
     assert.equal(app.data.getItem('when'), date);
     assert.equal(app.data.getNode('when').getAttr('caption'), 'Day');
     element.remove(); app.dispose();
@@ -335,9 +373,10 @@ test('attribute edits preserve an unedited Date identity and reject internal met
 
 
 test('a breakpoint action targets its own row; the active list removes deleted paths', async () => {
-    const app = target(); const element = inspector(app);
+    const app = target(); const element = await inspector(app);
     await select(element, 'name'); await openBreakpoint(element, 'nested.count');
     edit(element, 'Breakpoint mode', 'console'); button(element, 'Save').click();
+    await wait(() => !dialog(element).open);
     assert.equal(field(element).value, 'Ada');
     await tick(); row(element, 'nested.count').querySelector('.row').dispatchEvent(new window.Event('pointerenter'));
     assert.equal(tree(element).querySelector('[rowaction=breakpoint]').icon.textContent, '●');
@@ -345,7 +384,7 @@ test('a breakpoint action targets its own row; the active list removes deleted p
     app.data.popNode('nested.count');
     button(element, 'Active breakpoints').click();
     button(element, 'Remove breakpoint data: nested.count').click();
-    assert.equal(button(element, 'Active breakpoints').hidden, true);
+    await wait(() => button(element, 'Active breakpoints').hidden === true);
     element.remove(); app.dispose();
 });
 
@@ -360,7 +399,7 @@ for (const remote of [false, true]) test(`enum editors use component metadata an
     const channel = remote ? new MessageChannel() : null;
     const agent = remote ? attachInspectorAgent(app, channel.port1) : null;
     const connection = remote ? new InspectorConnection(channel.port2) : null;
-    const element = inspector(remote ? null : app);
+    const element = await inspector(remote ? null : app);
     const wait = async predicate => {
         const end = Date.now() + 3000;
         while (!predicate()) {
@@ -394,7 +433,7 @@ for (const remote of [false, true]) test(`enum editors use component metadata an
 });
 
 test('docking keeps the inspector, selected path and unfinished editor value alive', async () => {
-    const app = target(), element = inspector(app);
+    const app = target(), element = await inspector(app);
     await tick();
     await select(element, 'name');
     const palette = element.shadowRoot.querySelector('gramlot-floating-pane');
@@ -427,7 +466,7 @@ for (const remote of [false, true]) for (const kind of ['value', 'data attribute
         const channel = remote ? new MessageChannel() : null;
         const agent = remote ? attachInspectorAgent(app, channel.port1) : null;
         const connection = remote ? new InspectorConnection(channel.port2) : null;
-        const element = inspector(remote ? null : app);
+        const element = await inspector(remote ? null : app);
         const wait = async predicate => {
             const end = Date.now() + 3000;
             while (!predicate()) {
@@ -445,7 +484,6 @@ for (const remote of [false, true]) for (const kind of ['value', 'data attribute
             assert.equal(field(element, label).type, 'checkbox');
             field(element, label).focus();
             field(element, label).click();
-            if (!remote) assert.equal(read(), true);
             await wait(() => read() === true && !field(element, label).disabled);
             assert.equal(status(element), '');
             await wait(() => !button(element, '↶ Undo').disabled);

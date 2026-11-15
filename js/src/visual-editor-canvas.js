@@ -2,7 +2,7 @@
 export class VisualEditorCanvas {
     constructor({app, editor, design}) {
         this.renderer = app.src.renderer;
-        this.design = design;
+        // The design node is used only while mounting; the canvas never holds it.
         const presentation = this.renderer.records.get(design).presentation;
         this.frame = presentation.ownerDocument.createElement('iframe');
         this.frame.title = 'Page canvas';

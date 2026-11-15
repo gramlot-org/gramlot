@@ -17,7 +17,7 @@ for(const mode of ['attributes','values'])test(`Vega preserves measures and supp
  const put=(key,value)=>rows.setItem(key,mode==='values'?new Bag(value):null,mode==='attributes'?value:{});
  put('a',{name:'Alpha',date:new Date('2026-01-15T00:00:00Z'),revenue:120,units:3});
  put('b',{name:'Beta',date:new Date('2026-02-15T00:00:00Z'),revenue:180,units:7});
- const dataView=new BagCollectionView(new BagCollectionStore(rows,mode));dataView.connect();
+ const dataView=new BagCollectionView(new BagCollectionStore(root,'rows',mode));dataView.connect();
  const config=new Bag({engine:'vega',chartType:'bar',captionField:'name',valueFields:'revenue,units'});
  const settings=new Bag({revenue:new Bag({axis:'left',color:'#123456'}),units:new Bag({axis:'right',color:'#654321'})});
  const adapter=new VegaAdapter(null),snapshot=rows.toTytx();

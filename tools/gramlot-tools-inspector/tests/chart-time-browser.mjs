@@ -1,7 +1,12 @@
 import {chromium,webkit} from 'playwright';
 import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
+import {spawn} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 const output='/tmp/gramlot-chart-time';await mkdir(output,{recursive:true});
+const trial=spawn(process.execPath,[fileURLToPath(new URL('./chart-trial-browser.mjs',import.meta.url)),'--serve','--port','8898'],{stdio:['ignore','pipe','inherit']});
+await new Promise((resolve,reject)=>{trial.on('exit',code=>reject(new Error(`chart-trial server exited with ${code}`)));trial.stdout.on('data',chunk=>{if(String(chunk).includes('Chart trial:'))resolve();});});
+try{
 for(const [name,engine] of Object.entries({chromium,webkit})){
  const browser=await engine.launch(name==='chromium'?{args:['--enable-unsafe-swiftshader']}:{});
  try{
@@ -145,3 +150,4 @@ for(const [name,engine] of Object.entries({chromium,webkit})){
   assert.deepEqual(errors,[]);
  }finally{await browser.close();}
 }
+}finally{trial.kill();}

@@ -347,13 +347,26 @@ paths such as `.leftIndex` inherit the containing Source's datapath. The tree an
 tabs use `.navigation`, `^.navigationSelection` and `^.active` in their own scope.
 There is no tab-count or eviction policy.
 
-The owning Source node retains the coordinator through its internal `indexContext`
+The owning Source node retains the coordinator through its internal `_internal.indexContext`
 attachment; Logic only supplies behavior. `IndexLogic.indexMount(node)` receives
 the startup controller's Source node and mounts its parent shell, without a DOM
-ID lookup or a Logic field. Subscriptions and pending entries are released through
-the renderer's existing Source disposal mechanism. Each iframe page has its own
-Gramlot, Source and Data. Detaching a containing panel moves DOM only: its Source,
-Data scope, coordinator and iframe element are retained.
+ID lookup or a Logic field. Its Data registrations, its Source subscription and
+pending entries are released through the renderer's existing Source disposal
+mechanism. Each iframe page has its own Gramlot, Source and Data. Detaching a
+containing panel moves DOM only: its Source, Data scope, coordinator and iframe
+element are retained.
+
+The coordinator reaches its state by address. The `state` option of
+`mountIndexPage` is the absolute Data path of the index state; it defaults to the
+shell's datapath. A Bag is not accepted. `navigationSelection` and `active` are
+observed at their paths through the Data router, so a value written there by the
+tree, the tabs or the application selects a page. `navigation` and `opened` are
+read at their paths when they are used: a navigation Bag replaced at its path is
+the one the next selection reads. Each entry keeps `url`, `path`, `title`,
+`paneLabel` and `loading`; `entry.pane` and `entry.node` read the tab panel (by
+`paneLabel` in the tabs) and the navigation node (by `path`) on each access. A
+panel removed from the tabs, by its close button or by the application, closes
+its entry.
 
 `mountIndexPage` also accepts `onLoad(url, status, error)`. Each new load emits
 `loading`, followed once by `ready`, `error` or `cancelled`, including loads that

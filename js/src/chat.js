@@ -6,7 +6,6 @@ import {GramlotBuilder} from './builder/gramlot-builder.js';
 import {fromTytx, toTytx} from '@genrojs/tytx';
 import {randomId} from './random-id.js';
 
-const projections = new WeakMap();
 const LABEL = /^m_[a-f0-9]+$/;
 
 /** Reconcile message Source, preserving older fragments and their interactive Data. */
@@ -15,13 +14,14 @@ export function chatRender(page, node, {messages}) {
     const target = node.parentNode;
     const viewport = page.dom.getDomNode(target);
     if (!viewport) return;
-    let state = projections.get(target);
+    // Rendered rows by label, as plain values on the target node (GC-225 `_internal`).
+    let state = target._internal.chatRows;
     if (!state) {
-        state = {rows:new Map(), active:true}; projections.set(target,state);
+        state = target._internal.chatRows = {rows:{}, active:true};
         page.src.renderer.onDispose(target, () => {
             state.active=false;
-            for (const label of state.rows.keys()) target.getRelativeData('.messageData').popNode(label);
-            state.rows.clear(); projections.delete(target);
+            for (const label of Object.keys(state.rows)) target.getRelativeData('.messageData').popNode(label);
+            state.rows = {}; delete target._internal.chatRows;
         });
     }
     // Prepare all incoming content before changing the mounted conversation.
@@ -36,8 +36,11 @@ export function chatRender(page, node, {messages}) {
     const follow = viewport.scrollHeight-viewport.clientHeight-viewport.scrollTop < 48;
     const plans = [];
     for (const message of incoming) {
-        const old = state.rows.get(message.label);
-        if (old && old.value === message.staticValue && old.role === message.attr.role && old.author === message.attr.author) continue;
+        const old = state.rows[message.label];
+        // Compare by content: a message Source changed in place renders again.
+        const content = typeof message.staticValue === 'string' ? message.staticValue : message.staticValue.toTytx();
+        if (old && old.kind === typeof message.staticValue && old.content === content
+                && old.role === message.attr.role && old.author === message.attr.author) continue;
         const fragment = new GramlotBuilder();
         const article = fragment.root.article({node_label:message.label,
             datapath:target.absDatapath('.messageData.'+message.label),'data-role':message.attr.role,
@@ -51,20 +54,22 @@ export function chatRender(page, node, {messages}) {
         }
         const prepared = page.src.prepareSource(fragment.source);
         page.src.renderer.validateCandidate(prepared);
-        plans.push({message,old,child:prepared.getNode(message.label)});
+        plans.push({message,old,content,child:prepared.getNode(message.label)});
     }
     const labels = new Set(incoming.map(message=>message.label));
-    for (const [label] of state.rows) if (!labels.has(label)) {
+    for (const label of Object.keys(state.rows)) if (!labels.has(label)) {
         target.value.popNode(label);
         target.getRelativeData('.messageData').popNode(label);
-        state.rows.delete(label);
+        delete state.rows[label];
     }
-    for (const {message,old,child} of plans) {
+    for (const {message,old,content,child} of plans) {
+        // A rendered-again message keeps its place in the conversation.
+        const position = old ? '#'+target.value.keys().indexOf(message.label) : '>';
         if (old) target.value.popNode(message.label);
         if (!old) target.setRelativeData('.messageData.'+message.label,new Bag());
         // SourceBag insertion retains the same page renderer, bindings and Logic registry.
-        page.src.builder.setChild(target.value,child.nodeTag,child.value,{...child.attr,node_label:message.label});
-        state.rows.set(message.label,{value:message.staticValue,role:message.attr.role,author:message.attr.author});
+        page.src.builder.setChild(target.value,child.nodeTag,child.value,{...child.attr,node_label:message.label,node_position:position});
+        state.rows[message.label] = {kind:typeof message.staticValue,content,role:message.attr.role,author:message.attr.author};
     }
     if (follow) queueMicrotask(()=>{if(state.active) viewport.scrollTop=viewport.scrollHeight;});
 }
@@ -92,15 +97,16 @@ export function chatCompleted(page,node,{response}) {
 }
 
 
-const composerLayouts = new WeakMap();
+// The composer layout lives on the composer body element it measures; the symbol is a constant key.
+const COMPOSER_LAYOUT = Symbol('chat composer layout');
 /** Shared geometry: grow with wrapped text and content, cap the editor, release observers. */
 export function chatResize(page,node) {
     const source=node.parentNode;
-    let layout=composerLayouts.get(source);
+    const body=page.dom.getDomNode(source);
+    // Data setters can notify before mounting; _onBuilt installs the layout.
+    if(!body)return;
+    let layout=body[COMPOSER_LAYOUT];
     if(!layout) {
-        const body=page.dom.getDomNode(source);
-        // Data setters can notify before mounting; _onBuilt installs the layout.
-        if(!body)return;
         const composer=body.closest('[data-chat-composer]');
         const editor=body.querySelector('textarea');
         const top=composer.querySelector('[data-chat-top]');
@@ -121,8 +127,8 @@ export function chatResize(page,node) {
         const schedule=()=>{if(active&&!frame)frame=win.requestAnimationFrame(measure);};
         const observer=new win.ResizeObserver(schedule);
         for(const element of [body,top,toolbar]) observer.observe(element);
-        page.src.renderer.onDispose(source,()=>{active=false;observer.disconnect();if(frame)win.cancelAnimationFrame(frame);composerLayouts.delete(source);});
-        layout={schedule};composerLayouts.set(source,layout);
+        page.src.renderer.onDispose(source,()=>{active=false;observer.disconnect();if(frame)win.cancelAnimationFrame(frame);delete body[COMPOSER_LAYOUT];});
+        layout=body[COMPOSER_LAYOUT]={schedule};
     }
     layout.schedule();
 }

@@ -665,7 +665,8 @@ freeze. Thaw builds the current Source once, with no reinstallation and no repea
 - Symbolic paths already resolved by Builder: `#parent`, `#FORM` (first ancestor with
   `formId` or `form=True`), `#ANCHOR` (first ancestor with `_anchor`), `#<nodeId>`.
   `GramlotBuilderBagNode.absDatapath` keeps `?attr` on them.
-  Legacy `#WORKSPACE`, `#ROW`, `#DATA` are out of 0.2.0.
+  Since 2026-11-08 (plan symbolic-references, d-symbols) Gramlot also resolves `#WORKSPACE`,
+  `#ROW`, `#DATA` and named children (`childname`); datapath aliases are excluded by owner decision (2026-11-08); contract in GC-210 §012.
 - Button click mechanisms, one per button (P10): nested `dataController` (primary);
   `action='…'` (inline code, `this` = button node, page runtime only); `fire='.path'`
   (`FIRE` with the modifier string or `true`; the Data node gets `modifier` and

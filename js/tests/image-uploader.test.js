@@ -234,6 +234,25 @@ test('screen chooser denial retains the value and unsupported browsers hide the 
     assert.equal(denied.app.data.getItem('form.image'),'/images/old.png');assert.match(denied.host.message.textContent,/cancelled or not permitted/);
 });
 
+test('the crop framing lives in the private Data area of the imageUploader node', async t => {
+    const f = await setup(t); await f.select();
+    const node = f.app.src.renderer.elements.get(f.host).node, path = node.workspaceDatapath;
+    assert.match(path, /^_gramlot\.workspace\.imageUploader_/);
+    assert.equal(node.imageCropState, undefined);
+    assert.deepEqual(Object.keys(f.app.data.getItem(`${path}.transform`)).sort(), ['rotate','x','y','zoom']);
+    assert.deepEqual(f.app.data.getItem(`${path}.transform`), f.app.data.getItem(`${path}.initial`));
+    await f.action('Cancel');
+});
+
+test('the server queue is reached by address: a replacement at storepath receives the next upload', async t => {
+    const f = await setup(t, 'save_image');
+    const replacement = new Bag(); f.app.data.setItem('form.queue', replacement); await tick();
+    await f.select(); await f.action('Confirm');
+    assert.equal(f.app.data.getItem('form.image'), '/images/photo.png');
+    assert.equal(replacement.getNodes().length, 1); assert.equal(f.store.getNodes().length, 0);
+    assert.equal(replacement.getNodes()[0].value.getItem('status'), 'completed');
+});
+
 test('screenCapture false hides Capture screen; the editor offers Crop',async t=>{
     const f=await setup(t,null,'/images/photo.png',null,()=>Promise.reject(new Error('unused')),null,null,{screenCapture:false});
     assert.equal(f.host.screenButton.hidden,true);

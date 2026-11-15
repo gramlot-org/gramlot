@@ -14,6 +14,7 @@ class DataRegistration:
     parameter: str
     path: str
     attr: str | None
+    subtree: bool = False
 
 
 @dataclass(frozen=True)
@@ -46,7 +47,13 @@ def trigger_level(watched, changed):
 
 
 def accepts(registration, change, level):
-    """Keep value/attribute and ancestor/descendant semantics aligned with JS."""
+    """Keep value/attribute and ancestor/descendant semantics aligned with JS.
+
+    A subtree registration receives structural, value and attribute events under its
+    path, and every event that replaces an ancestor except an attribute-only update.
+    """
+    if registration.subtree:
+        return level != "container" or change.evt != "upd_attrs"
     if registration.attr is None:
         return change.evt != "upd_attrs" and not (level == "child" and change.fired)
     if level == "child":

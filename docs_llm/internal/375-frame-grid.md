@@ -231,7 +231,7 @@ cancel its preview. Capturing the pointer on the handle preserves the browser's
 double-click target. A gesture without a height change keeps automatic sizing.
 The native table content height remains the minimum: multiline text is not clipped.
 
-Committed heights live in `gridRowLayout`, attached to the individual grid's
+Committed heights live in `_internal.gridRowLayout` (GC-225), attached to the individual grid's
 Source node through the existing internal sourceContext boundary. GridRowLayout
 keys heights by BagNode identity; it prunes removed rows and clears on store
 replacement. Source-owned state survives DOM detach/reattach, data value changes

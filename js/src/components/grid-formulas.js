@@ -233,17 +233,18 @@ export class GridFormulas {
         this.#store = store; this.#view = view;
         this.#errors.clear();
         if (!this.formulas.definitions.size) return;
+        // `^` parameters resolve before any subscription: a path without registration (`^#ROW`) is an
+        // error at every configuration, and leaves nothing registered.
+        const pointers = [...this.formulas.definitions.values()].flatMap(definition => [...definition.parameters.values()]
+            .filter(raw => typeof raw === 'string' && raw.startsWith('^'))
+            .map(raw => [definition, ...this.source.absDatapath(raw).split('?')]));
         this.#release = [store.subscribe(change => this.#storeChanged(change)),
             view.subscribe(() => { this.#viewValues = null; })];
-        for (const definition of this.formulas.definitions.values()) {
-            for (const raw of definition.parameters.values()) {
-                if (typeof raw !== 'string' || !raw.startsWith('^')) continue;
-                const [path, attr = null] = this.source.absDatapath(raw).split('?');
-                this.#registrations.push(this.runtime.router.register({path, attr, recipient:{receive:() => {
-                    this.#viewValues = null;
-                    this.recalculate(this.#closure([definition.field]));
-                }}}));
-            }
+        for (const [definition, path, attr = null] of pointers) {
+            this.#registrations.push(this.runtime.router.register({path, attr, recipient:{receive:() => {
+                this.#viewValues = null;
+                this.recalculate(this.#closure([definition.field]));
+            }}}));
         }
         this.recalculate(this.#closure(this.#selected(definition => definition.calculated)));
     }
@@ -260,7 +261,7 @@ export class GridFormulas {
     value(node, field) {
         if (!this.viewFields.has(field)) return this.#store.value(node, field);
         // A row filtered out of the view has no view value.
-        const values = this.#computeViewValues().get(node);
+        const values = this.#computeViewValues().get(node.label);
         return values === undefined ? null : values[field];
     }
 
@@ -299,11 +300,15 @@ export class GridFormulas {
         this.recalculate(closure, global ? null : [row]);
     }
 
-    #parameters(definition) {
+    /**
+     * The `formula_<name>` parameters for the row `row`: a `^`/`=` pointer is read at its path, resolved
+     * with the row key as row context, so `=#ROW.<field>` reads that field of the evaluated row.
+     */
+    #parameters(definition, row) {
         const result = {};
         for (const [name, raw] of definition.parameters) {
             result[name] = typeof raw === 'string' && (raw.startsWith('^') || raw.startsWith('='))
-                ? this.source.getRelativeData(raw) : raw;
+                ? this.source.getRelativeData(this.source.absDatapath(raw, {row:row.label})) : raw;
         }
         return result;
     }
@@ -313,7 +318,7 @@ export class GridFormulas {
         if (definition.special?.kind === 'index') return index;
         if (definition.special?.kind === 'running') return addNumeric(aggregate, read(row, definition.special.field));
         if (definition.special?.kind === 'percent') return dividePercent(read(row, definition.special.field), aggregate);
-        const parameters = this.#parameters(definition);
+        const parameters = this.#parameters(definition, row);
         const scope = {};
         for (const name of definition.references) {
             if (Object.hasOwn(parameters, name)) scope[name] = parameters[name];
@@ -376,12 +381,12 @@ export class GridFormulas {
         }
     }
 
-    /** View values of the visible rows in this grid's view order, cached until the next store or view change. */
+    /** View values of the visible rows by row key, in this grid's view order, cached until the next store or view change. */
     #computeViewValues() {
         if (this.#viewValues !== null) return this.#viewValues;
         const ordered = this.#view.getRows();
-        const values = new Map(ordered.map(row => [row, {}]));
-        const read = (row, field) => this.viewFields.has(field) ? values.get(row)[field] : this.#store.value(row, field);
+        const values = new Map(ordered.map(row => [row.label, {}]));
+        const read = (row, field) => this.viewFields.has(field) ? values.get(row.label)[field] : this.#store.value(row, field);
         for (const field of this.formulas.order) {
             const definition = this.formulas.definitions.get(field);
             if (!definition.view) continue;
@@ -392,7 +397,7 @@ export class GridFormulas {
                     value = this.#evaluate(definition, row, index + 1, aggregate, read);
                     if (definition.special?.kind === 'running') aggregate = value;
                 } catch (error) { failure = error; }
-                values.get(row)[field] = value;
+                values.get(row.label)[field] = value;
             }
             if (failure) this.#errors.set(field, failure);
             else this.#errors.delete(field);

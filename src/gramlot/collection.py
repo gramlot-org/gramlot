@@ -225,7 +225,16 @@ def page_collections(page_class):
 
 def standard_collections():
     """Prepared standard packages shipped with this Gramlot distribution."""
+    return _packaged_collections("standard.json")
+
+
+def declared_collections():
+    """Prepared packages shipped with this distribution outside the standard set: a page declares them in gramlots."""
+    return _packaged_collections("declared.json")
+
+
+def _packaged_collections(inventory):
     from importlib import import_module
     from importlib.resources import files
-    names = json.loads(files("gramlot").joinpath("collections/standard.json").read_text())
+    names = json.loads(files("gramlot").joinpath("collections", inventory).read_text())
     return tuple(import_module(f"gramlot.collections.{name}").mygramlot for name in names)

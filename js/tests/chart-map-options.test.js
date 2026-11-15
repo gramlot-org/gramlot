@@ -5,6 +5,7 @@ import {BagCollectionStore} from '../src/stores/bag-collection-store.js';
 import {BagCollectionView} from '../src/stores/bag-collection-view.js';
 import {chartMapOptions} from '../src/components/chart-map-options.js';
 import {ChartRenderer} from '../src/components/chart-renderer.js';
+import {optionsAddress} from './helpers/chart-options.js';
 import {JSDOM} from 'jsdom';
 import {EChartsAdapter} from '../src/components/chart-engines/echarts.js';
 
@@ -16,7 +17,7 @@ for(const mode of ['attributes','values'])test(`2D choropleth scale, labels, uni
  const put=(id,r)=>rows.setItem(id,mode==='values'?new Bag(r):null,mode==='attributes'?r:{});
  put('a',{territory:'Alpha',label:'A',amount:0,change:-10});
  put('b',{territory:'Beta',label:'B',amount:20,change:5});
- const view=new BagCollectionView(new BagCollectionStore(rows,mode));view.connect();
+ const view=new BagCollectionView(new BagCollectionStore(data,'rows',mode));view.connect();
  const make=field=>chartMapOptions(view,'territory',field,'label','test-map',geo,'Selected measure');
  try{
   const options=make('amount');assert.equal(options.series[0].type,'map');assert.equal(options.visualMap.min,0);assert.equal(options.visualMap.max,20);
@@ -27,7 +28,7 @@ for(const mode of ['attributes','values'])test(`2D choropleth scale, labels, uni
   const structure=new Bag({chartType:'map',captionField:'territory',mapLabelField:'label',mapValueField:'change',valueFields:'amount'});
   structure.setItem('geoJSON',geo);
   const chart=new ChartRenderer(null,view,{renderer:'svg',ssr:true,width:640,height:400});
-  try{chart.update(structure,new Bag({amount:new Bag({axis:'left',color:'#123456'}),change:new Bag({caption:'Annual change (%)'})}));assert.match(chart.svg(),/Annual change/);}finally{chart.dispose();}
+  try{chart.update(structure,optionsAddress(new Bag({amount:new Bag({axis:'left',color:'#123456'}),change:new Bag({caption:'Annual change (%)'})})));assert.match(chart.svg(),/Annual change/);}finally{chart.dispose();}
   put('c',{territory:'Alpha',label:'A',amount:2,change:2});
   assert.throws(()=>make('amount'),/upstream/);
   view.applyFilter({value:'^Beta',columns:['territory'],dtype:'T',locale:'en-GB'});

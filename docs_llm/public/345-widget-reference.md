@@ -206,7 +206,7 @@ Collection: drawing. SVG annotation editing over an original Data Bag.
 [Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-drawingpane).
 
 
-**Data contract.** annotations reads and mutates the original Data Bag; image reads an optional background URL.
+**Data contract.** annotations reads and mutates the Data Bag at its pointer address; image reads an optional background URL.
 
 
 **Interaction and events.** Shared toolbar actions select, draw, edit text and delete shapes. Bag changes redraw the surface.
@@ -215,7 +215,7 @@ Collection: drawing. SVG annotation editing over an original Data Bag.
 **Composition.** Composes a shared Source menu and an SVG drawing surface.
 
 
-**Limits and lifecycle.** Requires an initialized annotation Bag. Coordinates follow image dimensions or a 1000 by 1000 empty surface. Disposal releases subscriptions; persistence belongs to the application.
+**Limits and lifecycle.** Requires an initialized annotation Bag. Coordinates follow image dimensions or a 1000 by 1000 empty surface. Disposal releases Data registrations; persistence belongs to the application.
 
 
 | Parameters | Contract |
@@ -419,36 +419,6 @@ Collection: charts. One value of the node on a needle dial, a progress ring or a
 | `mask` | `{"binding":"read","default":"{}","dtype":"T"}` |
 | `thresholds, caption` | `{"binding":"read","default":"","dtype":"T","nullable":true}` |
 | `presentation` | `{"binding":"read","default":"needle","dtype":"T"}` |
-
-Child grammar: `''`; parent grammar: `None`.
-
-<a id="gc-345-475"></a>
-<a id="gc-345-vizabibubble"></a>
-### `vizabiBubble`
-
-Collection: vizabi. Specialized host-provided Vizabi bubble session observing Data Bags.
-
-
-[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-vizabibubble).
-
-
-**Data contract.** Reads the original rows and configuration Bag.
-
-
-**Interaction and events.** Retains supported session configuration and releases engine resources on removal.
-
-
-**Composition.** Specialized external bubble view.
-
-
-**Limits and lifecycle.** Requires host-supplied libraryUrl; not a chartPane engine.
-
-
-| Parameters | Contract |
-| --- | --- |
-| `storepath, libraryUrl` | `{"dtype":"T"}` |
-| `rowMode` | `{"default":"attributes","dtype":"T"}` |
-| `configuration` | `{"binding":"read","dtype":"X"}` |
 
 Child grammar: `''`; parent grammar: `None`.
 
@@ -2234,6 +2204,38 @@ Shared contracts: [Values and bindings](#gc-345-shared-value).
 | Parameters | Contract |
 | --- | --- |
 | `filename` | `{"binding":"read","default":"document.pdf","dtype":"T"}` |
+
+Child grammar: `''`; parent grammar: `None`.
+
+<a id="gc-345-270"></a>
+<a id="gc-345-terminal"></a>
+### `terminal`
+
+Collection: editors. Interactive terminal connected to a @terminal session of the page store.
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-terminal).
+
+
+**Data contract.** Reads session, the name of an @terminal method of the page store. Writes connected, rows and columns when the socket opens, closes or the screen is resized. Terminal bytes never pass through Data.
+
+
+**Interaction and events.** Keys go to the session as typed, including arrows, Tab and Ctrl-C. Output is written to the screen as it arrives. input(text) sends text as if typed.
+
+
+**Composition.** Leaf control. It fills its box and resizes the server terminal with it.
+
+
+**Limits and lifecycle.** Requires a server with a PageStore channel (websocket). A page has one open session per name: opening it again closes the open one. The server stops sending output while 1 MB is unacknowledged by the screen.
+
+
+| Parameters | Contract |
+| --- | --- |
+| `session` | `{"binding":"read","default":"","dtype":"T"}` |
+| `fontSize` | `{"binding":"read","default":14,"dtype":"L"}` |
+| `fontFamily` | `{"binding":"read","default":"monospace","dtype":"T"}` |
+| `connected` | `{"binding":"write","default":false,"dtype":"B"}` |
+| `rows, columns` | `{"binding":"write","default":0,"dtype":"L"}` |
 
 Child grammar: `''`; parent grammar: `None`.
 

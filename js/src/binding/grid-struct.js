@@ -42,7 +42,7 @@ function structureData(source) {
 
 /** Validate before DataInstaller writes any setters in the incoming branch. */
 export function validateGridDeclaration(node) {
-    if (node._getMeta('gramlot_component')?.bagStruct) {
+    if (node._getMeta('gramlot_component')?.parameters?.structpath) {
         const children = node.staticValue instanceof SourceBag ? node.staticValue.getNodes() : [];
         if (children.some(child => !child._getMeta('gridStruct')) || children.length > 1) throw new TypeError('grid accepts one struct declaration');
         if (children.length && node.getAttr('structpath') != null) throw new TypeError('grid requires structpath or nested struct, not both');
@@ -50,16 +50,19 @@ export function validateGridDeclaration(node) {
         if (!['values', 'attributes'].includes(node.getAttr('rowMode'))) throw new TypeError('grid rowMode must explicitly be values or attributes');
     }
     if (!node._getMeta('gridStruct')) return;
-    if (!node.parentNode?._getMeta('gramlot_component')?.bagStruct) throw new TypeError('struct requires a grid parent');
+    if (!node.parentNode?._getMeta('gramlot_component')?.parameters?.structpath) throw new TypeError('struct requires a grid parent');
     if (!(node.staticValue instanceof SourceBag)) throw new TypeError('grid struct requires column declarations');
     new GridStructure(structureData(node.staticValue));
 }
 
-/** DataInstaller consumes this declaration after its one ordinary Data write. */
+/**
+ * DataInstaller consumes this declaration after its one ordinary Data write: the structure goes to
+ * the private area of its grid, `<workspaceDatapath>.struct`, whose name derives from the grid node.
+ */
 export function installGridStruct(node, data) {
     const value = structureData(node.staticValue);
     new GridStructure(value);
-    const path = `_gramlot.grid.${crypto.randomUUID().replaceAll('-', '')}.struct`;
+    const path = `${node.parentNode.workspaceDatapath}.struct`;
     data.setItem(path, value, null, '>', false, true, node);
     node.parentNode.setAttr({structpath: path}, false);
     node.setValue(null, false);

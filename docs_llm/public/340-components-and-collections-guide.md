@@ -4,7 +4,8 @@
 standard collection to every site's Page base, in Python and JavaScript. Do not
 import `gramlot.collections.*` or repeat `gramlots = [...]` for these collections.
 Write component declarations directly. Explicit imports and collection declarations
-are for custom additions. A missing standard component is a server/package defect,
+are for custom additions and for `typst`, the core collection outside the standard
+set (§050). A missing standard component is a server/package defect,
 not a reason for a one-off page import. The packaged inventory drives grammar and
 bootstrap resources; it does not scan installed packages. External engines load on
 first use in hosted pages. File exports embed the required resource bytes.
@@ -119,6 +120,19 @@ does not activate it. Selection provides grammar and bootstrap resources; base
 Gramlot remains. The sample uses `searchbox(value='^.query', live=True)` and a
 paragraph sharing that Data path. A raw grammar document is not a prepared Page
 descriptor. Built-in prepared collections use the same selection shape.
+
+<a id="gc-340-050-typst"></a>
+`typst` (`typstPreview`, compiler WebAssembly about 41 MiB) is the core collection
+outside the standard set (owner, 2026-11-08, #84). A page declares it: Python
+`from gramlot.collections.typst import mygramlot as typst`, `gramlots = [typst]`;
+JS `import typst from '@gramlot/gramlot/collections/typst'`, `static gramlots =
+[typst]` (default export: the JS descriptor of the same artifact; in the browser the
+import map points the specifier at the collection module). Inventory:
+`collections/declared.json`; Python `declared_collections()` beside `standard_collections()`. Declarations
+accumulate along the class hierarchy. Python `IdePage` declares it. Hosts serve
+only the page graph: Python reads a declared collection from its package, JS hosts
+from `collectionAssets()` (`@gramlot/gramlot/server`, standard and declared core
+collections); exports carry the typst WebAssembly only for pages that declare it.
 
 `gramlot.getCollection(name)` returns the page's activated component collection,
 or `undefined`. Optional tools can pass that object to their own Gramlot instance
@@ -311,7 +325,11 @@ editable grid owns its scope. load(Bag) establishes local working data and its
 baseline; accept() accepts a validated local snapshot; restore() restores that
 snapshot. These are local operations, not database load/save or server replies.
 
-Cell editors are ordinary Source controls. Enter confirms, Tab/Shift+Tab moves
+Cell editors are ordinary Source controls. An `edit` option with a `=#ROW` or
+`^#ROW` pointer, such as `placeholder='^#ROW.name'`, resolves to the edited row,
+as legacy `condition_*='=#ROW.x'` did. A Bag among the `edit` options is used as
+is only when it has no parent; a sub Bag of other data is an error: pass its path
+(`storepath` or a `^` pointer) instead. Enter confirms, Tab/Shift+Tab moves
 between editable cells, and Escape discards unfinished text. Double-click or
 Enter/F2 opens an editable cell. Scrolling releases editor DOM while preserving
 incomplete drafts and errors in the session. Reopening restores the draft.
@@ -405,3 +423,21 @@ so the user must confirm again. Edited cells still validate immediately.
 Remote rules run for each applicable cell, with bounded concurrency; validation
 cost therefore depends on row count and endpoint latency. No remote batch protocol
 or cross-cell result cache is introduced.
+
+
+<a id="gc-340-130"></a>
+## 130 · Components that read a store: addresses, not objects
+
+A component never receives or keeps a Data Bag: store, structure and `^` parameters
+pointing to a Bag stay Data addresses; it reads values only where it writes the DOM or
+hands them to an engine, again at each draw. A replacement at the address and a change
+inside it are the same event. With `sourceContext: true` the context offers `sourceNode`
+(its own node), `attrDatapath(name)` (absolute path of the attribute as written, resolved
+now; null when absent), `getStaticData(path)` (value without running resolvers),
+`readRelativeData`/`setRelativeData`, `writeParameter(name, value)` (two-way `^`) and
+`collectionView(path, rowMode)` (stores shared by path and `rowMode`). Example:
+`const options = this.context.getStaticData(this.context.attrDatapath('seriesOptions'))`
+inside the draw. A row is its key (row node label); row paths use `#ROW`
+([Data binding](097-data-binding.md#gc-095-040)); per-instance state an author may read
+goes under `#WORKSPACE`. A node may be passed to a synchronous call (drag, row action),
+never kept.

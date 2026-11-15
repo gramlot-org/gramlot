@@ -1822,8 +1822,7 @@
               "default": null
             }
           },
-          "sourceContext": true,
-          "bagStore": true
+          "sourceContext": true
         }
       }
     },

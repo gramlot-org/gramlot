@@ -1,33 +1,29 @@
 /** Shared page-side inspector; the supplied page owns its Bag and runtime. */
 import {scalarType, readParameterEnums} from '../../../js/src/editor-values.js';
+import {MessagePortStore} from '../../../js/src/message-port-store.js';
 import {InspectorHistory} from './inspector-history.js';
 import {InspectorStyles} from './inspector-styles.js';
 
 const roots = ['data', 'source'];
-const forbidden = new Set(['_meta', '__proto__', 'prototype', 'constructor']);
+// `_inspector` is the reserved attribute of the projection nodes: identity, revision and edit limits.
+const forbidden = new Set(['_meta', '_inspector', '__proto__', 'prototype', 'constructor']);
 
-/** Bind one known instance to one explicitly transferred MessagePort. */
+/**
+ * Bind one known instance to one explicitly transferred MessagePort. The page's Data and Source are
+ * served as a projection Bag (`data` and `source`) to the dataBinders at the other end; commands
+ * travel on the same port.
+ */
 export function attachInspectorAgent(gramlot, port) {
     if (!gramlot || gramlot.state === 'disposed') throw new TypeError('Expected a live Gramlot instance');
     const Bag = gramlot.data.constructor;
-    const encodeScalar = value => {
-        const wrapper = new Bag();
-        wrapper.setItem('value', value);
-        return wrapper.toTytx('json');
-    };
-    const decodeScalar = text => {
-        const value = Bag.fromTytx(text, 'json').getItem('value');
+    const checkScalar = value => {
         if (!scalarType(value)) throw new TypeError('The inspector edits scalar values only');
         return value;
     };
-    function cell(value) {
-        if (scalarType(value)) return {encoded: encodeScalar(value)};
-        // These values are explicitly read-only descriptors, never substitute edit values.
-        const display = value instanceof Bag ? `Bag (${value.getNodes().length} nodes)`
-            : value === undefined ? 'undefined' : typeof value === 'function' ? '[Function]'
-            : typeof value === 'bigint' || typeof value === 'symbol' ? String(value) : JSON.stringify(value);
-        return {display, readonly: true};
-    }
+    // These values are explicitly read-only descriptors, never substitute edit values.
+    const display = value => value instanceof Bag ? `Bag (${value.getNodes().length} nodes)`
+        : value === undefined ? 'undefined' : typeof value === 'function' ? '[Function]'
+        : typeof value === 'bigint' || typeof value === 'symbol' ? String(value) : JSON.stringify(value);
     const document = gramlot.src.renderer.destination.ownerDocument;
     const window = document.defaultView;
     const styles = new InspectorStyles(document);
@@ -45,29 +41,62 @@ export function attachInspectorAgent(gramlot, port) {
         if (!identities.has(node)) identities.set(node, ++nextNode);
         return identities.get(node);
     };
-    const describe = (store, root, ancestors = new Set()) => {
-        if (ancestors.has(store)) throw new Error('Inspector snapshots require an acyclic Bag');
-        const next = new Set([...ancestors, store]);
-        return store.getNodes().map(node => {
+    const projection = new Bag();
+    for (const root of roots) projection.setItem(root, new Bag());
+    const sameAttrs = (left, right) => {
+        const names = Object.keys(right);
+        return Object.keys(left).length === names.length && names.every(name => name === '_inspector'
+            ? JSON.stringify(left[name]) === JSON.stringify(right[name]) : Object.hasOwn(left, name) && Object.is(left[name], right[name]));
+    };
+    /** Align one projection branch with its target Bag: same labels and order, only differences written. */
+    const reconcile = (copy, target, root, ancestors = new Set()) => {
+        if (ancestors.has(target)) throw new Error('Inspector snapshots require an acyclic Bag');
+        const next = new Set([...ancestors, target]);
+        const nodes = target.getNodes();
+        const labels = new Set(nodes.map(node => node.label));
+        for (const node of copy.getNodes()) if (!labels.has(node.label)) copy.popNode(node.label);
+        for (const [index, node] of nodes.entries()) {
             const value = node.getValue(true);
             const branch = !node.resolver && value instanceof Bag;
-            return {id: identity(node), label: node.label, revision: versions.get(node) ?? 0,
-                value: branch ? null : cell(value), children: branch ? describe(value, root, next) : null,
-                readonly: !!node.resolver, parameterEnums: root === 'source' ? readParameterEnums(node) : {},
-                attrs: Object.entries(node.getAttr()).filter(([name]) => name !== '_meta').map(([name, value]) => [name, cell(value)])};
-        });
+            const attrs = {}, readonlyAttrs = [];
+            for (const [name, item] of Object.entries(node.getAttr())) {
+                if (name === '_meta' || name === '_inspector') continue;
+                if (scalarType(item)) attrs[name] = item;
+                else { attrs[name] = display(item); readonlyAttrs.push(name); }
+            }
+            const scalar = branch ? null : scalarType(value) ? value : display(value);
+            attrs._inspector = {id: identity(node), revision: versions.get(node) ?? 0,
+                readonly: !!node.resolver || (!branch && !scalarType(value)), readonlyAttrs,
+                parameterEnums: root === 'source' ? readParameterEnums(node) : {}};
+            let item = copy.getNode(node.label);
+            if (item && item.getAttr('_inspector')?.id !== attrs._inspector.id) {
+                copy.popNode(node.label);
+                item = null;
+            }
+            if (!item) item = copy.setItem(node.label, branch ? new Bag() : scalar, attrs, index, false, false);
+            else {
+                // A node that becomes or stops being a branch keeps its copy, as the target keeps its node.
+                const copied = item.getValue(true);
+                if (branch ? !(copied instanceof Bag) : !Object.is(copied, scalar)) item.setValue(branch ? new Bag() : scalar);
+                if (!sameAttrs(item.getAttr(), attrs)) item.setAttr(attrs, true, false, false);
+                const position = copy.getNodes().indexOf(item);
+                if (position !== index) copy.move(position, index);
+            }
+            if (branch) reconcile(item.getValue(true), value, root, next);
+        }
     };
-    const snapshot = () => ({data: describe(bag('data'), 'data'), source: describe(bag('source'), 'source'),
-        breakpoints: [...breakpoints.values()].map(({test, ...record}) => record), history: history.state});
-    const send = data => { if (!stopped) port.postMessage(data); };
+    const update = () => {
+        for (const root of roots) reconcile(projection.getItem(root), bag(root), root);
+        store.post({type: 'state', breakpoints: [...breakpoints.values()].map(({test, ...record}) => record), history: history.state});
+    };
     const flush = () => {
         if (scheduled || stopped) return;
         scheduled = true;
         queueMicrotask(() => {
             scheduled = false;
             if (stopped) return;
-            try { send({type: 'snapshot', snapshot: snapshot()}); }
-            catch (error) { send({type: 'error', error: error.message}); }
+            try { update(); }
+            catch (error) { store.post({type: 'error', error: error.message}); }
         });
     };
     const hit = (config, root, fields) => {
@@ -105,16 +134,16 @@ export function attachInspectorAgent(gramlot, port) {
             if (forbidden.has(name) || !Object.hasOwn(attrs, name) || !scalarType(attrs[name])) throw new Error(`Cannot remove attribute: ${name}`);
             delete attrs[name];
         }
-        for (const [name, encoded] of command.set) {
+        for (const [name, value] of command.set) {
             if (!name.trim() || forbidden.has(name) || (Object.hasOwn(attrs, name) && !scalarType(attrs[name]))) throw new Error(`Cannot edit attribute: ${name}`);
-            attrs[name] = decodeScalar(encoded);
+            attrs[name] = checkScalar(value);
         }
         let value;
         if (Object.hasOwn(command, 'value')) {
             if (node.resolver || !scalarType(node.getValue(true))) throw new Error('This value is read-only');
-            value = decodeScalar(command.value);
+            value = checkScalar(command.value);
         }
-        // Decode and validate the entire command before the first real write.
+        // Validate the entire command before the first real write.
         history.edit(node, attrs, value, !!(command.set.length || command.remove.length), Object.hasOwn(command, 'value'));
     };
     const setBreakpoint = command => {
@@ -126,8 +155,7 @@ export function attachInspectorAgent(gramlot, port) {
         if (command.mode) breakpoints.set(key, {root: command.root, path: command.path, mode: command.mode, condition, hits: 0, error: '', test});
         else breakpoints.delete(key);
     };
-    const receive = event => {
-        const message = event.data;
+    const receive = message => {
         if (message.type === 'disconnect') { dispose(); return; }
         try {
             if (['styles', 'setStyle', 'resetStyle', 'resetStyles'].includes(message.type)) {
@@ -135,12 +163,12 @@ export function attachInspectorAgent(gramlot, port) {
                 if (message.type === 'setStyle') styles.set(message.command.name, message.command.value);
                 if (message.type === 'resetStyle') styles.reset(message.command.name);
                 if (message.type === 'resetStyles') styles.dispose();
-                send({type: 'result', id: message.id, ok: true, styles: styles.snapshot()});
+                store.post({type: 'result', id: message.id, ok: true, styles: styles.snapshot()});
                 return;
             }
             let selection;
             if (message.type === 'catalog') {
-                send({type: 'result', id: message.id, ok: true, catalog: history.catalog(message.command.path)});
+                store.post({type: 'result', id: message.id, ok: true, catalog: history.catalog(message.command.path)});
                 return;
             }
             if (['insert', 'remove', 'move'].includes(message.type)) {
@@ -159,26 +187,26 @@ export function attachInspectorAgent(gramlot, port) {
             else if (message.type === 'edit') edit(message.command);
             else if (message.type === 'breakpoint') setBreakpoint(message.command);
             else if (message.type !== 'refresh') throw new Error(`Unknown inspector command: ${message.type}`);
-            send({type: 'result', id: message.id, ok: true, selection, snapshot: snapshot()});
-        } catch (error) { send({type: 'result', id: message.id, ok: false, error: error.message}); }
+            // The projection changes travel before the acknowledgement, on the same port.
+            update();
+            store.post({type: 'result', id: message.id, ok: true, selection});
+        } catch (error) { store.post({type: 'result', id: message.id, ok: false, error: error.message}); }
     };
     function dispose() {
         if (stopped) return;
-        send({type: 'closed'});
         stopped = true;
+        store.close();
         for (const root of roots) bag(root).unsubscribe(subscriber, {any: true});
         breakpoints.clear();
         history.clear();
         styles.dispose();
-        port.removeEventListener('message', receive);
         window.removeEventListener('pagehide', dispose);
         port.close();
     }
+    for (const root of roots) reconcile(projection.getItem(root), bag(root), root);
+    const store = new MessagePortStore(projection, port, receive);
     for (const root of roots) bag(root).subscribe(subscriber, {any: event => changed(root, event)});
-    port.addEventListener('message', receive);
     window.addEventListener('pagehide', dispose);
-    port.start();
-    flush();
+    store.post({type: 'state', breakpoints: [], history: history.state});
     return {dispose};
 }
-

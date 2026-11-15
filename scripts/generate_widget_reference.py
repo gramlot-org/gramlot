@@ -5,14 +5,16 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-COLLECTIONS = ('inputs', 'buttons', 'layout', 'tree', 'editors', 'typst', 'uploads', 'grid', 'chat', 'grouplets', 'charts', 'vizabi', 'audio', 'drawing')
+# Core collections outside the standard set: a page declares them in Page.gramlots (GC-340 §050).
+DECLARED = tuple(json.loads((ROOT / 'src/gramlot/collections/declared.json').read_text()))
+COLLECTIONS = ('inputs', 'buttons', 'layout', 'tree', 'editors', 'typst', 'uploads', 'grid', 'chat', 'grouplets', 'charts', 'audio', 'drawing')
 from widget_reference_content import COLLECTION_GUIDES
 from widget_manual_content import COLLECTION_EXPLANATIONS
 from widget_coverage import COVERAGE, behavior_sections, coverage_documents
 
 COLLECTION_IDS = {
     'inputs': 410, 'buttons': 415, 'layout': 420, 'tree': 425, 'editors': 430,
-    'typst': 435, 'uploads': 440, 'grid': 445, 'chat': 450, 'grouplets': 455, 'charts': 480, 'vizabi': 485, 'audio': 490, 'drawing': 495,
+    'typst': 435, 'uploads': 440, 'grid': 445, 'chat': 450, 'grouplets': 455, 'charts': 480, 'audio': 490, 'drawing': 495,
 }
 
 # Human explanations complement the executable parameter contract.
@@ -25,7 +27,6 @@ DESCRIPTIONS = {
  'gauge': 'One value of the node on a needle dial, a progress ring or a half-circle arc.',
  'audioAnalyser': 'Live microphone waveform and spectrum arrays written into Data.',
  'drawingPane': 'SVG annotation editing over an original Data Bag.',
- 'vizabiBubble': 'Specialized host-provided Vizabi bubble session observing Data Bags.',
 
  'grid': 'Virtualized Bag rows with a declarative column structure; database access belongs to the store/provider.',
  'searchBox': 'Search control connected to the enclosing grid Source context.',
@@ -75,6 +76,7 @@ DESCRIPTIONS = {
  'imageUploader': 'Editable image value with local crop or an application-owned upload destination.',
  'uploader': 'Shared file queue with progress, preview, selected-file metadata and application-owned upload targets.',
  'codeMirror': 'Code/text editor with composed language and editor options.',
+ 'terminal': 'Interactive terminal connected to a @terminal session of the page store.',
  'htmlEditor': 'Rich HTML editing using the supported engine configuration.',
  'htmlPreview': 'Read-only HTML preview with the component sanitization contract.',
  'markdownEditor': 'Markdown editing with the supported editor modes.',
@@ -85,7 +87,6 @@ DETAILS = {
  'audio': ('490-audio.md#gc-490-start', 'Microphone samples and lifecycle'),
  'drawing': ('495-drawing.md#gc-495-start', 'Annotation Bags and drawing tools'),
  'charts': ('480-charts.md#gc-480-start', 'Shared charts, engines and temporal snapshots'),
- 'vizabi': ('485-vizabi.md#gc-485-start', 'Host-provided bubble charts'),
  'grid': ('445-grid.md#gc-445-start', 'Bag rows, column structure and selection stores'),
  'chat': ('450-chat.md#gc-450-start', 'ChatPane composition and server responsibilities'),
  'grouplets': ('455-grouplets.md#gc-455-start', 'Reusable remote fragments and cards'),
@@ -120,7 +121,7 @@ def type_name(spec):
 
 FAMILIES = {
     'Audio and drawing': ('audioAnalyser', 'drawingPane'),
-    'Charts': ('chartPane', 'chartView', 'chartFields', 'chartGeoJSON', 'chartTimeline', 'gauge', 'vizabiBubble'),
+    'Charts': ('chartPane', 'chartView', 'chartFields', 'chartGeoJSON', 'chartTimeline', 'gauge'),
     'Grids and search': ('grid', 'searchBox'),
     'Conversations': ('chatMessages',),
     'Reusable fragments': ('grouplet', 'groupletCard'),
@@ -134,7 +135,7 @@ FAMILIES = {
     'Dialogs and floating windows': ('dialog', 'floatingPane'),
     'Trees': ('tree', 'rowActions'),
     'File uploads': ('uploader', 'imageUploader', 'attachmentManager'),
-    'Editors and document previews': ('codeMirror', 'htmlEditor', 'htmlPreview', 'markdownEditor', 'markdownPreview', 'typstPreview'),
+    'Editors and document previews': ('codeMirror', 'htmlEditor', 'htmlPreview', 'markdownEditor', 'markdownPreview', 'typstPreview', 'terminal'),
 }
 SHARED = {
     'value': ('Values and bindings', 'The value type and writeback behavior depend on the control. '
@@ -275,8 +276,10 @@ connects these controls to runnable lessons and screenshots.
     stable.update(grid='gc-345-365', searchBox='gc-345-370', chatMessages='gc-345-375',
                   grouplet='gc-345-380', groupletCard='gc-345-385')
     stable['gauge'] = 'gc-345-500'
+    stable['terminal'] = 'gc-345-270'
     stable.update({name: f'gc-345-{505 + index * 5}' for index, name in enumerate(chart_types)})
-    stable.update({name: f'gc-345-{450 + index * 5}' for index, name in enumerate(('chartPane', 'chartView', 'chartFields', 'chartGeoJSON', 'chartTimeline', 'vizabiBubble', 'audioAnalyser', 'drawingPane'))})
+    # IDs stay stable: gc-345-475 belonged to the removed Vizabi trial and is not reused.
+    stable.update({name: f'gc-345-{450 + index * 5}' for index, name in enumerate(('chartPane', 'chartView', 'chartFields', 'chartGeoJSON', 'chartTimeline', None, 'audioAnalyser', 'drawingPane')) if name})
     if not set(entries) <= set(stable):
         raise ValueError('Allocate a stable documentation ID for every new component')
     families = {family: tuple(key for key in widgets if key in entries)
@@ -400,8 +403,11 @@ connects these controls to runnable lessons and screenshots.
                               notes, flags=re.S)
         header = (f'# {title}\n\nDocument ID: **GC-{document_id}**.\n\n'
                   f'<a id="gc-{document_id}-start"></a>\n## Start here\n\n{introduction}\n\n'
-                  'The environment Page base supplies the collections used below. '
-                  '[Configure them once](340-components-and-collections-guide.md#gc-340-050). '
+                  + (f'`{name}` is outside the standard set: a page that uses it declares it in `Page.gramlots` '
+                     f'([declaring {name}](340-components-and-collections-guide.md#gc-340-050-{name})). '
+                     if name in DECLARED else
+                     'The environment Page base supplies the collections used below. '
+                     '[Configure them once](340-components-and-collections-guide.md#gc-340-050). ') +
                   f'[Setup examples are in the appendix](465-widget-examples.md#gc-465-setup-{name}).\n\n'
                   f'{manual_notes}\n\n'
                   '[All collections](345-widget-reference.md) · '

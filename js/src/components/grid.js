@@ -23,7 +23,7 @@ import structureGrammar from './grid-grammar.json' with {type: 'json'};
 
 /** First grid: explicit Bag row representation and a separately observable Data struct. */
 export const Grid = defineComponent({
-    name: 'grid', tag: 'gramlot-grid', base: Container, bagStore: true, bagStruct: true, sourceContext: true, subTags: 'struct,div',
+    name: 'grid', tag: 'gramlot-grid', base: Container, sourceContext: true, subTags: 'struct,div',
     parameters: {columnFilters: {dtype:'B', default:false, binding:'read'}, setFilter: {dtype:'T', default:'', binding:'read'}, windowInfo: {dtype:'X', nullable:true, default:null, binding:'read'},
         loading: {dtype:'B', default:false, binding:'read'},
         viewport: {dtype:'X', nullable:true, default:null, binding:'write'},
@@ -44,7 +44,6 @@ export const Grid = defineComponent({
         sortedBy: {dtype:'T', default:'', binding:'read'},
         filter: {annotation:{kind:'type',module:'builtins',name:'dict'}, nullable:true, default:null, binding:'read'}},
     implementation: Base => class extends Base {
-        #store;
         #checkSets;
         #columnFilters;
         #cellEditor;
@@ -56,11 +55,10 @@ export const Grid = defineComponent({
         #selection;
         /** Click selects (single); Ctrl/Cmd+click toggles and Shift+click extends (multi). Double-click still edits. */
         #selectRow = event => {
-            const tr = event.target.closest('tr[data-row]');
-            const node = tr && [...this.#rows].find(([, row]) => row === tr)?.[0];
-            if (!node || this.#selection.mode === 'none') return;
+            const label = this.#labelOf(event.target.closest('tr[data-row]'));
+            if (label === null || this.#selection.mode === 'none') return;
             try {
-                this.#selection.select(node, {toggle:event.ctrlKey || event.metaKey, range:event.shiftKey});
+                this.#selection.select(label, {toggle:event.ctrlKey || event.metaKey, range:event.shiftKey});
                 this.#renderSelection();
             } catch (error) { this.#context.reportError(error, 'Grid selection'); }
         };
@@ -75,8 +73,8 @@ export const Grid = defineComponent({
                 if (all) this.#selection.selectAll();
                 else {
                     const field = event.target.closest?.('td[data-field]')?.dataset.field;
-                    const node = this.#selection.move(step, event.shiftKey);
-                    if (node) this.#revealRow(node, field);
+                    const label = this.#selection.move(step, event.shiftKey);
+                    if (label !== null) this.#revealRow(label, field);
                 }
                 this.#renderSelection();
             } catch (error) { this.#context.reportError(error, 'Grid selection'); }
@@ -85,9 +83,9 @@ export const Grid = defineComponent({
             if (event.type === 'keydown' && !['Enter','F2'].includes(event.key)) return;
             const cell = event.target.closest('td[data-field]');
             if (!cell || !this.#structure) return;
-            const row = [...this.#rows].find(([, tr]) => tr === cell.parentElement)?.[0];
+            const row = this.#labelOf(cell.parentElement);
             const column = this.#structure.columns.find(column => column.field === cell.dataset.field);
-            if (row && column.edit) {
+            if (row !== null && column.edit) {
                 event.preventDefault();
                 try { this.#cellEditor.open(row, column, cell); }
                 catch (error) { this.#context.reportError(error,'Grid editor'); }
@@ -97,9 +95,9 @@ export const Grid = defineComponent({
         #windowRequest;
         #context;
         #structure;
-        #structBag;
         #structureDirty = true;
         #signature;
+        /** The rendered rows by row key (node label); the grid keeps keys, never row nodes. */
         #rows = new Map();
         #head;
         #body;
@@ -122,7 +120,7 @@ export const Grid = defineComponent({
         #refreshTimer = null;
         #pendingFull = false;
         #pendingRows = new Set();
-        #visibleNodes = [];
+        #visibleLabels = [];
         #windowStart = -1;
         #windowEnd = -1;
         #topSpace;
@@ -199,10 +197,8 @@ export const Grid = defineComponent({
             this.#columnFilters = new GridColumnFilters(this, this.#head);
             this.#interaction = new GridHeaderInteraction(this.#head, this.control, () => this.#structure, (field, multiple) => this.#sort(field, multiple),
                 () => this.#rowLayout, () => this.#scheduleLayout());
-            this.#rowInteraction = new GridRowInteraction(this.#body, this.control, () => this.#rowLayout, row => {
-                for (const [node, element] of this.#rows) if (element === row) return node;
-                return null;
-            }, () => this.#collectionView, () => this.parameters.selfDragRows, () => this.#scheduleLayout());
+            this.#rowInteraction = new GridRowInteraction(this.#body, this.control, () => this.#rowLayout, row => this.#labelOf(row),
+                () => this.#collectionView, () => this.parameters.selfDragRows, () => this.#scheduleLayout());
             this.#resizeObserver = new doc.defaultView.ResizeObserver(() => this.#scheduleLayout());
         }
         connectedCallback() {
@@ -296,10 +292,10 @@ export const Grid = defineComponent({
                     this.#rowLayout.resetMeasurements(); this.#geometryKey = key; changed = true;
                 }
             }
-            for (const [node, row] of this.#rows) {
-                changed = this.#rowLayout.measure(node, row.getBoundingClientRect().height) || changed;
+            for (const [label, row] of this.#rows) {
+                changed = this.#rowLayout.measure(label, row.getBoundingClientRect().height) || changed;
             }
-            if (changed && this.#visibleNodes.length) {
+            if (changed && this.#visibleLabels.length) {
                 // Keep the same visible row while estimated heights become exact.
                 const top = this.#rowLayout.offset(anchor) + within;
                 this.#setSpaces();
@@ -326,7 +322,7 @@ export const Grid = defineComponent({
             let {start, end} = this.#rowLayout.window(top, viewport.clientHeight);
             const info = this.#windowInfo();
             if (info) {
-                const loadedEnd = info.start + this.#visibleNodes.length;
+                const loadedEnd = info.start + this.#visibleLabels.length;
                 if (start < info.start || end > loadedEnd) {
                     const count = Math.max(200, end - start);
                     const requestedStart = Math.max(0, Math.min(Math.max(0, info.total - count), start));
@@ -346,7 +342,7 @@ export const Grid = defineComponent({
             else this.control.removeAttribute('aria-busy');
             if (force || start !== this.#windowStart || end !== this.#windowEnd) {
                 const rows = new GridRows(this.#formulas, this.#context.format)
-                    .read(this.#structure.columns, this.#visibleNodes.slice(start-(info?.start ?? 0), end-(info?.start ?? 0)));
+                    .read(this.#structure.columns, this.#rowNodes(this.#visibleLabels.slice(start-(info?.start ?? 0), end-(info?.start ?? 0))));
                 this.#renderRows(rows, this.#structure.columns, start);
                 this.#windowStart = start; this.#windowEnd = end;
                 this.#scheduleLayout();
@@ -354,20 +350,21 @@ export const Grid = defineComponent({
             this.#setSpaces();
             this.#scrollTo(top);
         }
+        /** The provider window, read at the address of the `windowInfo` pointer at each use; never kept. */
         #windowInfo() {
-            const value = this.parameters.windowInfo;
+            const value = this.#context.getStaticData(this.#context.attrDatapath('windowInfo'));
             if (value === null) return null;
             if (!(value instanceof Bag)) throw new TypeError('Grid windowInfo requires a Bag');
             return Object.fromEntries(['start', 'total', 'revision', 'sortedBy'].map(key => [key, value.getItem(key)]));
         }
         #nextEditor(row,field,step) {
-            const rows = this.#collectionView.getRows(), columns = this.#structure.columns.filter(column => column.edit);
+            const rows = this.#collectionView.getRows().map(node => node.label), columns = this.#structure.columns.filter(column => column.edit);
             const index = rows.indexOf(row) * columns.length + columns.findIndex(column => column.field === field) + (typeof step === 'object' ? step.row * columns.length : step);
             if (index < 0 || index >= rows.length * columns.length) return;
             this.#openEditorAt(Math.floor(index / columns.length),columns[index % columns.length]);
         }
         #openEditorAt(rowIndex,column) {
-            const next = this.#collectionView.getRows()[rowIndex];
+            const next = this.#collectionView.getRows()[rowIndex].label;
             this.#endPinned = false;
             const top = this.#rowLayout.offset(rowIndex), bottom = this.#rowLayout.offset(rowIndex + 1);
             if (top < this.#bodyViewport.scrollTop) this.#scrollTo(top);
@@ -386,14 +383,10 @@ export const Grid = defineComponent({
             this.#cellEditor.open(next,column,cell);
         }
         #focusField(path) {
-            const prefix = this.#context.sourceNode.absDatapath(this.parameters.storepath) + '.';
-            if (!path.startsWith(prefix)) return false;
-            const relative = path.slice(prefix.length), separator = this.parameters.rowMode === 'attributes' ? '?' : '.';
-            const split = relative.indexOf(separator);
-            if (split < 0) return false;
-            const row = this.#store.getNode(relative.slice(0,split));
-            const column = this.#structure.columns.find(column => column.field === relative.slice(split+1) && column.edit);
-            const index = this.#collectionView.getRows().indexOf(row);
+            const address = this.#context.sourceNode.rowField(path);
+            if (address === null) return false;
+            const column = this.#structure.columns.find(column => column.field === address.field && column.edit);
+            const index = this.#collectionView.getRows().findIndex(row => row.label === address.row);
             if (!column || index < 0) return false;
             this.#openEditorAt(index,column);
             return true;
@@ -410,35 +403,46 @@ export const Grid = defineComponent({
                 mode:() => this.#selectionMode(), rowData:node => this.#rowData(node)});
             this.#tools = new GridTools(context, {columns:() => this.#structure.columns, rows:() => this.#collectionView.getRows(),
                 selected:() => this.#selection.nodes, selectionMode:() => this.#selectionMode(),
-                reader:() => this.#formulas, store:() => ({bag:this.#store, mode:this.parameters.rowMode}),
+                reader:() => this.#formulas, store:() => ({mode:this.parameters.rowMode}),
                 parameters:() => this.parameters, document:this.ownerDocument});
             if (this.isConnected) this.#tools.connect();
             this.#columnFilters.setSourceContext(context);
             this.#checkSets = new GridCheckSets(context.sourceNode, this.#body,
                 () => this.#structure?.columns ?? [],
-                element => [...this.#rows].find(([,tr]) => tr === element)?.[0],
+                element => { const label = this.#labelOf(element); return label === null ? undefined : this.#rowNodes([label])[0]; },
                 (node,field) => this.#collectionView.value(node,field),
                 () => this.parameters.setFilter, () => this.#collectionView);
             if (this.isConnected) this.#checkSets.connect();
-            this.#cellEditor = new GridCellEditor(this, context, (row, field) => this.#rows.get(row)?.querySelector(`td[data-field="${field}"]`), () => ({bag:this.#store, mode:this.parameters.rowMode, window:this.parameters.windowInfo}), () => this.#rows, (row,field,step) => this.#nextEditor(row,field,step), path => this.#focusField(path));
+            this.#cellEditor = new GridCellEditor(this, context, (row, field) => this.#rows.get(row)?.querySelector(`td[data-field="${field}"]`),
+                () => ({labels:() => this.#collectionStore().getRows().map(row => row.label), window:this.#windowInfo()}),
+                () => this.#rows, (row,field,step) => this.#nextEditor(row,field,step), path => this.#focusField(path));
             const node = context.sourceNode;
-            if (!Object.hasOwn(node, 'gridRowLayout')) {
-                Object.defineProperty(node, 'gridRowLayout', {value:new GridRowLayout(), configurable:true});
-            }
-            this.#rowLayout = node.gridRowLayout;
+            this.#rowLayout = node._internal.gridRowLayout ??= new GridRowLayout();
         }
-        setStoreBag(bag) {
+        /** The rows Bag, read at its address at each use; the grid never keeps it. */
+        #storeBag() {
+            const bag = this.#context.getStaticData(this.#context.attrDatapath('storepath'));
             if (!(bag instanceof Bag)) throw new TypeError('grid storepath must resolve to a Bag');
-            if (bag !== this.#store) this.#cellEditor?.replaceData();
-            this.#store = bag;
-            this.#rowLayout.bindStore(bag);
+            return bag;
         }
-        setStructBag(bag) { this.#structBag = bag; this.#structureDirty = true; }
-        projectAttributes(attrs, adapt) {
+        /** The row nodes of the keys `labels` still in the rows Bag, read at their address at this call. */
+        #rowNodes(labels) {
+            const bag = this.#storeBag();
+            return labels.flatMap(label => bag.getNode(label) ?? []);
+        }
+        /** The key of a rendered row element of this grid, or null. */
+        #labelOf(tr) {
+            return tr && this.#rows.get(tr.dataset.row) === tr ? tr.dataset.row : null;
+        }
+        projectAttributes(attrs, adapt, changedPath = null) {
             const rest = super.projectAttributes(attrs, adapt);
+            // The structure is read again at its address when a change reaches it, or on a full projection.
+            const structpath = this.#context.attrDatapath('structpath');
+            if (changedPath === null || changedPath === structpath || changedPath.startsWith(`${structpath}.`)
+                || structpath.startsWith(`${changedPath}.`)) this.#structureDirty = true;
             if (this.#windowInfo() && (this.parameters.columnFilters || this.#collectionView?.filterContributions.some(([name]) => name.startsWith('column:')))) throw new TypeError('grid columnFilters requires a complete resident store');
             if (this.#windowInfo() && this.parameters.setFilter !== '') throw new TypeError('grid setFilter requires a complete resident store');
-            const store = this.#context.collectionView(this.#store, this.parameters.rowMode);
+            const store = this.#context.collectionView(this.#context.attrDatapath('storepath'), this.parameters.rowMode);
             if (this.#collectionView !== store) {
                 this.#cancelRefresh();
                 this.#unsubscribeStore?.(); this.#unsubscribeStore = null;
@@ -473,17 +477,17 @@ export const Grid = defineComponent({
         #invalidate({full, rows}) {
             this.#pendingFull ||= full;
             if (this.#pendingFull) this.#pendingRows.clear();
-            else for (const node of rows) this.#pendingRows.add(node);
+            else for (const node of rows) this.#pendingRows.add(node.label);
             if (!this.isConnected || this.#refreshTimer !== null) return;
             this.#refreshTimer = this.ownerDocument.defaultView.setTimeout(() => {
-                const full = this.#pendingFull, nodes = [...this.#pendingRows];
+                const full = this.#pendingFull, labels = [...this.#pendingRows];
                 this.#refreshTimer = null;
                 this.#pendingFull = false;
                 this.#pendingRows.clear();
                 try {
                     if (full) this.#project();
                     // View values (#, += and their dependents) of other rows can change too.
-                    else this.#projectRows(this.#formulas.viewFields.size ? [...this.#rows.keys()] : nodes);
+                    else this.#projectRows(this.#formulas.viewFields.size ? [...this.#rows.keys()] : labels);
                 } catch (error) {
                     // Keep the last valid DOM. A later change retries a complete pull;
                     // there is no automatic retry loop and no exception in Data delivery.
@@ -492,16 +496,18 @@ export const Grid = defineComponent({
                 }
             }, 0);
         }
-        #projectRows(nodes) {
-            for (const node of nodes) this.#rowLayout.forget(node);
+        #projectRows(labels) {
+            for (const label of labels) this.#rowLayout.forget(label);
             this.#footer.update(this.#formulas, this.#collectionStore().getRows());
-            const rows = new GridRows(this.#formulas, this.#context.format).read(this.#structure.columns, nodes.filter(node => this.#rows.has(node)));
+            const rows = new GridRows(this.#formulas, this.#context.format).read(this.#structure.columns, this.#rowNodes(labels.filter(label => this.#rows.has(label))));
             this.#rowInteraction.cancel();
-            for (const {node, cells} of rows) this.#renderCells(this.#rows.get(node), cells, node);
+            for (const {node, cells} of rows) this.#renderCells(this.#rows.get(node.label), cells, node);
             this.#scheduleLayout();
         }
         #project() {
-            const model = this.#structureDirty ? new GridStructure(this.#structBag) : this.#structure;
+            const structpath = this.#context.attrDatapath('structpath');
+            const model = this.#structureDirty
+                ? new GridStructure(this.#context.getStaticData(structpath), {data:this.#context.sourceNode.data, path:structpath}) : this.#structure;
             const store = this.#collectionStore();
             this.#formulas.configure(model, this.#collectionView, store);
             this.#requireStoredCriteria();
@@ -511,14 +517,14 @@ export const Grid = defineComponent({
             this.#cellEditor.configure(model.columns);
             this.#structure = model;
             this.#checkSets.configure();
-            const nodes = this.#collectionView.getRows();
+            const labels = this.#collectionView.getRows().map(row => row.label);
             this.#rowInteraction.cancel(); this.#rowInteraction.cancelDrag();
-            this.#rowLayout.retain(this.#store.getNodes());
+            this.#rowLayout.retain(store.getRows().map(row => row.label));
             if (this.#structureDirty) this.#rowLayout.resetMeasurements();
             const info = this.#windowInfo();
             this.#rowLayout.setWindow(info);
-            this.#rowLayout.setRows(nodes);
-            this.#visibleNodes = nodes;
+            this.#rowLayout.setRows(labels);
+            this.#visibleLabels = labels;
             if (info && this.#windowRevision !== info.revision) {
                 this.#endPinned = false;
                 this.#scrollTo(0);
@@ -567,11 +573,8 @@ export const Grid = defineComponent({
                 const own = relative(selection);
                 return own !== null && (path === own || path.startsWith(own + '.') || path.startsWith(own + '?'));
             })) return true;
-            const store = relative(this.#context.sourceNode.absDatapath(this.parameters.storepath));
-            if (store === null || store !== '' && !path.startsWith(store + '.')) return false;
-            const row = store === '' ? path : path.slice(store.length + 1);
-            const field = (this.parameters.rowMode === 'attributes' ? /^[^.?]+\?([^.?]+)$/ : /^[^.?]+\.([^.?]+)$/).exec(row)?.[1];
-            return field !== undefined && this.#formulas.dataFields.has(field);
+            const address = this.#context.sourceNode.rowField(path === '' ? base : `${base}.${path}`);
+            return address !== null && this.#formulas.dataFields.has(address.field);
         }
         #selectionMode() {
             const mode = this.parameters.selectionMode;
@@ -587,26 +590,26 @@ export const Grid = defineComponent({
             const mode = this.#selectionMode();
             if (mode === 'multi') this.control.setAttribute('aria-multiselectable', 'true');
             else this.control.removeAttribute('aria-multiselectable');
-            for (const [node, tr] of this.#rows) {
-                const selected = this.#selection.isSelected(node);
+            for (const [label, tr] of this.#rows) {
+                const selected = this.#selection.isSelected(label);
                 if (mode === 'none') tr.removeAttribute('aria-selected');
                 else tr.setAttribute('aria-selected', String(selected));
                 tr.setAttribute('part', selected ? 'row selected-row' : 'row');
             }
         }
-        /** Scroll the view row `node` into the viewport; focus the cell of `field` when given. */
-        #revealRow(node, field) {
-            const index = this.#collectionView.getRows().indexOf(node);
+        /** Scroll the view row of key `label` into the viewport; focus the cell of `field` when given. */
+        #revealRow(label, field) {
+            const index = this.#collectionView.getRows().findIndex(row => row.label === label);
             this.#endPinned = false;
             const top = this.#rowLayout.offset(index), bottom = this.#rowLayout.offset(index + 1);
             if (top < this.#bodyViewport.scrollTop) this.#scrollTo(top);
             else if (bottom > this.#bodyViewport.scrollTop + this.#bodyViewport.clientHeight) this.#scrollTo(Math.max(0, bottom - this.#bodyViewport.clientHeight));
             this.#renderWindow(true);
-            if (field) this.#rows.get(node)?.querySelector(`td[data-field="${field}"]`)?.focus({preventScroll:true});
+            if (field) this.#rows.get(label)?.querySelector(`td[data-field="${field}"]`)?.focus({preventScroll:true});
         }
         /** The shared resident store under this grid's view. */
         #collectionStore() {
-            return this.#context.sourceNode.rootBuilder.binding.collectionStore(this.#store, this.parameters.rowMode);
+            return this.#context.sourceNode.rootBuilder.binding.collectionStore(this.#context.attrDatapath('storepath'), this.parameters.rowMode);
         }
         /** Sort, column filter and search criteria apply to stored fields: a view value derives from the order. */
         #requireStoredCriteria() {
@@ -757,17 +760,18 @@ export const Grid = defineComponent({
             const keep = new Set(); let previous = null;
             this.#body.querySelector('.empty')?.parentElement.remove();
             for (const {node, cells} of rows) {
-                let tr = this.#rows.get(node);
+                const label = node.label;
+                let tr = this.#rows.get(label);
                 if (!tr) {
                     tr = this.ownerDocument.createElement('tr'); tr.setAttribute('part', 'row');
                     tr.setAttribute('role', 'row');
-                    tr.dataset.row = node.label;
-                    this.#rows.set(node, tr);
+                    tr.dataset.row = label;
+                    this.#rows.set(label, tr);
                 }
                 tr.classList.toggle('alternate', (start + keep.size) % 2 === 1);
-                tr.setAttribute('part', this.#selection.isSelected(node) ? 'row selected-row' : 'row');
+                tr.setAttribute('part', this.#selection.isSelected(label) ? 'row selected-row' : 'row');
                 if (this.#selection.mode === 'none') tr.removeAttribute('aria-selected');
-                else tr.setAttribute('aria-selected', String(this.#selection.isSelected(node)));
+                else tr.setAttribute('aria-selected', String(this.#selection.isSelected(label)));
                 // Under a filter the numbering covers the visible rows only.
                 const partial = this.#collectionView.isFiltered();
                 tr.draggable = this.parameters.selfDragRows;
@@ -826,13 +830,13 @@ export const Grid = defineComponent({
                 for (const td of existing.values()) td.remove();
                 tr.setAttribute('aria-rowindex', String(this.#headerRows + start + keep.size + 1));
                 this.#renderCells(tr, cells, node);
-                this.#cellEditor.decorate(tr, node);
+                this.#cellEditor.decorate(tr, label);
                 const next = previous ? previous.nextSibling : this.#body.firstChild;
                 if (next !== tr) this.#body.insertBefore(tr, next);
-                this.#rowInteraction.project(tr, node);
-                previous = tr; keep.add(node);
+                this.#rowInteraction.project(tr, label);
+                previous = tr; keep.add(label);
             }
-            for (const [node, tr] of this.#rows) if (!keep.has(node)) { tr.remove(); this.#rows.delete(node); }
+            for (const [label, tr] of this.#rows) if (!keep.has(label)) { tr.remove(); this.#rows.delete(label); }
             if (!rows.length && this.#rowLayout.count === 0 && !this.parameters.loading) {
                 const tr = this.ownerDocument.createElement('tr'), td = this.ownerDocument.createElement('td');
                 tr.setAttribute('role', 'row'); tr.setAttribute('aria-rowindex', String(this.#headerRows + 1));

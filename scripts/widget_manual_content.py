@@ -193,7 +193,7 @@ BagNode with path/opened/selected context. A label callback returns exactly
 `{text: ...}` or `{html: ...}`; HTML is sanitized and cannot supply form controls
 or executable behavior. `getLabelClass`, `getIconClass` and `selectedLabelClass`
 control appearance without changing store identity. Callbacks are not asynchronous
-caption providers. Bag attributes can supply badges and checked state.
+caption providers. Bag attributes can supply badges.
 
 Bind `searchText` to an input for case-insensitive literal caption search. After
 a short debounce it may load unresolved branches, retaining matches and ancestors;
@@ -203,9 +203,11 @@ selection or replace the Bag. Nodes marked `loop=True` stop recursive search.
 See [search lifetime](105-components.md#gc-105-965).
 
 `checkedPaths` binds serialized checked paths; `checkedPaths_joiner` chooses the
-separator. The actual state is each node's `checked` attribute, including mixed
-and disabled states. `checkChildren=True` propagates through loaded descendants
-and is inherited as unresolved descendants load. A synchronous `onChecked`
+separator. The list is the only source of the checks, including mixed branches;
+`checked_<attribute>` binds the list of an attribute's values of the checked nodes.
+Only a node attribute `checked='disabled:on'` or `'disabled:off'` fixes a check.
+`checkChildren=True` propagates through loaded descendants and holds for
+descendants loaded later. A synchronous `onChecked`
 callback can veto a click by returning false; `onChecked=True` enables ordinary
 checks without that callback. Selection and checked paths are separate state.
 `favorites` is a Bag of references retaining `originalPath`, not copied tree data.
@@ -267,6 +269,57 @@ Markdown in a sandboxed iframe. `allowHtml=False` shows embedded HTML as text;
 True sanitizes rendered HTML before insertion, without rewriting original Markdown.
 External image requests remain blocked by preview policy. See
 [Markdown behavior](105-components.md#gc-105-140).
+
+## Connect a terminal to a session of the PageStore
+
+`terminal` is an interactive terminal for programs that work key by key: a shell,
+`exec` into a container, a REPL, `top` or `vim`. Every key goes to the server at once.
+The server output is written to the screen as it arrives. The component knows no
+backend: the page's PageStore connects it to a process or a remote session.
+
+```python
+class Page(BasePage):
+    def main(self, root):
+        root.terminal(session="echo", connected="^.connected", rows="^.rows", columns="^.columns")
+
+
+class PageStore(BasePageStore):
+    @terminal
+    async def echo(self, session):
+        while data := await session.read():
+            await session.write(data)
+```
+
+`session` names an async PageStore method declared with `@terminal`
+(`from gramlot.page import terminal`). The method receives a `TerminalSession`:
+
+- `await session.read()` returns the next bytes of the keys, `b""` once the session is closed;
+- `await session.write(data)` sends output bytes, in frames of at most 1 MB; it waits
+  while 1 MB is not yet written by the screen, so a method that reads its process only
+  after `write` returns reads it no faster than the browser draws;
+- `await session.resized()` returns the next `(rows, columns)`; `session.size` holds the last one;
+- `session.host` is the `Host` header of the socket request.
+
+The session closes when the method returns, when the page closes or when the
+socket closes. `@terminal(auth="rule")` applies the same auth rules as `@endpoint`.
+A page has one open session per name: opening the name again, as a component
+attached again to the page does, closes the open one first. More than 1 MB of
+input not yet read closes the socket. `connected`, `rows` and `columns` are written to
+Data; the terminal bytes never pass through Data. `input(text)` sends text as if typed.
+
+The method runs beside the store's own operations, not inside them: it talks to its
+process or remote session and does not write the store's Data.
+
+The bytes travel on a WebSocket of their own, `/gramlot/terminal`, beside the PageStore
+channel: enable it with `websocket=True` on the Python host. A large output never
+reaches the PageStore channel. xterm.js loads on first use; a page without a terminal
+downloads none of it. The frames are in the
+[server protocol](101-server-protocol.md#gc-101-325).
+
+A local shell runs with the rights of the server process. The origin check of the
+socket compares `Origin` with `Host`, which DNS rebinding can make equal: a shell
+method checks `session.host` as well. The gramlot-examples terminal trial offers the
+shell only when `GRAMLOT_DEV` is set and the page was opened at `localhost` or `127.0.0.1`.
 """,
     "typst": """
 ## Choosing and using the preview
@@ -278,7 +331,7 @@ pane.codeMirror(value="^.content", language="typst", height="360px")
 pane.typstPreview(value="^.content", filename="report.pdf", height="480px")
 ```
 
-Initialize `.content` as text. Include both collections in the environment Page when using this pair; importing a collection descriptor alone does not activate it. See [collection setup](340-components-and-collections-guide.md#gc-340-050) and [the Typst contract](105-components.md#gc-105-145).
+Initialize `.content` as text. `editors` is a standard collection; `typst` is not, so the page declares it in `Page.gramlots` (`from gramlot.collections.typst import mygramlot as typst`, then `gramlots = [typst]`). See [declaring typst](340-components-and-collections-guide.md#gc-340-050-typst) and [the Typst contract](105-components.md#gc-105-145).
 
 ### Updates, diagnostics and resource limits
 
@@ -587,12 +640,6 @@ ring or the arc. presentation is needle, ring or arc; caption is a label under t
 value shows the information notice No value, never zero. The gauge follows the --gramlot-* theme
 colours and writes nothing back.
 """,
-    'vizabi': """### Specialized host integration
-
-The host provides the compatible library at libraryUrl and the configuration Bag. A session observes
-rows and writes supported configuration changes into Data. It releases subscriptions and the external
-view on removal. Do not treat this as an additional chartPane engine or infer database access.
-""",
 })
 
 COLLECTION_EXPLANATIONS.update({
@@ -608,11 +655,13 @@ This is not an audio recorder, and no persistence is implied.
 """,
     'drawing': """### Original annotation Bag
 
-annotations must resolve to a Bag. The component subscribes to that original Bag and writes
-shape records there. image changes the background without replacing the annotation store.
+annotations must point to a Bag in Data. The component reads the Bag at that address when it
+draws and writes shape records there; a change inside the Bag or a new Bag at the address
+redraws the surface. image changes the background without replacing the annotation store.
 Without an image, coordinates use a 1000 by 1000 surface; an image uses its natural dimensions.
-The toolbar is a shared menu, with tool state under _gramlot.drawing. Removing the component
-releases event handlers and Bag subscriptions. Save annotations through the application's own
-persistence contract; the drawing component does not perform a server save.
+The toolbar is a shared menu. Its tool, color and pen size are Data values in the private area of
+the drawingPane node (`_gramlot.workspace.<name>`, the `#WORKSPACE` naming rule). Removing the
+component releases event handlers and Data registrations. Save annotations through the
+application's own persistence contract; the drawing component does not perform a server save.
 """,
 })

@@ -5,6 +5,7 @@ import re
 import shutil
 
 PUBLIC_PAGES = (
+    "docs/public/017-inside-gramlot.md",
     "docs/public/018-quickstart.md",
     "docs/public/llm/index.md",
     "docs/public/055-family.md",
@@ -35,7 +36,6 @@ PUBLIC_PAGES = (
     "docs/public/450-chat.md",
     "docs/public/455-grouplets.md",
     "docs/public/480-charts.md",
-    "docs/public/485-vizabi.md",
     "docs/public/490-audio.md",
     "docs/public/495-drawing.md",
     "docs/public/460-widget-coverage.md",
@@ -54,7 +54,6 @@ PUBLIC_LLM_PAGES = (
     "docs_llm/public/450-chat.md",
     "docs_llm/public/455-grouplets.md",
     "docs_llm/public/480-charts.md",
-    "docs_llm/public/485-vizabi.md",
     "docs_llm/public/490-audio.md",
     "docs_llm/public/495-drawing.md",
 )
@@ -87,6 +86,15 @@ def llm_downloads(root):
 
 
 PUBLIC_ASSETS = (
+    "docs/public/examples/inside/name.py",
+    "docs/public/examples/inside/triangle.py",
+    "docs/public/examples/inside/many_triangles.py",
+    "docs/public/examples/inside/triangle_block.py",
+    "docs/public/examples/inside/reuse.py",
+    "docs/public/assets/inside/spreadsheet.png",
+    "docs/public/assets/inside/triangle.png",
+    "docs/public/assets/inside/triangles.png",
+    "docs/public/assets/inside/triangles.css",
     "assets/branding/gramlot-logo.svg",
     "docs/public/assets/showcase/drawers.png",
     "docs/public/assets/showcase/tabs.png",
@@ -127,10 +135,10 @@ def main():
     for relative in PUBLIC_PAGES:
         home = home.replace(f"]({Path(relative).relative_to('docs/public')}", f"]({relative}")
     groups = (
-        ("Start here", ("055-family", "018-quickstart", "020-evaluate")),
+        ("Start here", ("017-inside-gramlot", "055-family", "018-quickstart", "020-evaluate")),
         ("Build applications", ("095-writing-pages", "105-components", "097-data-binding", "098-server-calls", "099-remote-content", "350-menus-toolbars-and-windows")),
         ("Library reference", ("llm/index", "345-widget-reference", "460-widget-coverage", "096-themes-and-css", "090-classes-and-hosts", "030-quality")),
-        ("Collection reference", ('410-inputs', '415-buttons', '420-layout', '425-tree', '430-editors', '435-typst', '440-uploads', '445-grid', '450-chat', '455-grouplets', '480-charts', '485-vizabi', '490-audio', '495-drawing')),
+        ("Collection reference", ('410-inputs', '415-buttons', '420-layout', '425-tree', '430-editors', '435-typst', '440-uploads', '445-grid', '450-chat', '455-grouplets', '480-charts', '490-audio', '495-drawing')),
         ("Extend and integrate", ("340-components-and-collections-guide", "100-extensions", "101-server-protocol")),
         ("Appendix: examples", ("025-try", "355-examples-and-visual-tour", "465-widget-examples")),
     )

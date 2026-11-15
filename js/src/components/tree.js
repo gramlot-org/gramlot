@@ -16,9 +16,16 @@ export const RowActions = defineComponent({
         #context;
         connectedCallback() { this.slot = 'row-actions'; this.hidden = true; }
         setSourceContext(context) { this.#context = context; }
-        setRowContext(item, path) { this.#rowContext = {item, path}; this.#refresh(); }
-        getRowContext() { return this.#rowContext; }
+        /** Keep the row's tree `path`; `read` gives the row's item at each use, or null when the row is gone. */
+        setRowContext(path, read) { this.#rowContext = {path, read}; this.#refresh(); }
+        getRowContext() {
+            if (!this.#rowContext) return null;
+            const {path, read} = this.#rowContext, item = read();
+            return item ? {item, path} : null;
+        }
         clearRowContext() { this.#rowContext = null; this.hidden = true; }
+        // `state` is a `^` parameter of dtype 'X': a change inside the Bag or a replacement at its address
+        // projects the bar again, and actionState receives the value read at that address for the call.
         projectAttributes(attrs, adapt) {
             const rest = super.projectAttributes(attrs, adapt);
             if (!['start', 'end'].includes(this.parameters.position)) throw new TypeError('rowActions position must be start or end');
@@ -26,12 +33,13 @@ export const RowActions = defineComponent({
             return rest;
         }
         #refresh() {
-            if (!this.#rowContext || !this.parameters.actionState) return;
+            const context = this.getRowContext();
+            if (!context || !this.parameters.actionState) return;
             for (const action of this.children) {
                 const code = action.getAttribute('rowAction');
                 if (code === null) continue;
                 const presentation = this.#context.callLogic(this.parameters.actionState,
-                    {...this.#rowContext, action: code, state: this.parameters.state});
+                    {...context, action: code, state: this.#context.getStaticData(this.#context.attrDatapath('state'))});
                 if (!presentation || typeof presentation.hidden !== 'boolean' ||
                     typeof presentation.icon !== 'string' || typeof presentation.title !== 'string') {
                     throw new TypeError('rowActions actionState must return hidden, icon and title');
@@ -43,7 +51,7 @@ export const RowActions = defineComponent({
 });
 
 export const Tree = defineComponent({
-    name: 'tree', tag: 'gramlot-tree', base: Container, subTags: 'rowActions[:1]', sourceContext: true, bagStore: true, dragSource: true,
+    name: 'tree', tag: 'gramlot-tree', base: Container, subTags: 'rowActions[:1]', sourceContext: true, dragSource: true,
     parameters: {
         storepath: {dtype: 'T'},
         draggable: {dtype: 'B', default: false, binding: 'read'},
@@ -71,7 +79,6 @@ export const Tree = defineComponent({
         checkChildren: {dtype: 'B', default: true, binding: 'read'}
     },
     implementation: Base => class extends Base {
-        #store;
         #sanitizer;
         #context;
         #expanded = new Set();
@@ -84,11 +91,19 @@ export const Tree = defineComponent({
         #selectionVersion = 0;
         #selectedPath = null;
         #scheduled = false;
-        #checkedPaths;
         #checksEnabled = false;
         #pathsEnabled = false;
-        #checkedBags = new WeakMap();
-        #checkedNodes = new WeakSet();
+        // `checked_<attribute>` addresses, legacy syntax `path[:joiner]`, by attribute name.
+        #checkedAttributes = new Map();
+        // The check lists as last read or written by the tree, by list name; null before the first draw.
+        #seenLists = null;
+        // The path list of a tree without checkedPaths, kept like the expansion.
+        #ownCheckedPaths = null;
+        // The loaded branches whose loaded children are all checked (with checkChildren), derived like
+        // the other lists: a child added or reloaded under one of them is checked, as in the legacy.
+        #checkedBranches = null;
+        // Expansion, loading, errors and resolutions are kept by tree path (row keys from
+        // the store root), never by BagNode.
         #loading = new Set();
         #errors = new Map();
         #searchInput = '';
@@ -97,8 +112,8 @@ export const Tree = defineComponent({
         #searchTimer = null;
         #searchVersion = 0;
         #searchOpen = new Set();
-        #searchClosed = new WeakSet();
-        #searchAttempted = new WeakSet();
+        #searchClosed = new Set();
+        #searchAttempted = new Set();
         #searching = false;
         #resolutions = new Map();
 
@@ -150,13 +165,16 @@ export const Tree = defineComponent({
             });
         }
         setSourceContext(context) { this.#context = context; }
-        get storeBag() { return this.#store; }
+        /** The store Bag, read from the tree's address at each use; the tree never keeps it. */
+        get storeBag() { return this.#context.treeStore(); }
         /** Read only the rendered row and its BagNode; never request a resolver value. */
         getDragContext(event) {
             for (const element of event.composedPath()) {
                 const row = this.#dragRows.get(element);
                 if (!row) continue;
-                const {item, path, caption} = row;
+                const {path, caption, favorite} = row;
+                const item = this.#rowItem(path, favorite);
+                if (!item) return null;
                 const rect = element.getBoundingClientRect();
                 const fraction = rect.height ? (event.clientY - rect.top) / rect.height : 0.5;
                 const placement = fraction < 0.25 ? 'before' : fraction > 0.75 ? 'after' : 'inside';
@@ -168,28 +186,25 @@ export const Tree = defineComponent({
             }
             return null;
         }
-        setStoreBag(bag) {
-            if (!(bag instanceof Bag)) throw new TypeError('tree storepath must resolve to a Bag');
-            if (bag !== this.#store) {
-                this.#store = bag;
-                this.#resetSearch();
-                this.#searchText = this.#searchInput.toLowerCase();
-                this.#expanded.clear();
-                this.#errors.clear();
-                this.#requestedPath = undefined;
-                this.#selectionVersion++;
-                this.#checkedPaths = undefined;
-                this.#checkedBags = new WeakMap();
-                this.#checkedNodes = new WeakSet();
-            }
-            this.#schedule();
-        }
         projectAttributes(attrs, adapt) {
+            const own = {};
+            this.#checkedAttributes = new Map();
+            for (const [name, raw] of Object.entries(attrs)) {
+                if (!name.startsWith('checked_')) { own[name] = raw; continue; }
+                // Legacy genro_tree.js updateCheckedAttr: a Data path, the joiner after ':'.
+                const attribute = name.slice('checked_'.length);
+                if (!attribute || typeof raw !== 'string' || !raw || /^[\^=]/.test(raw)) {
+                    throw new TypeError(`tree ${name} requires a Data path, optionally followed by :joiner`);
+                }
+                const index = raw.indexOf(':');
+                this.#checkedAttributes.set(name, {attribute, path: index < 0 ? raw : raw.slice(0, index),
+                    joiner: (index < 0 ? '' : raw.slice(index + 1)) || ','});
+            }
             this.#pathsEnabled = Object.hasOwn(attrs, 'checkedPaths');
-            this.#checksEnabled = this.#pathsEnabled || Boolean(attrs.onChecked);
+            this.#checksEnabled = this.#pathsEnabled || Boolean(attrs.onChecked) || this.#checkedAttributes.size > 0;
             const previousEager = this.parameters?.searchEager;
             const previousResolve = this.parameters?.resolveLazy;
-            const rest = super.projectAttributes(attrs, adapt);
+            const rest = super.projectAttributes(own, adapt);
             if (previousEager !== this.parameters.searchEager || previousResolve !== this.parameters.resolveLazy) {
                 this.#resetSearch();
                 this.#searchText = this.#searchInput.toLowerCase();
@@ -219,32 +234,33 @@ export const Tree = defineComponent({
         #resetSearch() {
             clearTimeout(this.#searchTimer); this.#searchTimer = null;
             this.#searchVersion++; this.#searching = false;
-            this.#searchAttempted = new WeakSet(); this.#searchOpen.clear(); this.#searchClosed = new WeakSet();
+            this.#searchAttempted.clear(); this.#searchOpen.clear(); this.#searchClosed.clear();
         }
-        #opened(node) { return this.#searchText ? this.#searchOpen.has(node) : this.#expanded.has(node); }
+        #opened(path) { return this.#searchText ? this.#searchOpen.has(path) : this.#expanded.has(path); }
         async #searchBranches() {
-            const version = this.#searchVersion, store = this.#store;
-            const current = () => this.isConnected && version === this.#searchVersion && store === this.#store
+            const version = this.#searchVersion, store = this.storeBag;
+            const current = () => this.isConnected && version === this.#searchVersion
                 && this.parameters.searchEager && this.parameters.resolveLazy;
             this.#searching = true;
-            const visit = async (bag, ancestors = new Set()) => {
+            const visit = async (bag, prefix, ancestors = new Set()) => {
                 if (!current()) return;
                 if (ancestors.has(bag)) throw new TypeError('tree requires an acyclic Bag store');
                 const next = new Set(ancestors).add(bag);
                 for (const node of bag.getNodes()) {
-                    if (bag === this.#store && node.label === this.parameters.excludeRoot) continue;
+                    if (!prefix && node.label === this.parameters.excludeRoot) continue;
                     if (!current()) return;
                     if (node.attr.loop === true) continue;
                     if (node.resolver !== null && !this.parameters.resolveLazy) continue;
-                    if (node.resolver !== null && node.resolver.expired && !this.#searchAttempted.has(node)) {
-                        this.#searchAttempted.add(node);
-                        await this.#resolve(node, true);
+                    const path = prefix ? `${prefix}.${node.label}` : node.label;
+                    if (node.resolver !== null && node.resolver.expired && !this.#searchAttempted.has(path)) {
+                        this.#searchAttempted.add(path);
+                        await this.#resolve(node, path, true);
                     }
                     if (!current()) return;
-                    if (node.staticValue instanceof Bag) await visit(node.staticValue, next);
+                    if (node.staticValue instanceof Bag) await visit(node.staticValue, path, next);
                 }
             };
-            try { await visit(store); }
+            try { await visit(store, ''); }
             finally { if (current()) { this.#searching = false; this.#schedule(); } }
         }
         #highlight(caption) {
@@ -268,25 +284,31 @@ export const Tree = defineComponent({
             this.#scheduled = true;
             queueMicrotask(() => {
                 this.#scheduled = false;
-                if (this.isConnected && this.#store) this.#render();
+                if (!this.isConnected) return;
+                // The final read of the address: an address without a Bag is reported, not drawn.
+                let store;
+                try {
+                    store = this.storeBag;
+                    // A store resolver still loading: its value arrives as a Data change that projects the tree again.
+                    if (store instanceof Promise) return;
+                    if (!(store instanceof Bag)) throw new TypeError('tree storepath must resolve to a Bag');
+                } catch (error) {
+                    this.#context.reportError(error, 'Tree');
+                    return;
+                }
+                this.#render(store);
             });
         }
-        #render() {
+        #render(store) {
             const focused = this.shadowRoot.activeElement?.closest('[role=treeitem]')?.dataset.path;
             const focusedFavorite = this.shadowRoot.activeElement?.dataset.favoritePath;
             const focusedFavoritesGroup = this.shadowRoot.activeElement?.dataset.favoritesGroup === 'true';
-            const loaded = [];
-            let checksChanged = false;
-            if (this.#checksEnabled && this.parameters.checkChildren &&
-                !(this.#pathsEnabled && this.parameters.checkedPaths !== this.#checkedPaths)) {
-                checksChanged = this.#syncChecked(this.#store, new Set(), loaded);
-            }
             const items = new Map(), seen = new Set();
             const visit = (bag, prefix, ancestors) => {
                 if (seen.has(bag)) throw new TypeError('tree requires an acyclic Bag store');
                 seen.add(bag);
                 for (const node of bag.getNodes()) {
-                    if (bag === this.#store && node.label === this.parameters.excludeRoot) continue;
+                    if (!prefix && node.label === this.parameters.excludeRoot) continue;
                     const path = prefix ? `${prefix}.${node.label}` : node.label;
                     const value = node.resolver !== null && !this.parameters.resolveLazy ? null : node.staticValue;
                     items.set(path, {node, ancestors, children: value instanceof Bag ? value : null});
@@ -294,47 +316,16 @@ export const Tree = defineComponent({
                 }
                 seen.delete(bag);
             };
-            visit(this.#store, '', []);
-            if (this.parameters.searchEager && this.parameters.resolveLazy && this.#searchText && this.#searchTimer === null && !this.#searching && [...items.values()].some(({node}) =>
-                node.attr.loop !== true && node.resolver !== null && node.resolver.expired && !this.#searchAttempted.has(node))) {
+            visit(store, '', []);
+            if (this.parameters.searchEager && this.parameters.resolveLazy && this.#searchText && this.#searchTimer === null && !this.#searching && [...items].some(([path, {node}]) =>
+                node.attr.loop !== true && node.resolver !== null && node.resolver.expired && !this.#searchAttempted.has(path))) {
                 void this.#searchBranches();
             }
             const actionBar = this.#rowActions();
-            const actionContext = actionBar ? actionBar.getRowContext() : null;
-            if (actionContext) {
-                const favorite = actionContext.item.getAttr('favoriteEntry') === true;
-                const valid = favorite ? this.parameters.favorites instanceof Bag && this.parameters.favorites.getNodes().includes(actionContext.item)
-                    : items.get(actionContext.path)?.node === actionContext.item;
-                if (!valid) actionBar.clearRowContext();
-            }
-            if (this.#pathsEnabled && this.parameters.checkedPaths !== this.#checkedPaths) {
-                const initial = this.#checkedPaths === undefined;
-                this.#checkedPaths = this.parameters.checkedPaths;
-                for (const {node} of items.values()) {
-                    if (node.attr.checked === 'disabled:on' || node.attr.checked === 'disabled:off') continue;
-                    if (!initial || this.#checkedPaths !== null) node.setAttr({checked: false});
-                }
-                for (const path of (this.#checkedPaths || '').split(this.parameters.checkedPaths_joiner).filter(Boolean)) {
-                    const item = items.get(path);
-                    if (item) this.#check(item.node, true, false);
-                }
-            } else if (this.#pathsEnabled && loaded.length) {
-                const paths = (this.parameters.checkedPaths || '').split(this.parameters.checkedPaths_joiner).filter(Boolean);
-                for (const path of paths) {
-                    const item = items.get(path);
-                    if (!item || item.node.attr.checked === true || item.node.attr.checked === 'disabled:on' ||
-                        item.node.attr.checked === 'disabled:off') continue;
-                    let bag = item.node.parentBag;
-                    while (bag && !loaded.includes(bag)) bag = bag.parentNode?.parentBag;
-                    if (bag) this.#check(item.node, true, false);
-                }
-                if (checksChanged || paths.length) this.#publishChecked(true);
-            } else if (checksChanged) {
-                this.#publishChecked(true);
-            }
-            const identities = new Set([...items.values()].map(item => item.node));
-            for (const node of this.#expanded) if (!identities.has(node)) this.#expanded.delete(node);
-            for (const node of this.#errors.keys()) if (!identities.has(node)) this.#errors.delete(node);
+            if (actionBar && actionBar.getRowContext() === null) actionBar.clearRowContext();
+            const checks = this.#checksEnabled ? this.#drawnChecks(store) : null;
+            for (const path of this.#expanded) if (!items.has(path)) this.#expanded.delete(path);
+            for (const path of this.#errors.keys()) if (!items.has(path)) this.#errors.delete(path);
             const requested = this.parameters.selectedPath;
             let reveal = null;
             if (requested !== this.#requestedPath) {
@@ -343,12 +334,12 @@ export const Tree = defineComponent({
                 const version = ++this.#selectionVersion;
                 const ancestors = items.get(requested)?.ancestors ?? [];
                 if (requested && !items.has(requested)) {
-                    reveal = {requested, version, store: this.#store};
+                    reveal = {requested, version};
                 }
                 for (let index = 0; index < ancestors.length; index++) {
-                    const node = ancestors[index];
-                    if (this.#expanded.has(node)) continue;
-                    this.#expand(node);
+                    const path = requested.split('.').slice(0, index + 1).join('.');
+                    if (this.#expanded.has(path)) continue;
+                    this.#expand(path);
                 }
             }
             const selected = this.#selectedPath;
@@ -362,7 +353,7 @@ export const Tree = defineComponent({
                 list.className = 'group'; list.setAttribute('part', 'group');
                 list.setAttribute('role', 'group');
                 for (const node of bag.getNodes()) {
-                    if (bag === this.#store && node.label === this.parameters.excludeRoot) continue;
+                    if (!prefix && node.label === this.parameters.excludeRoot) continue;
                     const path = prefix ? `${prefix}.${node.label}` : node.label;
                     const {children} = items.get(path);
                     const scalar = children === null && !this.parameters.hideValues && (node.resolver === null || !node.resolver.expired);
@@ -371,20 +362,20 @@ export const Tree = defineComponent({
                     const entry = this.ownerDocument.createElement('li');
                     entry.className = `node ${branch ? 'branch' : 'leaf'}`;
                     entry.setAttribute('part', `node ${branch ? 'branch' : 'leaf'}`);
-                    entry.classList.toggle('loading', this.#loading.has(node));
-                    entry.classList.toggle('error', this.#errors.has(node));
-                    entry.setAttribute('aria-busy', String(this.#loading.has(node)));
+                    entry.classList.toggle('loading', this.#loading.has(path));
+                    entry.classList.toggle('error', this.#errors.has(path));
+                    entry.setAttribute('aria-busy', String(this.#loading.has(path)));
                     entry.setAttribute('role', 'treeitem');
                     entry.setAttribute('aria-selected', String(selected === path));
                     entry.classList.toggle('selected', selected === path);
                     entry.dataset.path = path;
                     entry.tabIndex = -1;
                     const row = this.ownerDocument.createElement('div'); row.className = 'row';
-                    row.addEventListener('pointerenter', () => this.#showRowActions(row, node, path));
-                    entry.addEventListener('focus', () => this.#showRowActions(row, node, path));
+                    row.addEventListener('pointerenter', () => this.#showRowActions(row, path, false));
+                    entry.addEventListener('focus', () => this.#showRowActions(row, path, false));
                     row.draggable = this.parameters.draggable;
                     row.setAttribute('part', `row ${branch ? 'branch-row' : 'leaf-row'}${selected === path ? ' selected-row' : ''}`);
-                    if (this.#errors.has(node)) row.title = String(this.#errors.get(node));
+                    if (this.#errors.has(path)) row.title = String(this.#errors.get(path));
                     const expander = this.ownerDocument.createElement(branch ? 'button' : 'span');
                     expander.setAttribute('part', branch ? 'expander' : 'spacer');
                     if (branch) {
@@ -405,7 +396,7 @@ export const Tree = defineComponent({
                     const caption = this.ownerDocument.createElement('span'); caption.className = 'caption';
                     const badge = this.ownerDocument.createElement('span'); badge.className = 'badge';
                     badge.setAttribute('part', 'badge');
-                    this.#dragRows.set(row, {item: node, path, caption});
+                    this.#dragRows.set(row, {path, caption, favorite: false});
                     caption.setAttribute('part', 'caption');
                     const icon = this.ownerDocument.createElement('span');
                     icon.className = `icon ${branch ? 'branch-icon' : 'leaf-icon'}`;
@@ -424,7 +415,7 @@ export const Tree = defineComponent({
                                 if (result instanceof Promise) throw new TypeError('tree onChecked must be synchronous');
                                 if (result === false) { this.#schedule(); return; }
                             }
-                            this.#check(node, check.checked, true);
+                            this.#toggleCheck(path);
                         });
                     }
                     row.append(expander, check || icon, badge, caption); entry.append(row);
@@ -458,7 +449,7 @@ export const Tree = defineComponent({
                         });
                     }
                     const present = () => {
-                        const opened = this.#opened(node), selected = this.#selectedPath === path;
+                        const opened = this.#opened(path), selected = this.#selectedPath === path;
                         const value = node.attr.badge;
                         if (value != null && typeof value !== 'string' && typeof value !== 'number') {
                             throw new TypeError('tree badge must be text or a number');
@@ -469,7 +460,8 @@ export const Tree = defineComponent({
                         badge.hidden = value == null || value === '';
                         badge.style.backgroundColor = color ?? '';
                         badge.toggleAttribute('data-colored', color != null && color !== '');
-                        const keywords = {item: node, path, opened, selected, state: this.parameters.labelState};
+                        // labelState is read at its address for the callbacks of this draw; the tree keeps only the path.
+                        const keywords = {item: node, path, opened, selected, state: this.#context.getStaticData(this.#context.attrDatapath('labelState'))};
                         const attribute = this.parameters.labelAttribute;
                         const label = this.parameters.internalNames && node.getAttr('fieldpath') ? node.label
                             : this.parameters.getLabel !== null ? this.#call('getLabel', keywords)
@@ -486,7 +478,7 @@ export const Tree = defineComponent({
                         const nodeClasses = this.#classes(node.attr.node_class ?? '');
                         entry.className = ['node', branch ? 'branch' : 'leaf', ...nodeClasses,
                             ...(selected ? ['selected'] : []), ...(branch ? [opened ? 'opened' : 'closed'] : []),
-                            ...(this.#loading.has(node) ? ['loading'] : []), ...(this.#errors.has(node) ? ['error'] : [])].join(' ');
+                            ...(this.#loading.has(path) ? ['loading'] : []), ...(this.#errors.has(path) ? ['error'] : [])].join(' ');
                         entry.setAttribute('part', ['node', branch ? 'branch' : 'leaf', ...nodeClasses].join(' '));
                         const customIcon = !check && this.parameters.getIconClass !== null;
                         const iconClasses = customIcon ? this.#classes(this.#call('getIconClass', keywords))
@@ -495,7 +487,7 @@ export const Tree = defineComponent({
                         icon.setAttribute('part', ['icon', ...iconClasses].join(' '));
                         icon.hidden = customIcon && iconClasses.length === 0;
                         if (check) {
-                            const value = node.attr.checked;
+                            const value = checks.get(path);
                             check.checked = value === true || value === 'disabled:on';
                             check.indeterminate = value === -1;
                             entry.setAttribute('aria-checked', value === -1 ? 'mixed' : String(check.checked));
@@ -506,7 +498,7 @@ export const Tree = defineComponent({
                     };
                     this.#presentations.set(path, present);
                     const sync = () => {
-                        const opened = this.#opened(node);
+                        const opened = this.#opened(path);
                         entry.setAttribute('aria-expanded', String(opened));
                         entry.classList.toggle('opened', opened);
                         entry.classList.toggle('closed', !opened);
@@ -517,17 +509,17 @@ export const Tree = defineComponent({
                     };
                     const toggle = () => {
                         const expanded = this.#searchText ? this.#searchOpen : this.#expanded;
-                        if (expanded.has(node)) {
-                            expanded.delete(node);
-                            if (this.#searchText) this.#searchClosed.add(node);
+                        if (expanded.has(path)) {
+                            expanded.delete(path);
+                            if (this.#searchText) this.#searchClosed.add(path);
                         } else {
-                            if (this.#searchText) { this.#searchClosed.delete(node); this.#searchOpen.add(node); } else this.#expand(node);
-                            if (node.resolver !== null) this.#resolve(node);
+                            if (this.#searchText) { this.#searchClosed.delete(path); this.#searchOpen.add(path); } else this.#expand(path);
+                            if (node.resolver !== null) this.#resolve(node, path);
                         }
                         for (const update of branchSync.values()) update();
                         this.#tabStop(path);
                     };
-                    if (branch) { branchSync.set(node, sync); sync(); } else present();
+                    if (branch) { branchSync.set(path, sync); sync(); } else present();
                     row.addEventListener('click', () => this.#select(path));
                     entry.addEventListener('keydown', event => {
                         if (event.target !== entry) return;
@@ -538,9 +530,9 @@ export const Tree = defineComponent({
                         else if (event.key === 'Home') target = visible[0];
                         else if (event.key === 'End') target = visible.at(-1);
                         else if (event.key === 'ArrowRight' && branch) {
-                            if (!this.#opened(node)) toggle(); else target = group.firstElementChild;
+                            if (!this.#opened(path)) toggle(); else target = group.firstElementChild;
                         } else if (event.key === 'ArrowLeft') {
-                            if (branch && this.#opened(node)) toggle(); else target = parent;
+                            if (branch && this.#opened(path)) toggle(); else target = parent;
                         } else if (event.key === ' ' && check) check.click();
                         else if (event.key === 'Enter' || event.key === ' ') this.#select(path);
                         else return;
@@ -552,11 +544,9 @@ export const Tree = defineComponent({
                 }
                 return list;
             };
-            const root = build(this.#store, '', null);
-            if (this.parameters.favorites !== null) {
-                if (!(this.parameters.favorites instanceof Bag)) throw new TypeError('tree favorites must be a Bag');
-                if (this.parameters.favorites.length) root.prepend(this.#buildFavorites(this.parameters.favorites, selected));
-            }
+            const root = build(store, '', null);
+            const favorites = this.#favorites();
+            if (favorites?.length) root.prepend(this.#buildFavorites(favorites, selected));
             this.control.replaceChildren(root);
             this.control.setAttribute('aria-busy', String(this.#searching));
             if (this.#searchText) {
@@ -572,12 +562,17 @@ export const Tree = defineComponent({
                         });
                     const match = [caption.textContent, ...metadata].some(text => text.toLowerCase().includes(this.#searchText));
                     if (match) matches.push(caption);
-                    if (match || this.#errors.has(item.node) || this.#loading.has(item.node)) {
-                        visible.add(item.node);
-                        for (const ancestor of item.ancestors) { visible.add(ancestor); if (!this.#searchClosed.has(ancestor)) this.#searchOpen.add(ancestor); }
+                    if (match || this.#errors.has(path) || this.#loading.has(path)) {
+                        visible.add(path);
+                        const parts = path.split('.');
+                        for (const index of item.ancestors.keys()) {
+                            const ancestorPath = parts.slice(0, index + 1).join('.');
+                            visible.add(ancestorPath);
+                            if (!this.#searchClosed.has(ancestorPath)) this.#searchOpen.add(ancestorPath);
+                        }
                     }
                 }
-                for (const [path, row] of this.#rows) row.hidden = !visible.has(items.get(path).node);
+                for (const [path, row] of this.#rows) row.hidden = !visible.has(path);
                 for (const update of branchSync.values()) update();
                 const status = this.ownerDocument.createElement('div'); status.className = 'search-status'; status.setAttribute('role', 'status');
                 status.textContent = this.#searching ? 'Searching…' : this.#errors.size ? 'Some branches could not be searched. Expand them to retry.' : matches.length ? '' : 'No matches';
@@ -636,9 +631,9 @@ export const Tree = defineComponent({
                 caption.textContent = node.getAttr(this.parameters.internalNames ? 'fieldpath' : 'fullcaption');
                 favoriteRow.title = node.getAttr('fieldpath');
                 favoriteRow.draggable = this.parameters.draggable;
-                this.#dragRows.set(favoriteRow, {item: node, path, caption});
-                favoriteRow.addEventListener('pointerenter', () => this.#showRowActions(favoriteRow, node, path));
-                entry.addEventListener('focus', () => this.#showRowActions(favoriteRow, node, path));
+                this.#dragRows.set(favoriteRow, {path, caption, favorite: true});
+                favoriteRow.addEventListener('pointerenter', () => this.#showRowActions(favoriteRow, path, true));
+                entry.addEventListener('focus', () => this.#showRowActions(favoriteRow, path, true));
                 favoriteRow.addEventListener('click', () => this.#selectFavorite(path));
                 entry.addEventListener('keydown', event => {
                     if (event.target !== entry) return;
@@ -660,121 +655,196 @@ export const Tree = defineComponent({
             if (this.parameters.selectedPath === path) this.retrySelection();
             else this.#context.writeParameter('selectedPath', path);
         }
-        async #loadSelection({requested, version, store}) {
+        async #loadSelection({requested, version}) {
             const current = () => this.isConnected && this.#selectionVersion === version &&
-                this.#store === store && this.parameters.selectedPath === requested && this.#selectedPath === requested;
+                this.parameters.selectedPath === requested && this.#selectedPath === requested;
             const parts = requested.split('.');
-            let bag = store;
-            for (const part of parts.slice(0, -1)) {
+            for (const index of parts.slice(0, -1).keys()) {
+                const path = parts.slice(0, index + 1).join('.');
                 if (!current()) return;
-                const node = bag.getNode(part);
+                const node = this.#rowNode(path);
                 if (!node) return;
                 if (node.resolver !== null && !this.parameters.resolveLazy) return;
                 if (node.resolver === null && !(node.staticValue instanceof Bag)) return;
-                if (!current() || bag.getNode(part) !== node) return;
-                this.#expand(node);
+                this.#expand(path);
                 this.#schedule();
-                if (node.resolver !== null && !(node.staticValue instanceof Bag)) await this.#resolve(node);
-                if (!current() || bag.getNode(part) !== node || !(node.staticValue instanceof Bag)) return;
-                bag = node.staticValue;
+                if (node.resolver !== null && !(node.staticValue instanceof Bag)) await this.#resolve(node, path);
             }
-            if (current() && bag.getNode(parts.at(-1))) this.#schedule();
+            if (current() && this.#rowNode(requested)) this.#schedule();
         }
-        #check(node, value, publish) {
-            if (node.attr.checked === 'disabled:on' || node.attr.checked === 'disabled:off') return;
-            const children = this.#resolutions.get(node) ?? node.getValue();
-            if (children instanceof Promise && !this.#resolutions.has(node)) {
-                this.#errors.delete(node);
-                const pending = children.catch(error => {
-                    this.#errors.set(node, error);
-                    this.#expanded.delete(node);
-                }).finally(() => {
-                    if (this.#resolutions.get(node) === pending) this.#resolutions.delete(node);
-                    this.#schedule();
-                });
-                this.#resolutions.set(node, pending);
+        /**
+         * The check lists: `checkedPaths` (or the tree's own path list without it) and each
+         * `checked_<attribute>`. Each carries its text, read at its address now, and its writer.
+         */
+        #checkLists() {
+            // Legacy updateCheckedAttr: the tree's `_valuelabel` goes on the Data node of each written list.
+            const label = this.#context.sourceNode.getAttr('_valuelabel');
+            const attributes = label == null ? null : {_valuelabel: label};
+            const lists = [{name: 'checkedPaths', attribute: null, joiner: this.parameters.checkedPaths_joiner,
+                value: this.#pathsEnabled ? this.parameters.checkedPaths : this.#ownCheckedPaths,
+                write: text => {
+                    if (this.#pathsEnabled) this.#context.writeParameter('checkedPaths', text, attributes);
+                    else this.#ownCheckedPaths = text;
+                }},
+                {name: 'checkedBranches', attribute: null, branches: true, joiner: ',', value: this.#checkedBranches,
+                    write: text => { this.#checkedBranches = text; }}];
+            for (const [name, {attribute, path, joiner}] of this.#checkedAttributes) {
+                const value = this.#context.readRelativeData(path);
+                if (value != null && typeof value !== 'string') throw new TypeError(`tree ${name} must address text`);
+                lists.push({name, attribute, joiner, value, write: text => this.#context.setRelativeData(path, text, attributes)});
             }
-            if (this.parameters.checkChildren && children instanceof Bag) {
-                if (node.resolver !== null) this.#checkedBags.set(node, children);
-                this.#applyChecked(children, value);
-            }
-            node.setAttr({checked: this.parameters.checkChildren && children instanceof Bag && children.length
-                ? this.#checkStatus(children) : value});
-            if (this.parameters.checkChildren) {
-                for (let parent = node.parentBag.parentNode; parent && parent !== this.#store.parentNode; parent = parent.parentBag.parentNode) {
-                    parent.setAttr({checked: this.#checkStatus(parent.staticValue)});
-                }
-            }
-            if (publish) this.#publishChecked();
+            return lists;
         }
-        #applyChecked(bag, value, onlyNew = false) {
-            for (const child of bag.getNodes()) {
-                if (onlyNew && this.#checkedNodes.has(child)) continue;
-                this.#checkedNodes.add(child);
-                if (child.attr.checked === 'disabled:on' || child.attr.checked === 'disabled:off') continue;
-                const children = child.staticValue;
-                if (children instanceof Bag && children.length) {
-                    if (child.resolver !== null) this.#checkedBags.set(child, children);
-                    this.#applyChecked(children, value);
-                    child.setAttr({checked: this.#checkStatus(children)});
-                } else child.setAttr({checked: value});
+        #entries(list) { return (list.value ?? '').split(list.joiner).filter(Boolean); }
+        /** The entries of `lists` as one source: tree paths and, by attribute, the listed values. */
+        #checkSources(lists) {
+            const sources = {paths: new Set(), attributes: new Map()};
+            for (const attribute of this.#checkedAttributes.values()) sources.attributes.set(attribute.attribute, new Set());
+            for (const list of lists) {
+                const target = list.attribute === null ? sources.paths : sources.attributes.get(list.attribute);
+                for (const entry of this.#entries(list)) target.add(entry);
             }
+            return sources;
         }
-        #syncChecked(bag, ancestors = new Set(), loaded = []) {
-            if (ancestors.has(bag)) throw new TypeError('tree requires an acyclic Bag store');
-            ancestors.add(bag);
-            let changed = false;
-            for (const node of bag.getNodes()) {
-                this.#checkedNodes.add(node);
-                const children = node.staticValue;
-                if (!(children instanceof Bag)) continue;
-                let childChanged = false;
-                if (node.resolver !== null && this.#checkedBags.get(node) !== children) {
-                    this.#checkedBags.set(node, children);
-                    loaded.push(children);
-                    if (typeof node.attr.checked === 'boolean') {
-                        this.#applyChecked(children, node.attr.checked);
-                        childChanged = true;
+        /** The children Bag the tree draws under `node`, read without running its resolver; null for none. */
+        #childBag(node) {
+            const value = node.resolver !== null && !this.parameters.resolveLazy ? null : node.staticValue;
+            return value instanceof Bag ? value : null;
+        }
+        /**
+         * The check state by tree path, computed from `sources` (legacy states): true, false, -1 for a
+         * branch with mixed loaded children (with checkChildren), or the node's own `disabled:on` /
+         * `disabled:off`, which nothing changes. A node is checked when the lists name its path or its
+         * value of a `checked_<attribute>`, or, with checkChildren, an ancestor's; a disabled node stops
+         * this propagation, as in the legacy click. `forced` sets the clicked `path` and, with
+         * checkChildren, its descendants to `value`, as the legacy clickOnCheckbox.
+         */
+        #checkStates(store, sources, forced = null) {
+            const states = new Map(), propagate = this.parameters.checkChildren, ancestors = new Set();
+            const listed = (node, path) => sources.paths.has(path) || [...sources.attributes].some(([attribute, values]) =>
+                node.attr[attribute] != null && values.has(String(node.attr[attribute])));
+            const visit = (bag, prefix, inherited, force) => {
+                if (ancestors.has(bag)) throw new TypeError('tree requires an acyclic Bag store');
+                ancestors.add(bag);
+                const values = [];
+                for (const node of bag.getNodes()) {
+                    if (!prefix && node.label === this.parameters.excludeRoot) continue;
+                    const path = prefix ? `${prefix}.${node.label}` : node.label;
+                    const children = this.#childBag(node);
+                    const nodeForce = forced !== null && path === forced.path ? forced.value : force;
+                    let state;
+                    if (node.attr.checked === 'disabled:on' || node.attr.checked === 'disabled:off') {
+                        state = node.attr.checked;
+                        if (children) visit(children, path, false, undefined);
+                    } else {
+                        const own = nodeForce !== undefined ? nodeForce : inherited || listed(node, path);
+                        const below = children ? visit(children, path, propagate && own, propagate ? nodeForce : undefined) : [];
+                        state = propagate && below.length ? this.#aggregate(below) : own;
                     }
-                } else if (typeof node.attr.checked === 'boolean' && children.getNodes().some(child => !this.#checkedNodes.has(child))) {
-                    this.#applyChecked(children, node.attr.checked, true);
-                    loaded.push(children);
-                    childChanged = true;
+                    states.set(path, state);
+                    values.push(state);
                 }
-                childChanged = this.#syncChecked(children, ancestors, loaded) || childChanged;
-                if (childChanged && children.length && node.attr.checked !== 'disabled:on' && node.attr.checked !== 'disabled:off') {
-                    node.setAttr({checked: this.#checkStatus(children)});
-                }
-                changed ||= childChanged;
-            }
-            ancestors.delete(bag);
-            return changed;
+                ancestors.delete(bag);
+                return values;
+            };
+            visit(store, '', false, undefined);
+            return states;
         }
-        #publishChecked(preservePending = false) {
-            const paths = [];
+        #aggregate(values) {
+            const plain = values.map(value => value === 'disabled:on' ? true : value === 'disabled:off' ? false : value);
+            return plain.every(value => value === true) ? true : plain.every(value => value === false) ? false : -1;
+        }
+        /**
+         * The text of `list` for `states`, as the legacy updateCheckedAttr walk: with checkChildren only
+         * the nodes without loaded children (an unloaded branch included), otherwise every checked node;
+         * attribute values once each. The checkedBranches list takes the checked loaded branches instead. `previous` keeps the entries the walk cannot reach: paths below an
+         * unloaded branch (except, with checkChildren, below `clicked`) and values no reachable node carries.
+         */
+        #listText(store, states, list, previous = null, clicked = null) {
+            const entries = [], known = new Set(), propagate = this.parameters.checkChildren;
             const visit = (bag, prefix) => {
-                for (const child of bag.getNodes()) {
-                    const path = prefix ? `${prefix}.${child.label}` : child.label;
-                    const children = child.staticValue;
-                    if (children instanceof Bag && children.length) {
-                        if (!this.parameters.checkChildren && child.attr.checked === true) paths.push(path);
-                        visit(children, path);
-                    } else if (child.attr.checked === true) paths.push(path);
+                for (const node of bag.getNodes()) {
+                    if (!prefix && node.label === this.parameters.excludeRoot) continue;
+                    const path = prefix ? `${prefix}.${node.label}` : node.label;
+                    const children = this.#childBag(node);
+                    const entry = list.attribute === null ? path
+                        : node.attr[list.attribute] == null ? null : String(node.attr[list.attribute]);
+                    if (entry !== null) known.add(entry);
+                    const listed = list.branches ? propagate && children?.length > 0 : !(propagate && children?.length);
+                    if (entry !== null && listed && states.get(path) === true && !entries.includes(entry)) entries.push(entry);
+                    if (children) visit(children, path);
                 }
             };
-            visit(this.#store, '');
-            if (preservePending && this.#pathsEnabled) {
-                for (const path of (this.parameters.checkedPaths || '').split(this.parameters.checkedPaths_joiner).filter(Boolean)) {
-                    if (!paths.includes(path) && this.#pendingCheckedPath(path)) paths.push(path);
-                }
+            visit(store, '');
+            if (previous !== null && !list.branches) for (const entry of this.#entries(previous)) {
+                if (entries.includes(entry)) continue;
+                if (list.attribute !== null ? !known.has(entry) : this.#pendingCheckedPath(entry) &&
+                    !(propagate && clicked !== null && (entry === clicked || entry.startsWith(`${clicked}.`)))) entries.push(entry);
             }
-            this.#checkedPaths = paths.join(this.parameters.checkedPaths_joiner);
-            this.#context.writeParameter('checkedPaths', this.#checkedPaths);
+            return entries.join(list.joiner);
+        }
+        /**
+         * The check states of this draw. Lists changed outside the tree since it last read or wrote them
+         * are the source (at the first draw, the nonempty lists); the other lists are rewritten from the
+         * states they give. Otherwise all lists together are the source and nothing is written.
+         */
+        #drawnChecks(store) {
+            const lists = this.#checkLists(), first = this.#seenLists === null;
+            const changed = lists.filter(list => first ? this.#entries(list).length
+                : (this.#seenLists.get(list.name) ?? '') !== (list.value ?? ''));
+            const states = this.#checkStates(store, this.#checkSources(changed.length || first ? changed : lists));
+            this.#seenLists = new Map(lists.map(list => [list.name, list.value ?? '']));
+            // Legacy setCheckedPaths checks each path of a changed checkedPaths, and each check publishes.
+            const paths = changed.find(list => list.name === 'checkedPaths');
+            if (paths && !first) for (const path of this.#entries(paths)) {
+                if (states.has(path) && typeof states.get(path) !== 'string') this.#publishChecked(path, true);
+            }
+            if (changed.length) for (const list of lists) {
+                if (changed.includes(list)) continue;
+                const text = this.#listText(store, states, list);
+                if (text === (list.value ?? '')) continue;
+                this.#seenLists.set(list.name, text);
+                list.write(text);
+            }
+            return states;
+        }
+        /**
+         * Toggle the check at `path` as the legacy click (a checked or mixed node unchecks) and write
+         * every list. With checkChildren a branch counts as checked when any leaf the click changes is
+         * checked: the disabled nodes below it, which the click does not change, do not decide.
+         */
+        #toggleCheck(path) {
+            const store = this.storeBag, lists = this.#checkLists();
+            const current = this.#checkStates(store, this.#checkSources(lists));
+            const state = current.get(path);
+            if (state === 'disabled:on' || state === 'disabled:off') return;
+            let checked = state !== false;
+            if (this.parameters.checkChildren) {
+                const below = [...current].filter(([key]) => key.startsWith(`${path}.`));
+                const fixed = below.filter(([, value]) => value === 'disabled:on' || value === 'disabled:off').map(([key]) => `${key}.`);
+                const leaves = below.filter(([key, value]) => value !== 'disabled:on' && value !== 'disabled:off'
+                    && !fixed.some(prefix => key.startsWith(prefix)) && !below.some(([other]) => other.startsWith(`${key}.`)));
+                if (leaves.length) checked = leaves.some(([, value]) => value === true);
+            }
+            const states = this.#checkStates(store, this.#checkSources(lists), {path, value: !checked});
+            this.#publishChecked(path, !checked);
+            for (const list of lists) {
+                const text = this.#listText(store, states, list, list, path);
+                this.#seenLists.set(list.name, text);
+                if (text !== (list.value ?? '')) list.write(text);
+            }
             this.#schedule();
+        }
+        /**
+         * Publish the legacy `<nodeId>_checked` topic of the tree for the check of `path` set to `checked`,
+         * before the lists are written; the payload is the store node (`item`), its tree path and the value.
+         */
+        #publishChecked(path, checked) {
+            this.#context.publish('checked', {path, checked});
         }
         #pendingCheckedPath(path) {
             const parts = path.split('.');
-            let bag = this.#store;
+            let bag = this.storeBag;
             for (let index = 0; index < parts.length; index++) {
                 const node = bag.getNode(parts[index]);
                 if (!node) return false;
@@ -785,12 +855,6 @@ export const Tree = defineComponent({
             }
             return false;
         }
-        #checkStatus(bag) {
-            const values = bag.getNodes().map(child => child.attr.checked === 'disabled:on' ? true
-                : child.attr.checked === 'disabled:off' || child.attr.checked == null ? false : child.attr.checked);
-            return values.every(value => value === true) ? true
-                : values.every(value => value === false) ? false : -1;
-        }
         #classes(value) {
             if (typeof value !== 'string') throw new TypeError('Tree classes must be a string');
             return value.split(/\s+/).filter(Boolean);
@@ -800,11 +864,11 @@ export const Tree = defineComponent({
             if (bars.length > 1) throw new Error('tree accepts one rowActions bar');
             return bars[0] ?? null;
         }
-        #showRowActions(row, item, path) {
+        #showRowActions(row, path, favorite) {
             const bar = this.#rowActions();
             if (!bar || bar.contains(this.ownerDocument.activeElement)) return;
             const hostBox = this.getBoundingClientRect(), rowBox = row.getBoundingClientRect();
-            bar.setRowContext(item, path);
+            bar.setRowContext(path, () => this.#rowItem(path, favorite));
             bar.style.position = 'absolute';
             bar.style.top = `${rowBox.top - hostBox.top}px`;
             bar.style.left = bar.parameters.position === 'start' ? `${rowBox.left - hostBox.left}px` : 'auto';
@@ -834,25 +898,54 @@ export const Tree = defineComponent({
         #visible() {
             return [...this.control.querySelectorAll('[role=treeitem]')].filter(row => !row.closest('[hidden]'));
         }
-        #expand(node) {
-            if (this.#searchText) { this.#searchOpen.add(node); return; }
+        /** Expand the row at tree `path`; autoCollapse closes the expanded siblings, matched by key. */
+        #expand(path) {
+            if (this.#searchText) { this.#searchOpen.add(path); return; }
             if (this.parameters.autoCollapse) {
-                for (const sibling of node.parentBag.getNodes()) {
-                    if (sibling !== node) this.#expanded.delete(sibling);
+                const parent = path.includes('.') ? path.slice(0, path.lastIndexOf('.')) : '';
+                for (const other of [...this.#expanded]) {
+                    const otherParent = other.includes('.') ? other.slice(0, other.lastIndexOf('.')) : '';
+                    if (other !== path && otherParent === parent) this.#expanded.delete(other);
                 }
             }
-            this.#expanded.add(node);
+            this.#expanded.add(path);
         }
-        #resolve(node, searching = false) {
-            if (this.#resolutions.has(node)) return this.#resolutions.get(node);
-            this.#loading.add(node); this.#errors.delete(node); this.#schedule();
+        #resolve(node, path, searching = false) {
+            if (this.#resolutions.has(path)) return this.#resolutions.get(path);
+            this.#loading.add(path); this.#errors.delete(path); this.#schedule();
             const pending = (async () => {
                 try { await Promise.resolve().then(() => node.getValue()); }
-                catch (error) { this.#errors.set(node, error); if (!searching) this.#expanded.delete(node); }
-                finally { this.#loading.delete(node); this.#resolutions.delete(node); this.#schedule(); }
+                catch (error) { this.#errors.set(path, error); if (!searching) this.#expanded.delete(path); }
+                finally { this.#loading.delete(path); this.#resolutions.delete(path); this.#schedule(); }
             })();
-            this.#resolutions.set(node, pending);
+            this.#resolutions.set(path, pending);
             return pending;
+        }
+        /** The node at tree `path`, read from the store without running resolvers; null when absent. */
+        #rowNode(path) {
+            let bag = this.storeBag, node = null;
+            for (const label of path.split('.')) {
+                if (!(bag instanceof Bag)) return null;
+                node = bag.getNode(label);
+                if (!node) return null;
+                bag = node.staticValue;
+            }
+            return node;
+        }
+        /** The item of a drawn row: the store node at `path`, or the favorite whose originalPath is `path`. */
+        #rowItem(path, favorite) {
+            if (!favorite) return this.#rowNode(path);
+            const favorites = this.#context.getStaticData(this.#context.attrDatapath('favorites'));
+            return favorites instanceof Bag ? favorites.getNodes().find(node => node.getAttr('originalPath') === path) ?? null : null;
+        }
+        /**
+         * The favorites Bag, read at the address of the `favorites` pointer at each use; null without
+         * favorites. A change inside the Bag or a replacement at its address projects the tree again.
+         */
+        #favorites() {
+            const favorites = this.#context.getStaticData(this.#context.attrDatapath('favorites'));
+            if (favorites !== null && !(favorites instanceof Bag)) throw new TypeError('tree favorites must be a Bag');
+            return favorites;
         }
         #tabStop(path) {
             const visible = this.#visible(), target = typeof path === 'string' || path == null

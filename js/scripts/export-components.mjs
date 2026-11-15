@@ -37,8 +37,5 @@ await writeFile(new URL('../../src/gramlot/collections/charts.json', import.meta
 import drawing from '../src/components/drawing.js';
 await writeFile(new URL('../../src/gramlot/collections/drawing.json', import.meta.url), JSON.stringify(drawing.toDocument(), null, 2) + '\n');
 
-import vizabi from '../src/components/vizabi.js';
-await writeFile(new URL('../../src/gramlot/collections/vizabi.json', import.meta.url), JSON.stringify(vizabi.toDocument(), null, 2) + '\n');
-
 import audio from '../src/components/audio.js';
 await writeFile(new URL('../../src/gramlot/collections/audio.json', import.meta.url), JSON.stringify(audio.toDocument(), null, 2) + '\n');

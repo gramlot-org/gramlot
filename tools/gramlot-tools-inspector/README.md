@@ -88,8 +88,11 @@ For a local `.gramlot` target, closing or retargeting releases subscriptions and
 The gallery footer opens one palette in the shell. Its selector offers the shell
 and the visible example, follows gallery tab changes and works on Introduction.
 Read/edit/breakpoint commands use dedicated MessagePorts to explicitly registered
-pages; `attachInspectorAgent` runs in each target and `InspectorConnection` keeps
-passive panel copies. Set `targets` to `{id, title, connection}` records and
+pages; `attachInspectorAgent` runs in each target and serves a copy of its Data and
+Source on the port. The palette keeps those copies in its own Data (`target.data`,
+`target.source`) with two `dataBinder` nodes on the connection `target`;
+`InspectorConnection` carries the commands and their replies. A local `.gramlot`
+target runs the same path on a `MessageChannel` created by the palette. Set `targets` to `{id, title, connection}` records and
 `selectedTarget` to one offered id. Conditions and debugger execution remain in
 the inspected page. The gallery closes connections on palette close and replaces
 them on frame reload; switching targets preserves page-specific breakpoints.

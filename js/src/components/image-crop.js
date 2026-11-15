@@ -34,33 +34,40 @@ export async function renderImageCrop({document, image, sourceWidth, sourceHeigh
     });
 }
 
-/** One private editing session; the caller owns the original and decoded image. */
+/**
+ * One private editing session; the caller owns the original and decoded image. The framing values
+ * `initial` and `transform` live in Data at `path` under the Data root `data`: the session keeps the root
+ * and the path and reads them at each use.
+ */
 export class ImageCropSession {
     #document; #original; #image; #sourceWidth; #sourceHeight; #width; #height;
-    #state; #generation = 0; #closed = false; #rendering = false;
-    constructor({state, document, original, image, sourceWidth, sourceHeight, width, height, x = 0, y = 0, zoom = 1, rotate = 0}) {
+    #data; #path; #generation = 0; #closed = false; #rendering = false;
+    constructor({data, path, document, original, image, sourceWidth, sourceHeight, width, height, x = 0, y = 0, zoom = 1, rotate = 0}) {
         const transform = {x, y, zoom, rotate};
         this.#validate(transform);
         if (!original || !image) throw new TypeError('An original and decoded image are required');
         this.#document = document; this.#original = original; this.#image = image;
         this.#sourceWidth = sourceWidth; this.#sourceHeight = sourceHeight;
         this.#width = width; this.#height = height;
-        this.#state = state;
-        state.setItem('initial', transform); state.setItem('transform', {...transform});
+        if (typeof path !== 'string' || !path) throw new TypeError(`An image editing session requires a Data path: ${path}`);
+        this.#data = data; this.#path = path;
+        this.#write('initial', transform); this.#write('transform', {...transform});
     }
+    #read(key) { return this.#data.getItem(`${this.#path}.${key}`, null, true); }
+    #write(key, value) { this.#data.setItem(`${this.#path}.${key}`, value); }
     #validate({x, y, zoom, rotate}) {
         if (![x, y, zoom, rotate].every(Number.isFinite) || zoom <= 0) throw new TypeError('Invalid image transform');
     }
     #open() { if (this.#closed) throw new Error('Image editing session is closed'); }
     get original() { return this.#original; }
-    get transform() { return {...this.#state.getItem('transform')}; }
+    get transform() { return {...this.#read('transform')}; }
     setTransform(transform) {
         this.#open();
         if (!transform || Object.keys(transform).sort().join(',') !== 'rotate,x,y,zoom') throw new TypeError('Expected x, y, zoom and rotate');
         this.#validate(transform);
-        this.#state.setItem('transform', {...transform}); this.#generation++;
+        this.#write('transform', {...transform}); this.#generation++;
     }
-    reset() { this.#open(); this.#state.setItem('transform', {...this.#state.getItem('initial')}); this.#generation++; }
+    reset() { this.#open(); this.#write('transform', {...this.#read('initial')}); this.#generation++; }
     cancel() { this.#closed = true; this.#generation++; }
     async confirm({outputWidth, outputHeight, type, quality}) {
         this.#open();
@@ -70,7 +77,7 @@ export class ImageCropSession {
         try {
             const blob = await renderImageCrop({document:this.#document, image:this.#image,
                 sourceWidth:this.#sourceWidth, sourceHeight:this.#sourceHeight, width:this.#width, height:this.#height,
-                outputWidth, outputHeight, ...this.#state.getItem('transform'), type, quality});
+                outputWidth, outputHeight, ...this.#read('transform'), type, quality});
             if (this.#closed || this.#generation !== generation) throw new DOMException('Image edit cancelled or changed', 'AbortError');
             this.#closed = true;
             return blob;

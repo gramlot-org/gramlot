@@ -21,7 +21,7 @@ class Links(HTMLParser):
             self.ids.add(attrs["id"])
         if tag == "a" and attrs.get("href"):
             self.links.append(attrs["href"])
-        if tag in {"img", "script"} and attrs.get("src"):
+        if tag in {"img", "script", "iframe"} and attrs.get("src"):
             self.links.append(attrs["src"])
         if tag == "link" and attrs.get("href"):
             self.links.append(attrs["href"])
@@ -32,14 +32,20 @@ def main():
     source = root / "build/docs-source"
     site = root / "build/docs-site"
     downloads = llm_downloads(root)
+    example_files = {"inside/theme.css", "inside/runtime.js"} | {
+        f"inside/{route}/{name}"
+        for route in ("name", "triangle", "many")
+        for name in ("index.html", "page.css", "source.tytx")
+    }
     expected = {"index.md", "conf.py", *PUBLIC_PAGES, *PUBLIC_ASSETS,
-                *("downloads/" + name for name in downloads)}
+                *("downloads/" + name for name in downloads),
+                *("downloads/" + name for name in example_files)}
     staged = {str(p.relative_to(source)) for p in source.rglob("*") if p.is_file()}
     # Import caches are Sphinx execution artifacts, not staged content.
     staged = {p for p in staged if "__pycache__" not in Path(p).parts}
     assert staged == expected, f"Staging mismatch: {staged ^ expected}"
     docnames = {"index", *(str(Path(p).with_suffix("")) for p in PUBLIC_PAGES)}
-    expected_html = {f"{p}.html" for p in docnames} | {"search.html", "genindex.html"}
+    expected_html = {f"{p}.html" for p in docnames} | {"search.html", "genindex.html"} | {p for p in example_files if p.endswith(".html")}
     actual_html = {str(p.relative_to(site)) for p in site.rglob("*.html")}
     assert actual_html == expected_html, f"HTML mismatch: {actual_html ^ expected_html}"
     index = (site / "searchindex.js").read_text()

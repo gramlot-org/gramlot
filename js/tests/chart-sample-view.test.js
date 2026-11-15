@@ -7,6 +7,7 @@ import {ChartSampleView} from '../src/components/chart-sample-view.js';
 import {UPlotAdapter} from '../src/components/chart-engines/uplot.js';
 import {ChartRenderer, chartContext} from '../src/components/chart-renderer.js';
 import {chartData} from '../src/components/chart-data.js';
+import {optionsAddress} from './helpers/chart-options.js';
 import {EChartsAdapter} from '../src/components/chart-engines/echarts.js';
 
 // ECharts loads on first use (GC-325 §160): these tests draw without ChartRenderer.prepare.
@@ -25,12 +26,12 @@ test('sample snapshots reuse the renderer and produce real SVG without sample Ba
         const uplot = new UPlotAdapter(null);
         assert.deepEqual(uplot.validate(chartContext(view,config,options())).data, [[2,2.5,3,3.5],[0,1,-1,0]]);
         uplot.dispose();
-        renderer.update(config,options()); const before=renderer.svg();
+        renderer.update(config,optionsAddress(options())); const before=renderer.svg();
         assert.match(before, /<svg/);
         const handles=view.getRows();
         view.bind([1, 0, 0, -1], .5, 2, 'time', 'amplitude');
         assert.equal(view.getRows(),handles);
-        renderer.update(config,options()); assert.notEqual(renderer.svg(),before);
+        renderer.update(config,optionsAddress(options())); assert.notEqual(renderer.svg(),before);
         assert.throws(()=>view.bind([NaN],1,0,'time','amplitude'),/finite numbers/);
         assert.throws(()=>view.bind([1],0,0,'time','amplitude'),/positive step/);
         assert.throws(()=>view.bind([1],1,0,'time','a,b'),/one valueFields/);

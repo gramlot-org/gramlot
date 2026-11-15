@@ -227,7 +227,9 @@ class Page(GramlotPage):
 ```
 
 The base grammar and command buttons remain available. Prepared descriptors are
-also provided for `gramlot.collections.tree`, `editors` and `typst`. Importing a
+also provided for `gramlot.collections.tree`, `editors` and `typst`; `typst` is
+outside the standard set, so a page that uses it declares it
+([GC-340 §050](340-components-and-collections-guide.md#gc-340-050-typst)). Importing a
 package alone does not select it. Class-local `gramlots` selections accumulate
 through the Page inheritance hierarchy, with dependencies loaded first.
 
@@ -493,12 +495,15 @@ the popup stays open for further choices. Escape closes it and returns focus to
 the button; outside click or focus closes it. Readonly/disabled lock both views.
 Changing presentation does not recreate the group or retained checkbox controls.
 
-`values` accepts `code:Caption` text or a Bag. For a Bag the node label is the
-code and default caption; `identifier` and `labelAttribute` select fields from a
-child Bag or attributes from a scalar row. Codes must be unique, nonempty,
-comma-free strings. The component observes the original Bag, including in-place
-changes, and releases subscriptions on replacement or disposal. Selected captions
-are written to `_displayedValue` on the bound value node (not an attribute binding).
+`values` accepts `code:Caption` text or a `^` pointer to a Bag in Data. For a Bag
+the node label is the code and default caption; `identifier` and `labelAttribute`
+select fields from a child Bag or attributes from a scalar row. Codes must be
+unique, nonempty, comma-free strings. The component reads the Bag at the pointer
+address at each projection: an in-place change and a new Bag at the address
+update the options; it keeps no subscription on the Bag. Selected captions
+are written to `_dv_displayedValue` on the bound value node (not an attribute binding).
+An attribute whose name starts with `_dv_` is a derived value: writing it never makes
+a form modified.
 
 For database options use `dbtable` with the configured DatabaseSelectors service,
 or `method` for an application endpoint. The method receives `_querystring=""`,
@@ -1268,10 +1273,10 @@ loading resolver-backed nodes; this is useful for an inspector. The default is
 `True`. Bind `labelState` when label callbacks need reactive presentation state:
 they receive its value as `state` alongside the real node and path.
 
-Browser tools can call `treeSourceNode.setTreeStore(bag)` to observe an existing
-Bag owned elsewhere. The reference stays on the Source node; the Bag is neither
-reparented nor copied. Replacement or Source removal releases the subscription.
-`setTreeStore(null)` returns the tree to its declared `storepath`.
+The tree reads its store only at `storepath`, an address in the page Data. A tool
+that shows a Bag owned by another Gramlot instance, such as the inspector, keeps a
+copy of it in its own Data with a `dataBinder` on a named `connection` and points
+`storepath` at that copy.
 
 `labelCb`, `getLabel`, `getLabelClass` and `getIconClass` name synchronous browser Logic methods. Each receives `(sourceNode, {item, path, opened, selected, state})`; item is the real BagNode and state is `labelState`. Label callbacks return exactly one of `{text: string}` and `{html: string}`. HTML is sanitized with DOMPurify; scripts, event handlers, unsafe URLs, styles and form controls cannot supply application behavior. Use Gramlot commands for actions. There is no `innerHTML:` string sentinel.
 
@@ -1301,13 +1306,19 @@ pane.tree(storepath=".items", hideValues=True, searchText="^.search",
 ```
 
 `checkedPaths` enables checkboxes and binds the comma-separated checked paths
-(`checkedPaths_joiner` changes the separator). State lives in each Bag node's
-`checked` attribute: true, false, -1 (mixed), `disabled:on`, or `disabled:off`.
-An empty initial or updated `checkedPaths` clears editable checks only. Disabled
-checks retain their state, including when their paths appear in a new value.
-`checkChildren=True` propagates to loaded descendants; unresolved descendants
-inherit when loaded. A checked unresolved branch is represented by its own path
-until its checked descendants replace it. A synchronous named `onChecked` callback
+(`checkedPaths_joiner` changes the separator). The list is the only source of the
+checks: each draw computes them from the text at the address, so editing the text
+changes the checks and emptying it clears every editable check. A node is checked
+when the list names its path or, with `checkChildren=True` (the default), the path
+of an ancestor; a branch with checked and unchecked loaded children is mixed.
+Children loaded later by a resolver follow the list. With `checkChildren` the list
+holds the checked nodes without loaded children, so an unresolved branch stands for
+itself until its loaded descendants replace it. Only a node attribute
+`checked='disabled:on'` or `'disabled:off'` fixes a check that clicks and the list
+do not change. `checked_<attribute>='.ids'` (a bare Data path; the separator after `:`, as
+`'.ids:;'`) binds, with the same rule, the list of the values of that attribute
+of the checked nodes, as the legacy tree.
+A synchronous named `onChecked` callback
 receives `{item, path}` and can return false to veto a click; `onChecked=True`
 enables ordinary checks without a callback.
 
@@ -1316,7 +1327,7 @@ The experimental `tree.rowActions(position="start"|"end")` holds one shared
 Source action bar. Its buttons/controllers receive `{item, path, event}` for the
 hovered or focused row. Optional `actionState` is a named synchronous callback
 returning `{hidden, icon, title}` for each identified `rowAction`, with reactive
-`state` supplied by a binding. `favorites` is a Bag rendered as a collapsible
+`state` supplied by a binding. `favorites` points to a Bag in Data, rendered as a collapsible
 group; entries retain `originalPath` and selection loads that original path.
 Tree drop callbacks receive `placement`: `before`, `inside` or `after`, according
 to the pointer's position over the destination row.
@@ -1527,7 +1538,9 @@ host filesystem provider. The components require no Markdown-specific server API
 Block ID: **GC-105-145**.
 
 Use CodeMirror from the `editors` collection and `typstPreview` from the optional
-`typst` collection. Both consume the same Data string:
+`typst` collection. `typst` is outside the standard set: the page declares it in
+`Page.gramlots` ([GC-340 §050](340-components-and-collections-guide.md#gc-340-050-typst)).
+Both consume the same Data string:
 
 ```python
 pane.codeMirror(value="^.content", language="typst", height="400px")
@@ -1560,8 +1573,8 @@ and PDF. Its Python and JavaScript pages author equivalent Source. Serverless
 directory export includes the collection modules as shared local assets, so the
 compiler is not duplicated per route. The current single-HTML export command
 does not accept optional collections. The optional Typst module is about 41 MiB
-uncompressed; compiler initialization is lazy, but enabling the collection still
-loads its module. Hosts that do not need Typst should omit that collection.
+uncompressed; compiler initialization is lazy. Only pages that declare `typst`
+receive the collection.
 
 
 Python Typst recipes use the compound extension `.typ.py` and export `class Recipe(TypstBuilder)`. In the IDE choose **Typst Python recipe** for a new draft, or open an existing `.typ.py`. The Code tab remains Python. **Generate preview** sends the current draft to the host, which calls `Recipe().create()` and `render()`. **Generated Typst** is read-only; **Preview** renders that output to SVG/PDF in the browser. Editing Python immediately hides the old preview and clears generated source; generation is explicit, independent of saving.

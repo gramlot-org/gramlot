@@ -65,8 +65,8 @@ async function exported(t, format, mode = 'values') {
     const f = await mount(t, {mode, tools:{export:true}});
     const saved = [];
     t.mock.method(f.app.utl.inout, 'saveText', (content, filename, type) => saved.push({content, filename, type}));
-    f.gridNode.gridCollectionView.sort('name:a');
-    f.gridNode.gridCollectionView.applyColumnFilter('quantity', [1, 2]);
+    f.gridNode._internal.gridCollectionView.sort('name:a');
+    f.gridNode._internal.gridCollectionView.applyColumnFilter('quantity', [1, 2]);
     await tick();
     await f.click(format);
     for (let i = 0; i < 20 && !saved.length; i++) await tick();

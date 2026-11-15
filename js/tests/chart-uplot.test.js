@@ -16,7 +16,7 @@ for(const mode of ['attributes','values'])test(`uPlot preserves data and rejects
     const put=(key,values)=>rows.setItem(key,mode==='values'?new Bag(values):null,mode==='attributes'?values:{});
     put('a',{x:1,date:new Date('2026-01-01'),label:'Alpha',signal:-4,units:10});
     put('b',{x:2,date:new Date('2026-01-02'),label:'Beta',signal:6,units:20});
-    const view=new BagCollectionView(new BagCollectionStore(rows,mode));view.connect();
+    const view=new BagCollectionView(new BagCollectionStore(root,'rows',mode));view.connect();
     const config=new Bag({engine:'uplot',chartType:'line',captionField:'x',valueFields:'signal,units'});
     const options=new Bag({signal:new Bag({axis:'left',color:'#123456'}),units:new Bag({axis:'right',color:'#654321'})});
     const adapter=new UPlotAdapter(null),make=()=>adapter.validate(chartContext(view,config,options));

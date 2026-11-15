@@ -20,6 +20,16 @@ COVERAGE = {
         "pages/06-editors/01-base.md pages/06-editors/02-options.md",
         "Text editing and runtime options.",
     ),
+    "terminal": _record(
+        "Reads session, the name of an @terminal method of the page store. Writes connected, rows and columns when the socket opens, closes or the screen is resized. Terminal bytes never pass through Data.",
+        "Keys go to the session as typed, including arrows, Tab and Ctrl-C. Output is written to the screen as it arrives. input(text) sends text as if typed.",
+        "Leaf control. It fills its box and resizes the server terminal with it.",
+        "Requires a server with a PageStore channel (websocket). A page has one open session per name: opening it again closes the open one. The server stops sending output while 1 MB is unacknowledged by the screen.",
+        "js/src/components/terminal.js src/gramlot/server/terminal.py",
+        "js/tests/terminal.test.js tests/test_terminal_session.py",
+        "",
+        "Keystroke sessions on the server.",
+    ),
     "htmlEditor": _record(
         "Bind value two ways to HTML source. Live writes are the default and deferred edits commit on blur. Rich edits can normalize markup, while undo to the initial snapshot restores the original source.",
         "The rich toolbar edits supported body content. Undo, redo and the local save shortcut follow the editor history contract.",
@@ -182,7 +192,6 @@ COVERAGE['chartTimeline'] = _record('Reads store/time parameters and writes time
 
 COVERAGE['gauge'] = _record('The node value is the single value, a Data pointer with optional ?attr. min, max, mask, thresholds, presentation and caption read Data. Nothing is written.', 'Redraws when the value or a parameter changes and follows the light or dark theme; removal releases the engine.', 'Leaf rendering surface; no children.', 'One numeric value; an empty value shows the information notice No value, never zero. Errors show an error notice with More info. Values outside min and max are clamped on the dial, the text shows the real value. Threshold colors are names or hex codes.', 'js/src/components/chart-gauge.js js/src/components/chart-gauge-options.js', 'js/tests/chart-gauge.test.js', 'pages/86-chart-types/gauges.md', 'Live gauge settings: value, presentation, range, thresholds and mask.')
 
-COVERAGE['vizabiBubble'] = _record('Reads the original rows and configuration Bag.', 'Retains supported session configuration and releases engine resources on removal.', 'Specialized external bubble view.', 'Requires host-supplied libraryUrl; not a chartPane engine.', 'js/src/components/vizabi.js', 'tools/gramlot-tools-inspector/tests/vizabi-trial-browser.mjs', '', 'Host-only integration; no common gallery lesson.')
 
 COVERAGE['audioAnalyser'] = _record(
     'running controls capture; waveform and spectrum write numeric arrays as individual Data values. sampleRate, status and error report the session.',
@@ -193,10 +202,10 @@ COVERAGE['audioAnalyser'] = _record(
     'js/tests/audio-component.test.mjs js/tests/audio-analysis-session.test.mjs', '',
     'Microphone analysis is an optional live gallery example.')
 COVERAGE['drawingPane'] = _record(
-    'annotations reads and mutates the original Data Bag; image reads an optional background URL.',
+    'annotations reads and mutates the Data Bag at its pointer address; image reads an optional background URL.',
     'Shared toolbar actions select, draw, edit text and delete shapes. Bag changes redraw the surface.',
     'Composes a shared Source menu and an SVG drawing surface.',
-    'Requires an initialized annotation Bag. Coordinates follow image dimensions or a 1000 by 1000 empty surface. Disposal releases subscriptions; persistence belongs to the application.',
+    'Requires an initialized annotation Bag. Coordinates follow image dimensions or a 1000 by 1000 empty surface. Disposal releases Data registrations; persistence belongs to the application.',
     'js/src/components/drawing.js', 'js/tests/drawing.test.js tests/test_drawing_pane.py',
     'pages/06-editors/06-drawing.md', 'Drawing annotations retained in Data.')
 

@@ -1,5 +1,6 @@
 /* @ts-self-types="./gramlot-server.d.ts" */
 import {standardCollections} from '../../dist/standard-collections.js';
+import {declaredCollections} from '../../dist/declared-collections.js';
 /**
  * The neutral server: registers pages and builds their Sources, with no HTTP engine.
  *
@@ -368,11 +369,15 @@ export class GramlotServer {
                 head.link({rel: 'manifest', href: prefix + '/app.webmanifest'});
             }
             // A page module served for its Logic imports the core from the runtime already loaded.
+            const declared = new Set(declaredCollections.map(({name}) => name));
             head.script(scriptJson({imports: {'@gramlot/gramlot/page': prefixed(prefix, this.runtimeUrl),
                 '@gramlot/gramlot': prefixed(prefix, this.runtimeUrl),
                 '@gramlot/gramlot/components':prefixed(prefix,this.runtimeUrl),
                 '@gramlot/gramlot/markdown':prefixed(prefix,this.markdownUrl),
-                ...Object.fromEntries((resources.collections ?? []).map(({name,url})=>[`@gramlot/collections/${encodeURIComponent(name)}`,prefixed(prefix,url)]))},
+                ...Object.fromEntries((resources.collections ?? []).map(({name,url})=>[`@gramlot/collections/${encodeURIComponent(name)}`,prefixed(prefix,url)])),
+                // A page module imports a declared core collection for gramlots.
+                ...Object.fromEntries((resources.collections ?? []).filter(({name})=>declared.has(name))
+                    .map(({name,url})=>[`@gramlot/gramlot/collections/${name}`,prefixed(prefix,url)]))},
                 ...(this.librarySource === 'cdn' ? {integrity: Object.fromEntries(Object.values(this.libraries)
                     .filter(entry => entry.url !== null && entry.format !== 'style').map(entry => [entry.url, entry.integrity]))} : {})}),
                 {type: 'importmap', nonce});

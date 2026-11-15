@@ -3,6 +3,7 @@ import unittest
 
 from genro_bag import Bag
 from gramlot import PageStore
+from gramlot.page.binding_runtime import DataChange, DataRegistration, accepts, trigger_level
 from gramlot.page.builder import GramlotBuilder
 
 
@@ -200,6 +201,36 @@ class PageStoreReactivityTests(unittest.TestCase):
         store.calls.clear()
         store.data.set_item("form.order", Bag(dict(quantity=5)), _fired=True)
         self.assertEqual(store.calls, [("^form.order", "node")])
+
+
+class SubtreeRegistrationTests(unittest.TestCase):
+    """The subtree branch of the JS DataRouter (router.js #accepts), with the same table."""
+
+    def change(self, evt, path, fired=False):
+        return DataChange(node=None, path=path, evt=evt, reason=None, fired=fired, oldvalue=None,
+                          attrs_diff={"color": "red"} if evt == "upd_attrs" else None,
+                          value=None, attr={}, index=None)
+
+    def test_subtree_receives_inner_changes_and_replacement_at_its_path(self):
+        subtree = DataRegistration(None, "options", "form.options", None, subtree=True)
+        value = DataRegistration(None, "options", "form.options", None)
+        cases = [
+            ("upd_value", "form.options.color", False, "child", True, True),
+            ("upd_value", "form.options.color", True, "child", True, False),
+            ("upd_attrs", "form.options.color", False, "child", True, False),
+            ("ins", "form.options.color", False, "child", True, True),
+            ("del", "form.options.color", False, "child", True, True),
+            ("upd_value", "form.options", False, "node", True, True),
+            ("upd_attrs", "form.options", False, "node", True, False),
+            ("upd_value", "form", False, "container", True, True),
+            ("upd_attrs", "form", False, "container", False, False),
+        ]
+        for evt, path, fired, level, by_subtree, by_value in cases:
+            change = self.change(evt, path, fired)
+            with self.subTest(evt=evt, path=path, fired=fired):
+                self.assertEqual(trigger_level(subtree.path, path), level)
+                self.assertIs(accepts(subtree, change, level), by_subtree)
+                self.assertIs(accepts(value, change, level), by_value)
 
 
 if __name__ == "__main__":

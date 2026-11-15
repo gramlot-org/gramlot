@@ -2487,11 +2487,25 @@ The core exports the table `sharedModules` from `@gramlot/gramlot`
 its module namespace.
 
 - Libraries, keyed by package name: `@genrojs/bag`, `@genrojs/builders`,
-  `@genrojs/toolbox`, `@genrojs/tytx`, `@xmldom/xmldom`, `decimal.js`, `big.js`,
-  `@msgpack/msgpack`, `dompurify`.
+  `@genrojs/toolbox`, `@genrojs/tytx`, `decimal.js`, `@msgpack/msgpack`, `dompurify`.
 - Runtime modules that standard components import by relative path, keyed by their
   path relative to `js/src` (`./random-id.js`, `./components/bases.js`,
   `./stores/bag-collection-view.js`, ...).
+
+Two packages imported by the libraries are not in the browser runtime and not in the
+table (owner, 2026-11-08, gramlot-org/gramlot#84):
+
+- `big.js`: `@genrojs/tytx` imports it beside `decimal.js` and selects `decimal.js`,
+  the `Decimal` of Gramlot pages (same model as Python `decimal`).
+- `@xmldom/xmldom`: `@genrojs/bag` (`Bag.fromXml`) and `@genrojs/tytx` (XML) use the
+  native `DOMParser` of the window. xmldom serves only where no `DOMParser` exists:
+  Node (the JS server, `@gramlot/gramlot/server`) and the serverless Web Worker. Both
+  bundle or import the core sources, so they keep xmldom. Python parses XML with its
+  own libraries and is not affected.
+
+The runtime build (`js/scripts/runtime-options.mjs`) replaces both packages with a
+module whose classes throw a named error when constructed. Measured on the 0.3.34
+build: `gramlot.min.js` 909,078 → 801,131 bytes, gzip 247,728 → 211,484.
 
 The generator links collection imports to this table:
 

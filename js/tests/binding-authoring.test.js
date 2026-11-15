@@ -236,6 +236,7 @@ cases = {
     "formula by name": lambda: root.dataFormula(result_path=".t", func="calc.total"),
     "script": lambda: root.dataController(script="x()", a="^.a"),
     "controller by name": lambda: root.dataController(func="calc.save"),
+    "binder on a named connection": lambda: root.dataBinder(destination_path=".copy", server_path="shared", connection="peer"),
     "zero arguments": lambda: root.dataSetter(),
     "? in destination_path": lambda: root.dataSetter(destination_path=".a?title", value=1),
     "? in result_path": lambda: root.dataFormula(result_path=".t?x", formula="a"),
@@ -263,6 +264,7 @@ test('data-element signatures: the same calls give the same outcome in Python an
         'formula by name': () => root.dataFormula({result_path: '.t', func: 'calc.total'}),
         'script': () => root.dataController({script: 'x()', a: '^.a'}),
         'controller by name': () => root.dataController({func: 'calc.save'}),
+        'binder on a named connection': () => root.dataBinder({destination_path: '.copy', server_path: 'shared', connection: 'peer'}),
         'zero arguments': () => root.dataSetter(),
         '? in destination_path': () => root.dataSetter({destination_path: '.a?title', value: 1}),
         '? in result_path': () => root.dataFormula({result_path: '.t?x', formula: 'a'}),
@@ -275,7 +277,7 @@ test('data-element signatures: the same calls give the same outcome in Python an
     }
     const py = JSON.parse(execFileSync(python, ['-c', SIGNATURE_CASES], {encoding: 'utf8'}));
     const valid = ['only path', 'path and attributes', 'path and value', 'explicit null',
-        'formula', 'formula by name', 'script', 'controller by name'];
+        'formula', 'formula by name', 'script', 'controller by name', 'binder on a named connection'];
     for (const name of valid) assert.deepEqual([name, js[name], py[name]], [name, 'ok', 'ok']);
     // Builder words the missing required attribute differently in the two languages.
     assert.match(js['zero arguments'], /^dataSetter: missing required attribute 'destination_path'$/);

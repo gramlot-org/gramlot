@@ -491,6 +491,28 @@ test('canvas and tree share selection without Source decoration or widget action
     assert.ok(f.app.src.renderer.records.get(f.source.getNode(rootPath)).presentation.classList.contains('gramlot-source-selected'));
 });
 
+test('canvas selection and picking follow a document node replaced at the design path', async t => {
+    const f = fixture(t);
+    const center = f.source.getNode('main.visual.layout.center');
+    const old = center.value.getNode('design');
+    center.value.popNode('design');
+    const replacement = f.app.src.builder.wrapSource(center).div({node_label:'design', class:'visual-editor-canvas'});
+    replacement.div({node_label:'pageRoot', datapath:'pageData'}).h3('Replaced', {node_label:'title'});
+    await tick();
+    const design = f.source.getNode('main.visual.layout.center.design');
+    assert.notEqual(design, old);
+    f.app.data.setItem('visualEditor.selection', 'pageRoot.title');
+    await tick();
+    const title = f.app.src.renderer.records.get(f.source.getNode(rootPath + '.title')).presentation;
+    assert.ok(title.classList.contains('gramlot-source-selected'));
+    const page = f.app.src.renderer.records.get(f.source.getNode(rootPath)).presentation;
+    page.dispatchEvent(new f.window.MouseEvent('click', {bubbles:true, composed:true, cancelable:true}));
+    await tick();
+    assert.equal(f.app.data.getItem('visualEditor.selection'), 'pageRoot');
+    assert.ok(page.classList.contains('gramlot-source-selected'));
+    assert.ok(!title.classList.contains('gramlot-source-selected'));
+});
+
 function saveBranch(f, path, copy = false, name = 'Contact form') {
     f.app.data.setItem('visualEditor.selection', path);
     f.call(copy ? 'copyBranch' : 'cutBranch');

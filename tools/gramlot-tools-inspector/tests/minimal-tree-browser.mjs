@@ -7,7 +7,7 @@ import {build} from 'esbuild';
 import {chromium, webkit} from 'playwright';
 
 const repo = fileURLToPath(new URL('../../../', import.meta.url));
-const wire = execFileSync(process.env.GRAMLOT_TEST_PYTHON ?? 'python3', ['tests/fixtures/components/tree.py'],
+const wire = execFileSync(process.env.GRAMLOT_TEST_PYTHON ?? `${repo}/.venv/bin/python`, ['tests/fixtures/components/tree.py'],
     {cwd: repo, encoding: 'utf8'}).trim();
 const output = await build({
     stdin: {contents: `

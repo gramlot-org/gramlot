@@ -66,3 +66,24 @@ test('invalid window response reports a failure without replacing the previous B
     assert.equal(f.app.data.getItem('result'),result);
     assert.equal(f.app.data.getItem('status'),'Failed: invalid window response');
 });
+
+test('a reply is recognized by its request_id at the inbox address, not by the identity of the inbox Bag', t => {
+    const f = fixture(t);
+    const request = f.requests[0];
+    // A stale frame at the inbox does not complete the pending request.
+    f.app.data.setItem('inbox', new Bag({request_id:'stale'}));
+    assert.equal(f.app.data.getItem('result'), null);
+    // The same Bag completed in place: the request_id written last marks the arrival.
+    const rows = new Bag(); rows.setItem('r0', null, {code:'A'});
+    f.app.data.setItem('inbox.rows', rows);
+    f.app.data.setItem('inbox.window', new Bag({start:0,total:5,revision:1,sortedBy:''}));
+    f.app.data.setItem('inbox.threshold', 1000);
+    f.app.data.setItem('inbox.request_id', request.request_id);
+    assert.equal(f.app.data.getItem('result.count'), 5);
+    assert.equal(f.app.data.getItem('status'), 'Loaded');
+    // A second delivery of the same request_id, in a new Bag, is not applied again.
+    const result = f.app.data.getItem('result');
+    f.reply(request, {total:9});
+    assert.equal(f.app.data.getItem('result'), result);
+    assert.equal(f.app.data.getItem('result.count'), 5);
+});

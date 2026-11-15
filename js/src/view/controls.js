@@ -627,7 +627,7 @@ function componentContext(adapter) {
             if (binding.closed) return;
             const pointer = node.getAttr('value');
             if (node.pointerType(pointer) !== '^' || pointer.includes('?') || !Object.is(node.getRelativeData(pointer), value)) return;
-            const path = pointer.slice(1) + '?_displayedValue';
+            const path = pointer.slice(1) + '?_dv_displayedValue';
             if (node.getRelativeData(path) !== caption) node.setRelativeData(path, caption);
         },
         periodOutput:(path, value) => node.setRelativeData(path, value),

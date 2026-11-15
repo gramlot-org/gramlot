@@ -7,7 +7,8 @@ from .builder import GramlotBuilder
 from .databases import _PageDatabases
 from .name_syntax import NAME_SYNTAX
 
-MARKERS = {"__gramlot_source__": "@source", "__gramlot_endpoint__": "@endpoint", "__gramlot_upload__": "@upload"}
+MARKERS = {"__gramlot_source__": "@source", "__gramlot_endpoint__": "@endpoint", "__gramlot_upload__": "@upload",
+           "__gramlot_terminal__": "@terminal"}
 # The name of a declared method, one segment of NAME_SYNTAX, as in JS page-base.js: an ASCII letter, then
 # ASCII letters, digits and ``_``.
 DECLARED_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
@@ -43,6 +44,19 @@ def endpoint(function=None, *, auth=None):
 def upload(function=None, *, auth=None):
     """Mark an application operation for upload preparation."""
     return _mark(function, "__gramlot_upload__", auth)
+
+
+def terminal(function=None, *, auth=None):
+    """Mark an async PageStore method as a terminal session: ``@terminal`` or ``@terminal(auth="rule")``.
+
+    The ``terminal`` component names it with ``session``. The method receives a ``TerminalSession`` and
+    runs until the session ends; the session closes when the method returns or the page closes.
+    """
+    return _mark(function, "__gramlot_terminal__", auth)
+
+
+def terminal_methods(page_class):
+    return _declared(page_class, "__gramlot_terminal__")
 
 
 class Page(_PageDatabases):

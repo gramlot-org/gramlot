@@ -11,7 +11,7 @@ export {GramlotServer, EndpointNotFound, InvalidRequest, NotAuthenticated, NotAu
     SourceNotFound, ServerCapacity} from './gramlot-server.js';
 export {GramlotBuilder} from '../builder/gramlot-builder.js';
 export {GramlotFileServer} from './gramlot-file-server.js';
-export {gramlotDev, runtimeAsset, standardCollectionAssets} from './assets.js';
+export {gramlotDev, runtimeAsset, collectionAssets} from './assets.js';
 export {checkProtocol} from './conformance.js';
 export {InvalidResourceName, parseRequires} from './resources.js';
 export {NAME_SYNTAX, NameSyntax} from '../builder/name-syntax.js';

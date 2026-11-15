@@ -4,6 +4,7 @@ import {Handler} from './handler.js';
 import {DeviceResolver} from '../binding/device-resolver.js';
 
 const NAMES = ['appinfo', 'location'];
+const DEVICE = '_gramlot.device';
 const ERROR_STATUS = {UNAVAILABLE: 'unavailable', PERMISSION_DENIED: 'denied',
     TIMEOUT: 'error', FAILED: 'error', CANCELLED: 'cancelled'};
 
@@ -30,6 +31,7 @@ export class DeviceHandler extends Handler {
     #pushEvents = null;
     #shortcutEvents = null;
     #linkEvents = null;
+    #registration = null;
 
     constructor(gramlot) {
         super(gramlot);
@@ -37,7 +39,6 @@ export class DeviceHandler extends Handler {
         this.disposed = false;
         this.monitor = null;
         this.retiring = null;
-        this.resolvers = new Map();
         this.cleanup = Promise.resolve();
     }
 
@@ -49,8 +50,7 @@ export class DeviceHandler extends Handler {
             gramlot.data.setItem(`_gramlot.device.${name}`, null,
                 {enabled: false, watching: false, status: 'idle', error: null});
             gramlot.data.getNode(`_gramlot.device.${name}`).setAttr({error: null}, false, true, false);
-            this.#sensors.set(name, {node: gramlot.data.getNode(`_gramlot.device.${name}`),
-                stream: null, cleanup: Promise.resolve()});
+            this.#sensors.set(name, {stream: null, cleanup: Promise.resolve()});
         }
         for (const name of NAMES) {
             const path = `_gramlot.device.${name}`;
@@ -59,30 +59,22 @@ export class DeviceHandler extends Handler {
             gramlot.data.setItem(path, null);
             const node = gramlot.data.getNode(path);
             node.setAttr(attrs, false, true, false);
-            const resolver = new DeviceResolver(this, name, attrs.cacheTime);
-            node.resolver = resolver;
-            this.resolvers.set(name, resolver);
+            node.resolver = new DeviceResolver(this, name, attrs.cacheTime);
         }
         gramlot.data.setItem('_gramlot.device.clipboard', null,
             {status: 'idle', error: null, text: '', copy: null, paste: null, operation: null});
-        const clipboard = gramlot.data.getNode('_gramlot.device.clipboard');
         gramlot.data.setItem('_gramlot.device.camera', null, {status: 'idle', error: null, capture: null, choose: null});
-        const camera = gramlot.data.getNode('_gramlot.device.camera');
         gramlot.data.setItem('_gramlot.device.barcode', null, {status: 'idle', error: null, scan: null});
-        const barcode = gramlot.data.getNode('_gramlot.device.barcode');
         gramlot.data.setItem('_gramlot.device.biometrics', null, {status: 'idle', error: null, verify: null});
-        const biometrics = gramlot.data.getNode('_gramlot.device.biometrics');
         const notifications = new Bag();
         notifications.setItem('request', new Bag());
         for (const name of ['scheduled', 'received', 'action']) notifications.setItem(name, null);
         gramlot.data.setItem('_gramlot.device.notifications', notifications,
             {status: 'idle', error: null, schedule: null, listening: false, listenerError: null});
-        const notificationNode = gramlot.data.getNode('_gramlot.device.notifications');
         const push = new Bag();
         for (const name of ['registration', 'received', 'action']) push.setItem(name, null);
         gramlot.data.setItem('_gramlot.device.push', push,
             {status: 'idle', error: null, register: null, listening: false, listenerError: null});
-        const pushNode = gramlot.data.getNode('_gramlot.device.push');
         const links = new Bag();
         links.setItem('request', null);
         gramlot.data.setItem('_gramlot.device.links', links, {listening: false, listenerError: null});
@@ -97,66 +89,57 @@ export class DeviceHandler extends Handler {
         gramlot.data.setItem('_gramlot.device.lifecycle', lifecycle, {status: 'idle', error: null, listening: false});
         gramlot.data.setItem('_gramlot.device.haptics', null,
             {status: 'idle', error: null, impact: null, style: 'medium', vibrate: null, duration: 600});
-        const haptics = gramlot.data.getNode('_gramlot.device.haptics');
         gramlot.data.setItem('_gramlot.device.audio', null,
             {status: 'idle', error: null, recording: false, start: null, stop: null, cancel: null,
                 share: null, shareStatus: 'idle', shareError: null, shareActivity: null});
-        const audio = gramlot.data.getNode('_gramlot.device.audio');
-        gramlot.data.subscribe('gramlot.device', {update: event => {
-            if (this.disposed) return;
-            for (const [name, sensor] of this.#sensors) {
-                if (event.node === sensor.node && event.attrs_diff?.enabled) {
-                    if (typeof sensor.node.attr.enabled !== 'boolean') throw new TypeError('Device enabled must be boolean');
-                    this.#reconcileSensor(name, sensor);
-                }
+        // Commands and settings arrive as Data events at their device path; no device node is retained.
+        this.#registration = gramlot.src.binding.router.register({path: DEVICE, subtree: true,
+            recipient: {receive: change => this.#receive(change)}});
+    }
+
+    /** The device node at `_gramlot.device.<name>`, read at each use. */
+    #deviceNode(name) { return this.gramlot.data.getNode(`${DEVICE}.${name}`); }
+
+    #receive(change) {
+        if (this.disposed || !change.evt.startsWith('upd')) return;
+        const segments = change.path.split('.');
+        if (segments.length !== 3) return;
+        const name = segments[2], diff = change.attrsDiff ?? {};
+        const command = attribute => change.fired && diff[attribute]?.new === true;
+        const node = change.node;
+        if (this.#sensors.has(name) && diff.enabled) {
+            if (typeof node.attr.enabled !== 'boolean') throw new TypeError('Device enabled must be boolean');
+            this.#reconcileSensor(name);
+        }
+        if (name === 'clipboard') {
+            if (command('copy')) this.#clipboardCommand('copy');
+            if (command('paste')) this.#clipboardCommand('paste');
+        }
+        if (name === 'audio') {
+            if (command('start')) this.#startAudio();
+            if (command('stop')) this.#stopAudio();
+            if (command('cancel')) this.#cancelAudio();
+            if (command('share')) this.#shareAudio();
+        }
+        if (name === 'haptics' && command('impact')) this.#impact();
+        if (name === 'haptics' && command('vibrate')) this.#vibrate();
+        if (name === 'barcode' && command('scan')) this.#scanBarcode();
+        if (name === 'camera' && command('choose')) this.#photo('choose');
+        if (name === 'camera' && command('capture')) this.#photo('capture');
+        if (name === 'biometrics' && command('verify')) this.#verifyBiometrics();
+        if (name === 'notifications' && command('schedule')) this.#scheduleNotification();
+        if (name === 'push' && command('register')) this.#registerPush();
+        if (NAMES.includes(name)) {
+            const {cacheTime} = node.attr;
+            if (typeof cacheTime !== 'number' || !Number.isFinite(cacheTime) || (cacheTime < 0 && cacheTime !== -1)) {
+                throw new TypeError('Device cacheTime must be -1 or a nonnegative number of seconds');
             }
-            if (event.node === clipboard && event.fired) {
-                if (event.attrs_diff?.copy?.new === true) this.#clipboardCommand(clipboard, 'copy');
-                if (event.attrs_diff?.paste?.new === true) this.#clipboardCommand(clipboard, 'paste');
+            this.resolver(name).cacheTime = cacheTime;
+            if (name === 'location') {
+                if (typeof node.attr.enabled !== 'boolean') throw new TypeError('Device enabled must be boolean');
+                this.reconcile();
             }
-            if (event.node === audio && event.fired) {
-                if (event.attrs_diff?.start?.new === true) this.#startAudio(audio);
-                if (event.attrs_diff?.stop?.new === true) this.#stopAudio(audio);
-                if (event.attrs_diff?.cancel?.new === true) this.#cancelAudio(audio);
-                if (event.attrs_diff?.share?.new === true) this.#shareAudio(audio);
-            }
-            if (event.node === haptics && event.fired && event.attrs_diff?.impact?.new === true) {
-                this.#impact(haptics);
-            }
-            if (event.node === haptics && event.fired && event.attrs_diff?.vibrate?.new === true) {
-                this.#vibrate(haptics);
-            }
-            if (event.node === barcode && event.fired && event.attrs_diff?.scan?.new === true) {
-                this.#scanBarcode(barcode);
-            }
-            if (event.node === camera && event.fired && event.attrs_diff?.choose?.new === true) {
-                this.#photo(camera, 'choose');
-            }
-            if (event.node === camera && event.fired && event.attrs_diff?.capture?.new === true) {
-                this.#photo(camera, 'capture');
-            }
-            if (event.node === biometrics && event.fired && event.attrs_diff?.verify?.new === true) {
-                this.#verifyBiometrics(biometrics);
-            }
-            if (event.node === notificationNode && event.fired && event.attrs_diff?.schedule?.new === true) {
-                this.#scheduleNotification(notificationNode);
-            }
-            if (event.node === pushNode && event.fired && event.attrs_diff?.register?.new === true) {
-                this.#registerPush(pushNode);
-            }
-            for (const resolver of this.resolvers.values()) {
-                if (event.node !== resolver._node) continue;
-                const {cacheTime} = event.node.attr;
-                if (typeof cacheTime !== 'number' || !Number.isFinite(cacheTime) || (cacheTime < 0 && cacheTime !== -1)) {
-                    throw new TypeError('Device cacheTime must be -1 or a nonnegative number of seconds');
-                }
-                resolver.cacheTime = cacheTime;
-                if (resolver.name === 'location') {
-                    if (typeof event.node.attr.enabled !== 'boolean') throw new TypeError('Device enabled must be boolean');
-                    this.reconcile();
-                }
-            }
-        }});
+        }
     }
 
     /** Attach the explicitly selected provider once, before the page reads device values. */
@@ -199,16 +182,16 @@ export class DeviceHandler extends Handler {
             node.setAttr({status: 'success', error: null}, true, true, false);
         });
         if (provider.capabilities.includes('links')) {
-            this.#startLinkEvents(this.gramlot.data.getNode('_gramlot.device.links'));
+            this.#startLinkEvents();
         }
         if (provider.capabilities.includes('shortcuts')) {
-            this.#startShortcutEvents(this.gramlot.data.getNode('_gramlot.device.shortcuts'));
+            this.#startShortcutEvents();
         }
         if (provider.capabilities.includes('push')) {
-            this.#startPushEvents(this.gramlot.data.getNode('_gramlot.device.push'));
+            this.#startPushEvents();
         }
         if (provider.capabilities.includes('notifications')) {
-            this.#startNotificationEvents(this.gramlot.data.getNode('_gramlot.device.notifications'));
+            this.#startNotificationEvents();
         }
     }
 
@@ -218,8 +201,9 @@ export class DeviceHandler extends Handler {
 
     resolver(name) {
         this.assertLive();
-        if (!this.resolvers.has(name)) throw new TypeError(`Unknown device value: ${name}`);
-        return this.resolvers.get(name);
+        const node = NAMES.includes(name) ? this.#deviceNode(name) : null;
+        if (!node) throw new TypeError(`Unknown device value: ${name}`);
+        return node.resolver;
     }
 
     invalidate(name) { this.resolver(name).reset(); }
@@ -231,64 +215,67 @@ export class DeviceHandler extends Handler {
         const request = {revision: resolver.revision, received: resolver.received};
         resolver.request = request;
         this.attributes(resolver, {status: 'pending', error: null});
+        // The continuations read the resolver at its path again; a disposed handler is never read.
+        const current = () => this.resolver(name);
         Promise.resolve().then(() => {
-            if (this.disposed || resolver.request !== request) return;
+            if (this.disposed || current().request !== request) return;
             this.requireCapability(name);
             return name === 'appinfo' ? this.provider.readAppInfo() : this.provider.readLocation();
         }).then(value => {
-            if (this.disposed || resolver.request !== request) return;
-            this.accept(resolver, value);
+            if (this.disposed || current().request !== request) return;
+            this.accept(current(), value);
             // Invalidation while pending retains the arriving result, but leaves it stale.
-            if (resolver.revision !== request.revision) resolver._lastUpdate = null;
+            if (current().revision !== request.revision) current()._lastUpdate = null;
         }).catch(error => {
-            if (!this.disposed && resolver.request === request && resolver.received === request.received) {
-                this.failure(resolver, error);
+            if (!this.disposed && current().request === request && current().received === request.received) {
+                this.failure(current(), error);
             }
         }).finally(() => {
-            if (resolver.request === request) resolver.request = null;
+            if (!this.disposed && current().request === request) current().request = null;
         });
     }
 
     // Page-owned state streams share lifetime/error handling, never public dispatch.
     #startStateEvents(name, start, accept) {
-        const node = this.gramlot.data.getNode(`_gramlot.device.${name}`);
+        const node = () => this.#deviceNode(name);
         if (!this.provider.capabilities.includes(name)) {
-            node.setAttr(failureAttributes({code: 'UNAVAILABLE', message: `${name} is unavailable`}), true, true, false);
+            node().setAttr(failureAttributes({code: 'UNAVAILABLE', message: `${name} is unavailable`}), true, true, false);
             return;
         }
         const events = {controller: new AbortController()};
         this.#stateEvents.set(name, events);
-        node.setAttr({status: 'pending', error: null}, true, true, false);
+        node().setAttr({status: 'pending', error: null}, true, true, false);
         events.start = Promise.resolve().then(() => {
             if (events.controller.signal.aborted) return async () => {};
             return start(value => {
                 if (events.controller.signal.aborted) return;
-                try { accept(node, value); }
-                catch (error) { node.setAttr(failureAttributes(error), true, true, false); }
+                try { accept(node(), value); }
+                catch (error) { node().setAttr(failureAttributes(error), true, true, false); }
             }, events.controller.signal);
         }).then(stop => {
-            if (!events.controller.signal.aborted) node.setAttr({listening: true}, true, true, false);
+            if (!events.controller.signal.aborted) node().setAttr({listening: true}, true, true, false);
             return stop;
         });
         events.start.catch(error => {
             const aborted = events.controller.signal.aborted;
             events.controller.abort();
-            if (!aborted) node.setAttr({...failureAttributes(error), listening: false}, true, true, false);
+            if (!aborted) node().setAttr({...failureAttributes(error), listening: false}, true, true, false);
         });
     }
 
-    #reconcileSensor(name, sensor) {
-        const {node} = sensor;
-        if (!node.attr.enabled) {
+    #reconcileSensor(name) {
+        const sensor = this.#sensors.get(name);
+        const node = () => this.#deviceNode(name);
+        if (!node().attr.enabled) {
             const stream = sensor.stream;
             if (!stream) return;
             sensor.stream = null;
             stream.controller.abort();
             sensor.cleanup = stream.start.then(stop => stop(), () => undefined).then(() => {
-                if (!this.disposed && !sensor.stream) node.setAttr({watching: false, status: 'idle', error: null}, true, true, false);
+                if (!this.disposed && !sensor.stream) node().setAttr({watching: false, status: 'idle', error: null}, true, true, false);
             });
             sensor.cleanup.catch(error => {
-                if (!this.disposed) node.setAttr(failureAttributes(error), true, true, false);
+                if (!this.disposed) node().setAttr(failureAttributes(error), true, true, false);
             });
             return;
         }
@@ -302,78 +289,80 @@ export class DeviceHandler extends Handler {
                 if (this.disposed || stream.controller.signal.aborted) return;
                 try {
                     if (event?.kind === 'state' && typeof event.watching === 'boolean') {
-                        node.setAttr({watching: event.watching, status: event.watching ? 'pending' : 'idle', error: null}, true, true, false);
+                        node().setAttr({watching: event.watching, status: event.watching ? 'pending' : 'idle', error: null}, true, true, false);
                     } else if (event?.kind === 'sample') {
                         for (const field of ['x', 'y', 'z', 'timestamp']) {
                             if (!Number.isFinite(event[field])) throw new TypeError(`Invalid ${name}.${field}`);
                         }
-                        if (!node.attr.watching) return;
-                        if (node.staticValue && event.timestamp < node.staticValue.getItem('timestamp')) return;
+                        if (!node().attr.watching) return;
+                        if (node().staticValue && event.timestamp < node().staticValue.getItem('timestamp')) return;
                         const value = new Bag();
                         for (const field of ['x', 'y', 'z', 'timestamp']) value.setItem(field, event[field]);
-                        node.setValue(value, true, {status: 'success', error: null}, true, false);
+                        node().setValue(value, true, {status: 'success', error: null}, true, false);
                     } else if (event?.kind === 'error' && event.error instanceof Error) {
-                        node.setAttr({...failureAttributes(event.error), watching: false}, true, true, false);
+                        node().setAttr({...failureAttributes(event.error), watching: false}, true, true, false);
                     } else throw new TypeError(`Invalid ${name} event`);
-                } catch (error) { node.setAttr(failureAttributes(error), true, true, false); }
+                } catch (error) { node().setAttr(failureAttributes(error), true, true, false); }
             };
             return name === 'gyroscope' ? this.provider.startGyroscopeUpdates(accept, stream.controller.signal)
                 : this.provider.startAccelerometerUpdates(accept, stream.controller.signal);
         });
         stream.start.catch(error => {
             if (!this.disposed && !stream.controller.signal.aborted) {
-                node.setAttr({...failureAttributes(error), watching: false}, true, true, false);
+                node().setAttr({...failureAttributes(error), watching: false}, true, true, false);
             }
         });
-        node.setAttr({status: 'pending', error: null}, true, true, false);
+        node().setAttr({status: 'pending', error: null}, true, true, false);
     }
 
-    #startAudio(node) {
+    #startAudio() {
+        const node = () => this.#deviceNode('audio');
         const previous = this.#audio;
         if (previous) {
             if (previous.phase !== 'complete') return;
             previous.phase = 'replacing';
-            node.setValue(null, true, {status: 'pending', error: null, recording: false,
+            node().setValue(null, true, {status: 'pending', error: null, recording: false,
                 shareStatus: 'idle', shareError: null, shareActivity: null}, true, false);
             previous.close = previous.start.then(session => session.dispose()).then(() => {
                 if (this.disposed || previous.controller.signal.aborted || this.#audio !== previous) return;
                 this.#audio = null;
-                this.#startAudio(node);
+                this.#startAudio();
             }).catch(error => {
                 if (!this.disposed && this.#audio === previous) {
                     previous.phase = 'failed';
-                    node.setAttr(failureAttributes(error), true, true, false);
+                    node().setAttr(failureAttributes(error), true, true, false);
                 }
             });
             return;
         }
         const audio = {controller: new AbortController(), phase: 'starting'};
         this.#audio = audio;
-        node.setValue(null, true, {status: 'pending', error: null, recording: false,
+        node().setValue(null, true, {status: 'pending', error: null, recording: false,
                 shareStatus: 'idle', shareError: null, shareActivity: null}, true, false);
         audio.start = Promise.resolve().then(async () => {
             if (audio.controller.signal.aborted) return null;
             this.requireCapability('audio');
             return this.provider.startAudioRecording(error => {
-                if (this.#audio === audio && !audio.controller.signal.aborted) this.#cancelAudio(node, error);
+                if (this.#audio === audio && !audio.controller.signal.aborted) this.#cancelAudio(error);
             }, audio.controller.signal);
         });
         audio.start.then(session => {
             if (!session || audio.controller.signal.aborted || this.disposed) return;
             audio.phase = 'recording';
-            node.setAttr({status: 'recording', error: null, recording: true}, true, true, false);
+            node().setAttr({status: 'recording', error: null, recording: true}, true, true, false);
         }).catch(error => {
             if (audio.controller.signal.aborted || this.disposed) return;
             if (this.#audio === audio) this.#audio = null;
-            node.setAttr({...failureAttributes(error), recording: false}, true, true, false);
+            node().setAttr({...failureAttributes(error), recording: false}, true, true, false);
         });
     }
 
-    #stopAudio(node) {
+    #stopAudio() {
+        const node = () => this.#deviceNode('audio');
         const audio = this.#audio;
         if (!audio || audio.phase !== 'recording') return;
         audio.phase = 'stopping';
-        node.setAttr({status: 'pending', error: null}, true, true, false);
+        node().setAttr({status: 'pending', error: null}, true, true, false);
         audio.stop = audio.start.then(session => session.stop()).then(result => {
             if (audio.controller.signal.aborted || this.disposed) return;
             if (typeof result?.url !== 'string' || !result.url || typeof result.mimeType !== 'string' ||
@@ -383,61 +372,64 @@ export class DeviceHandler extends Handler {
             const value = new Bag();
             for (const key of ['url', 'mimeType', 'duration']) value.setItem(key, result[key]);
             audio.phase = 'complete';
-            node.setValue(value, true, {status: 'success', error: null, recording: false}, true, false);
+            node().setValue(value, true, {status: 'success', error: null, recording: false}, true, false);
         }).catch(error => {
-            if (!audio.controller.signal.aborted && !this.disposed) this.#cancelAudio(node, error);
+            if (!audio.controller.signal.aborted && !this.disposed) this.#cancelAudio(error);
         });
     }
 
-    #shareAudio(node) {
+    #shareAudio() {
+        const node = () => this.#deviceNode('audio');
         const audio = this.#audio;
         if (audio?.phase === 'sharing') return;
         if (!audio || audio.phase !== 'complete') {
             const failure = failureAttributes(new Error('Record and stop audio before sharing'));
-            node.setAttr({shareStatus: failure.status, shareError: failure.error, shareActivity: null}, true, true, false);
+            node().setAttr({shareStatus: failure.status, shareError: failure.error, shareActivity: null}, true, true, false);
             return;
         }
         audio.phase = 'sharing';
-        node.setAttr({shareStatus: 'pending', shareError: null, shareActivity: null}, true, true, false);
+        node().setAttr({shareStatus: 'pending', shareError: null, shareActivity: null}, true, true, false);
         audio.share = audio.start.then(session => session.share(audio.controller.signal)).then(result => {
             if (audio.controller.signal.aborted || this.disposed) return;
             if (typeof result?.activity !== 'string') throw new TypeError('Invalid audio share result from device provider');
-            node.setAttr({shareStatus: 'success', shareError: null, shareActivity: result.activity}, true, true, false);
+            node().setAttr({shareStatus: 'success', shareError: null, shareActivity: result.activity}, true, true, false);
         }).catch(error => {
             if (audio.controller.signal.aborted || this.disposed) return;
             const failure = failureAttributes(error);
-            node.setAttr({shareStatus: failure.status, shareError: failure.error, shareActivity: null}, true, true, false);
+            node().setAttr({shareStatus: failure.status, shareError: failure.error, shareActivity: null}, true, true, false);
         }).finally(() => {
             if (this.#audio === audio && !audio.controller.signal.aborted) audio.phase = 'complete';
         });
     }
 
-    #cancelAudio(node, error = {code: 'CANCELLED', message: 'Audio recording cancelled'}) {
+    #cancelAudio(error = {code: 'CANCELLED', message: 'Audio recording cancelled'}) {
+        const node = () => this.#deviceNode('audio');
         const audio = this.#audio;
         if (!audio || audio.phase === 'closing' || audio.phase === 'sharing') return;
         audio.phase = 'closing';
         audio.controller.abort();
-        node.setValue(null, true, {status: 'pending', error: null,
+        node().setValue(null, true, {status: 'pending', error: null,
             shareStatus: 'idle', shareError: null, shareActivity: null}, true, false);
         audio.close = audio.start.then(session => session === null ? undefined : session.dispose(), error => { if (error?.code !== 'CANCELLED') throw error; }).then(() => {
             if (this.disposed || this.#audio !== audio) return;
             this.#audio = null;
-            node.setAttr({...failureAttributes(error), recording: false}, true, true, false);
+            node().setAttr({...failureAttributes(error), recording: false}, true, true, false);
         }).catch(cleanupError => {
             if (!this.disposed && this.#audio === audio) {
                 // Keep ownership when cleanup failed; the page may retry cancellation.
                 audio.phase = 'failed';
-                node.setAttr(failureAttributes(cleanupError), true, true, false);
+                node().setAttr(failureAttributes(cleanupError), true, true, false);
             }
         });
     }
 
-    #clipboardCommand(node, operation) {
+    #clipboardCommand(operation) {
+        const node = () => this.#deviceNode('clipboard');
         if (this.#clipboardRequest) return;
         const request = new AbortController();
         this.#clipboardRequest = request;
-        const text = node.attr.text;
-        node.setValue(null, true, {status: 'pending', error: null, operation}, true, false);
+        const text = node().attr.text;
+        node().setValue(null, true, {status: 'pending', error: null, operation}, true, false);
         Promise.resolve().then(async () => {
             if (request.signal.aborted) return;
             this.requireCapability('clipboard');
@@ -453,20 +445,21 @@ export class DeviceHandler extends Handler {
             if (typeof result?.text !== 'string') throw new TypeError('Invalid clipboard text from device provider');
             const value = new Bag();
             value.setItem('text', result.text);
-            node.setValue(value, true, {status: 'success', error: null}, true, false);
+            node().setValue(value, true, {status: 'success', error: null}, true, false);
         }).catch(error => {
-            if (!request.signal.aborted) node.setAttr(failureAttributes(error), true, true, false);
+            if (!request.signal.aborted) node().setAttr(failureAttributes(error), true, true, false);
         }).finally(() => {
             if (this.#clipboardRequest === request) this.#clipboardRequest = null;
         });
     }
 
-    #vibrate(node) {
+    #vibrate() {
+        const node = () => this.#deviceNode('haptics');
         if (this.#hapticRequest) return;
         const request = new AbortController();
         this.#hapticRequest = request;
-        const {duration} = node.attr;
-        node.setValue(null, true, {status: 'pending', error: null}, true, false);
+        const {duration} = node().attr;
+        node().setValue(null, true, {status: 'pending', error: null}, true, false);
         Promise.resolve().then(async () => {
             if (request.signal.aborted) return;
             this.requireCapability('haptics');
@@ -478,20 +471,21 @@ export class DeviceHandler extends Handler {
             const value = new Bag();
             value.setItem('duration', duration);
             value.setItem('acknowledged', true);
-            node.setValue(value, true, {status: 'success', error: null}, true, false);
+            node().setValue(value, true, {status: 'success', error: null}, true, false);
         }).catch(error => {
-            if (!request.signal.aborted) node.setAttr(failureAttributes(error), true, true, false);
+            if (!request.signal.aborted) node().setAttr(failureAttributes(error), true, true, false);
         }).finally(() => {
             if (this.#hapticRequest === request) this.#hapticRequest = null;
         });
     }
 
-    #impact(node) {
+    #impact() {
+        const node = () => this.#deviceNode('haptics');
         if (this.#hapticRequest) return;
         const request = new AbortController();
         this.#hapticRequest = request;
-        const {style} = node.attr;
-        node.setValue(null, true, {status: 'pending', error: null}, true, false);
+        const {style} = node().attr;
+        node().setValue(null, true, {status: 'pending', error: null}, true, false);
         Promise.resolve().then(async () => {
             if (request.signal.aborted) return;
             this.requireCapability('haptics');
@@ -501,19 +495,20 @@ export class DeviceHandler extends Handler {
             const value = new Bag();
             value.setItem('style', style);
             value.setItem('acknowledged', true);
-            node.setValue(value, true, {status: 'success', error: null}, true, false);
+            node().setValue(value, true, {status: 'success', error: null}, true, false);
         }).catch(error => {
-            if (!request.signal.aborted) node.setAttr(failureAttributes(error), true, true, false);
+            if (!request.signal.aborted) node().setAttr(failureAttributes(error), true, true, false);
         }).finally(() => {
             if (this.#hapticRequest === request) this.#hapticRequest = null;
         });
     }
 
-    #scanBarcode(node) {
+    #scanBarcode() {
+        const node = () => this.#deviceNode('barcode');
         if (this.#barcodeRequest) return;
         const request = new AbortController();
         this.#barcodeRequest = request;
-        node.setValue(null, true, {status: 'pending', error: null}, true, false);
+        node().setValue(null, true, {status: 'pending', error: null}, true, false);
         Promise.resolve().then(() => {
             if (request.signal.aborted) return;
             this.requireCapability('barcode');
@@ -526,20 +521,21 @@ export class DeviceHandler extends Handler {
             const value = new Bag();
             value.setItem('text', result.text);
             value.setItem('format', result.format);
-            node.setValue(value, true, {status: 'success', error: null}, true, false);
+            node().setValue(value, true, {status: 'success', error: null}, true, false);
         }).catch(error => {
-            if (!request.signal.aborted) node.setAttr(failureAttributes(error), true, true, false);
+            if (!request.signal.aborted) node().setAttr(failureAttributes(error), true, true, false);
         }).finally(() => {
             if (this.#barcodeRequest === request) this.#barcodeRequest = null;
         });
     }
 
     // Camera is an explicit Data event, never a resolver read with a UI side effect.
-    #photo(node, operation) {
+    #photo(operation) {
+        const node = () => this.#deviceNode('camera');
         if (this.#captureRequest) return;
         const request = new AbortController();
         this.#captureRequest = request;
-        node.setAttr({status: 'pending', error: null}, true, true, false);
+        node().setAttr({status: 'pending', error: null}, true, true, false);
         Promise.resolve().then(() => {
             if (request.signal.aborted) return;
             this.requireCapability('camera');
@@ -554,20 +550,21 @@ export class DeviceHandler extends Handler {
             const value = new Bag();
             value.setItem('url', photo.url);
             value.setItem('format', photo.format);
-            node.setValue(value, true, {status: 'success', error: null}, true, false);
+            node().setValue(value, true, {status: 'success', error: null}, true, false);
         }).catch(error => {
-            if (!request.signal.aborted) node.setAttr(failureAttributes(error), true, true, false);
+            if (!request.signal.aborted) node().setAttr(failureAttributes(error), true, true, false);
         }).finally(() => {
             if (this.#captureRequest === request) this.#captureRequest = null;
         });
     }
 
     // A fresh attempt clears the previous local verification, including on cancellation.
-    #verifyBiometrics(node) {
+    #verifyBiometrics() {
+        const node = () => this.#deviceNode('biometrics');
         if (this.#biometricsRequest) return;
         const request = new AbortController();
         this.#biometricsRequest = request;
-        node.setValue(null, true, {status: 'pending', error: null}, true, false);
+        node().setValue(null, true, {status: 'pending', error: null}, true, false);
         Promise.resolve().then(() => {
             if (request.signal.aborted) return;
             this.requireCapability('biometrics');
@@ -576,15 +573,16 @@ export class DeviceHandler extends Handler {
             if (request.signal.aborted) return;
             const result = new Bag();
             result.setItem('verified', true);
-            node.setValue(result, true, {status: 'success', error: null}, true, false);
+            node().setValue(result, true, {status: 'success', error: null}, true, false);
         }).catch(error => {
-            if (!request.signal.aborted) node.setValue(null, true, failureAttributes(error), true, false);
+            if (!request.signal.aborted) node().setValue(null, true, failureAttributes(error), true, false);
         }).finally(() => {
             if (this.#biometricsRequest === request) this.#biometricsRequest = null;
         });
     }
 
-    #startNotificationEvents(node) {
+    #startNotificationEvents() {
+        const node = () => this.#deviceNode('notifications');
         if (this.#notificationEvents) return this.#notificationEvents.start;
         const events = {controller: new AbortController()};
         this.#notificationEvents = events;
@@ -601,13 +599,13 @@ export class DeviceHandler extends Handler {
                     const value = new Bag();
                     for (const key of ['id', 'title', 'body']) value.setItem(key, event[key]);
                     if (event.kind === 'action') value.setItem('actionId', event.actionId);
-                    node.staticValue.setItem(event.kind, value);
+                    node().staticValue.setItem(event.kind, value);
                 } catch (error) {
-                    node.setAttr({listenerError: failureAttributes(error).error}, true, true, false);
+                    node().setAttr({listenerError: failureAttributes(error).error}, true, true, false);
                 }
             }, events.controller.signal);
         }).then(stop => {
-            if (!events.controller.signal.aborted) node.setAttr({listening: true}, true, true, false);
+            if (!events.controller.signal.aborted) node().setAttr({listening: true}, true, true, false);
             return stop;
         });
         events.start.catch(error => {
@@ -615,22 +613,23 @@ export class DeviceHandler extends Handler {
             events.controller.abort();
             if (this.#notificationEvents === events) this.#notificationEvents = null;
             if (!aborted) {
-                node.setAttr({listening: false, listenerError: failureAttributes(error).error}, true, true, false);
+                node().setAttr({listening: false, listenerError: failureAttributes(error).error}, true, true, false);
             }
         });
-        node.setAttr({listenerError: null}, true, true, false);
+        node().setAttr({listenerError: null}, true, true, false);
         return events.start;
     }
 
-    #scheduleNotification(node) {
+    #scheduleNotification() {
+        const node = () => this.#deviceNode('notifications');
         if (this.#notificationRequest) return;
         const request = new AbortController();
         this.#notificationRequest = request;
-        const value = node.staticValue.getItem('request');
+        const value = node().staticValue.getItem('request');
         const input = value instanceof Bag
             ? Object.fromEntries(['id', 'title', 'body', 'delay'].map(key => [key, value.getItem(key)])) : null;
-        node.staticValue.setItem('scheduled', null);
-        node.setAttr({status: 'pending', error: null}, true, true, false);
+        node().staticValue.setItem('scheduled', null);
+        node().setAttr({status: 'pending', error: null}, true, true, false);
         Promise.resolve().then(async () => {
             if (request.signal.aborted) return;
             this.requireCapability('notifications');
@@ -640,7 +639,7 @@ export class DeviceHandler extends Handler {
                 || typeof input.delay !== 'number' || !Number.isFinite(input.delay) || input.delay <= 0) {
                 throw new TypeError('Notification requires a positive 32-bit id, title, body and positive delay in seconds');
             }
-            await this.#startNotificationEvents(node);
+            await this.#startNotificationEvents();
             if (request.signal.aborted) return;
             return this.provider.scheduleNotification(input, request.signal);
         }).then(result => {
@@ -651,10 +650,10 @@ export class DeviceHandler extends Handler {
             const scheduled = new Bag();
             scheduled.setItem('id', result.id);
             scheduled.setItem('at', result.at);
-            node.staticValue.setItem('scheduled', scheduled);
-            node.setAttr({status: 'success', error: null}, true, true, false);
+            node().staticValue.setItem('scheduled', scheduled);
+            node().setAttr({status: 'success', error: null}, true, true, false);
         }).catch(error => {
-            if (!request.signal.aborted) node.setAttr(failureAttributes(error), true, true, false);
+            if (!request.signal.aborted) node().setAttr(failureAttributes(error), true, true, false);
         }).finally(() => {
             if (this.#notificationRequest === request) this.#notificationRequest = null;
         });
@@ -667,18 +666,19 @@ export class DeviceHandler extends Handler {
         return request;
     }
 
-    #acceptPushEvent(node, event) {
+    #acceptPushEvent(event) {
+        const node = () => this.#deviceNode('push');
         if (event.kind === 'registration') {
             if (typeof event.token !== 'string' || !event.token) throw new TypeError('Invalid push registration token');
             this.#finishPushRequest();
             const value = new Bag();
             value.setItem('token', event.token);
-            node.staticValue.setItem('registration', value);
-            node.setAttr({status: 'success', error: null}, true, true, false);
+            node().staticValue.setItem('registration', value);
+            node().setAttr({status: 'success', error: null}, true, true, false);
         } else if (event.kind === 'registrationError') {
             this.#finishPushRequest();
-            node.staticValue.setItem('registration', null);
-            node.setAttr(failureAttributes(event.error), true, true, false);
+            node().staticValue.setItem('registration', null);
+            node().setAttr(failureAttributes(event.error), true, true, false);
         } else {
             if (!['received', 'action'].includes(event.kind)) throw new TypeError('Invalid push event kind');
             const fields = ['id', 'title', 'body', 'messageId', 'destination'];
@@ -688,11 +688,12 @@ export class DeviceHandler extends Handler {
                 if (typeof event[key] !== 'string') throw new TypeError(`Invalid push event ${key}`);
                 value.setItem(key, event[key]);
             }
-            node.staticValue.setItem(event.kind, value);
+            node().staticValue.setItem(event.kind, value);
         }
     }
 
-    #startPushEvents(node) {
+    #startPushEvents() {
+        const node = () => this.#deviceNode('push');
         if (this.#pushEvents) return this.#pushEvents.start;
         const events = {controller: new AbortController()};
         this.#pushEvents = events;
@@ -700,24 +701,25 @@ export class DeviceHandler extends Handler {
             if (events.controller.signal.aborted) return async () => {};
             return this.provider.startPushEvents(event => {
                 if (events.controller.signal.aborted) return;
-                try { this.#acceptPushEvent(node, event); }
-                catch (error) { node.setAttr({listenerError: failureAttributes(error).error}, true, true, false); }
+                try { this.#acceptPushEvent(event); }
+                catch (error) { node().setAttr({listenerError: failureAttributes(error).error}, true, true, false); }
             }, events.controller.signal);
         }).then(stop => {
-            if (!events.controller.signal.aborted) node.setAttr({listening: true}, true, true, false);
+            if (!events.controller.signal.aborted) node().setAttr({listening: true}, true, true, false);
             return stop;
         });
         events.start.catch(error => {
             const aborted = events.controller.signal.aborted;
             events.controller.abort();
             if (this.#pushEvents === events) this.#pushEvents = null;
-            if (!aborted) node.setAttr({listening: false, listenerError: failureAttributes(error).error}, true, true, false);
+            if (!aborted) node().setAttr({listening: false, listenerError: failureAttributes(error).error}, true, true, false);
         });
-        node.setAttr({listenerError: null}, true, true, false);
+        node().setAttr({listenerError: null}, true, true, false);
         return events.start;
     }
 
-    #registerPush(node) {
+    #registerPush() {
+        const node = () => this.#deviceNode('push');
         if (this.#pushRequest) return;
         const request = {controller: new AbortController(), timer: null};
         this.#pushRequest = request;
@@ -725,14 +727,14 @@ export class DeviceHandler extends Handler {
             if (this.disposed || this.#pushRequest !== request) return;
             this.#finishPushRequest();
             request.controller.abort();
-            node.setAttr(failureAttributes({code: 'TIMEOUT', message: 'Push registration has not returned a token'}), true, true, false);
+            node().setAttr(failureAttributes({code: 'TIMEOUT', message: 'Push registration has not returned a token'}), true, true, false);
         }, 30000);
-        node.staticValue.setItem('registration', null);
-        node.setAttr({status: 'pending', error: null}, true, true, false);
+        node().staticValue.setItem('registration', null);
+        node().setAttr({status: 'pending', error: null}, true, true, false);
         Promise.resolve().then(async () => {
             if (request.controller.signal.aborted) return;
             this.requireCapability('push');
-            await this.#startPushEvents(node);
+            await this.#startPushEvents();
             if (request.controller.signal.aborted || this.#pushRequest !== request) return;
             await this.provider.registerPush(request.controller.signal);
             // SDK register() only initiates registration. The token event completes it.
@@ -740,11 +742,12 @@ export class DeviceHandler extends Handler {
             if (this.disposed || this.#pushRequest !== request) return;
             this.#finishPushRequest();
             request.controller.abort();
-            node.setAttr(failureAttributes(error), true, true, false);
+            node().setAttr(failureAttributes(error), true, true, false);
         });
     }
 
-    #startShortcutEvents(node) {
+    #startShortcutEvents() {
+        const node = () => this.#deviceNode('shortcuts');
         const events = {controller: new AbortController()};
         this.#shortcutEvents = events;
         events.start = Promise.resolve().then(() => {
@@ -758,28 +761,29 @@ export class DeviceHandler extends Handler {
                             throw new TypeError(`Invalid shortcut request ${key}`);
                         }
                     }
-                    if (node.staticValue.getItem('request')?.getItem('id') === request.id) return;
+                    if (node().staticValue.getItem('request')?.getItem('id') === request.id) return;
                     const value = new Bag();
                     value.setItem('id', request.id);
                     value.setItem('destination', request.destination);
-                    node.setAttr({listenerError: null}, true, true, false);
-                    node.staticValue.setItem('request', value);
+                    node().setAttr({listenerError: null}, true, true, false);
+                    node().staticValue.setItem('request', value);
                 } catch (error) {
-                    node.setAttr({listenerError: failureAttributes(error).error}, true, true, false);
+                    node().setAttr({listenerError: failureAttributes(error).error}, true, true, false);
                 }
             }, events.controller.signal);
         }).then(stop => {
-            if (!events.controller.signal.aborted) node.setAttr({listening: true}, true, true, false);
+            if (!events.controller.signal.aborted) node().setAttr({listening: true}, true, true, false);
             return stop;
         });
         events.start.catch(error => {
             const aborted = events.controller.signal.aborted;
             events.controller.abort();
-            if (!aborted) node.setAttr({listening: false, listenerError: failureAttributes(error).error}, true, true, false);
+            if (!aborted) node().setAttr({listening: false, listenerError: failureAttributes(error).error}, true, true, false);
         });
     }
 
-    #startLinkEvents(node) {
+    #startLinkEvents() {
+        const node = () => this.#deviceNode('links');
         const events = {controller: new AbortController()};
         this.#linkEvents = events;
         events.start = Promise.resolve().then(() => {
@@ -793,24 +797,24 @@ export class DeviceHandler extends Handler {
                             throw new TypeError(`Invalid link request ${key}`);
                         }
                     }
-                    if (node.staticValue.getItem('request')?.getItem('id') === request.id) return;
+                    if (node().staticValue.getItem('request')?.getItem('id') === request.id) return;
                     const value = new Bag();
                     value.setItem('id', request.id);
                     value.setItem('url', request.url);
-                    node.setAttr({listenerError: null}, true, true, false);
-                    node.staticValue.setItem('request', value);
+                    node().setAttr({listenerError: null}, true, true, false);
+                    node().staticValue.setItem('request', value);
                 } catch (error) {
-                    node.setAttr({listenerError: failureAttributes(error).error}, true, true, false);
+                    node().setAttr({listenerError: failureAttributes(error).error}, true, true, false);
                 }
             }, events.controller.signal);
         }).then(stop => {
-            if (!events.controller.signal.aborted) node.setAttr({listening: true}, true, true, false);
+            if (!events.controller.signal.aborted) node().setAttr({listening: true}, true, true, false);
             return stop;
         });
         events.start.catch(error => {
             const aborted = events.controller.signal.aborted;
             events.controller.abort();
-            if (!aborted) node.setAttr({listening: false, listenerError: failureAttributes(error).error}, true, true, false);
+            if (!aborted) node().setAttr({listening: false, listenerError: failureAttributes(error).error}, true, true, false);
         });
     }
 
@@ -823,7 +827,7 @@ export class DeviceHandler extends Handler {
     attributes(resolver, attrs) {
         const writing = resolver.writing;
         resolver.writing = true;
-        try { resolver._node.setAttr(attrs, true, true, false); }
+        try { this.#deviceNode(resolver.name).setAttr(attrs, true, true, false); }
         finally { resolver.writing = writing; }
     }
 
@@ -849,7 +853,7 @@ export class DeviceHandler extends Handler {
         resolver.received++;
         const writing = resolver.writing;
         resolver.writing = true;
-        try { resolver._node.setValue(bag, true, {status: 'success', error: null}, true, false); }
+        try { this.#deviceNode(resolver.name).setValue(bag, true, {status: 'success', error: null}, true, false); }
         finally { resolver.writing = writing; }
     }
 
@@ -859,8 +863,9 @@ export class DeviceHandler extends Handler {
     }
 
     reconcile() {
-        const resolver = this.resolvers.get('location');
-        if (resolver._node.attr.enabled) {
+        // Callbacks read the location resolver at its path when they run.
+        const resolver = () => this.resolver('location');
+        if (this.#deviceNode('location').attr.enabled) {
             if (this.monitor) return;
             const monitor = {stop: null, controller: new AbortController()};
             this.monitor = monitor;
@@ -869,25 +874,25 @@ export class DeviceHandler extends Handler {
                 this.requireCapability('location');
                 return this.provider.startLocationUpdates((value, error) => {
                     if (this.disposed || this.monitor !== monitor) return;
-                    if (error) this.failure(resolver, error);
+                    if (error) this.failure(resolver(), error);
                     else {
-                        try { this.accept(resolver, value); }
-                        catch (failure) { this.failure(resolver, failure); }
+                        try { this.accept(resolver(), value); }
+                        catch (failure) { this.failure(resolver(), failure); }
                     }
                 }, monitor.controller.signal);
             });
             monitor.start.then(stop => {
                 if (stop === null || this.disposed || this.monitor !== monitor) return;
                 monitor.stop = stop;
-                this.attributes(resolver, {watching: true});
+                this.attributes(resolver(), {watching: true});
             }).catch(error => {
                 if (!this.disposed && this.monitor === monitor) {
                     // Keep the failed intent until enabled changes; Data notifications cannot retry it.
-                    this.attributes(resolver, {watching: false});
-                    this.failure(resolver, error);
+                    this.attributes(resolver(), {watching: false});
+                    this.failure(resolver(), error);
                 }
             });
-            this.attributes(resolver, {status: 'pending', error: null});
+            this.attributes(resolver(), {status: 'pending', error: null});
         } else if (this.monitor) {
             const monitor = this.monitor;
             this.monitor = null;
@@ -898,13 +903,13 @@ export class DeviceHandler extends Handler {
                 if (this.retiring === monitor) this.retiring = null;
                 if (!this.disposed) {
                     const attrs = {watching: false};
-                    if (!this.monitor && !resolver.request && resolver._node.attr.status === 'pending') {
+                    if (!this.monitor && !resolver().request && this.#deviceNode('location').attr.status === 'pending') {
                         Object.assign(attrs, {status: 'cancelled', error: null});
                     }
-                    this.attributes(resolver, attrs);
+                    this.attributes(resolver(), attrs);
                 }
             });
-            this.cleanup.catch(error => { if (!this.disposed) this.failure(resolver, error); });
+            this.cleanup.catch(error => { if (!this.disposed) this.failure(resolver(), error); });
         }
     }
 
@@ -913,9 +918,9 @@ export class DeviceHandler extends Handler {
         this.assertLive();
         if (!/^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(name) || typeof name !== 'string') throw new TypeError('Invalid database name');
         if (this.#database) throw new Error('This page already owns a database connection');
-        const node = this.gramlot.data.getNode('_gramlot.device.database');
+        const node = () => this.#deviceNode('database');
         const state = (status, error = null) => {
-            if (!this.disposed) node.setAttr({status, error}, true, true, false);
+            if (!this.disposed) node().setAttr({status, error}, true, true, false);
         };
         if (!this.provider.capabilities.includes('database')) {
             const error = Object.assign(new Error('Native database unavailable'), {code: 'UNAVAILABLE'});
@@ -948,7 +953,7 @@ export class DeviceHandler extends Handler {
                 execute:(sql, params = []) => invoke('execute', sql, params), close};
         } catch (error) {
             if (this.#database === slot) this.#database = null;
-            if (!this.disposed) node.setAttr(failureAttributes(error), true, true, false);
+            if (!this.disposed) node().setAttr(failureAttributes(error), true, true, false);
             throw error;
         }
     }
@@ -997,7 +1002,8 @@ export class DeviceHandler extends Handler {
         const notificationEvents = this.#notificationEvents;
         this.#notificationEvents = null;
         notificationEvents?.controller.abort();
-        this.gramlot.data.unsubscribe('gramlot.device', {any: true});
+        this.#registration?.close();
+        this.#registration = null;
         const monitor = this.monitor;
         this.monitor = null;
         monitor?.controller.abort();
@@ -1032,6 +1038,6 @@ export class DeviceHandler extends Handler {
         // Cleanup rejection is observed; disposed pages must not receive late Data writes.
         this.cleanup = this.cleanup.finally(() => this.releaseProvider?.());
         this.cleanup.catch(error => { this.cleanupError = error; });
-        for (const resolver of this.resolvers.values()) resolver.request = null;
+        if (this.provider) for (const name of NAMES) this.#deviceNode(name).resolver.request = null;
     }
 }

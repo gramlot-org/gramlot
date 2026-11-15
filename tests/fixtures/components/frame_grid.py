@@ -24,7 +24,7 @@ for mode in ('values', 'attributes'):
     root.dataSetter(f'{mode}.rows', rows)
     root.dataSetter(f'{mode}.status', 'Ready')
     frame = root.frameGrid(node_label=mode, id=f'frame-{mode}', datapath=mode,
-                          storepath='.rows', rowMode=mode, searchOn=True, height='330px', margin_bottom='24px')
+                          storepath='.rows', rowMode=mode, searchOn=True, searchHelp=True, height='330px', margin_bottom='24px')
     frame.grid.set_attr(id=f'grid-{mode}', rowHeaders=True, rowResize=True, selfDragRows=True, selfsubscribe_update='updateFirst', selfsubscribe_remove='removeLast')
     struct = frame.grid.struct()
     struct.column('code', name='Code', width='90px')

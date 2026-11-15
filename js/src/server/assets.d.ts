@@ -11,5 +11,6 @@ export function gramlotDev(): 'YES' | 'DEBUG' | null;
  * when `GRAMLOT_DEV=DEBUG`, `gramlot.min.js` otherwise. Another name throws a `TypeError`. */
 export function runtimeAsset(name?: 'gramlot.js' | 'gramlot.min.js' | 'gramlot-markdown.js' | 'runtime-notices.json' | null): URL;
 
-/** Packaged standard collection entry points for host artifact verification. */
-export function standardCollectionAssets(): Array<{url: string; file: URL}>;
+/** The entry points of every collection the core packages, standard and declared (`typst`), for host artifact
+ * verification. */
+export function collectionAssets(): Array<{url: string; file: URL}>;

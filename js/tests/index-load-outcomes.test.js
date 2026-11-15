@@ -85,7 +85,7 @@ test('removing an index settles all pending loads once and ignores late replies'
 test('closing from the loading callback does not start a cancelled request', t => {
     const f = fixture(t, {onLoad(root, url, status){
         if (status === 'loading') {
-            const pane = root.indexContext.entries.get(url).pane;
+            const pane = root._internal.indexContext.entries.get(url).pane;
             pane.parentBag.popNode(pane.label);
         }
     }});

@@ -14,7 +14,7 @@ test('calendar periods retain leap days and UTC boundaries without fixed month d
 for(const mode of ['attributes','values'])test(`temporal snapshots intersect grid filters without changing source rows: ${mode}`,()=>{
  const data=new Bag(),rows=new Bag();data.setItem('rows',rows);data.setBackref();
  for(const [i,record] of [{region:'North',date:new Date('2024-01-31T23:59:59Z'),amount:10},{region:'South',date:new Date('2024-02-01'),amount:20},{region:'North',date:new Date('2024-02-29'),amount:30},{region:'North',date:new Date('2024-04-01'),amount:40},{region:'North',date:null,amount:50}].entries())rows.setItem('r'+i,mode==='values'?new Bag(record):null,mode==='attributes'?record:{});
- const store=new BagCollectionStore(rows,mode),grid=new BagCollectionView(store),view=new ChartTimeView(grid);
+ const store=new BagCollectionStore(data,'rows',mode),grid=new BagCollectionView(store),view=new ChartTimeView(grid);
  grid.connect();try{
   const extent=timeExtent(store,'date','month');assert.equal(extent.max-extent.min,3,'March remains an empty period');
   view.setPeriod('date',new Date('2024-02-01'),'month');assert.deepEqual(view.getRows().map(r=>r.label),['r1','r2']);

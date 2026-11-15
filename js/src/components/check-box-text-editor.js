@@ -1,4 +1,4 @@
-/** Text projection for checkBoxText. Codes remain the field value; drafts belong to Source. */
+/** Text projection for checkBoxText. Codes remain the field value; drafts belong to the Source node's `_internal`. */
 export class CheckBoxTextEditor {
     constructor(owner) {
         this.owner = owner;
@@ -32,9 +32,9 @@ export class CheckBoxTextEditor {
             if (event.target !== owner.control) this.clear();
         });
     }
-    get state() { return this.source.checkBoxTextState; }
+    get state() { return this.source._internal; }
     get locked() { return this.input.disabled || this.input.readOnly || !this.owner.pageContext?.isActive(); }
-    attach(source) { this.source = source; source.checkBoxTextState ??= {draft:null}; }
+    attach(source) { this.source = source; source._internal.draft ??= null; }
     clear() {
         if (this.source) this.state.draft = null;
         this.owner.pageContext?.formSelectionError('');

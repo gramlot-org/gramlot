@@ -736,9 +736,7 @@
           "presentationDefaults": [],
           "dataScope": false,
           "command": false,
-          "sourceContext": true,
-          "bagStore": true,
-          "bagStruct": true
+          "sourceContext": true
         },
         "parameterPattern": "^selected_[A-Za-z_][A-Za-z0-9_]*$"
       }

@@ -1,5 +1,5 @@
 import {EditingSession} from '../editing-session.js';
-import {Bag, BagCbResolver} from '@genrojs/bag';
+import {BagCbResolver} from '@genrojs/bag';
 import {SourceBag, SourceBagNode, sourceAttributeItems, wrapSource} from '@genrojs/builders';
 import {fromTytx, getSubtypeDict, setSubtypeDict, toTytx} from '@genrojs/tytx';
 import {pointerTransform, pointerDependencies} from '@genrojs/builders';
@@ -194,29 +194,45 @@ function structFormulaCode(grid) {
     return items;
 }
 
+/** Source attributes of the symbolic resolution, which never reach the DOM: the metadata of a node like `_anchor`. */
+export const SYMBOLIC_ATTRIBUTES = ['_workspace', '_workspace_path', 'childname'];
+
+/** The legacy `stringHash` of a text: 32-bit `h * 31 + code` over its UTF-16 units, as a positive number. */
+export function stringHash(text) {
+    let hash = 0;
+    for (let index = 0; index < text.length; index++) hash = (((hash << 5) - hash) + text.charCodeAt(index)) | 0;
+    return Math.abs(hash);
+}
+
+/** The nearest node of `bag` whose `childname` is `name`: direct children first, then unnamed children's descendants. */
+function namedChild(bag, name) {
+    const nodes = bag.getNodes();
+    const direct = nodes.find(node => node.getAttr('childname') === name);
+    if (direct) return direct;
+    for (const node of nodes) {
+        if (node.getAttr('childname') != null || !(node.staticValue instanceof SourceBag)) continue;
+        const found = namedChild(node.staticValue, name);
+        if (found) return found;
+    }
+    return null;
+}
+
 export class GramlotBuilderBagNode extends SourceBagNode {
     #formState = null;
-    #treeStore = null;
+    #internal = null;
 
-    /** An externally owned Bag attached to this tree's Source node. */
-    get treeStore() { return this.#treeStore; }
+    /**
+     * Internal state of this node for its component or runtime (GC-225): a plain object, created on first read.
+     * It is not reactive, not an attribute, not Data and not serialized. It holds plain values and component helper
+     * instances that hold no Bag, BagNode or Source node and reach Data and structure by address; state an author may
+     * read or bind goes to `#WORKSPACE` in Data.
+     */
+    get _internal() { return this.#internal ??= {}; }
 
-    setTreeStore(bag) {
-        if (this.nodeTag !== 'tree') throw new TypeError('setTreeStore requires a tree Source node');
-        if (bag !== null && !(bag instanceof Bag)) throw new TypeError('setTreeStore requires a Bag or null');
-        if (bag === this.#treeStore) return;
-        this.#treeStore = bag;
-        const runtime = this.rootBuilder.binding;
-        const binding = runtime?.bindingFor(this);
-        if (binding && !binding.closed) {
-            binding.rebind();
-            if (runtime.renderer.attached(this)) runtime.renderer.project(this);
-        }
-    }
     /** The local form lifecycle owned by the nearest marked Source ancestor. */
     get formState() {
         for (let owner = this; owner; owner = owner.parentNode) {
-            if (owner.#formState && owner._getMeta('gramlot_component')?.bagStore) return owner.#formState;
+            if (owner.#formState && owner._getMeta('gramlot_component')?.parameters?.storepath) return owner.#formState;
             if (owner.getAttr('formId') != null || owner.getAttr('form') === true) {
                 const state = owner.#formState ??= new EditingSession(owner, this.rootBuilder.binding);
                 state.rebind();
@@ -323,7 +339,7 @@ export class GramlotBuilderBagNode extends SourceBagNode {
             }
         }
         if (isExpression(this.staticValue) || this.nodeTag === 'script' && typeof this.staticValue === 'string') items.push(['', this.staticValue]);
-        if (this._getMeta('gramlot_component')?.bagStruct) items.push(...structFormulaCode(this));
+        if (this._getMeta('gramlot_component')?.parameters?.structpath) items.push(...structFormulaCode(this));
         return items;
     }
 
@@ -517,10 +533,16 @@ export class GramlotBuilderBagNode extends SourceBagNode {
         };
     }
 
-    /** Builder's absDatapath, keeping `?attr` on symbolic paths. */
-    absDatapath(path) {
+    /**
+     * Builder's absDatapath, keeping `?attr` on symbolic paths. `row` is the row context of `#ROW`:
+     * the key (label) of the row inside the collection at the `storepath` of the nearest node that
+     * declares one; it is ignored by any other path. `#ROW` without a row context is an error.
+     */
+    absDatapath(path, {row = null} = {}) {
         path = pointerTransform(path)?.pointer ?? path;
         const bare = this.pointerType(path) ? path.slice(1) : path;
+        if (bare.startsWith('#') && bare.indexOf('?') !== bare.lastIndexOf('?')) throw new Error(`a symbolic path has one ?attr suffix at most: ${path}`);
+        if (bare === '#ROW' || bare.startsWith('#ROW.') || bare.startsWith('#ROW?')) return this.#rowDatapath(bare, row, path);
         if (bare.startsWith('#') && bare.includes('?')) {
             const [target, attr] = bare.split('?', 2);
             const resolved = super.absDatapath(target);
@@ -559,16 +581,150 @@ export class GramlotBuilderBagNode extends SourceBagNode {
         return path === null ? null : super._finalizeAbsPath(path, attr);
     }
 
-    /** Builder's symbolic resolution; `#<nodeId>` reads the nodeId map of the page runtime when there is one (R06). */
+    /**
+     * Symbolic resolution of `#<head>[.relpath]`, in the legacy order: `#ROW`, `#WORKSPACE`,
+     * `#DATA`, then a start node (`#FORM`, `#ANCHOR`, `#<nodeId>`, `#/<childpath>`, each with an
+     * optional `/<childpath>`), from which `relpath` is resolved relatively.
+     */
     _resolveSymbolicDatapath(path, raw) {
-        const symbol = path.slice(1).split('.', 1)[0];
-        if (symbol === 'FORM' || symbol === 'ANCHOR') return super._resolveSymbolicDatapath(path, raw);
-        const runtime = this.rootBuilder?.binding;
-        if (!runtime) return super._resolveSymbolicDatapath(path, raw);
-        const anchor = runtime.nodeIds.get(symbol);
-        if (!anchor) throw new Error(`#<id>: cannot resolve ${raw}`);
-        const relpath = path.slice(symbol.length + 2);
-        return anchor.absDatapath(relpath ? `.${relpath}` : '.');
+        const symbolic = path.slice(1);
+        const dot = symbolic.indexOf('.');
+        const head = dot === -1 ? symbolic : symbolic.slice(0, dot);
+        const relpath = dot === -1 ? '' : symbolic.slice(dot + 1);
+        if (head === 'ROW') throw new Error(`#ROW: no row context for ${raw}`);
+        if (head === 'WORKSPACE') {
+            const base = this.#workspaceDatapath(raw);
+            return relpath ? `${base}.${relpath}` : base;
+        }
+        if (head === 'DATA') {
+            if (!relpath) throw new Error(`#DATA requires a path: ${raw}`);
+            return relpath;
+        }
+        return this.#symbolicNode(head, raw).absDatapath(relpath ? `.${relpath}` : '.');
+    }
+
+    /**
+     * The node reached by a child path from this node, as legacy `getChild`: the segments are
+     * separated by `/`; `parent` moves to the parent node, `#<nodeId>` (also `#FORM`, `#ANCHOR`) to the
+     * node of that symbol seen from the current node, any other segment to the nearest descendant whose
+     * `childname` is the segment (direct children first; a named node hides its descendants). Null when
+     * a step finds no node.
+     */
+    getChild(childpath) {
+        let node = this;
+        for (const segment of childpath.split('/')) {
+            if (segment === 'parent') node = node.parentNode;
+            else if (segment.startsWith('#')) node = node.#symbolicNode(segment.slice(1), childpath);
+            else {
+                this.#dependOn(`childname:${segment}`);
+                node = node.staticValue instanceof SourceBag ? namedChild(node.staticValue, segment) : null;
+            }
+            if (!node) return null;
+            this.#dependOn(node);
+        }
+        return node;
+    }
+
+    /**
+     * The name of the private Data area of this node: the `_workspace` string value, or for `true`
+     * the nodeId, else the tag followed by a hash of the node's Source path, as legacy. A node that
+     * declares no `_workspace` has the name it would have with `_workspace=true`.
+     */
+    get workspaceName() {
+        const value = this.getAttr('_workspace') ?? true;
+        if (value === true) return this.getAttr('nodeId') ?? `${this.nodeTag}_${stringHash(this.fullpath)}`;
+        if (typeof value === 'string' && value) return value;
+        throw new TypeError(`${this.nodeTag} '${this.label}': _workspace must be true or a name, not ${value}`);
+    }
+
+    /**
+     * The private Data area of this node, as `#WORKSPACE` sees it from the node that owns it:
+     * `_workspace_path` resolved from this node, else `_gramlot.workspace.<workspaceName>`. A component
+     * keeps its private states under the area of its own node, addressed by path.
+     */
+    get workspaceDatapath() {
+        const explicit = this.getAttr('_workspace_path');
+        return explicit == null ? `_gramlot.workspace.${this.workspaceName}` : this.absDatapath(explicit);
+    }
+
+    /** `#WORKSPACE`: the private Data area of the nearest node with `_workspace`. */
+    #workspaceDatapath(raw) {
+        const owner = this.attributeOwnerNode('_workspace');
+        if (!owner) throw new Error(`#WORKSPACE: no ancestor with _workspace for ${raw}`);
+        return owner.workspaceDatapath;
+    }
+
+    /**
+     * The inverse of `#ROW.<field>`: `{row, field}` when the absolute Data path `path` is a direct field of
+     * a row of the collection at the `storepath` of the nearest node that declares one, as `#ROW.<field>`
+     * gives it for that row key and `rowMode`; null for any other path.
+     */
+    rowField(path) {
+        const owner = this.attributeOwnerNode('storepath');
+        if (!owner) throw new Error(`#ROW: no ancestor with storepath for ${path}`);
+        const prefix = `${owner.absDatapath(owner.getAttr('storepath'))}.`;
+        const match = path.startsWith(prefix) ? /^([^.?]+)[.?]([^.?]+)$/.exec(path.slice(prefix.length)) : null;
+        if (!match) return null;
+        const [, row, field] = match;
+        return this.absDatapath(`#ROW.${field}`, {row}) === path ? {row, field} : null;
+    }
+
+    /** `#ROW[.field][?attr]` for the row `row` of the nearest node with `storepath`, following its `rowMode`. */
+    #rowDatapath(bare, row, raw) {
+        if (row === null) throw new Error(`#ROW: no row context for ${raw}`);
+        const owner = this.attributeOwnerNode('storepath');
+        if (!owner) throw new Error(`#ROW: no ancestor with storepath for ${raw}`);
+        const mode = owner.getAttr('rowMode');
+        if (mode !== 'values' && mode !== 'attributes') throw new Error(`#ROW: rowMode must be 'values' or 'attributes' for ${raw}`);
+        const rowpath = `${owner.absDatapath(owner.getAttr('storepath'))}.${row}`;
+        let [rest, attr = null] = bare.slice('#ROW'.length).split('?', 2);
+        if (mode === 'attributes' && rest) {
+            const field = rest.slice(1);
+            if (field.includes('.') || attr !== null) throw new Error(`#ROW: a row in rowMode 'attributes' has only attribute fields: ${raw}`);
+            return `${rowpath}?${field}`;
+        }
+        return `${rowpath}${rest}${attr === null ? '' : `?${attr}`}`;
+    }
+
+    /**
+     * The start node of a symbolic head, as legacy `nodeById`: `/<childpath>` from the nearest ancestor
+     * with a nodeId, through the `childname`s of the nodes in between; otherwise `<symbol>[/<childpath>]`
+     * where the symbol is `FORM`, `ANCHOR` or a nodeId of the page (R06: the nodeId map of the runtime).
+     */
+    #symbolicNode(head, raw) {
+        let node, childpath;
+        if (head.startsWith('/')) {
+            childpath = head.slice(1);
+            node = this;
+            while (node && node.getAttr('nodeId') == null) {
+                if (node.getAttr('childname') != null) childpath = `${node.getAttr('childname')}/${childpath}`;
+                node = node.parentNode;
+            }
+            if (!node) throw new Error(`#/: no ancestor with a nodeId for ${raw}`);
+        } else {
+            const slash = head.indexOf('/');
+            const symbol = slash === -1 ? head : head.slice(0, slash);
+            childpath = slash === -1 ? '' : head.slice(slash + 1);
+            if (symbol === 'FORM') node = this._findMarkedDatapathAncestor(true, false, raw);
+            else if (symbol === 'ANCHOR') node = this._findMarkedDatapathAncestor(false, true, raw);
+            else {
+                this.#dependOn(`id:${symbol}`);
+                const runtime = this.rootBuilder?.binding;
+                if (!runtime && !this.rootBuilder) throw new Error(`#<id>: cannot resolve ${raw} on a node without builder`);
+                node = runtime ? runtime.nodeIds.get(symbol) : this.rootBuilder.source.getNodeByAttr('nodeId', symbol);
+                if (!node) throw new Error(`#<id>: cannot resolve ${raw}`);
+                this.#dependOn(node);
+            }
+        }
+        if (!childpath) return node;
+        const child = node.getChild(childpath);
+        if (!child) throw new Error(`#<id>: no child '${childpath}' for ${raw}`);
+        return child;
+    }
+
+    /** Record, for the NodeBinding whose registrations are being resolved, that the resolution read `key`. */
+    #dependOn(key) {
+        this.rootBuilder?.binding?.dependOn(key);
     }
 
     /**

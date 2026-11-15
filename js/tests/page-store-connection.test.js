@@ -23,8 +23,10 @@ function fixture(t, parent = null) {
     };
     const document = Object.assign(new EventTarget(), {defaultView: window, baseURI: 'http://test/py/',
         referrer: 'http://test/py/', getElementsByTagName: () => frames});
+    const reported = [];
     const app = {pageId: 'primary', state: 'started', dom: {getBaseSourceNode: frame => frame.node, getDomNode: node => node.frame},
-        src: {binding: {bindingFor: () => ({track(fn) { disposers.push(fn); return () => {}; }})}}};
+        src: {binding: {bindingFor: () => ({track(fn) { disposers.push(fn); return () => {}; }}),
+            reportError(error, title) { reported.push({error, title}); }}}};
     const family = app._frames = new FrameMessages(app, document);
     const connection = new PageStoreConnection(app, '/py/gramlot/store', document);
     app.dispose = () => { app.state = 'disposed'; connection.close(); family.dispose(); };
@@ -52,7 +54,7 @@ function fixture(t, parent = null) {
         receive(peer, {kind: 'message', channel: 'server', wire: toTytx(payload), ...extra});
     }
     t.after(() => app.dispose());
-    return {connection, family, window, windows, child, receive, hello, up, disposers};
+    return {connection, family, window, windows, child, receive, hello, up, disposers, reported};
 }
 
 test('children wait for primary readiness and forward page identities and typed responses', t => {
@@ -190,6 +192,40 @@ test('socket failure closes all descendant channels without creating replacement
     assert.equal(f.connection.routes.size, 0);
     assert.equal(a.messages.at(-1).message.channels.server, undefined);
     assert.equal(f.windows.length, 1);
+});
+
+test('a channel failure is reported once with its error', t => {
+    const f = fixture(t);
+    f.windows[0].dispatchEvent(new Event('open'));
+    f.windows[0].dispatchEvent(new Event('error'));
+    f.windows[0].dispatchEvent(Object.assign(new Event('close'), {code: 1006}));
+    f.connection.fail(new Error('late failure'));
+    assert.deepEqual(f.reported.map(({error, title}) => [error.message, title]),
+        [['PageStore WebSocket failed', 'PageStore channel failed']]);
+    assert.equal(f.connection.error.message, 'late failure');
+
+    const g = fixture(t);
+    g.windows[0].dispatchEvent(new Event('open'));
+    g.connection.deliver(toTytx({op: 'closed', pageId: 'primary'}));
+    assert.equal(g.connection.closed, true);
+    assert.deepEqual(g.reported.map(({error}) => error.message), ['PageStore page closed on the server']);
+});
+
+test('a failure after the page\'s own pagehide or dispose is not reported', t => {
+    const f = fixture(t);
+    f.windows[0].dispatchEvent(new Event('open'));
+    f.window.dispatchEvent(Object.assign(new Event('pagehide'), {persisted: false}));
+    assert.equal(f.connection.closed, true);
+    f.windows[0].dispatchEvent(Object.assign(new Event('close'), {code: 1001}));
+    f.connection.fail(new Error('after pagehide'));
+    assert.deepEqual(f.reported, []);
+
+    const g = fixture(t);
+    g.windows[0].dispatchEvent(new Event('open'));
+    g.connection.gramlot.dispose();
+    g.windows[0].dispatchEvent(new Event('error'));
+    g.connection.fail(new Error('after dispose'));
+    assert.deepEqual(g.reported, []);
 });
 
 test('closed windows are detached even when no final message can be delivered', t => {

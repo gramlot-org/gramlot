@@ -10,6 +10,6 @@ mygramlot = GramlotCollection(
     module="assets/index.js",
     css=(),
     dependencies=(_dependency_0, _dependency_1,),
-    build_id="sha256:2b4f81df2746f039781d7d13f7ba157ccb50c803eabcc97ce1ffafad227b2af9",
+    build_id="sha256:bb27a112e5896ee045c1d78ad78638d5c03a63e56a6722742ec81481e875d9a8",
     files=("assets/collection.js", "assets/index.js", "commands.json", "grammar.json",),
 )

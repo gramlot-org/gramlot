@@ -8,6 +8,7 @@ import {fromTytx, toTytx} from '@genrojs/tytx';
 import {Handler} from './handler.js';
 import {assertTransportData} from '../references.js';
 import {randomId} from '../random-id.js';
+import {MessagePortConnection} from '../message-port-connection.js';
 
 /** An error outcome answered by the server inside the response envelope. */
 export class RpcError extends Error {
@@ -29,6 +30,27 @@ export class RpcHandler extends Handler {
             gramlot.serverAdapter.createTransport({rpcUrl, closeUrl, document, channel: gramlot._pageStore});
         // The AbortController of each call in flight, by envelope id; written only by `call`.
         this.remoteRequests = new Map();
+        // The dataBinder connections over a MessagePort, by name; written by `connection`.
+        this.connections = new Map();
+    }
+
+    /** The dataBinder connection of `name`; created waiting for a port when the name is new. */
+    connection(name) {
+        if (!this.connections.has(name)) this.connections.set(name, new MessagePortConnection(this.gramlot, name));
+        return this.connections.get(name);
+    }
+
+    /** Carry the binders of the connection `name` on `port`; a new port replaces the previous one. */
+    registerConnection(name, port) {
+        this.connection(name).setPort(port);
+    }
+
+    /** Release the port of the connection `name`: its binders wait for the next port. */
+    unregisterConnection(name) {
+        const connection = this.connections.get(name);
+        if (!connection) return;
+        connection.setPort(null);
+        if (!connection.binders.size) this.connections.delete(name);
     }
     /**
      * Send one envelope of `contentType` to `name` with `params`; resolves with the value or rejects with an
