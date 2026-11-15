@@ -1,4 +1,4 @@
-import {Bag} from '@gramlot/gramlot';
+import {Bag} from '@genrojs/bag';
 import {chartType} from './chart-types/index.js';
 import {requireChartCapability} from './chart-engines/index.js';
 import {checkChartSyntax} from './chart-syntax.js';

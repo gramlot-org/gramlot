@@ -1,5 +1,5 @@
 /** Application-owned attachment operations, composed with the shared upload queue. */
-import {Bag} from '@gramlot/gramlot';
+import {Bag} from '@genrojs/bag';
 import {toTytx} from '@genrojs/tytx';
 import {defineComponent} from './registry.js';
 import {Container} from './container.js';

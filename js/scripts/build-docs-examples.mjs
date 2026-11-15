@@ -1,6 +1,7 @@
 /** Bundle the core browser runtime used by Python-authored documentation examples. */
 import {build} from 'esbuild';
 import {fileURLToPath} from 'node:url';
+import {runtimeOptions} from './runtime-options.mjs';
 
 const jsRoot = fileURLToPath(new URL('../', import.meta.url));
 const output = fileURLToPath(new URL('../../build/docs-source/downloads/inside/runtime.js', import.meta.url));
@@ -18,5 +19,8 @@ app.src.startSource(await response.text());`,
     bundle: true,
     format: 'esm',
     platform: 'browser',
+    // As the runtime build: third-party libraries of components load on first use, outside the bundle.
+    plugins: runtimeOptions['gramlot.js'].plugins,
+    external: runtimeOptions['gramlot.js'].external,
     outfile: output,
 });

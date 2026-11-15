@@ -55,7 +55,7 @@ export const libraries = Object.freeze({
         '@codemirror/autocomplete': '6.20.4', '@codemirror/commands': '6.11.1', '@codemirror/lang-css': '6.3.1',
         '@codemirror/lang-html': '6.4.12', '@codemirror/lang-javascript': '6.2.5', '@codemirror/lang-json': '6.0.2',
         '@codemirror/lang-markdown': '6.5.2', '@codemirror/lang-python': '6.2.1', '@codemirror/lang-sql': '6.10.0',
-        '@codemirror/lang-xml': '6.1.0', '@codemirror/language': '6.13.1', '@codemirror/lint': '6.9.7',
+        '@codemirror/lang-xml': '6.1.0', '@codemirror/language': '6.13.1', '@codemirror/lint': '6.9.8',
         '@codemirror/search': '6.7.2', '@codemirror/state': '6.7.6', '@codemirror/view': '6.43.15',
         '@lezer/highlight': '1.2.5', 'codemirror-lang-typst': '0.6.0'},
         local: './components/code-mirror-engine.js', url: null, integrity: null, format: 'module'}),
@@ -64,6 +64,9 @@ export const libraries = Object.freeze({
         'prosemirror-markdown': '1.13.1', 'prosemirror-model': '1.25.12', 'prosemirror-state': '1.4.3',
         'prosemirror-view': '1.42.6'},
         local: './components/prose-mirror-engine.js', url: null, integrity: null, format: 'module'}),
+    // The Markdown renderer of Gramlot; markdown-it itself is the runtime file gramlot-markdown.js.
+    markdownIt: Object.freeze({packages: {'markdown-it': '14.3.3'}, local: './components/markdown-document.js',
+        url: null, integrity: null, format: 'module'}),
     typst: Object.freeze({packages: {'@myriaddreamin/typst.ts': '0.7.0', '@myriaddreamin/typst-ts-web-compiler': '0.7.0',
         '@myriaddreamin/typst-ts-renderer': '0.7.0'},
         local: './components/typst-client.js', url: null, integrity: null, format: 'module'}),

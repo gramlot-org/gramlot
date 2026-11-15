@@ -1,7 +1,4 @@
-var l=Object.defineProperty;var m=Object.getOwnPropertyDescriptor;var h=Object.getOwnPropertyNames;var p=Object.prototype.hasOwnProperty;var u=(t,e)=>{for(var r in e)l(t,r,{get:e[r],enumerable:!0})},c=(t,e,r,s)=>{if(e&&typeof e=="object"||typeof e=="function")for(let o of h(e))!p.call(t,o)&&o!==r&&l(t,o,{get:()=>e[o],enumerable:!(s=m(e,o))||s.enumerable});return t},n=(t,e,r)=>(c(t,e,"default"),r&&c(r,e,"default"));var a={};u(a,{defineCollection:()=>i});n(a,A);import*as A from"@gramlot/gramlot/components";import{defineCollection as b}from"@gramlot/gramlot/components";function i(t){if(t.name!=="chat")throw new Error("Unexpected bundled collection");let e=[],r={};t.css?.forEach((s,o)=>{s.href=e[o].href});for(let[s,o]of Object.entries(t.assets??{}))o.href=r[s].href;return b({...t,css:e,assets:r})}import{sharedModules as g}from"@gramlot/gramlot";var f=t=>g["./components/container.js"][t],d=f("Container");var x=(0,a.defineComponent)({name:"chatMessages",tag:"gramlot-chat-messages",base:d,subTags:"*",implementation:t=>class extends t{constructor(){super();let e=this.ownerDocument.createElement("style");e.textContent=`:host{height:100%;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
-                .control-box{padding:var(--gramlot-chat-padding,20px max(20px,calc((100% - 880px)/2)))}
-                ::slotted(article){box-sizing:border-box;margin:0 0 24px;padding:16px 20px;border-radius:18px;
-                    line-height:1.6;overflow-wrap:anywhere;background:var(--gramlot-chat-assistant-background,
-                    color-mix(in srgb,var(--gramlot-surface-subtle,#eee) 88%,#628099))}
-                ::slotted(article[data-role=user]){width:fit-content;max-width:85%;margin-left:auto;padding:12px 18px;
-                    border-radius:20px;background:var(--gramlot-chat-bubble,var(--gramlot-surface-subtle,#eee))}`,this.shadowRoot.append(e)}connectedCallback(){this.setAttribute("role","log"),this.setAttribute("aria-label","Conversation messages"),this.setAttribute("aria-live","polite"),this.tabIndex=0}}}),D=i({name:"chat",components:[x]});export{x as ChatMessages,D as default};
+import {sharedModules} from '@gramlot/gramlot';
+const read = name => sharedModules["./components/chat.js"][name];
+export const ChatMessages = /* @__PURE__ */ read("ChatMessages");
+export default /* @__PURE__ */ read('default');

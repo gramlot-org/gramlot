@@ -56,6 +56,8 @@ export interface PreparedCollection {
     module: string;
     css: string[];
     dependencies: string[];
+    /** The local copy of each third-party library the artifact ships, by library name (GC-325 §165). */
+    libraries?: Record<string, string>;
 }
 
 /** The options of a `GramlotServer`. */
@@ -136,6 +138,8 @@ export class GramlotServer {
     /** Environment-local Page class; the imported class remains unchanged. */
     environmentPage(PageClass: typeof Page): typeof Page;
     collectionGraph(collections: PreparedCollection[]): PreparedCollection[];
+    /** The URL of the local copy of each library the collections ship: the first collection that ships it provides it. */
+    libraryModules(collections: PreparedCollection[]): Record<string, string>;
     loadCollections(builder: GramlotBuilder, collections: PreparedCollection[]): void;
     constructor(options?: GramlotServerOptions);
     /** The Page class of `path`, or `PageNotFound`. */

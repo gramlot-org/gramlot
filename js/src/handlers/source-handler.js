@@ -12,6 +12,8 @@ import {GramlotBuilderBag} from '../builder/source.js';
 import {GramlotRenderer} from '../renderer/gramlot-renderer.js';
 import {BindingRuntime} from '../binding/runtime.js';
 import {LogicRegistry} from '../binding/logic.js';
+import {bundledCollections} from '../bundled-collections.js';
+import {standardGrammar} from '../../dist/standard-grammar.js';
 
 /**
  * The Source and every change of it. The construction order is the one of source plan §4.3: the Data
@@ -24,12 +26,27 @@ export class SourceHandler extends Handler {
         // The BindingRuntime reaches the builder through gramlot.src while it attaches.
         gramlot.src = this;
         this.logicRegistry = new LogicRegistry(gramlot);
-        this.builder = new GramlotBuilder(null, {collections, nameSyntax});
+        this.builder = SourceHandler.pageBuilder(collections, nameSyntax);
         this.binding = new BindingRuntime(gramlot, {subscriptions});
         this.builder.binding = this.binding;
         this.binding.attach();
         this.source = this.builder.source;
         this.renderer = new GramlotRenderer(this.builder, this.source, destination, {binding: this.binding});
+    }
+    /**
+     * The builder of the page. When the collections start with the standard collections in the order of the
+     * prepared grammar (`dist/standard-grammar.js`, written by the build), the builder loads that grammar in one
+     * step and composes only the collections after them; otherwise it composes each collection (GC-325 §165).
+     */
+    static pageBuilder(collections, nameSyntax) {
+        const prepared = standardGrammar?.collections ?? [];
+        const bundled = new Map(bundledCollections.map(collection => [collection.name, collection]));
+        const standard = prepared.length > 0 && prepared.every((name, index) => collections[index] === bundled.get(name));
+        if (!standard) return new GramlotBuilder(null, {collections, nameSyntax});
+        const builder = new GramlotBuilder(null, {nameSyntax});
+        builder.loadGrammar(standardGrammar.document, {replace: true});
+        for (const collection of collections.slice(prepared.length)) builder.loadCollection(collection);
+        return builder;
     }
     /** Start from an embedded typed Source using the same observed insertion as main. */
     startSource(wire) {

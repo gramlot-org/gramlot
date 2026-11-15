@@ -11,8 +11,8 @@ import {build} from 'esbuild';
 import {chromium, firefox, webkit} from 'playwright';
 const require = createRequire(import.meta.url);
 const root = new URL('../', import.meta.url);
-const core = await build({entryPoints: [require.resolve('@gramlot/gramlot')], bundle: true,
-    format: 'esm', platform: 'browser', target: 'es2022', write: false});
+// The runtime as the core build ships it: it carries the standard collections and loads their libraries on first use.
+const core = {outputFiles: [{text: await readFile(resolve(require.resolve('@gramlot/gramlot'), '../../dist/gramlot.js'), 'utf8')}]};
 const fixture = `import {Gramlot, GramlotBuilder} from '@gramlot/gramlot';
 import layout from '@gramlot/collections/layout';
 import tree from '@gramlot/collections/tree';

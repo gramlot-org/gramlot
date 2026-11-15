@@ -1,5 +1,5 @@
 import {GridColumnFilters} from './grid-column-filters.js';
-import {Bag} from '@gramlot/gramlot';
+import {Bag} from '@genrojs/bag';
 import {SVG_NS} from '../renderer/attributes.js';
 import {defineComponent, ComponentCollection} from './registry.js';
 import {Container} from './container.js';

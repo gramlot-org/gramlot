@@ -3,7 +3,7 @@ import {defineComponent} from './registry.js';
 import {Container} from './container.js';
 import {WindowSurface} from './window-surface.js';
 import {SVG_NS} from '../renderer/attributes.js';
-import {createDOMPurify} from '@gramlot/gramlot';
+import createDOMPurify from 'dompurify';
 
 const SIDES = ['top', 'bottom', 'left', 'right'];
 const REGIONS = [...SIDES, 'center'];
