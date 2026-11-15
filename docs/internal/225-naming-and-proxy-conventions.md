@@ -3453,3 +3453,17 @@ Issue gramlot-org/gramlot#82 (GC-325 §165). Names applied:
 
 Chosen in implementation; the export, the import map entry and the descriptor field
 are public API and wait for owner confirmation.
+
+<a id="gc-225-build-plugins-20261115"></a>
+### Runtime build plugins as a package export — 2026-11-15
+
+Owner "vai così" (2026-11-15), after gramlot-serverless 0.3.31 failed to bundle the core
+0.3.38 sources: since 0.3.38 the package entry imports every standard collection, and a
+host bundle without the library plugin reaches the CSS of xterm, jodit and uPlot. The two
+esbuild plugins of the runtime build move from `js/scripts/runtime-options.mjs` to
+`js/src/build-plugins.js`, package export `@gramlot/gramlot/build-plugins`, Node only.
+The module is named after what it holds (row "Helper modules"); the exported names are
+the existing `absentPackagePlugin` and `libraryPlugin`; the type `BuildPlugin` of the
+declaration file follows the esbuild name `Plugin`. `runtime-options.mjs` imports them.
+Public API awaiting owner confirmation of the names.
+

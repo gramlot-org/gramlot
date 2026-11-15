@@ -69,6 +69,7 @@
     ".": "./src/index.js",
     "./server": "./src/server/index.js",
     "./runtime": "./dist/gramlot.js",
+    "./build-plugins": "./src/build-plugins.js",
     "./markdown": "./src/markdown.js",
     "./page": "./src/server/page.js",
     "./gramlot-server": "./src/server/gramlot-server.js",

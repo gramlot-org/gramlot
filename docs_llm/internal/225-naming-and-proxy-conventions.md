@@ -3413,3 +3413,12 @@ Issue gramlot-org/gramlot#82 (GC-325 §165). Names applied:
 
 Chosen in implementation; the export, the import map entry and the descriptor field
 are public API and wait for owner confirmation.
+
+<a id="gc-225-build-plugins-20261115"></a>
+### Runtime build plugins as a package export — 2026-11-15
+
+`absentPackagePlugin` and `libraryPlugin` move from `js/scripts/runtime-options.mjs` to
+`js/src/build-plugins.js`, export `@gramlot/gramlot/build-plugins` (Node only), for hosts
+that bundle the core sources (gramlot-serverless). Type `BuildPlugin`. Public API awaiting
+owner confirmation.
+
