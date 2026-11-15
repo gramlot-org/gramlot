@@ -9,7 +9,7 @@
  * A key is the import specifier: the package name for a library, the path relative to this
  * directory for a runtime module. The generator refuses a collection that would bundle a module of
  * the runtime missing from this table. big.js and @xmldom/xmldom are not shared: the browser runtime
- * does not ship them (see `scripts/runtime-options.mjs`).
+ * does not ship them (see `build-plugins.js`).
  *
  * @module
  */

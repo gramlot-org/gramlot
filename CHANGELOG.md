@@ -7,6 +7,14 @@ in `.github/release-notes/`.
 
 ## [Unreleased]
 
+### Added
+
+- `@gramlot/gramlot/build-plugins` (Node only): `absentPackagePlugin` and
+  `libraryPlugin`, the esbuild plugins of the runtime build. A host that bundles
+  the core sources for the browser applies them to keep third-party libraries
+  external as `@gramlot/libraries/<name>`. Since 0.3.38 such a bundle fails
+  without `libraryPlugin`.
+
 ## [0.3.38] — 2026-11-15
 
 ### Changed
