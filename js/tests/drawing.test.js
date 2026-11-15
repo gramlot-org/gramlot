@@ -8,7 +8,7 @@ import layout from '../src/components/layout.js';
 import tree from '../src/components/tree.js';
 import {layoutWindow} from './helpers/layout-window.js';
 
-function fixture(initial=new Bag()) {
+function fixture(initial=new Bag(),extra={}) {
     const {window}=new JSDOM('<main id="gramlot-root"></main>');
     layoutWindow(window);
     window.SVGElement.prototype.getBBox=()=>({x:0,y:0,width:100,height:24});
@@ -16,7 +16,7 @@ function fixture(initial=new Bag()) {
     const app=new Gramlot({document:window.document,transport:false,collections});
     app.data.setItem('annotations',initial);
     const builder=new GramlotBuilder(null,{collections});
-    builder.root.drawingPane({id:'drawing',annotations:'^annotations'});
+    builder.root.drawingPane({id:'drawing',annotations:'^annotations',...extra});
     app.src.startSource(builder.toTytx());
     const pane=window.document.getElementById('drawing'), svg=pane.shadowRoot.querySelector('svg.canvas');
     svg.getScreenCTM=()=>({a:1,inverse:()=>({})});
@@ -138,5 +138,15 @@ test('the tool state lives in the private Data area of the drawingPane node',()=
         f.pointer('pointerdown',10,20);f.pointer('pointermove',50,70);f.pointer('pointerup',50,70);
         assert.equal(f.app.data.getItem('annotations').getNodes()[0].getValue().getItem('type'),'arrow','a Data write of the tool reaches the pane');
         assert.equal(f.pane.querySelectorAll('gramlot-menu-line')[2].getAttribute('aria-checked'),'true');
+    } finally {f.app.dispose();f.window.close();}
+});
+
+test('without toolbar and with an aspectRatio the surface is 1000 units high and ratio times wider; tools still apply',()=>{
+    const f=fixture(new Bag(),{toolbar:false,aspectRatio:2});
+    try {
+        assert.equal(f.pane.querySelector('gramlot-menu'),null);
+        assert.equal(f.svg.getAttribute('viewBox'),'0 0 2000 1000');
+        f.pane.setTool('arrow');f.pointer('pointerdown',10,20);f.pointer('pointermove',1900,70);f.pointer('pointerup',1900,70);
+        const bag=f.app.data.getItem('annotations');assert.equal(bag.getItem(bag.getNodes()[0].label).getItem('x2'),1900);
     } finally {f.app.dispose();f.window.close();}
 });

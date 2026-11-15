@@ -3,25 +3,29 @@ import {Bag} from '@genrojs/bag';
 import {defineComponent} from './registry.js';
 import {Container} from './container.js';
 import {SVG_NS} from '../renderer/attributes.js';
-import {corners, overlaps, contactFraction} from './tray-geometry.js';
+import {corners, overlaps, contactFraction, arrangeGrid} from './tray-geometry.js';
 import {createTraySettings} from './tray-settings.js';
 
 export const TrayPane = defineComponent({
     name: 'trayPane', tag: 'gramlot-tray-pane', base: Container, subTags: '*', sourceContext: true,
     parameters: {storepath: {dtype: 'T'}, locked: {dtype:'B',default:false,binding:'read'},
         gridStep:{dtype:'L',default:10,binding:'read'},gridVisible:{dtype:'B',default:false,binding:'read'},
-        rotationStep:{dtype:'N',default:15,binding:'read'}},
-    childParameters: {closable:{dtype:'B',default:false},minWidth:{dtype:'N',default:100},minHeight:{dtype:'N',default:64}},
+        rotationStep:{dtype:'N',default:15,binding:'read'},
+        autoArrange:{dtype:'B',default:false,binding:'twoWay'},autoSize:{dtype:'B',default:false,binding:'read'}},
+    childParameters: {closable:{dtype:'B',default:false},minWidth:{dtype:'N',default:100},minHeight:{dtype:'N',default:64},
+        aspectRatio:{dtype:'N',nullable:true,default:null}},
     implementation: Base => class TrayPane extends Base {
         // Projection metadata, keyed by the existing renderer presentation.
         static #blocks = new WeakMap();
         static projectChild(box, attrs, {label, remove}) {
             if (!box.labelbox) throw new TypeError('trayPane children require a Labelbox (declare lbl)');
-            const {minWidth=100, minHeight=64, closable=false, ...rest} = attrs;
+            const {minWidth=100, minHeight=64, closable=false, aspectRatio=null, ...rest} = attrs;
             if(typeof closable!=='boolean')throw new TypeError('closable must be a boolean');
             if (![minWidth,minHeight].every(value=>typeof value==='number'&&Number.isFinite(value)&&value>0))
                 throw new TypeError('trayPane minimum dimensions must be positive numbers');
-            TrayPane.#blocks.set(box, {label, minWidth, minHeight, closable, remove});
+            if(aspectRatio!==null&&!(typeof aspectRatio==='number'&&Number.isFinite(aspectRatio)&&aspectRatio>0))
+                throw new TypeError('trayPane aspectRatio must be a positive number or null');
+            TrayPane.#blocks.set(box, {label, minWidth, minHeight, aspectRatio, closable, remove});
             box.setAttribute('data-tray-block','');
             const settings=box.labelbox.traySettings ??= createTraySettings(box);
             for(const [key,{button}] of Object.entries(settings.controls)) {
@@ -82,6 +86,9 @@ export const TrayPane = defineComponent({
         #context;
         // The router registration on the storepath address: the geometry events reach the tray by path.
         #geometry = null;
+        #resizeObserver;
+        // Inputs of the last automatic arrangement; null requests a new one.
+        #arranged=null;
         #settings=new Set();
         #events;
         #scheduled = false;
@@ -96,7 +103,9 @@ export const TrayPane = defineComponent({
             this.shadowRoot.append(style);
         }
         projectAttributes(attrs) {
+            const previous=this.parameters;
             const rest=super.projectAttributes(attrs);
+            if(this.parameters.autoArrange&&!previous?.autoArrange)this.#arranged=null;
             for(const key of ['gridStep','rotationStep']) {
                 const value=this.parameters[key];
                 if(typeof value!=='number'||!Number.isFinite(value)||value<0||(key==='gridStep'&&!Number.isInteger(value)))
@@ -120,6 +129,8 @@ export const TrayPane = defineComponent({
             this.#observeGeometry();
             this.#events = new this.ownerDocument.defaultView.AbortController();
             const options = {signal:this.#events.signal};
+            this.#resizeObserver=new this.ownerDocument.defaultView.ResizeObserver(()=>this.#schedule());
+            this.#resizeObserver.observe(this);
             this.shadowRoot.querySelector('slot').addEventListener('slotchange', () => this.#schedule(), options);
             this.addEventListener('pointerdown', event => this.#start(event), options);
             this.addEventListener('pointermove', event => this.#move(event), options);
@@ -162,7 +173,7 @@ export const TrayPane = defineComponent({
         }
         disconnectedCallback() {
             for(const settings of this.#settings)settings.remove();
-            this.#finish(); this.#events.abort();
+            this.#finish(); this.#events.abort(); this.#resizeObserver.disconnect();
             this.#geometry?.close(); this.#geometry=null;
         }
         /**
@@ -174,11 +185,14 @@ export const TrayPane = defineComponent({
             const path=this.#context.attrDatapath('storepath');
             if(this.#geometry?.path===path)return;
             if(this.#geometry){this.#finish();this.#geometry.close();}
+            this.#arranged=null;
             this.#geometry=this.#context.sourceNode.rootBuilder.binding.router.register({path,subtree:true,
                 recipient:{receive:change=>this.#geometryChange(change)}});
         }
         #geometryChange(event) {
             if(this.#writing)return;
+            // A new Bag at the storepath address is arranged again.
+            if(event.path===this.#geometry.path)this.#arranged=null;
             if(event.node.label!=='selected'||this.#drag?.members||this.#drag?.marquee)this.#finish();
             if(!['layer','rotation','scale'].includes(event.node.label) || !['upd_value','upd_value_attr'].includes(event.evt))return;
             // The row of the event, by address: <storepath>.<row label>.<key>.
@@ -212,6 +226,7 @@ export const TrayPane = defineComponent({
                 for(const settings of this.#settings)if(![...this.children].some(box=>box.labelbox.traySettings===settings)) {
                     settings.remove();this.#settings.delete(settings);
                 }
+                if(this.parameters.autoArrange)this.#arrange();
                 for (const box of this.children) {
                     const block = TrayPane.#blocks.get(box);
                     const row = this.#row(block.label);
@@ -244,6 +259,30 @@ export const TrayPane = defineComponent({
                     }
                 }
             });
+        }
+        /** Writes an even grid into the rows when its inputs changed since the last arrangement. */
+        #arrange() {
+            const width=this.clientWidth,height=this.clientHeight,fit=this.parameters.autoSize;
+            // A pane without layout (for example in a hidden panel) arranges once it has a size.
+            if(width<=0||height<=0)return;
+            const boxes=[...this.children],items=boxes.map(box=>{
+                const {label,aspectRatio,minWidth,minHeight}=TrayPane.#blocks.get(box);
+                if(fit)return {label,aspectRatio,minWidth,minHeight};
+                const rectangle=this.#rectangle(box);
+                return {label,aspectRatio,minWidth,minHeight,width:rectangle.width,height:rectangle.height};
+            });
+            const inputs=JSON.stringify([width,height,fit,this.parameters.gridStep,items]);
+            if(inputs===this.#arranged)return;
+            this.#arranged=inputs;
+            const rectangles=arrangeGrid({width,height,gap:this.parameters.gridStep,fit,items});
+            boxes.forEach((box,index)=>{
+                const rectangle=rectangles[index],row=this.#row(TrayPane.#blocks.get(box).label);
+                this.#write(row,fit ? rectangle : {left:rectangle.left,top:rectangle.top});
+            });
+        }
+        /** A user move or resize keeps the user's arrangement. */
+        #manual() {
+            if(this.parameters.autoArrange)this.#context.writeParameter('autoArrange',false);
         }
         #row(label) {
             const store = this.#storeBag(), node = store.getNode([label]);
@@ -326,6 +365,7 @@ export const TrayPane = defineComponent({
             const members=!rotate&&!resize ? [...this.children].filter(child=>child===box||this.#row(TrayPane.#blocks.get(child).label).getItem('selected'))
                 .map(child=>({box:child,label:TrayPane.#blocks.get(child).label,...this.#rectangle(child)})) : null;
             this.#drag = {box, label:block.label, members, pendingSelection, extend:event.shiftKey, moved:false, id:event.pointerId, left:row.getItem('left'), top:row.getItem('top'),
+                autoArrange:this.parameters.autoArrange,
                 resize, rotate, angle:row.getItem('rotation'), ...this.#rectangle(box),
                 x:event.clientX-rect.left, y:event.clientY-rect.top};
             if(rotate)this.#drag.pointerAngle=Math.atan2(event.clientY-rect.top-this.clientTop-this.#drag.top-this.#drag.height/2,
@@ -390,6 +430,7 @@ export const TrayPane = defineComponent({
             }
             if(dx===0&&dy===0&&!drag.moved)return;
             drag.moved=true;
+            this.#manual();
             const left=this.#snap(Math.round(drag.left+dx),this.parameters.gridStep,event.shiftKey),
                 top=this.#snap(Math.round(drag.top+dy),this.parameters.gridStep,event.shiftKey);
             if (left !== drag.left || top !== drag.top) this.#suppressClick = true;
@@ -437,6 +478,7 @@ export const TrayPane = defineComponent({
             }
             else if (drag.box.parentElement === this&&this.#gestureRows([drag.label])) this.#write(this.#row(drag.label),drag.rotate ? {rotation:drag.rotation} : drag.resize
                 ? {left:drag.left,top:drag.top,width:drag.width,height:drag.height} : {left:drag.left,top:drag.top});
+            if(drag.autoArrange&&!this.parameters.autoArrange)this.#context.writeParameter('autoArrange',true);
             this.#suppressClick = false;
             this.#finish();
         }
@@ -454,6 +496,7 @@ export const TrayPane = defineComponent({
         }
         #resize(box,row,width,height,origin=this.#rectangle(box)){
             const block=TrayPane.#blocks.get(box);
+            this.#manual();
             width=Math.max(block.minWidth,width);height=Math.max(block.minHeight,height);
             // Keep the transformed upper-left corner anchored during resize.
             const dw=(width-origin.width)/2,dh=(height-origin.height)/2,a=origin.rotation*Math.PI/180;

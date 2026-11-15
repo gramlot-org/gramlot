@@ -68,3 +68,5 @@ export {sharedModules} from './shared-modules.js';
 export {bundledCollections} from './bundled-collections.js';
 // Third-party libraries of components: the manifest and the loader on first use (GC-325 §160).
 export {libraries, loadLibrary} from './libraries.js';
+// The random id of the runtime, for collections prepared outside this package.
+export {randomId} from './random-id.js';

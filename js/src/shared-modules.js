@@ -34,6 +34,7 @@ import * as bagCollectionStore from './stores/bag-collection-store.js';
 import * as bagCollectionView from './stores/bag-collection-view.js';
 import * as bases from './components/bases.js';
 import * as choices from './components/choices.js';
+import * as container from './components/container.js';
 import * as choiceFieldStyles from './components/choice-field-styles.js';
 import * as fieldState from './components/field-state.js';
 import * as gridFormulas from './components/grid-formulas.js';
@@ -53,7 +54,6 @@ import * as charts from './components/charts.js';
 import * as audio from './components/audio.js';
 import * as drawing from './components/drawing.js';
 import * as uploads from './components/uploads.js';
-import * as containerModule from './components/container.js';
 import * as gridSearchModule from './components/grid-search.js';
 
 export const sharedModules = Object.freeze({
@@ -78,6 +78,7 @@ export const sharedModules = Object.freeze({
     './stores/bag-collection-view.js': bagCollectionView,
     './components/bases.js': bases,
     './components/choices.js': choices,
+    './components/container.js': container,
     './components/choice-field-styles.js': choiceFieldStyles,
     './components/field-state.js': fieldState,
     './components/grid-formulas.js': gridFormulas,
@@ -98,6 +99,5 @@ export const sharedModules = Object.freeze({
     './components/audio.js': audio,
     './components/drawing.js': drawing,
     './components/uploads.js': uploads,
-    './components/container.js': containerModule,
     './components/grid-search.js': gridSearchModule,
 });

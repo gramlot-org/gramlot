@@ -3,3 +3,4 @@ export {defineComponent, defineCollection, ComponentCollection} from './registry
 export {NativeControl, ChoiceGroup} from './bases.js';
 export {Labelbox} from './labelbox.js';
 export {FieldState} from './field-state.js';
+export {Container} from './container.js';

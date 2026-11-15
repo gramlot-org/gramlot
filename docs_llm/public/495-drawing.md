@@ -52,5 +52,7 @@ Collection: drawing. SVG annotation editing over an original Data Bag.
 | --- | --- |
 | `image` | `{"binding":"read","default":null,"dtype":"T","nullable":true}` |
 | `annotations` | `{"binding":"read","dtype":"X"}` |
+| `aspectRatio` | `{"binding":"read","default":null,"dtype":"R","nullable":true}` |
+| `toolbar` | `{"binding":"read","default":true,"dtype":"B"}` |
 
 Child grammar: `*`; parent grammar: `None`.

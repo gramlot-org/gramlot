@@ -56,7 +56,7 @@ Use `dialog` for a modal window and `floatingPane` for a nonmodal window; each
 contains a `framePane`. Bind `open`, `collapsed`, `maximized` and geometry when
 application state must reflect those operations. A dialog remains modal when
 collapsed or maximized. Floating panes default to movable/resizable/collapsible;
-dialogs do not. Set `floatingPane.docked` to present its existing contents inline; set it to false to restore its floating geometry. `closable`, `maximizable`, minimum dimensions and `beforeClose`
+dialogs do not. Set `floatingPane.docked` to present its existing contents inline; set it to false to restore its floating geometry. A docked window still honours `collapsed`, keeping only the framePane top region, and `maximized`, filling the page until restored into its place. Set `floatingPane.titlebar` to false to omit the window's own title bar: the framePane top region then moves the window and remains when it is collapsed. `closable`, `maximizable`, minimum dimensions and `beforeClose`
 express the window contract; closing a window is not a record save. See
 [windows](350-menus-toolbars-and-windows.md) and the shared window parameters below.
 
@@ -67,7 +67,10 @@ second movable/resizable system to the cards. Pointer operations retain content
 and editor bindings. Same-layer transformed rectangles stop at contact; separate
 layers may overlap. Shift enables `gridStep` and `rotationStep` snapping;
 `gridVisible` only changes presentation. `locked` disables layout editing while
-keeping card contents usable. Closing a closable card removes its Source and its
+keeping card contents usable. `autoArrange` writes an even grid into the rows on
+child changes and pane resize; `autoSize` also fills the visible pane, respecting
+each child's `aspectRatio`, `minWidth` and `minHeight`. A user move or resize turns
+`autoArrange` off. Closing a closable card removes its Source and its
 layout row. Saving/restoring the layout is an explicit application Data operation.
 See [tray workspaces](105-components.md#gc-105-970).
 
@@ -145,7 +148,9 @@ Applies to: [dialog](#gc-420-dialog), [floatingPane](#gc-420-floatingpane).
 | `movable` | B | True | read | — | [floatingPane](#gc-420-floatingpane) |
 | `resizable` | B | True | read | — | [floatingPane](#gc-420-floatingpane) |
 | `collapsible` | B | True | read | — | [floatingPane](#gc-420-floatingpane) |
-| `docked` | B | False | read | — | [floatingPane](#gc-420-floatingpane) |
+| `docked` | B | False | twoWay | — | [floatingPane](#gc-420-floatingpane) |
+| `titlebar` | B | True | read | — | [floatingPane](#gc-420-floatingpane) |
+| `detachable` | B | False | read | — | [floatingPane](#gc-420-floatingpane) |
 
 <a id="gc-420-260"></a>
 <a id="gc-420-shared-regions"></a>
@@ -455,16 +460,16 @@ Collection: **layout**. Browser element: `gramlot-tray-pane`.
 [Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-traypane).
 
 
-**Data contract.** storepath resolves to a Bag keyed by direct child Source labels. Each position Bag holds x, y, width, height, rotation, scale, selected and layer. Gesture changes write geometry and selection to those rows while the existing controls stay mounted.
+**Data contract.** storepath resolves to a Bag keyed by direct child Source labels. Each position Bag holds left, top, width, height, rotation, scale, selected and layer. Gesture changes write geometry and selection to those rows while the existing controls stay mounted. With autoArrange, the tray writes an even grid into the rows when children are added or removed and when the pane is resized; autoSize also writes width and height to fill the visible pane.
 
 
-**Interaction and events.** Drag, resize and rotation handles edit geometry. Shift applies configured snapping. Click and marquee gestures select blocks, and selected blocks can move together. Opt-in close removes the block Source and its geometry row.
+**Interaction and events.** Drag, resize and rotation handles edit geometry. Shift applies configured snapping. Click and marquee gestures select blocks, and selected blocks can move together. Opt-in close removes the block Source and its geometry row. A user move or resize writes autoArrange false, keeping the user arrangement; setting it true again rearranges immediately.
 
 
-**Composition.** Give each direct child a Labelbox with lbl. Child options include minWidth, minHeight and closable. A tray can contain interactive fields and nested trays.
+**Composition.** Give each direct child a Labelbox with lbl. Child options include minWidth, minHeight, aspectRatio and closable. A tray can contain interactive fields and nested trays.
 
 
-**Limits and lifecycle.** Bounds and same-layer contact constrain edits. Lock hides editing chrome while external Data still projects. Cancellation restores the gesture state, and store replacement ends the old gesture without overwriting the replacement.
+**Limits and lifecycle.** Bounds and same-layer contact constrain edits. Lock hides editing chrome while external Data still projects. Cancellation restores the gesture state, and store replacement ends the old gesture without overwriting the replacement. Automatic arrangement ignores rotation and scale; minimum dimensions take precedence over the visible area.
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
@@ -473,6 +478,8 @@ Collection: **layout**. Browser element: `gramlot-tray-pane`.
 | `gridStep` | L | 10 | read | — |
 | `gridVisible` | B | False | read | — |
 | `rotationStep` | N | 15 | read | — |
+| `autoArrange` | B | False | twoWay | — |
+| `autoSize` | B | False | read | — |
 
 Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
@@ -482,6 +489,7 @@ Parameters projected by this parent from its children:
 | `closable` | `{"default": false, "dtype": "B"}` |
 | `minWidth` | `{"default": 100, "dtype": "N"}` |
 | `minHeight` | `{"default": 64, "dtype": "N"}` |
+| `aspectRatio` | `{"default": null, "dtype": "N", "nullable": true}` |
 
 <a id="gc-420-410"></a>
 <a id="gc-420-transformpane"></a>
