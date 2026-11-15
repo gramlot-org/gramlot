@@ -19,6 +19,7 @@ import {Gramlot, GramlotBuilder, PageBootstrap} from '../src/index.js';
 import {GramlotFileServer, parseRequires} from '../src/server/index.js';
 import {mount} from './fixtures/mount.js';
 import {fromTytx, toTytx} from '@genrojs/tytx';
+import {runtimeOptions} from '../scripts/runtime-options.mjs';
 
 const LOGIC = fileURLToPath(new URL('./fixtures/logic/', import.meta.url)).replace(/\/$/, '');
 const PAGE_MODULE = new URL('../src/server/page.js', import.meta.url).href;
@@ -343,8 +344,7 @@ test('CSP without unsafe-eval: the bootstrap and logic graph and the runtime bun
     }
     // The bundle as js/scripts/build-runtime.mjs builds it, dependencies included; esbuild opens the
     // code of each module with a `// <path>` line, so the section of inline.js is left out.
-    const bundle = await build({entryPoints: [join(source, 'index.js')], bundle: true, platform: 'browser', target: 'es2022',
-        format: 'esm', write: false, legalComments: 'inline', logLevel: 'silent'});
+    const bundle = await build({...runtimeOptions['gramlot.js'], write: false, metafile: false, logLevel: 'silent'});
     const sections = bundle.outputFiles[0].text.split(/^(?=\/\/ \S+\.m?js$)/m);
     assert.equal(sections.filter(section =>  /^\/\/ (?:js\/)?src\/binding\/inline\.js\n/.test(section)).length, 1);
     const text = sections.filter(section => ! /^\/\/ (?:js\/)?src\/binding\/inline\.js\n/.test(section)).join('');
@@ -425,4 +425,33 @@ test('hosted browser modules can import the prepared layout collection', () => f
     const match = opened.html.match(/<script type="importmap" nonce="[^"]+">(.*?)<\/script>/s);
     const imports = JSON.parse(match[1]).imports;
     assert.equal(imports['@gramlot/collections/layout'], root + server.collections.find(item=>item.name==='layout').module);
+}));
+
+test('a page imports no file of a standard collection: the runtime bundle carries them', () => folder(async root => {
+    await write(root, 'index.js', `import {Page as Base} from ${JSON.stringify(PAGE_MODULE)};
+export class Page extends Base {
+    main(root) {
+        const box = root.groupBox({title: 'Customer'});
+        box.textbox({id: 'customer', value: '^customer', lbl: 'Customer'});
+        root.chatMessages({id: 'messages', storepath: 'messages'});
+    }
+}`);
+    const server = new GramlotFileServer(root);
+    const opened = await server.openPage('/', {prefix: root});
+    const args = bootstrapArguments(opened.html);
+    assert.deepEqual(args.resources.collections.map(record => record.name).sort(),
+        ['audio', 'charts', 'chat', 'drawing', 'editors', 'grid', 'grouplets', 'inputs', 'layout', 'tree', 'uploads']);
+    // An import of any record fails: the URLs name missing files.
+    args.resources.collections = args.resources.collections.map(record =>
+        ({...record, url: pathToFileURL(`${root}/missing/${record.name}.js`).href}));
+    const wire = await sourceText(server, opened.pageId);
+    const {window} = browser(EMPTY_PAGE, pathToFileURL(root + '/index.html').href);
+    await withFetch(wire, async () => {
+        const app = await new PageBootstrap({...args, document: window.document}).run();
+        assert.equal(app.state, 'started');
+        assert.ok(window.document.getElementById('customer').control);
+        assert.equal(window.document.getElementById('messages').localName, 'gramlot-chat-messages');
+        for (const record of args.resources.collections) assert.ok(app.getCollection(record.name), record.name);
+        app.dispose();
+    });
 }));

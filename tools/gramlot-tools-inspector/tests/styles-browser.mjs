@@ -8,7 +8,8 @@ import {createRequire} from 'node:module';
 import {build} from 'esbuild';
 import {chromium, webkit} from 'playwright';
 const require = createRequire(import.meta.url);
-const core = await build({entryPoints: [require.resolve('@gramlot/gramlot')], bundle: true, format: 'esm', platform: 'browser', target: 'es2022', write: false});
+// The runtime as the core build ships it: it carries the standard collections and loads their libraries on first use.
+const core = {outputFiles: [{text: await readFile(require.resolve('@gramlot/gramlot').replace(/src\/index\.js$/, 'dist/gramlot.js'), 'utf8')}]};
 const fixture = `import {Gramlot, GramlotBuilder} from '@gramlot/gramlot';
 import '/inspector.js';
 import {InspectorStyles} from '/inspector-styles.js';

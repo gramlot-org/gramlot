@@ -1,5 +1,5 @@
 /** Experimental coordinator for bounded windows delivered by a PageStore. */
-import {Bag} from '@gramlot/gramlot';
+import {Bag} from '@genrojs/bag';
 import {defineComponent} from '../components/registry.js';
 import {Container} from '../components/container.js';
 

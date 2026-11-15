@@ -421,7 +421,7 @@ These links identify the owning code and test suites examined. Shared suites can
 
 **Implementation:** [tray-pane.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/tray-pane.js), [tray-geometry.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/tray-geometry.js).
 
-**Tests inspected:** [tray-pane.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/tray-pane.test.js).
+**Tests inspected:** [tray-pane.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/tray-pane.test.js), [tray-geometry.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/tray-geometry.test.js).
 
 [Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-traypane).
 

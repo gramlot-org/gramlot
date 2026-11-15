@@ -3315,6 +3315,47 @@ property. No proxy is added: components read the source from their document. Cho
 in implementation; the exports and the server option are public API and wait for
 owner confirmation.
 
+### Tray automatic arrangement — 2026-11-06
+
+Owner d-auto-arrange/d-auto-size (2026-11-06): trayPane `autoArrange` (B, twoWay,
+false), `autoSize` (B, read, false); child `aspectRatio` (N, nullable, null = free).
+camelCase like gridStep. Writes existing left/top (width/height with autoSize); no
+new row field. User move/resize writes autoArrange=false via writeParameter
+(sourceContext component). Private pure `arrangeGrid` in tray-geometry.js. Cell gap
+reuses gridStep (implementation choice, open for owner review); no gap parameter.
+
+### Window without title bar — 2026-11-06
+
+floatingPane `titlebar` (B, read, true) names the part it controls
+(`WindowSurface.titlebar`, `.titlebar`); false omits it and the framePane top region
+moves the window. `collapsed`/`maximized` also apply when docked. Internal
+`--collapsed-height`, internal WindowSurface option `content`. Open for owner review.
+
+### Detachable window — 2026-11-06
+
+floatingPane `detachable` (B, read, false) as in tabContainer/borderContainer;
+pulling a docked window out detaches it, double click on the bar toggles docked.
+`docked` becomes twoWay like `collapsed`. Internal `#written`, `DETACH_DISTANCE`
+(6 px). chatMessages custom property `--gramlot-chat-padding`. Open for owner review.
+
+### Child parameter offered to the parent — 2026-11-06
+
+Parameter-spec key `childParameter`: html.js offers the child's value (or default)
+to a parent child parameter of the same name; the child keeps it. Opt-in.
+Open for owner review.
+
+### Drawing surface without an image — 2026-11-06
+
+drawingPane `aspectRatio` (R, nullable, null): surface ratio without an image;
+`toolbar` (B, read, true): false omits the tool menu. Custom property
+`--gramlot-drawing-background`. Open for owner review.
+
+### Exports for collections prepared outside the core — 2026-11-08
+
+`@gramlot/gramlot/components` exports `Container`; `@gramlot/gramlot` exports
+`randomId`; `components/container.js` joins `sharedModules`. First consumer:
+gramlot-webrtc. Public API awaiting owner confirmation.
+
 <a id="gc-225-runtime-size-20261108"></a>
 ### Runtime size, issue #84 — 2026-11-08
 
@@ -3351,3 +3392,24 @@ Chosen in implementation; the package export, `collectionAssets()`,
 `declared_collections()` and the import map entry are public API and wait for owner
 confirmation. gramlot-js-server applies the same
 `absentPackagePlugin` to the window runtime of its exports.
+
+<a id="gc-225-runtime-bundle-20261114"></a>
+### One runtime bundle with the standard collections — 2026-11-14
+
+Issue gramlot-org/gramlot#82 (GC-325 §165). Names applied:
+
+- `bundledCollections` and its module `js/src/bundled-collections.js` follow
+  `standardCollections`/`declaredCollections`: named after what they hold.
+- The import specifier `@gramlot/libraries/<name>` follows `@gramlot/collections/<name>`;
+  `<name>` is the key of the `libraries` manifest. The artifact folder
+  `assets/libraries/` follows `assets/modules/` and `assets/files/`.
+- `library_modules` / `libraryModules` of `GramlotServer` and the descriptor field
+  `libraries` follow the snake/camel convention and the `libraries` manifest.
+- The manifest entry `markdownIt` follows `writeExcelFile`: the npm package name in
+  camelCase. The esbuild plugin `library-module` follows `absent-package`.
+- The generated module `js/dist/standard-grammar.js` and its export `standardGrammar`
+  follow `dist/standard-collections.js` / `standardCollections`. The static
+  `SourceHandler.pageBuilder` names what it returns, as `GramlotServer.environmentPage`.
+
+Chosen in implementation; the export, the import map entry and the descriptor field
+are public API and wait for owner confirmation.

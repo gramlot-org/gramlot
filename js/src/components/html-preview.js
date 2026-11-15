@@ -1,5 +1,6 @@
 import {defineComponent} from './registry.js';
 import {projectParameters} from './parameters.js';
+import {loadLibrary} from '../libraries.js';
 
 function PreviewElement(HTMLElement) {
     return class extends HTMLElement {
@@ -36,7 +37,7 @@ export const MarkdownPreview=defineComponent({name:'markdownPreview',tag:'gramlo
         render() {
             if (this.#renderDocument) {super.render();return;}
             if (this.ready) return;
-            this.ready=import('./markdown-document.js').then(module=>{
+            this.ready=loadLibrary('markdownIt',this.ownerDocument,()=>import('./markdown-document.js')).then(module=>{
                 this.#renderDocument=module.renderMarkdownDocument;
                 if(this.isConnected) this.render();
             });

@@ -45,6 +45,21 @@ class LibrarySourceTests(unittest.TestCase):
         self.assertEqual(imports["integrity"], modules)
         self.assertEqual(set(modules), {cdn.libraries[name]["url"] for name in ("echarts", "uplot", "xterm", "xtermFit")})
 
+    def test_the_import_map_names_the_local_copy_of_each_library_in_its_collection(self):
+        cdn = server()
+        html = asyncio.run(cdn.open_page("/")).html
+        imports = json.loads(re.search(r'<script type="importmap"[^>]*>(.*?)</script>', html).group(1))["imports"]
+        libraries = {key[len("@gramlot/libraries/"):]: url for key, url in imports.items()
+                     if key.startswith("@gramlot/libraries/")}
+        owners = {"writeExcelFile": "grid", "markdownIt": "editors", "codemirror": "editors", "jodit": "editors",
+                  "prosemirror": "editors", "xterm": "editors", "xtermFit": "editors", "xtermStyle": "editors",
+                  "echarts": "charts", "echartsGl": "charts", "uplot": "charts", "uplotStyle": "charts",
+                  "plotly": "charts", "vega": "charts"}
+        self.assertEqual(set(libraries), set(owners))
+        collections = {collection.name: collection for collection in cdn.collections}
+        for name, owner in owners.items():
+            self.assertEqual(libraries[name], cdn.collection_url(collections[owner], f"assets/libraries/{name}.js"), name)
+
     def test_local_bootstrap_names_no_cdn(self):
         html = asyncio.run(server(library_source="local").open_page("/")).html
         self.assertIn('<html data-gramlot-library-source="local">', html)

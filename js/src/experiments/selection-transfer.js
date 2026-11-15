@@ -1,5 +1,6 @@
 /** Isolated local HTTP experiment; ordinary RpcHandler/HttpTransport stay unchanged. */
-import {Bag, toTytx, fromTytxIter} from '@gramlot/gramlot';
+import {toTytx, fromTytxIter} from '@genrojs/tytx';
+import {Bag} from '@genrojs/bag';
 
 export async function* jsonLines(body, metrics, now = () => performance.now()) {
     const reader = body.getReader(), decoder = new TextDecoder('utf-8', {fatal:true});

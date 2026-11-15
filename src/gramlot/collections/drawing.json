@@ -72,6 +72,70 @@
             "default": null
           },
           {
+            "name": "aspectRatio",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "R"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "toolbar",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": true
+          },
+          {
             "name": "attr",
             "kind": "var_keyword",
             "role": "attribute",
@@ -96,6 +160,17 @@
             },
             "annotations": {
               "dtype": "X",
+              "binding": "read"
+            },
+            "aspectRatio": {
+              "dtype": "R",
+              "nullable": true,
+              "default": null,
+              "binding": "read"
+            },
+            "toolbar": {
+              "dtype": "B",
+              "default": true,
               "binding": "read"
             }
           },

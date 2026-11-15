@@ -6,6 +6,7 @@ import {createServer} from 'node:http';
 import {fileURLToPath} from 'node:url';
 import {build} from 'esbuild';
 import {chromium, webkit} from 'playwright';
+import {runtimeOptions} from '../../../js/scripts/runtime-options.mjs';
 const fixture = `
 import {Gramlot, GramlotBuilder} from '@gramlot/gramlot';
 import inputs from '@gramlot/gramlot/components/inputs';
@@ -22,7 +23,7 @@ if(location.search==='?remote'){
 }else inspector.gramlot=app;
 document.body.append(inspector);window.app=app;window.inspector=inspector;`;
 const output=await build({stdin:{contents:fixture,resolveDir:fileURLToPath(new URL('./',import.meta.url)),sourcefile:'structure-fixture.js'},
- bundle:true,format:'esm',platform:'browser',target:'es2022',write:false,loader:{'.css':'text'},alias:{'@gramlot/gramlot/markdown':fileURLToPath(new URL('../../../js/src/markdown.js',import.meta.url)), '@gramlot/gramlot':fileURLToPath(new URL('../../../js/src/index.js',import.meta.url)), '@gramlot/gramlot/components/inputs':fileURLToPath(new URL('../../../js/src/components/inputs.js',import.meta.url)), '@gramlot/collections/layout':fileURLToPath(new URL('../../../js/src/components/layout.js',import.meta.url)), '@gramlot/collections/tree':fileURLToPath(new URL('../../../js/src/components/tree.js',import.meta.url))}});
+ bundle:true,format:'esm',platform:'browser',target:'es2022',write:false,loader:{'.css':'text'},plugins:runtimeOptions['gramlot.js'].plugins,alias:{'@gramlot/gramlot/components':fileURLToPath(new URL('../../../js/src/components/index.js',import.meta.url)), '@gramlot/gramlot/markdown':fileURLToPath(new URL('../../../js/src/markdown.js',import.meta.url)), '@gramlot/gramlot':fileURLToPath(new URL('../../../js/src/index.js',import.meta.url)), '@gramlot/gramlot/components/inputs':fileURLToPath(new URL('../../../js/src/components/inputs.js',import.meta.url)), '@gramlot/collections/layout':fileURLToPath(new URL('../../../js/src/components/layout.js',import.meta.url)), '@gramlot/collections/tree':fileURLToPath(new URL('../../../js/src/components/tree.js',import.meta.url))}});
 const server=createServer((request,response)=>{
  response.setHeader('Content-Type',request.url==='/fixture.js'?'text/javascript':'text/html');
  response.end(request.url==='/fixture.js'?output.outputFiles[0].text:'<!doctype html><meta charset="utf-8"><title>Inspector Source editing</title><main id="app" style="margin-left:530px"></main><script type="module" src="/fixture.js"></script>');

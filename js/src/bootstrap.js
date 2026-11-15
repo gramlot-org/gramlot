@@ -7,12 +7,15 @@
 import {Gramlot} from './gramlot.js';
 import {LogicRegistry} from './binding/logic.js';
 import {ServerAdapter} from './server-adapter.js';
+import {bundledCollections} from './bundled-collections.js';
 
 /**
  * The browser start of one page (source plan §4.12). The server writes
  * `await new PageBootstrap({config, resources}).run()` into the bootstrap HTML;
  * `resources` is `{css: [url], js: [{url, group}]}`, already in load order and
  * with the mount prefix, with `collections` and `serverAdapter` when the server has them.
+ * A collection record of the runtime bundle (`bundledCollections`) is not imported; any other collection is
+ * imported before the page starts.
  */
 export class PageBootstrap {
     constructor({config, resources, document = globalThis.document}) {
@@ -62,6 +65,7 @@ export class PageBootstrap {
                 } catch(error) { throw new Error(`${url}: import failed: ${error.message}`, {cause:error}); }
             });
             const names = new Set();
+            const bundled = new Map(bundledCollections.map(collection => [collection.name, collection]));
             const collectionImports = (resources.collections ?? []).map(async record => {
                 if (!record || typeof record !== 'object' || Object.keys(record).sort().join(',') !== 'buildId,name,url' ||
                         typeof record.name !== 'string' || typeof record.url !== 'string' ||
@@ -70,6 +74,8 @@ export class PageBootstrap {
                 }
                 names.add(record.name);
                 const {name,url,buildId} = record;
+                // The runtime carries this collection: its artifact reads it from the runtime.
+                if (bundled.has(name)) return bundled.get(name);
                 let module;
                 try { module = await import(new URL(url, document.baseURI).href); }
                 catch(error) { throw new Error(`${name}: collection import failed: ${error.message}`, {cause:error}); }

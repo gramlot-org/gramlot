@@ -151,7 +151,7 @@ Use `dialog` for a modal window and `floatingPane` for a nonmodal window; each
 contains a `framePane`. Bind `open`, `collapsed`, `maximized` and geometry when
 application state must reflect those operations. A dialog remains modal when
 collapsed or maximized. Floating panes default to movable/resizable/collapsible;
-dialogs do not. Set `floatingPane.docked` to present its existing contents inline; set it to false to restore its floating geometry. `closable`, `maximizable`, minimum dimensions and `beforeClose`
+dialogs do not. Set `floatingPane.docked` to present its existing contents inline; set it to false to restore its floating geometry. A docked window still honours `collapsed`, keeping only the framePane top region, and `maximized`, filling the page until restored into its place. Set `floatingPane.titlebar` to false to omit the window's own title bar: the framePane top region then moves the window and remains when it is collapsed. `closable`, `maximizable`, minimum dimensions and `beforeClose`
 express the window contract; closing a window is not a record save. See
 [windows](350-menus-toolbars-and-windows.md) and the shared window parameters below.
 
@@ -162,7 +162,10 @@ second movable/resizable system to the cards. Pointer operations retain content
 and editor bindings. Same-layer transformed rectangles stop at contact; separate
 layers may overlap. Shift enables `gridStep` and `rotationStep` snapping;
 `gridVisible` only changes presentation. `locked` disables layout editing while
-keeping card contents usable. Closing a closable card removes its Source and its
+keeping card contents usable. `autoArrange` writes an even grid into the rows on
+child changes and pane resize; `autoSize` also fills the visible pane, respecting
+each child's `aspectRatio`, `minWidth` and `minHeight`. A user move or resize turns
+`autoArrange` off. Closing a closable card removes its Source and its
 layout row. Saving/restoring the layout is an explicit application Data operation.
 See [tray workspaces](105-components.md#gc-105-970).
 

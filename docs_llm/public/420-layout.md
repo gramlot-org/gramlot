@@ -51,8 +51,9 @@ Dialog and floatingPane share controls, geometry and state. Their movement, resi
 | `beforeClose` | `{"dtype":"T","nullable":true}` | dialog, floatingPane |
 | `width, height, left, top` | `{"binding":"twoWay","dtype":"T","nullable":true}` | dialog, floatingPane |
 | `minWidth, minHeight` | `{"binding":"read","dtype":"T","nullable":true}` | dialog, floatingPane |
-| `movable, resizable, collapsible` | `{"binding":"read","default":true,"dtype":"B"}` | floatingPane |
-| `docked` | `{"binding":"read","default":false,"dtype":"B"}` | floatingPane |
+| `movable, resizable, collapsible, titlebar` | `{"binding":"read","default":true,"dtype":"B"}` | floatingPane |
+| `docked` | `{"binding":"twoWay","default":false,"dtype":"B"}` | floatingPane |
+| `detachable` | `{"binding":"read","default":false,"dtype":"B"}` | floatingPane |
 
 <a id="gc-420-260"></a>
 <a id="gc-420-shared-regions"></a>
@@ -331,24 +332,25 @@ Collection: layout. Data-owned arrangement of labelled live cards with selection
 [Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-traypane).
 
 
-**Data contract.** storepath resolves to a Bag keyed by direct child Source labels. Each position Bag holds x, y, width, height, rotation, scale, selected and layer. Gesture changes write geometry and selection to those rows while the existing controls stay mounted.
+**Data contract.** storepath resolves to a Bag keyed by direct child Source labels. Each position Bag holds left, top, width, height, rotation, scale, selected and layer. Gesture changes write geometry and selection to those rows while the existing controls stay mounted. With autoArrange, the tray writes an even grid into the rows when children are added or removed and when the pane is resized; autoSize also writes width and height to fill the visible pane.
 
 
-**Interaction and events.** Drag, resize and rotation handles edit geometry. Shift applies configured snapping. Click and marquee gestures select blocks, and selected blocks can move together. Opt-in close removes the block Source and its geometry row.
+**Interaction and events.** Drag, resize and rotation handles edit geometry. Shift applies configured snapping. Click and marquee gestures select blocks, and selected blocks can move together. Opt-in close removes the block Source and its geometry row. A user move or resize writes autoArrange false, keeping the user arrangement; setting it true again rearranges immediately.
 
 
-**Composition.** Give each direct child a Labelbox with lbl. Child options include minWidth, minHeight and closable. A tray can contain interactive fields and nested trays.
+**Composition.** Give each direct child a Labelbox with lbl. Child options include minWidth, minHeight, aspectRatio and closable. A tray can contain interactive fields and nested trays.
 
 
-**Limits and lifecycle.** Bounds and same-layer contact constrain edits. Lock hides editing chrome while external Data still projects. Cancellation restores the gesture state, and store replacement ends the old gesture without overwriting the replacement.
+**Limits and lifecycle.** Bounds and same-layer contact constrain edits. Lock hides editing chrome while external Data still projects. Cancellation restores the gesture state, and store replacement ends the old gesture without overwriting the replacement. Automatic arrangement ignores rotation and scale; minimum dimensions take precedence over the visible area.
 
 
 | Parameters | Contract |
 | --- | --- |
 | `storepath` | `{"dtype":"T"}` |
-| `locked, gridVisible` | `{"binding":"read","default":false,"dtype":"B"}` |
+| `locked, gridVisible, autoSize` | `{"binding":"read","default":false,"dtype":"B"}` |
 | `gridStep` | `{"binding":"read","default":10,"dtype":"L"}` |
 | `rotationStep` | `{"binding":"read","default":15,"dtype":"N"}` |
+| `autoArrange` | `{"binding":"twoWay","default":false,"dtype":"B"}` |
 
 Child grammar: `*`; parent grammar: `None`.
 
@@ -359,6 +361,7 @@ Child parameters projected by the parent:
 | `closable` | `{"default":false,"dtype":"B"}` |
 | `minWidth` | `{"default":100,"dtype":"N"}` |
 | `minHeight` | `{"default":64,"dtype":"N"}` |
+| `aspectRatio` | `{"default":null,"dtype":"N","nullable":true}` |
 
 <a id="gc-420-410"></a>
 <a id="gc-420-transformpane"></a>

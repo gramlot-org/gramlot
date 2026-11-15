@@ -59,6 +59,9 @@ runtime contract. Source children and private component DOM are distinct;
 
 `dtype`, `nullable`, `binding`, `default` and qualifications export the portable
 contract. `NativeControl` projects `target: 'control'` to control properties.
+`childParameter: true` offers the value, or the default when the Source omits it,
+to a parent child parameter of the same name; the child keeps it (a tile
+`aspectRatio` for trayPane).
 `intl_str` is metadata, not translation. Arbitrary metadata does not implement
 validation. Open extra attributes do not guarantee typo detection. The recorded
 Python nested-regex union limitation remains; no permissive input contract follows.
@@ -117,6 +120,9 @@ does not activate it. Selection provides grammar and bootstrap resources; base
 Gramlot remains. The sample uses `searchbox(value='^.query', live=True)` and a
 paragraph sharing that Data path. A raw grammar document is not a prepared Page
 descriptor. Built-in prepared collections use the same selection shape.
+
+The runtime bundle carries every standard collection (`bundledCollections`, GC-325 §165): a page loads no
+file of a standard collection; a third-party library loads on first use.
 
 <a id="gc-340-050-typst"></a>
 `typst` (`typstPreview`, compiler WebAssembly about 41 MiB) is the core collection

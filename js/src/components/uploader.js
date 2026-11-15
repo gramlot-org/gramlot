@@ -1,5 +1,5 @@
 /** Select or drop files into a shared upload queue. */
-import {Bag} from '@gramlot/gramlot';
+import {Bag} from '@genrojs/bag';
 import {defineComponent} from './registry.js';
 import {Container} from './container.js';
 import {UploadEngine, readUploadContext} from './upload-engine.js';

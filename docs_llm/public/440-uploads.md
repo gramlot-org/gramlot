@@ -111,6 +111,7 @@ Shared contracts: [Values and bindings](#gc-440-shared-value), [Disabled, readon
 | `contextPath, operation, onComplete` | `{"default":null,"dtype":"T","nullable":true}` |
 | `cropWidth, cropHeight` | `{"default":256,"dtype":"L"}` |
 | `outputWidth, outputHeight` | `{"default":512,"dtype":"L"}` |
+| `screenCapture` | `{"default":true,"dtype":"B"}` |
 
 Child grammar: `''`; parent grammar: `None`.
 

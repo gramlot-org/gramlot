@@ -1,4 +1,4 @@
-import {Bag} from '@gramlot/gramlot';
+import {Bag} from '@genrojs/bag';
 import {loadLibrary} from '../libraries.js';
 import {isDecimal} from '@genrojs/tytx';
 import {GridRows} from './grid-rows.js';

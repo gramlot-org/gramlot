@@ -1,4 +1,4 @@
-import {Bag} from '@gramlot/gramlot';
+import {Bag} from '@genrojs/bag';
 
 export const SELECTION_MODES = Object.freeze(['none', 'single', 'multi']);
 

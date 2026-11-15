@@ -2647,3 +2647,91 @@ Uvicorn (gramlot-py-server) with `cdn` and `local`: inputs, frameGrid with Excel
 CodeMirror, ECharts chart and gauge, ECharts GL bar3D, uPlot; ECharts and uPlot come from
 jsDelivr only with `cdn` and only on first use; a changed CDN file is blocked by its
 integrity.
+
+<a id="gc-325-165"></a>
+## 165 · One runtime bundle with the standard collections (2026-11-14)
+
+Block ID: **GC-325-165**. Last part of gramlot-org/gramlot#82 ("the JS of every Gramlot
+component lives in one bundle that is always available"; "Gramlot collections are
+always loaded; only third-party libraries load on first use", owner, 2026-11-07). The
+owner confirmed on 2026-11-14 that every standard collection goes into the runtime,
+with no collection loaded on demand.
+
+A page loads the runtime file and no file of a standard collection. Before, every page
+imported 11 collection modules, their wrappers and their static chunks: 26 files.
+
+- `bundledCollections` (`js/src/bundled-collections.js`, exported by
+  `@gramlot/gramlot`) lists the collections of the runtime. The build refuses a list
+  that differs from `collections/standard.json`.
+- Each collection module is in `sharedModules` under its path (`./components/grid.js`).
+  The prepared artifact of a bundled collection is a module that reads the collection
+  from `sharedModules`: a page holds one copy, also when a page module or the inspector
+  imports `@gramlot/collections/<name>`. The descriptors, grammars, build IDs and
+  routes of the artifacts do not change their shape.
+- `PageBootstrap` does not import the record of a bundled collection: it activates the
+  collection of the runtime. A declared collection (`typst`) and a custom collection are
+  imported as before.
+- Core components import `Bag`, `sourceTarget`, the TYTX functions and DOMPurify from
+  their packages, not from `@gramlot/gramlot`: the runtime entry imports the
+  components, and an import of the entry from a component is a cycle.
+
+### Third-party libraries in the bundle
+
+The runtime holds no third-party library of a component. This supersedes "the
+collection generator emits the local copy as a deferred module of the collection"
+of §160:
+
+- A dynamic import of the `local` of a manifest entry becomes the import of
+  `@gramlot/libraries/<name>`, in the runtime build (`js/scripts/runtime-options.mjs`)
+  and in the generator.
+- The generator writes the local copy as `assets/libraries/<name>.js` (shared chunks in
+  `assets/libraries/chunks/`) in the artifact of the collection that loads it.
+- The Python and JavaScript `GramlotServer` add `@gramlot/libraries/<name>` to the
+  import map, pointing at that file (`library_modules` / `libraryModules`; the JS
+  descriptor carries `libraries: {name: url}`). The first collection of the graph that
+  ships a library provides it. The adapters serve these files as any other artifact
+  file: gramlot-py-server and gramlot-js-server need no change.
+- With `cdn` and an entry with a `url`, `loadLibrary` still imports the CDN file and
+  never the local copy.
+- The manifest gains `markdownIt`: the Markdown renderer (`./components/markdown-document.js`)
+  imports markdown-it statically; inside the runtime it would load markdown-it at start.
+- A file-origin export resolves `@gramlot/libraries/<name>` to the file of the
+  artifact itself (`js/tests/third-party-libraries.test.js`). The serverless export of
+  gramlot-js-server needs this resolution.
+
+### Measures
+
+Chromium headless, localhost, gramlot-py-server 0.3.31 on Uvicorn, 2026-11-14. Page:
+tabContainer, formlet with four inputs, grid with 20 rows. Times are medians of 8 to 20
+loads, in ms from navigation start to the answer of `main`, with the prepared grammar below.
+
+| | 0.3.37 | this change |
+|---|---:|---:|
+| files at start (HTML included) | 29 (26 of collections) | 3 (none of collections) |
+| `gramlot.min.js`, minified / brotli | 813,017 / 176,994 | 2,187,108 / 290,399 |
+| `main` answered, warm cache | 296 | 82 |
+| `main` answered, no cache, 40 ms round trip | 630 | 256 |
+
+### The prepared grammar of the standard collections
+
+A CPU profile of the warm load showed about 250 of 330 ms in `loadGrammar`: the
+`GramlotBuilder` constructor composed the grammar of each collection on the grammar of
+the previous ones, copying and parsing the whole document at every collection. The
+same work repeated at every page.
+
+- The build composes the grammar of the standard collections once, in the order of the
+  collection graph of the servers, and writes it to `js/dist/standard-grammar.js`
+  (`standardGrammar = {collections, document}`, a JSON text read by `JSON.parse`).
+  The runtime carries it: 865 KB of JSON, about 6 KB more in brotli.
+- `SourceHandler.pageBuilder(collections, nameSyntax)` loads that document in one step
+  (`loadGrammar(document, {replace: true})`) when the collections of the page start
+  with the standard ones in that order, then composes the collections after them
+  (declared and custom). Any other list composes each collection, as before.
+- The servers already reuse a prepared grammar per process (`preparedGrammars`,
+  2026-10-30); this is the same rule for the browser, prepared at build time.
+- In Node, composing the 11 standard collections takes about 400 ms; loading the
+  prepared document takes about 27 ms.
+
+Verification: `js/tests/bootstrap.test.js` (a page imports no file of a standard
+collection), `js/tests/standard-grammar.test.js`, `js/tests/third-party-libraries.test.js`,
+`tests/test_third_party_libraries.py`.
