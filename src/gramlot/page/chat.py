@@ -61,10 +61,11 @@ class ChatPane:
                        **{'data-chat-toolbar': True},
                        aria_label='Chat controls', display='flex', align_items='center',
                        gap='8px', height='44px', padding='0 14px', box_sizing='border-box')
-        actions.button(icon='+', aria_label='Add files or images', title='Add files or images',
+        self.attachmentButton = actions.button(icon='+', aria_label='Add files or images', title='Add files or images',
                        class_='button--quiet', font_size='24px', width='36px', height='36px',
                        style='--gramlot-touch-target:36px;--gramlot-button-padding:0;--gramlot-field-height:36px;',
-                       picking='^.picking', disabled='^.pending:={} || {picking}').dataController(func='chatPickAttachments')
+                       picking='^.picking', disabled='^.pending:={} || {picking}')
+        self.attachmentButton.dataController(func='chatPickAttachments')
         self.toolbar = actions.div(display='flex', align_items='center', gap='10px',
                                    flex=1, min_width=0, overflow_x='auto')
         self.sendButton = actions.button(aria_label='Send', title='Send message',
@@ -83,6 +84,7 @@ class ChatPageStore(PageStore):
     chat_ids = ('main',)
 
     def main(self, root):
+        super().main(root)
         for chat_id in self.chat_ids:
             if not isinstance(chat_id, str) or not _CHAT_ID.fullmatch(chat_id):
                 raise ValueError('chat_ids must contain literal identifiers')
@@ -97,6 +99,13 @@ class ChatPageStore(PageStore):
         if active is None or active[0] is not self:
             raise RuntimeError('request_attachments requires an active process_message call')
         return active[2]
+
+    def conversation_messages(self, chat_id):
+        """The authoritative message Bag; applications may return a shared store branch."""
+        return self.data.get_item(f'chats.{chat_id}.messages')
+
+    def conversation_authors(self):
+        return 'You', 'Assistant'
 
     def process_message(self, text):
         """Return plain text or Gramlot Source. The base implementation is echo."""
@@ -139,10 +148,11 @@ class ChatPageStore(PageStore):
                 result = self.process_message(text)
                 if not isinstance(result, (str, GramlotBuilderBag)):
                     raise TypeError('process_message must return text or Gramlot Source')
-                messages = self.data.get_item(base+'.messages')
+                messages = self.conversation_messages(chat_id)
+                user_author, assistant_author = self.conversation_authors()
                 messages.set_item('m_'+uuid4().hex, attachment_message(text, attachments),
-                                  _attributes=dict(role='user', author='You'))
-                messages.set_item('m_'+uuid4().hex, result, _attributes=dict(role='assistant', author='Assistant'))
+                                  _attributes=dict(role='user', author=user_author))
+                messages.set_item('m_'+uuid4().hex, result, _attributes=dict(role='assistant', author=assistant_author))
                 accepted = True
         except Exception:
             error = 'The server could not process the message. Your draft has been kept.'

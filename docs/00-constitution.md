@@ -5680,3 +5680,15 @@ state at `_gramlot.drawing` and the grid state at `_gramlot.grid`: component sta
 in the component's private area `#WORKSPACE` (`_gramlot.workspace.<name>`). It also
 supersedes the inspector tree's `storeBag` (Amendment 11.62, 2026-10-14): a tree reads its store only at
 `storepath`, and the inspector keeps its copies through a named connection.
+
+
+<a id="gc-000-shared-server-paths"></a>
+### Shared server path binding — owner, 2026-11-17
+
+Owner: “ok procedi a implementare il binding condiviso in gramlot server e poi
+usiamolo per la chat sourcerer della stanza. prima di fare deploy avvisami”.
+Scope: server-owned shared path binding, admission-checked room chat using the
+existing Source/Data/dataBinder mechanism, followed by consumer integration.
+This extends the page-local store contract without changing its default isolation.
+Deployment requires a prior notice to the owner. No cross-process persistence is
+claimed by the process-local implementation.

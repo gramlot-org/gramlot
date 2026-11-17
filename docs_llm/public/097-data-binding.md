@@ -530,3 +530,43 @@ does not receive its own change). TYTX text; resolvers are never run, resolver n
 carry their cached value. When the other end closes, binders stop and the copy keeps
 its values; `gramlot.rpc.unregisterConnection(name)` releases the port.
 `gramlot.rpc.connection(name).state`: `waiting` (no port), `open`, `closed` (closed by the other end).
+
+
+<a id="gc-095-165"></a>
+## 165 · Sharing a server branch across pages
+
+A Python PageStore can bind one local path to a branch of another PageStore with
+`bind_path(path, target, target_path, authorize=check, writable=False)`. Ordinary
+browser `dataBinder` declarations continue to address the local path. They receive
+an initial snapshot and subsequent changes through their existing WebSocket;
+using the same path spelling in two independent page stores does not share data.
+
+Resolve the target through `self.shared_store(("application", room_id), factory)`
+in a PageStore opened by GramlotServer. The factory returns a PageStore, started
+once by the server. Keys are nonempty tuples of nonempty strings, selected by
+server application code after authorization, never directly by a client binder.
+The registry is process-local, bounded by `max_pages`, and lasts until explicit
+`GramlotServer.close_shared_store(key)` or server shutdown. It is not persistence,
+replication or automatic recovery after a restart. A multi-process host needs a
+separate shared-state backend before this registry can serve a cross-process room.
+
+The required `authorize()` callable checks the current page's access. It is checked
+at binding, subscription, client writes and target deliveries. A denied delivery
+clears the local branch and detaches it; revocation is observed on the next check,
+not by a background membership monitor. Application code may call `unbind_path(path)`
+for immediate removal. `is_path_bound(path)` reports whether the binding remains.
+Client writes are denied by default, including replacing an ancestor that contains
+the protected branch. `writable=True` forwards writes within the bound branch to
+the target. Overlapping local bindings and binding cycles are rejected.
+
+Server writers modify the target Data Bag, not the local mirror. Use `target.lock`
+when a host invokes concurrent operations; sharing a key does not serialize an
+application's read/compute/write sequence automatically. Closing a page releases
+its bindings without closing the shared target; closing the target clears all
+bound branches. Typed Gramlot Source survives the normal TYTX transport.
+
+For a shared chat, bind only its message branch and keep requests, feedback and
+responses page-local. `ChatPageStore.conversation_messages(chat_id)` selects the
+authoritative message Bag and `conversation_authors()` supplies the user and
+responder labels. Serialize processing in the shared store's lock. Reset semantics
+and application authorization remain the application's responsibility.

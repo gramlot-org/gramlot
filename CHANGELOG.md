@@ -7,6 +7,19 @@ in `.github/release-notes/`.
 
 ## [Unreleased]
 
+## [0.3.40] — 2026-11-17
+
+### Added
+
+- Authorized server-side `PageStore.bind_path` subscriptions to shared stores,
+  with read-only defaults, optional client writes, revocation checks and page-independent lifecycle.
+- Process-local `GramlotServer.shared_store` registry and explicit shared-store closure.
+- Chat message-store and author hooks for shared conversations with page-local requests and feedback.
+
+### Fixed
+
+- The native chat Send icon no longer intercepts pointer events intended for its button.
+
 ## [0.3.39] — 2026-11-15
 
 ### Added

@@ -160,6 +160,9 @@ class GramlotServer:
         self.page_ttl, self.max_pages = ttl, max_pages
         self._pages = {}
         self._page_stores = {}
+        self._shared_stores = {}
+        from threading import RLock
+        self._shared_stores_lock = RLock()
         self._database_access = None
         self._page_channels = {}
         self._terminals = {}
@@ -272,6 +275,27 @@ class GramlotServer:
     def resolve_page_store(self, page_class):
         """The PageStore class of this page; a plain server provides an empty store."""
         return PageStore
+
+    def shared_store(self, key, factory):
+        """Get a process-local shared store. Applications authorize room membership before use."""
+        if not isinstance(key, tuple) or not key or any(not isinstance(x, str) or not x for x in key):
+            raise ValueError("Shared store keys must be nonempty tuples of nonempty strings")
+        with self._shared_stores_lock:
+            if key not in self._shared_stores:
+                if len(self._shared_stores) >= self.max_pages:
+                    raise ServerCapacity("Shared store registry capacity reached")
+                store = factory()
+                if not isinstance(store, PageStore):
+                    raise TypeError("Shared stores must subclass PageStore")
+                store.start()
+                self._shared_stores[key] = store
+            return self._shared_stores[key]
+
+    def close_shared_store(self, key):
+        with self._shared_stores_lock:
+            store = self._shared_stores.pop(key, None)
+            if store is not None:
+                store.close()
 
     def page_store(self, page_id, *, owner):
         """Get and renew a live store only for the registered page's owner."""
@@ -537,6 +561,7 @@ class GramlotServer:
                 if not isinstance(store_class, type) or not issubclass(store_class, PageStore):
                     raise TypeError("PageStore must subclass gramlot.PageStore")
                 store = store_class()
+                store._shared_store_registry = self.shared_store
                 store._database_access = self._database_access
                 store._source_builder = lambda: self._store_source_builder(cls)
                 self._page_stores[page_id] = store
@@ -782,3 +807,5 @@ class GramlotServer:
         for store in self._page_stores.values():
             store.close()
         self._page_stores.clear()
+        for key in list(self._shared_stores):
+            self.close_shared_store(key)
