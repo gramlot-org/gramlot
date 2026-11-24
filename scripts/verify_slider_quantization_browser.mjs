@@ -1,4 +1,5 @@
 /** Native range quantization must converge through real Source/Data bindings. */
+import {absentPackagePlugin, libraryPlugin} from '../js/src/build-plugins.js';
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {execFileSync} from 'node:child_process';
@@ -8,7 +9,7 @@ const [python, entry, ...engines] = process.argv.slice(2);
 const playwright = await import(pathToFileURL(entry));
 const root = fileURLToPath(new URL('../', import.meta.url));
 const wire = execFileSync(python, ['tests/fixtures/components/slider_quantization.py'], {cwd:root, encoding:'utf8'}).trim();
-const bundle = await build({stdin:{resolveDir:root, contents:`
+const bundle = await build({plugins: [absentPackagePlugin, libraryPlugin], stdin:{resolveDir:root, contents:`
 import {Gramlot} from './js/src/index.js';
 import inputs from './js/src/components/inputs.js';
 import layout from './js/src/components/layout.js';
