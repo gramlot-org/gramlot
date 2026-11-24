@@ -7,6 +7,10 @@ in `.github/release-notes/`.
 
 ## [Unreleased]
 
+## [0.3.41]
+
+- Expose page and store lifecycle hooks for stateful hosts. Opt-in store reconnection resumes the same page and reads authorized snapshots from the server.
+
 ## [0.3.40] — 2026-11-17
 
 ### Added
