@@ -69,6 +69,11 @@ export class DataBinder {
         }
     }
 
+    suspend() {
+        this.ready = false;
+        this.binding.runtime.data.popNode(this.clientPath, REMOTE);
+    }
+
     unregister() {
         this.ready = false;
         this.registration?.close();

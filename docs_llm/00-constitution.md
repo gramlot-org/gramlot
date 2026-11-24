@@ -5496,3 +5496,15 @@ existing Source/Data/dataBinder mechanism, followed by consumer integration.
 This extends the page-local store contract without changing its default isolation.
 Deployment requires a prior notice to the owner. No cross-process persistence is
 claimed by the process-local implementation.
+
+### Reconnecting a retained PageStore — 2026-11-24
+
+Owner decision: “Alla riconnessione prevale lo stato del server. La scheda riprende con lo stesso pageId e rilegge i dati autorizzati (consigliato).”
+
+For a host that retains logical pages and advertises `pageStoreReconnect`,
+the primary browser channel can reconnect for the same page ID. On a dropped
+channel the client invalidates bound views and pending calls. Upon reconnect
+each page subscribes again and replaces its local projection with the server’s
+currently authorized snapshot. Offline edits and in-flight calls are not
+replayed. A shared family continues to use the primary page’s physical socket.
+This extends the earlier bounded PageStore PoC for hosts that opt in.

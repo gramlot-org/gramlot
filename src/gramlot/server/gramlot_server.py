@@ -525,6 +525,30 @@ class GramlotServer:
             return None
         return file_below(THEMES, path.removeprefix("/themes/"))
 
+    def register_page(self, cls, *, owner, path):
+        """Allocate the page ID shared by the bootstrap, RPC and store channel."""
+        page_id = uuid4().hex
+        self._pages[page_id] = (self._expiry(), cls, owner, path)
+        return page_id
+
+    def page_for_call(self, cls, *, page_id, owner, identity):
+        """Supply the Page after the server has checked the record and its owner."""
+        page = cls()
+        page._database_access = self._database_access
+        page.page_id = page_id
+        page._request_identity = identity
+        return page
+
+    def create_page_store(self, store_class, *, page_id, owner):
+        """Create the page's store before the server wires it and starts its recipe."""
+        return store_class()
+
+    def disconnect_page_channel(self, page_id, *, owner):
+        """Release the transport subscription while keeping the logical page open."""
+        record = self._pages.get(page_id)
+        if record is not None and record[2] == owner:
+            self._page_channels.pop(page_id, None)
+
     async def open_page(self, path, *, owner=None, prefix=""):
         """Register the page and return its bootstrap. ``prefix`` is the mount prefix
         chosen by the adapter, added once to the root-relative bootstrap URLs. As on a
@@ -552,15 +576,13 @@ class GramlotServer:
         self._prune()
         if len(self._pages) >= self.max_pages:
             raise ServerCapacity("Page registry capacity reached")
-        page_id = uuid4().hex
-        # Registered before the bootstrap is written, and removed if writing it fails, as in JavaScript.
-        self._pages[page_id] = (self._expiry(), cls, owner, path)
+        page_id = self.register_page(cls, owner=owner, path=path)
         try:
             store_class = self.resolve_page_store(cls)
             if self.websocket_url is not None or store_class is not PageStore:
                 if not isinstance(store_class, type) or not issubclass(store_class, PageStore):
                     raise TypeError("PageStore must subclass gramlot.PageStore")
-                store = store_class()
+                store = self.create_page_store(store_class, page_id=page_id, owner=owner)
                 store._shared_store_registry = self.shared_store
                 store._database_access = self._database_access
                 store._source_builder = lambda: self._store_source_builder(cls)
@@ -672,10 +694,7 @@ class GramlotServer:
         if record is None or record[2] != owner:
             raise PageExpired("Unknown, expired or unowned page")
         self._pages[request["pageId"]] = (self._expiry(), *record[1:])
-        page = record[1]()
-        page._database_access = self._database_access
-        page.page_id = request["pageId"]
-        page._request_identity = identity
+        page = self.page_for_call(record[1], page_id=request["pageId"], owner=owner, identity=identity)
         name, params = request["name"], request["params"]
         if request["contentType"] == "upload":
             return await self._upload_control(page, request["pageId"], owner, identity, name, params)

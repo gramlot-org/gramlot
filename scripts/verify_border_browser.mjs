@@ -1,4 +1,5 @@
 /** Python-authored border fixture; real pointer geometry, retained browsing context and draft. */
+import {absentPackagePlugin, libraryPlugin} from '../js/src/build-plugins.js';
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {execFileSync} from 'node:child_process';
@@ -20,7 +21,7 @@ const [python,entry,...engines]=process.argv.slice(2);
 const playwright=await import(pathToFileURL(entry));
 const root=fileURLToPath(new URL('../',import.meta.url));
 const wire=execFileSync(python,['tests/fixtures/components/border_container.py'],{cwd:root,encoding:'utf8'}).trim();
-const bundle=await build({stdin:{contents:`import {Gramlot} from './js/src/index.js';import inputs from './js/src/components/inputs.js';import layout from '/layout.js';layout.register(window);window.gramlot=new Gramlot({document,transport:false,collections:[inputs,layout.toDocument()]});gramlot.src.startSource(${JSON.stringify(wire)});`,resolveDir:root},external:['/layout.js'],bundle:true,write:false,format:'esm',platform:'browser',target:'es2022'});
+const bundle=await build({plugins: [absentPackagePlugin, libraryPlugin], stdin:{contents:`import {Gramlot} from './js/src/index.js';import inputs from './js/src/components/inputs.js';import layout from '/layout.js';layout.register(window);window.gramlot=new Gramlot({document,transport:false,collections:[inputs,layout.toDocument()]});gramlot.src.startSource(${JSON.stringify(wire)});`,resolveDir:root},external:['/layout.js'],bundle:true,write:false,format:'esm',platform:'browser',target:'es2022'});
 const collection=await build({entryPoints:[root+'js/src/components/layout.js'],bundle:true,write:false,format:'esm',platform:'browser',target:'es2022'});
 const server=createServer((req,res)=>{
     if(req.url==='/layout.js'){res.setHeader('Content-Type','text/javascript');res.end(collection.outputFiles[0].text);}
@@ -50,6 +51,7 @@ try{
         }
         await page.evaluate(()=>gramlot.data.setItem('rounded',36));
         for(const id of ['border','nested']) assert.equal(await page.locator('#'+id).evaluate(el=>getComputedStyle(el).borderTopLeftRadius),'36px');
+        const waitForDrawer = () => page.waitForFunction(() => !document.querySelector('#border').control.hasAttribute('data-drawer-motion'));
         const sep=side=>page.locator('#border').locator(`.separator[data-side=${side}]`).first();
         for (const side of ['left','right','top','bottom']) {
             const vertical=['left','right'].includes(side), separator=sep(side), drawer=separator.locator('button');
@@ -66,8 +68,9 @@ try{
             if(side==='left') {
                 // Click outside the painted grip, inside its touch hit area.
                 await page.mouse.click(grip.x+12,grip.y+grip.height/2);
+                await waitForDrawer();
                 assert.equal(await drawer.getAttribute('aria-expanded'),'false');
-                await drawer.click();await page.waitForFunction(()=>!document.querySelector('#border').shadowRoot.querySelector('.control-box').hasAttribute('data-drawer-motion'));assert.equal(await drawer.getAttribute('aria-expanded'),'true');
+                await drawer.click();await waitForDrawer();assert.equal(await drawer.getAttribute('aria-expanded'),'true');
             }
             await page.locator('#border').evaluate(el=>el.style.removeProperty('--gramlot-touch-target'));
         }
@@ -92,13 +95,13 @@ try{
             assert((await size(side))[axis]>before[axis]+12,`${engine} ${side} drawer drags its splitter live`);
             await page.mouse.up();
             assert.equal(await drawer.getAttribute('aria-expanded'),'true','drag must not toggle the drawer');
-            await drawer.click();await page.waitForFunction(()=>!document.querySelector('#border').shadowRoot.querySelector('.control-box').hasAttribute('data-drawer-motion'));assert.equal(await drawer.getAttribute('aria-expanded'),'false');
-            await drawer.focus();await page.keyboard.press('Enter');await page.waitForFunction(()=>!document.querySelector('#border').shadowRoot.querySelector('.control-box').hasAttribute('data-drawer-motion'));assert.equal(await drawer.getAttribute('aria-expanded'),'true');
+            await drawer.click();await waitForDrawer();assert.equal(await drawer.getAttribute('aria-expanded'),'false');
+            await drawer.focus();await page.keyboard.press('Enter');await waitForDrawer();assert.equal(await drawer.getAttribute('aria-expanded'),'true');
         }
         for(const side of ['left','right','top','bottom']) {
             const drawer=sep(side).locator('button'), vertical=['left','right'].includes(side), axis=vertical?'w':'h';
             const before=await size(side), sign=['left','top'].includes(side)?1:-1;
-            await drawer.click();await page.waitForFunction(()=>!document.querySelector('#border').shadowRoot.querySelector('.control-box').hasAttribute('data-drawer-motion'));assert.equal(await drawer.getAttribute('aria-expanded'),'false');
+            await drawer.click();await waitForDrawer();assert.equal(await drawer.getAttribute('aria-expanded'),'false');
             const box=await drawer.boundingBox(),x=box.x+box.width/2,y=box.y+box.height/2;
             await page.mouse.move(x,y);await page.mouse.down();
             await page.mouse.move(x+(vertical?before[axis]*sign:0),y+(vertical?0:before[axis]*sign),{steps:5});
@@ -169,7 +172,7 @@ try{
         assert.equal(await page.evaluate(()=>gramlot.data.getItem('delivery')),'weekend');
         for(const side of ['top','bottom','left','right']) {
             const drawer=sep(side).locator('button');
-            await drawer.click();await page.waitForFunction(()=>!document.querySelector('#border').shadowRoot.querySelector('.control-box').hasAttribute('data-drawer-motion')); await drawer.click();await page.waitForFunction(()=>!document.querySelector('#border').shadowRoot.querySelector('.control-box').hasAttribute('data-drawer-motion'));
+            await drawer.click();await waitForDrawer(); await drawer.click();await waitForDrawer();
         }
         await page.locator('#draft input').focus();await page.mouse.move(0,0);
         await page.evaluate(()=>{gramlot.data.setItem('drawerLabel','Details');gramlot.data.setItem('drawerClass','drawer-rotated drawer-reveal');});

@@ -1,4 +1,5 @@
 /** Real browser check of native editing (S10), checkbox and radio (S11), button and events with the R3 side effects (S12), handlers of a branch removed under freeze (S13, R12), strict CSP with the Q3 error (S14), iframe srcdoc from Data sandboxed: the bundled runtime from js/ on a file:// shell, real typing, clicks and keys. */
+import {absentPackagePlugin, libraryPlugin} from '../js/src/build-plugins.js';
 import {build} from '../js/node_modules/esbuild/lib/main.js';
 import {HtmlBuilder} from '../js/node_modules/@genrojs/builders/src/index.js';
 import {mkdtemp, writeFile, rm} from 'node:fs/promises';
@@ -11,7 +12,7 @@ const [playwrightPath, engineName = 'chromium', executablePath] = process.argv.s
 if (!playwrightPath) throw new Error('Usage: node scripts/verify_binding_browser.mjs PLAYWRIGHT_ENTRY [ENGINE] [EXECUTABLE]');
 const engine = (await import(pathToFileURL(playwrightPath)))[engineName];
 // The runtime built from js/ at this revision (C07), not a packaged copy.
-const runtime = (await build({entryPoints: [fileURLToPath(new URL('../js/src/index.js', import.meta.url))],
+const runtime = (await build({plugins: [absentPackagePlugin, libraryPlugin], define: {'import.meta.url': 'document.baseURI'}, entryPoints: [fileURLToPath(new URL('../js/src/index.js', import.meta.url))],
     bundle: true, platform: 'browser', format: 'iife', globalName: 'GramlotRuntime', write: false})).outputFiles[0].text;
 const folder = await mkdtemp(join(tmpdir(), 'gramlot-binding-check-'));
 let browser;

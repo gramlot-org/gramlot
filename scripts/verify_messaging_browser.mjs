@@ -1,5 +1,6 @@
 /** Real browser qualification of the core-owned messaging and native ask fixtures.
  * Includes HTTP and file URLs, opaque iframes and lifecycle. No examples/host package dependency. */
+import {absentPackagePlugin, libraryPlugin} from '../js/src/build-plugins.js';
 import {build} from '../js/node_modules/esbuild/lib/main.js';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 const [playwrightEntry, ...engines] = process.argv.slice(2);
@@ -9,7 +10,7 @@ import {mkdtemp, writeFile, readFile} from 'node:fs/promises';
 import {createServer} from 'node:http';
 import assert from 'node:assert/strict';
 const root=fileURLToPath(new URL('..', import.meta.url));
-const bundle=await build({entryPoints:[root+'/js/src/index.js'],bundle:true,format:'iife',globalName:'G',write:false,logLevel:'silent'});
+const bundle=await build({plugins: [absentPackagePlugin, libraryPlugin], define: {'import.meta.url': 'document.baseURI'}, entryPoints:[root+'/js/src/index.js'],bundle:true,format:'iife',globalName:'G',write:false,logLevel:'silent'});
 const dir=await mkdtemp('/tmp/gramlot-publish-browser-');
 const html=(code)=>'<!doctype html><html><head><meta charset="utf-8"></head><body><main id="root"></main><script>'+bundle.outputFiles[0].text.replaceAll('</script','<\\/script')+'\n'+code+'</script></body></html>';
 const child=`window.events=[]; const b=new G.GramlotBuilder(); b.root.p('Child'); b.root.a('Open child',{id:'open-child',href:'child.html',target:'_blank',rel:'opener'}); b.root.dataController({subscribe_ping:true,script:"this.SET('received', number);"}); window.app=new G.Gramlot({rootId:'root',pageId:crypto.randomUUID(),transport:false}); app.subscribe('ping',p=>{events.push(p); app.publish({topic:'reply',parent:true},{number:p.number,typed:p.typed});}); app.src.startSource(b.toTytx());`;

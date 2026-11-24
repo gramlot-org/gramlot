@@ -125,6 +125,11 @@ class PageStore(_PageDatabases):
             record[0].unsubscribe(record[2])
             self.data.pop_node(path)
 
+    def unbind_paths(self):
+        """Detach every shared view, for example when a page changes principal."""
+        for path in list(self._bound_paths):
+            self.unbind_path(path)
+
     def _shared_change(self, path, message):
         for local, (target, remote, identifier, authorize, writable) in list(self._bound_paths.items()):
             if not _intersects(path, local):
@@ -282,8 +287,7 @@ class PageStore(_PageDatabases):
             return
         for page, path in list(self._path_clients):
             page.unbind_path(path)
-        for path in list(self._bound_paths):
-            self.unbind_path(path)
+        self.unbind_paths()
         self._closed = True
         self._publish_to_page = None
         self._source_builder = None
