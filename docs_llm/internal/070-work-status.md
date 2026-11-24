@@ -21082,3 +21082,10 @@ third-party libraries load on first use from `@gramlot/libraries/<name>`. The br
 loads the grammar of the standard collections prepared by the build in one step: `main`
 answered at 82 ms instead of 296 with a warm cache. Open: gramlot-js-server serverless
 export must resolve `@gramlot/libraries/<name>`. No release.
+
+### 2026-11-24 · Reconnect retained page stores
+
+A retained page can subscribe again under its existing page ID. A new snapshot
+restores the current authorized value, including edits made in another tab during
+the outage. Client registration survives the disconnect and page disposal cancels
+retries. Tests cover pending calls, child reattachment and retry backoff.

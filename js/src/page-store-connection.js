@@ -7,6 +7,7 @@ import {RpcError} from './handlers/rpc-handler.js';
 export class PageStoreConnection {
     constructor(gramlot, url, document) {
         this.gramlot = gramlot;
+        this.canReconnect = gramlot.capabilities.includes('pageStoreReconnect');
         this.window = document.defaultView;
         this.frames = gramlot._frames;
         this.binders = new Map();
@@ -17,6 +18,9 @@ export class PageStoreConnection {
         this.closed = false;
         this.ready = false;
         this.socket = null;
+        this.reconnecting = false;
+        this.retryTimer = null;
+        this.retryDelay = 250;
         const address = new URL(url, document.baseURI);
         address.protocol = address.protocol === 'https:' ? 'wss:' : 'ws:';
         this.endpoint = address.href;
@@ -49,16 +53,44 @@ export class PageStoreConnection {
     open() {
         const address = this.address;
         address.searchParams.set('pageId', this.gramlot.pageId);
-        this.socket = new this.window.WebSocket(address.href);
-        this.socket.addEventListener('open', () => this.connected());
-        this.socket.addEventListener('message', event => {
+        const socket = this.socket = new this.window.WebSocket(address.href);
+        socket.addEventListener('open', () => {
+            if (this.socket === socket) this.connected();
+        });
+        socket.addEventListener('message', event => {
+            if (this.socket !== socket) return;
             try { this.deliver(event.data); }
             catch (error) { this.fail(error); }
         });
-        this.socket.addEventListener('error', () => this.fail(new Error('PageStore WebSocket failed')));
-        this.socket.addEventListener('close', event => {
-            if (!this.closed) this.fail(new Error('PageStore disconnected (' + event.code + ')'));
+        socket.addEventListener('error', () => {
+            // A browser connection error also dispatches close, which schedules the retry.
+            if (this.socket === socket && !this.canReconnect) this.fail(new Error('PageStore WebSocket failed'));
         });
+        socket.addEventListener('close', event => {
+            if (this.closed || this.socket !== socket) return;
+            const error = new Error('PageStore disconnected (' + event.code + ')');
+            if (!this.canReconnect || (!this.ready && !this.reconnecting)) {
+                this.fail(error);
+                return;
+            }
+            this.socket = null;
+            this.suspend(error);
+            this.retryTimer = this.window.setTimeout(() => {
+                this.retryTimer = null;
+                this.open();
+            }, this.retryDelay);
+            this.retryDelay = Math.min(this.retryDelay * 2, 10000);
+        });
+    }
+
+    suspend(error) {
+        if (this.reconnecting) return;
+        this.ready = false;
+        this.reconnecting = true;
+        this.routes.clear();
+        for (const call of this.calls.values()) call.finish(error);
+        for (const binder of this.binders.values()) binder.suspend();
+        this.frames.setChannelState('server', {endpoint: this.endpoint, ready: false, reconnecting: true});
     }
 
     peerChanged(peer) {
@@ -71,12 +103,15 @@ export class PageStoreConnection {
         } else if (peer.origin !== this.origin || state?.endpoint !== this.endpoint) {
             this.fail(new Error('Parent does not provide the same PageStore endpoint'));
         } else if (state.ready) this.connected();
+        else if (state.reconnecting && this.canReconnect) this.suspend(new Error('PageStore parent disconnected'));
         else if (this.ready) this.fail(new Error('PageStore parent channel closed'));
     }
 
     connected() {
         if (this.closed || this.ready) return;
         this.ready = true;
+        this.reconnecting = false;
+        this.retryDelay = 250;
         if (this.parent) this.upstream({op: 'attach', pageId: this.gramlot.pageId});
         for (const binder of this.binders.values()) this.subscribe(binder);
         for (const call of this.calls.values()) this.sendCall(call);
@@ -115,7 +150,7 @@ export class PageStoreConnection {
     }
 
     deliver(wire) {
-        if (this.closed) return;
+        if (this.closed || this.reconnecting) return;
         const message = fromTytx(wire);
         if (message.pageId === this.gramlot.pageId) {
             if (message.op === 'closed') {
@@ -175,6 +210,7 @@ export class PageStoreConnection {
     /** Queue until attached, then pair responses by id independently of binder changes. */
     call(text, signal) {
         if (this.closed) return Promise.reject(this.error ?? new Error('PageStore connection is closed'));
+        if (this.reconnecting) return Promise.reject(new Error('PageStore is reconnecting'));
         if (signal?.aborted) return Promise.reject(signal.reason);
         const message = fromTytx(text);
         if (message.pageId !== this.gramlot.pageId || typeof message.id !== 'string'
@@ -225,6 +261,7 @@ export class PageStoreConnection {
     close() {
         if (this.closed) return;
         this.closed = true;
+        if (this.retryTimer !== null) this.window.clearTimeout(this.retryTimer);
         if (this.parent && this.ready && this.frames.isConnected(this.parent)) {
             for (const pageId of [...this.routes.keys(), this.gramlot.pageId]) {
                 this.frames.send(this.parent, 'server', {op: 'detach', pageId});

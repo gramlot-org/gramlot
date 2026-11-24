@@ -6,7 +6,7 @@ import {PageStoreConnection} from '../src/page-store-connection.js';
 import {RpcHandler} from '../src/handlers/rpc-handler.js';
 import {WebSocketTransport} from '../src/websocket-transport.js';
 
-function fixture(t, parent = null) {
+function fixture(t, parent = null, canReconnect = false) {
     const windows = [];
     const frames = [];
     const disposers = [];
@@ -24,7 +24,7 @@ function fixture(t, parent = null) {
     const document = Object.assign(new EventTarget(), {defaultView: window, baseURI: 'http://test/py/',
         referrer: 'http://test/py/', getElementsByTagName: () => frames});
     const reported = [];
-    const app = {pageId: 'primary', state: 'started', dom: {getBaseSourceNode: frame => frame.node, getDomNode: node => node.frame},
+    const app = {capabilities: canReconnect ? ['pageStoreReconnect'] : [], pageId: 'primary', state: 'started', dom: {getBaseSourceNode: frame => frame.node, getDomNode: node => node.frame},
         src: {binding: {bindingFor: () => ({track(fn) { disposers.push(fn); return () => {}; }}),
             reportError(error, title) { reported.push({error, title}); }}}};
     const family = app._frames = new FrameMessages(app, document);
@@ -332,4 +332,72 @@ test('RPC uses the existing error contract and cannot impersonate another page o
     await assert.rejects(failed, error => error.code === 'application_error' && error.remoteName === 'ValueError'
         && error.message === 'bad record' && error.details.pkey === 42);
     assert.equal(rpc.remoteRequests.size, 0);
+});
+
+
+test('a retained page subscribes afresh and never replays calls across a disconnect', async t => {
+    const f = fixture(t, null, true);
+    let retry;
+    f.window.setTimeout = (fn, delay) => { retry = fn; return delay; };
+    f.window.clearTimeout = () => { retry = null; };
+    const first = f.windows[0];
+    first.dispatchEvent(new Event('open'));
+    let suspended = 0;
+    f.connection.register({id: 'editor', serverPath: 'record', suspend() { suspended++; }});
+    const inFlight = f.connection.call(request('mutate'));
+    first.dispatchEvent(Object.assign(new Event('close'), {code: 1008}));
+    assert.equal(suspended, 1);
+    await assert.rejects(inFlight, /disconnected/);
+    await assert.rejects(f.connection.call(request('offline')), /reconnecting/);
+    retry();
+    const next = f.windows[1];
+    first.dispatchEvent(new Event('open'));
+    assert.equal(f.connection.ready, false);
+    next.dispatchEvent(new Event('open'));
+    assert.deepEqual(next.messages, [{op: 'subscribe', binderId: 'editor', path: 'record', pageId: 'primary'}]);
+    next.dispatchEvent(Object.assign(new Event('close'), {code: 1006}));
+    f.connection.close();
+    assert.equal(retry, null);
+});
+
+test('a child reattaches its own page and binders when its parent recovers', t => {
+    const parent = {messages: [], postMessage(message) { this.messages.push(message); }};
+    const f = fixture(t, parent, true);
+    let suspended = 0;
+    f.connection.register({id: 'b', serverPath: 'text', suspend() { suspended++; }});
+    f.receive(parent, {kind: 'ready'});
+    f.receive(parent, {kind: 'ready', channels: {server: {endpoint: f.connection.endpoint, ready: false, reconnecting: true}}});
+    assert.equal(suspended, 1);
+    f.receive(parent, {kind: 'ready'});
+    assert.equal(f.windows.length, 0);
+    assert.deepEqual(parent.messages.filter(m => m.kind === 'message').map(m => fromTytx(m.wire).op),
+        ['attach', 'subscribe', 'attach', 'subscribe']);
+});
+
+
+test('failed reconnect handshakes back off with one timer and stop on disposal', t => {
+    const f = fixture(t, null, true);
+    let pending;
+    const delays = [];
+    f.window.setTimeout = (fn, ms) => {
+        assert.equal(pending, undefined);
+        pending = fn;
+        delays.push(ms);
+        return delays.length;
+    };
+    f.window.clearTimeout = () => { pending = undefined; };
+    f.windows[0].dispatchEvent(new Event('open'));
+    for (let i = 0; i < 9; i++) {
+        const socket = f.windows[i];
+        socket.dispatchEvent(new Event('error'));
+        socket.dispatchEvent(Object.assign(new Event('close'), {code: 1006}));
+        if (i < 8) {
+            const fire = pending;
+            pending = undefined;
+            fire();
+        }
+    }
+    assert.deepEqual(delays, [250, 500, 1000, 2000, 4000, 8000, 10000, 10000, 10000]);
+    f.connection.close();
+    assert.equal(pending, undefined);
 });
