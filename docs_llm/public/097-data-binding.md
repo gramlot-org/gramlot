@@ -532,6 +532,12 @@ its values; `gramlot.rpc.unregisterConnection(name)` releases the port.
 `gramlot.rpc.connection(name).state`: `waiting` (no port), `open`, `closed` (closed by the other end).
 
 
+Store WebSocket recovery requires the host capability `pageStoreReconnect`
+and a previously established channel. After interruption, retry with the same
+`pageId`, resubscribe and replace bound branches from authorized server
+snapshots. Offline binder writes are not replayed. A disposed page or an
+expired server-side registration cannot recover that logical page by retrying.
+
 <a id="gc-095-165"></a>
 ## 165 · Sharing a server branch across pages
 

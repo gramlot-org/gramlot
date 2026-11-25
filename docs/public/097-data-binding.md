@@ -901,6 +901,14 @@ releases the port; the binders wait for the next one.
 without a port, `open`, or `closed` after the other end closed it.
 
 
+**If the store connection drops.** A host can advertise `pageStoreReconnect`.
+If an established socket drops on such a host, keep the tab open. The client
+reopens the socket with the same page ID and subscribes its binders again.
+Each fresh, authorized snapshot replaces that local branch. For example, if a
+second tab saves a new value while the first tab is disconnected, the first
+tab resumes with the server's value. Changes made offline are not queued for
+replay. Recovery requires the host to still recognize the page and its visit.
+
 <a id="gc-095-165"></a>
 ## 165 · Sharing a server branch across pages
 
