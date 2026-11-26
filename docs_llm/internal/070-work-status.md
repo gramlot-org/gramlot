@@ -21112,3 +21112,8 @@ Python IndexPage panel hook served real iframe panels. Their document identity
 and an unsaved draft survived detachment and redocking. The local Python example
 gallery also opened two lessons through its navigation tree and retained the
 running iframe document when the selected lesson was detached and docked.
+
+Owner clarification, 2026-11-26: tabBar lists only docked visible panels in
+the strip and overflow menu. Chromium and WebKit verified collapse with one
+docked tab, restoration in reordered position, and iframe draft retention.
+The two-lesson local gallery check also passed.

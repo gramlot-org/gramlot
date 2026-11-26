@@ -341,6 +341,7 @@ export const TabContainer = defineComponent({
                 } else entry.root.remove();
                 this.#tabs.delete(record);
             }
+            let visibleCount = 0;
             for (const [index, record] of records.entries()) {
                 let entry = this.#tabs.get(record);
                 if (!entry) {
@@ -407,7 +408,8 @@ export const TabContainer = defineComponent({
                     root.append(button, close); this.tabStrip.append(root); entry = {root,button,close,icon,caption,badge,detach,tools}; this.#tabs.set(record, entry);
                 }
                 if (!this.#tabBar && this.tabStrip.children[index] !== entry.root) this.tabStrip.insertBefore(entry.root, this.tabStrip.children[index] ?? null);
-                entry.root.hidden = !!record.config.hidden;
+                entry.root.hidden = !!record.config.hidden || !!(this.#tabBar && record.surface);
+                if (!entry.root.hidden) visibleCount++;
                 entry.root.toggleAttribute('data-detachable', record.config.detachable && !record.surface);
                 const caption = record.config.title || record.config.pageName || String(record.index + 1);
                 entry.caption.textContent = caption; entry.button.title = caption;
@@ -427,7 +429,7 @@ export const TabContainer = defineComponent({
                 entry.close.disabled = !!record.config.disabled;
                 entry.close.setAttribute('aria-label', `Close ${caption}`);
             }
-            this.#tabBar?.update(records.filter(record => !record.config.hidden).length, this.#tabs.get(selected)?.root);
+            this.#tabBar?.update(visibleCount, this.#tabs.get(selected)?.root);
         }
     },
 });

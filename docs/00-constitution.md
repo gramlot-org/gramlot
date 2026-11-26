@@ -5715,3 +5715,5 @@ floating presentation. Closing docks it in its original panel. This supersedes
 the panel-handle-only gesture for this mode. The existing keyboard-operable
 handle remains inside the active panel, as specified in the 2026-10-25
 detachable panel decision. Source and Data ownership follow that decision.
+
+Owner clarification, 2026-11-26: “se faccio detach mi aspetto che vada via talla bottoniera”. In `tabBar` mode the floating panel leaves the strip and its overflow menu until it docks. Only docked visible panels count toward bar visibility. Docking restores the tab in its retained visual order. This supersedes keeping a floating panel’s button available in this mode.

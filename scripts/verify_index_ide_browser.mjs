@@ -144,11 +144,21 @@ try {
             await page.mouse.move(bounds.x + bounds.width/2,bounds.y+80,{steps:6});
             await page.mouse.up();
             const floating = tabs.getByRole('dialog',{name:'three'});
+            await floating.waitFor();
+            assert.deepEqual(await bar.getByRole('tab').allTextContents(), ['Two','One']);
+            await bar.evaluate(el=>el.style.width='160px');
+            const overflow = bar.getByRole('button',{name:'More tabs'});
+            await overflow.click();
+            assert.deepEqual(await bar.getByRole('menuitem').allTextContents(), ['One']);
+            await page.keyboard.press('Escape');
+            await bar.evaluate(el=>el.style.width='');
+            await overflow.waitFor({state:'hidden'});
             assert.equal(await draft.inputValue(),'Unsubmitted iframe draft');
             assert.equal(await draft.evaluate((el,doc)=>el.ownerDocument === doc, originalDocument),true);
             await floating.getByRole('button',{name:'Close window'}).click();
             assert.equal(await draft.inputValue(),'Unsubmitted iframe draft');
             assert.equal(await draft.evaluate((el,doc)=>el.ownerDocument === doc, originalDocument),true);
+            assert.deepEqual(await bar.getByRole('tab').allTextContents(), ['Two','three','One']);
             await originalDocument.dispose();
             assert.equal(await data('index.active'), '/three');
 
@@ -171,6 +181,13 @@ try {
             assert.equal(await page.evaluate(() => gramlot.data.getItem('index.opened').length), 2);
             await page.evaluate(() => gramlot.data.setItem('index.active', '/one'));
             await page.waitForFunction(() => gramlot.data.getItem('index.navigationSelection') === 'one');
+
+            await tabs.getByRole('button',{name:'Detach One',exact:true}).click();
+            await page.waitForFunction(el=>el.inert && el.offsetHeight === 0, await bar.elementHandle(), {timeout:3000});
+            assert.equal(await data('index.active'), '/two');
+            await tabs.getByRole('dialog',{name:'One',exact:true}).getByRole('button',{name:'Close window'}).click();
+            assert.deepEqual(await bar.getByRole('tab').allTextContents(), ['Two','One']);
+            assert.equal(await first.getAttribute('aria-selected'),'true');
 
             await bar.getByRole('tab', {name:'Two',exact:true}).click({button:'middle'});
             await page.waitForFunction(el => el.inert && el.offsetHeight === 0, await bar.elementHandle(), {timeout:3000});
