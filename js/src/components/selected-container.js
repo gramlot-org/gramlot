@@ -1,6 +1,7 @@
 /** Shared selection keeps panel Source and light DOM mounted until explicit closing. */
 import {defineComponent} from './registry.js';
 import {Container} from './container.js';
+import {createTabBar, tabBarStyles} from './tab-bar.js';
 import {WindowSurface} from './window-surface.js';
 import {SVG_NS} from '../renderer/attributes.js';
 
@@ -215,12 +216,13 @@ export const TabContainer = defineComponent({
     name:'tabContainer', tag:'gramlot-tab-container', base:SelectedContainer, subTags:'*',
     sourceContext: true, childParameters: {...selectionChildParameters, title:{...selectionChildParameters.title, required:true}, detachable:{dtype:'B'}},
     parameters: {
-        tabMode: {dtype:'T', default:'tabs', binding:'read', enum:['tabs','underline']},
+        tabMode: {dtype:'T', default:'tabs', binding:'read', enum:['tabs','underline','tabBar']},
         tabPosition: {dtype:'T', default:'top', binding:'read', enum:['top','bottom','left','right']},
         tabAlign: {dtype:'T', default:'start', binding:'read', enum:['start','center','end']},
     },
     implementation: Base => class extends Base {
         #tabs = new Map();
+        #tabBar;
         constructor() {
             super();
             const doc = this.ownerDocument;
@@ -260,6 +262,8 @@ export const TabContainer = defineComponent({
                     padding:var(--gramlot-group-action-padding,.2em .4em);min-width:var(--gramlot-touch-target,var(--gramlot-group-action-size,24px));min-height:var(--gramlot-touch-target,var(--gramlot-group-action-size,24px))}
                 @media(hover:hover){.detach:hover{background:var(--gramlot-field-readonly-background,#ddd)}}
                 .detach:focus-visible{outline:2px solid var(--gramlot-focus-ring,Highlight);outline-offset:-2px}
+                .detach-label{display:none}
+                [data-mode=tabBar] .detach-label{display:inline;margin-inline-start:.35em}
                 .detach svg{width:1.25em;height:1.25em;flex:none;pointer-events:none}
                 .detach[data-dragging]{cursor:grabbing;background:var(--gramlot-selected,#e8f1fc)}
                 .close{align-self:center;flex:none;min-height:var(--gramlot-touch-target,20px);min-width:var(--gramlot-touch-target,20px);
@@ -285,22 +289,57 @@ export const TabContainer = defineComponent({
                 [data-mode=underline]:is([data-position=left],[data-position=right]) .tab-entry::after{height:auto;width:var(--gramlot-tab-indicator-size,2px);top:0;bottom:0}
                 [data-mode=underline][data-position=left] .tab-entry::after{left:auto;right:0}
                 [data-mode=underline][data-position=right] .tab-entry::after{left:0;right:auto}`;
+            style.textContent += tabBarStyles;
             this.shadowRoot.append(style);
         }
         projectAttributes(attrs, adapt) {
             const rest = super.projectAttributes(attrs, adapt);
             const {tabMode, tabPosition, tabAlign} = this.parameters;
-            if (!['tabs','underline'].includes(tabMode)) throw new TypeError('Invalid tabMode');
+            if (!['tabs','underline','tabBar'].includes(tabMode)) throw new TypeError('Invalid tabMode');
             if (!['top','bottom','left','right'].includes(tabPosition)) throw new TypeError('Invalid tabPosition');
             if (!['start','center','end'].includes(tabAlign)) throw new TypeError('Invalid tabAlign');
             this.control.dataset.mode = tabMode; this.control.dataset.position = tabPosition;
             this.control.dataset.align = tabAlign;
-            this.tabStrip.setAttribute('aria-orientation', ['left','right'].includes(tabPosition) ? 'vertical' : 'horizontal');
+            if (tabMode === 'tabBar' && !this.#tabBar) {
+                this.#tabBar = createTabBar(this.ownerDocument);
+                this.#tabBar.detachTab = (root, position) => {
+                    for (const [record, entry] of this.#tabs) {
+                        if (entry.root === root) { this.detachPanel(record, position); break; }
+                    }
+                };
+                this.tabStrip.replaceWith(this.#tabBar);
+                this.#tabBar.append(this.tabStrip);
+            } else if (tabMode !== 'tabBar' && this.#tabBar) {
+                for (const entry of this.tabStrip.querySelectorAll('[data-overflow]')) entry.removeAttribute('data-overflow');
+                this.#tabBar.replaceWith(this.tabStrip);
+                this.#tabBar = null;
+            }
+            const orientation = ['left','right'].includes(tabPosition) ? 'vertical' : 'horizontal';
+            this.tabStrip.setAttribute('aria-orientation', orientation);
+            if (this.#tabBar) this.#tabBar.dataset.position = orientation;
             return rest;
+        }
+        #focusAfterClose() {
+            const active = this.tabStrip.querySelector('[aria-selected=true]');
+            if (!active) return;
+            if (this.#tabBar?.hasAttribute('inert')) {
+                const panel = this.shadowRoot.getElementById(active.getAttribute('aria-controls'));
+                panel.tabIndex = -1;
+                panel.focus();
+            } else active.focus();
         }
         renderTabs(records, selected) {
             for (const [record, entry] of this.#tabs) {
-                if (!records.includes(record)) { entry.root.remove(); this.#tabs.delete(record); }
+                if (records.includes(record)) continue;
+                if (this.#tabBar && !entry.root.hidden && !entry.root.hasAttribute('data-overflow') && !this.#tabBar.hasAttribute('inert')) {
+                    const spacer = this.ownerDocument.createElement('div');
+                    spacer.className = 'tab-entry closing';
+                    spacer.inert = true;
+                    spacer.setAttribute('aria-hidden', 'true');
+                    entry.root.replaceWith(spacer);
+                    this.ownerDocument.defaultView.setTimeout(() => spacer.remove(), 200);
+                } else entry.root.remove();
+                this.#tabs.delete(record);
             }
             for (const [index, record] of records.entries()) {
                 let entry = this.#tabs.get(record);
@@ -317,21 +356,22 @@ export const TabContainer = defineComponent({
                     button.addEventListener('click', () => this.selectPanel(record));
                     close.addEventListener('click', () => {
                         this.closePanel(record);
-                        if (!close.isConnected) this.tabStrip.querySelector('[aria-selected=true]')?.focus();
+                        if (!close.isConnected) this.#focusAfterClose();
                     });
                     button.addEventListener('keydown', event => {
-                        if (event.key === 'Delete') { event.preventDefault(); this.closePanel(record); this.tabStrip.querySelector('[aria-selected=true]')?.focus(); return; }
+                        if (event.key === 'Delete') { event.preventDefault(); this.closePanel(record); this.#focusAfterClose(); return; }
                         const vertical = ['left','right'].includes(this.parameters.tabPosition);
                         const previous = vertical ? 'ArrowUp' : 'ArrowLeft', nextKey = vertical ? 'ArrowDown' : 'ArrowRight';
                         if (![previous,nextKey,'Home','End'].includes(event.key)) return;
                         event.preventDefault();
-                        const available = [...this.#tabs].filter(([r]) => !r.config.hidden && !r.config.disabled)
-                            .sort(([a], [b]) => a.index - b.index);
-                        let index = available.findIndex(([r]) => r === record);
+                        const available = [...this.tabStrip.querySelectorAll('.tab-entry:not([hidden]):not([data-overflow]) [role=tab]:not(:disabled)')];
+                        let index = available.indexOf(button);
                         index = event.key === 'Home' ? 0 : event.key === 'End' ? available.length - 1
                             : (index + (event.key === nextKey ? 1 : -1) + available.length) % available.length;
-                        const [next, tab] = available[index]; this.selectPanel(next); tab.button.focus();
-                        tab.button.scrollIntoView({block:'nearest',inline:'nearest'});
+                        const next = available[index];
+                        if (!this.#tabBar) next.click();
+                        next.focus();
+                        next.scrollIntoView({block:'nearest',inline:'nearest'});
                     });
                     const detach = doc.createElement('button'); detach.type = 'button'; detach.className = 'detach';
                     const symbol = doc.createElementNS(SVG_NS, 'svg'); symbol.setAttribute('viewBox','0 0 20 20'); symbol.setAttribute('aria-hidden','true');
@@ -358,12 +398,17 @@ export const TabContainer = defineComponent({
                         if (dragged) { dragged = false; return; }
                         this.detachPanel(record);
                     });
+                    const detachLabel = doc.createElement('span');
+                    detachLabel.className = 'detach-label';
+                    detachLabel.textContent = 'Detach';
+                    detach.append(detachLabel);
                     const tools = doc.createElement('div'); tools.className = 'panel-tools'; tools.append(detach);
                     record.viewport.prepend(tools);
                     root.append(button, close); this.tabStrip.append(root); entry = {root,button,close,icon,caption,badge,detach,tools}; this.#tabs.set(record, entry);
                 }
-                if (this.tabStrip.children[index] !== entry.root) this.tabStrip.insertBefore(entry.root, this.tabStrip.children[index] ?? null);
+                if (!this.#tabBar && this.tabStrip.children[index] !== entry.root) this.tabStrip.insertBefore(entry.root, this.tabStrip.children[index] ?? null);
                 entry.root.hidden = !!record.config.hidden;
+                entry.root.toggleAttribute('data-detachable', record.config.detachable && !record.surface);
                 const caption = record.config.title || record.config.pageName || String(record.index + 1);
                 entry.caption.textContent = caption; entry.button.title = caption;
                 entry.icon.textContent = record.config.icon;
@@ -382,6 +427,7 @@ export const TabContainer = defineComponent({
                 entry.close.disabled = !!record.config.disabled;
                 entry.close.setAttribute('aria-label', `Close ${caption}`);
             }
+            this.#tabBar?.update(records.filter(record => !record.config.hidden).length, this.#tabs.get(selected)?.root);
         }
     },
 });

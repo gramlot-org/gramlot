@@ -27,7 +27,7 @@ class IndexPage(FramePage):
                   labelAttribute="title", hideValues=True, selectedPath="^.navigationSelection")
 
     def center(self, pane):
-        pane.tabContainer(node_label="tabs", height="100%",
+        pane.tabContainer(node_label="tabs", tabMode="tabBar", height="100%",
                           selectedPage="^.active")
 
     def behavior(self, shell):

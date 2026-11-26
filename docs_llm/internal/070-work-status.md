@@ -21089,3 +21089,26 @@ A retained page can subscribe again under its existing page ID. A new snapshot
 restores the current authorized value, including edits made in another tab during
 the outage. Client registration survives the disconnect and page disposal cancels
 retries. Tests cover pending calls, child reattachment and retry backoff.
+
+<a id="gc-070-tab-bar"></a>
+### 2026-11-26 · IndexPage tabBar integration
+
+Owner confirmed “allora mettiamola e proviamo a usarla nella index” after the
+local trial. Python and JavaScript IndexPage use `tabMode="tabBar"` on their
+outer tabContainer. IndexPage opens detachable contentPane panels by default.
+A navigation entry can set `detachable=False`. Ordinary tabContainer children
+retain their existing defaults. See [GC-225](225-naming-and-proxy-conventions.md#gc-225-tab-bar).
+
+The second visible panel reveals the strip. Desktop buttons are 24 px high in
+a 32 px bar and up to 200 px wide. When the 80 px minimum no longer fits, the
+» menu contains the overflow tabs with their reactive badges. Dragging a title
+shows its title and badge at the grip point, and neighbors show the insertion
+slot. Reordering preserves Source order. Releasing beyond the detachment
+threshold opens the existing nonmodal panel. Closing docks the same content.
+
+Chromium and WebKit exercised direct title dragging, Escape cancellation,
+redocking, keyboard menu selection and badge updates including zero. The
+Python IndexPage panel hook served real iframe panels. Their document identity
+and an unsaved draft survived detachment and redocking. The local Python example
+gallery also opened two lessons through its navigation tree and retained the
+running iframe document when the selected lesson was detached and docked.

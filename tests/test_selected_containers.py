@@ -31,6 +31,6 @@ class SelectedContainersTests(unittest.TestCase):
         tab = builder.root.tabContainer(tabMode="^mode", tabPosition="^position")
         tab.contentPane(title="Messages", icon="✉", badge="^unread", badge_color="crimson")
         spec = LAYOUT["elements"]["tabContainer"]["_meta"]["gramlot_component"]["parameters"]
-        self.assertEqual(spec["tabMode"]["enum"], ["tabs", "underline"])
+        self.assertEqual(spec["tabMode"]["enum"], ["tabs", "underline", "tabBar"])
         self.assertEqual(spec["tabPosition"]["enum"], ["top", "bottom", "left", "right"])
         self.assertIn("Messages", builder.render())

@@ -2048,7 +2048,7 @@ Shared contracts: [Panel selection](#gc-345-shared-selection).
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
-| `tabMode` | T | 'tabs' | read | enum=['tabs', 'underline'] |
+| `tabMode` | T | 'tabs' | read | enum=['tabs', 'underline', 'tabBar'] |
 | `tabPosition` | T | 'top' | read | enum=['top', 'bottom', 'left', 'right'] |
 | `tabAlign` | T | 'start' | read | enum=['start', 'center', 'end'] |
 

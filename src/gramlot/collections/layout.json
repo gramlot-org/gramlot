@@ -2521,7 +2521,8 @@
               "binding": "read",
               "enum": [
                 "tabs",
-                "underline"
+                "underline",
+                "tabBar"
               ]
             },
             "tabPosition": {

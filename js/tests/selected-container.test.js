@@ -219,3 +219,25 @@ test('detachable icon handles drag, cancellation, dynamic eligibility and Source
     assert.equal(window.document.getElementById('field'),null);
     app.dispose();window.close();
 });
+
+test('switching to tabBar retains panel identity, close veto and selection bindings', async () => {
+    const f = await fixture('tabContainer', {tabMode:'^mode'});
+    try {
+        const draft = f.window.document.getElementById('field');
+        f.app.data.setItem('mode','tabBar');
+        await settle();
+        const bar = f.element.shadowRoot.querySelector('gramlot-tab-bar');
+        assert.ok(bar);
+        assert.equal(bar.hasAttribute('inert'),false);
+        f.tab('Beta').click();
+        f.close('Beta').click();
+        await settle();
+        assert.equal(f.app.data.getItem('page'),'b');
+        assert.ok(f.source.value.getNode('b'));
+        f.app.data.setItem('mode','underline');
+        await settle();
+        assert.equal(f.element.shadowRoot.querySelector('gramlot-tab-bar'),null);
+        assert.equal(f.window.document.getElementById('field'),draft);
+        assert.equal(f.tab('Beta').getAttribute('aria-selected'),'true');
+    } finally { f.app.dispose(); }
+});

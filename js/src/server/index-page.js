@@ -24,7 +24,7 @@ export class IndexPage extends FramePage {
             labelAttribute: 'title', hideValues: true, selectedPath: '^.navigationSelection'});
     }
     center(pane) {
-        pane.tabContainer({node_label: 'tabs', height: '100%', selectedPage: '^.active'});
+        pane.tabContainer({node_label: 'tabs', tabMode: 'tabBar', height: '100%', selectedPage: '^.active'});
     }
     behavior(shell) {
         shell.dataController({func: 'indexMount', _onStart: true});

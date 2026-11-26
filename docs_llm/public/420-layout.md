@@ -307,7 +307,7 @@ Shared contracts: [Panel selection](#gc-420-shared-selection).
 
 | Parameters | Contract |
 | --- | --- |
-| `tabMode` | `{"binding":"read","default":"tabs","dtype":"T","enum":["tabs","underline"]}` |
+| `tabMode` | `{"binding":"read","default":"tabs","dtype":"T","enum":["tabs","underline","tabBar"]}` |
 | `tabPosition` | `{"binding":"read","default":"top","dtype":"T","enum":["top","bottom","left","right"]}` |
 | `tabAlign` | `{"binding":"read","default":"start","dtype":"T","enum":["start","center","end"]}` |
 

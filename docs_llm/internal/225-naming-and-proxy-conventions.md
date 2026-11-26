@@ -3422,3 +3422,11 @@ are public API and wait for owner confirmation.
 that bundle the core sources (gramlot-serverless). Type `BuildPlugin`. Public API awaiting
 owner confirmation.
 
+
+<a id="gc-225-tab-bar"></a>
+### IndexPage tab bar — 2026-11-26
+
+Owner confirmed “tab bar ok” and “ok” to the IndexPage trial using
+`tabMode="tabBar"`. The presentation element follows the layout tag convention,
+`<gramlot-tab-bar>`. Pages author the existing `tabContainer` and its
+`contentPane` children. Selection and closure use their existing contract.

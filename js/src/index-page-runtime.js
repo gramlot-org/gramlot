@@ -73,9 +73,14 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
         }
         while (tabs().value !== null && tabs().value.getNode(`page${context.sequence}`)) context.sequence++;
         const paneLabel = `page${context.sequence++}`;
-        const title = node.attr.title ?? node.label;
+        const baseTitle = node.attr.title ?? node.label;
+        const titles = new Set([...entries.values()].map(entry => entry.title));
+        let title = baseTitle;
+        for (let suffix = 1; titles.has(title); suffix++) title = `${baseTitle} (${suffix})`;
         builder.wrapSource(tabs()).contentPane({node_label: paneLabel,
-            title, pageName: url, height: '100%', closable: true});
+            title, pageName: url, height: '100%', closable: true,
+            detachable: node.attr.detachable ?? true,
+            badge: `^${state}.navigation.${path}?badge`, badge_color: `^${state}.navigation.${path}?badge_color`});
         const previous = read('active');
         entry = createRecord({url, path, title, paneLabel, loading: true});
         entries.set(url, entry);

@@ -46,8 +46,11 @@ test('URL identity retains a single panel; folder without URL does not open a ta
     f.state.setItem('navigationSelection', 'folder'); await settle(); assert.equal(calls, 0);
     f.state.setItem('navigationSelection', 'one'); await settle();
     const pane = f.behavior.entries.get('/one').pane;
+    assert.equal(pane.getAttr('detachable'),true);
+    f.state.getItem('navigation').getNode('two').setAttr({detachable:false});
     f.app.data.setItem('draft', 'Saved');
     f.state.setItem('navigationSelection', 'two'); await settle();
+    assert.equal(f.behavior.entries.get('/two').pane.getAttr('detachable'),false);
     f.state.setItem('navigationSelection', 'alias'); await settle();
     assert.equal(calls, 2); assert.equal(f.state.getItem('active'), '/one');
     assert.equal(f.behavior.entries.get('/one').pane, pane);
@@ -105,4 +108,15 @@ test('ordinary IndexLogic opens the panel hook through Source RPC without galler
     assert.deepEqual(calls, ['index_panel']);
     assert.equal(window.document.querySelector('iframe'), iframe);
     assert.equal(state.getItem('active'), '/hello');
+});
+
+test('open pages with equal navigation titles keep unique tab labels and distinct URLs', async t => {
+    const f = fixture(t, async () => {});
+    f.state.getItem('navigation').setItem('another', null, {url: '/another', title: 'One'});
+    for (const path of ['one', 'another', 'alias']) {
+        f.state.setItem('navigationSelection', path);
+        await settle();
+    }
+    assert.equal(f.state.getItem('active'), '/one');
+    assert.deepEqual([...f.behavior.entries.values()].map(entry => entry.pane.getAttr('title')), ['One','One (1)']);
 });

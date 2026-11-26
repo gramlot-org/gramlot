@@ -5508,3 +5508,14 @@ each page subscribes again and replaces its local projection with the server’s
 currently authorized snapshot. Offline edits and in-flight calls are not
 replayed. A shared family continues to use the primary page’s physical socket.
 This extends the earlier bounded PageStore PoC for hosts that opt in.
+
+<a id="gc-000-tab-bar-detach-gesture"></a>
+### Dragging a detachable tabBar title — 2026-11-26
+
+Owner clarification for the IndexPage tabBar trial: “ma io volevo detachare draggando il bottone”.
+In `tabMode="tabBar"` the title button also serves as a drag target for a
+`detachable=True` panel. A release outside the strip opens the same nonmodal
+floating presentation. Closing docks it in its original panel. This supersedes
+the panel-handle-only gesture for this mode. The existing keyboard-operable
+handle remains inside the active panel, as specified in the 2026-10-25
+detachable panel decision. Source and Data ownership follow that decision.
